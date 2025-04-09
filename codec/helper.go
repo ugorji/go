@@ -264,7 +264,8 @@ const (
 
 	usePoolForSideDecode = true
 
-	useBytesFreeList = true
+	useBytesFreeList                    = true
+	useBytesFreeListPutGetSeparateCalls = false
 
 	useSfiRvFreeList = true
 )
@@ -2496,6 +2497,17 @@ func sprintf(format string, v ...interface{}) string {
 	return fmt.Sprintf(format, v...)
 }
 
+//go:noinline
+func printf(s string, a ...any) {
+	if len(s) == 0 {
+		return
+	}
+	if s[len(s)-1] != '\n' {
+		s = s + "\n"
+	}
+	fmt.Printf(s, a...)
+}
+
 func panicToErr(h errDecorator, fn func()) (err error) {
 	if !debugging {
 		defer func() {
@@ -2923,10 +2935,7 @@ func (x *bytesFreeList) get(length int) (out []byte) {
 		return make([]byte, 0, freelistCapacity(length))
 	}
 	y := *x
-	// MARKER: do not use range, as range is not currently inlineable as of go 1.16-beta
-	// for i, v := range y {
-	for i := 0; i < len(y); i++ {
-		v := y[i]
+	for i, v := range y {
 		if cap(v) >= length {
 			// *x = append(y[:i], y[i+1:]...)
 			copy(y[i:], y[i+1:])
@@ -2944,14 +2953,14 @@ func (x *bytesFreeList) put(v []byte) {
 	if len(v) != 0 {
 		v = v[:0]
 	}
+	// v = v[:0]
 	// append the new value, then try to put it in a better position
 	y := append(*x, v)
 	*x = y
-	// MARKER: do not use range, as range is not currently inlineable as of go 1.16-beta
+	// MARKER: use simple for loop, so as not to create new slice
 	// for i, z := range y[:len(y)-1] {
 	for i := 0; i < len(y)-1; i++ {
-		z := y[i]
-		if cap(z) > cap(v) {
+		if cap(y[i]) > cap(v) {
 			copy(y[i+1:], y[i:])
 			y[i] = v
 			return
@@ -2968,13 +2977,12 @@ func (x *bytesFreeList) check(v []byte, length int) (out []byte) {
 }
 
 func (x *bytesFreeList) putGet(v []byte, length int) []byte {
-	// checkPutGet broken out into its own function, so check is inlineable in general case
+	// putGet broken out into its own function, so check is inlineable in general case
 
-	// const useSeparateCalls = false
-	// if useSeparateCalls {
-	// 	x.put(v)
-	// 	return x.get(length)
-	// }
+	if useBytesFreeListPutGetSeparateCalls {
+		x.put(v)
+		return x.get(length)
+	}
 
 	if !useBytesFreeList {
 		return make([]byte, 0, freelistCapacity(length))
@@ -2987,8 +2995,9 @@ func (x *bytesFreeList) putGet(v []byte, length int) []byte {
 		y = append(y, v)
 		*x = y
 	}
-	for i := 0; i < len(y); i++ {
-		z := y[i]
+	// for i := 0; i < len(y); i++ {
+	// 	z := y[i]
+	for i, z := range y {
 		if put {
 			if cap(z) >= length {
 				copy(y[i:], y[i+1:])
@@ -3087,17 +3096,6 @@ func (x internerMap) string(v []byte) (s string) {
 		x[s] = s
 	}
 	return
-}
-
-//go:noinline
-func print(s string, a ...any) {
-	if len(s) == 0 {
-		return
-	}
-	if s[len(s)-1] != '\n' {
-		s = s + "\n"
-	}
-	fmt.Printf(s, a...)
 }
 
 // func initSoloField(v interface{}) {

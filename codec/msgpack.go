@@ -417,7 +417,7 @@ type msgpackDecDriver[T decReader] struct {
 	r T
 
 	bdAndBdread
-	bytes bool
+	// bytes bool
 	noBuiltInTypes
 }
 
@@ -854,7 +854,7 @@ func (d *msgpackDecDriver[T]) DecodeBytes(bs []byte) (out []byte, scratchBuf boo
 	}
 
 	d.bdRead = false
-	if d.bytes && d.h.ZeroCopy {
+	if d.d.bytes && d.h.ZeroCopy {
 		return d.r.readx(uint(clen)), false
 	}
 	if bs == nil {
@@ -1261,7 +1261,6 @@ func (e *msgpackEncDriver[T]) resetOutIO(out io.Writer) {
 func (d *msgpackDecDriver[T]) init(hh Handle, shared *decoderBase, dec decoderI) (fp interface{}) {
 	callMake(&d.r)
 	d.h = hh.(*MsgpackHandle)
-	d.bytes = shared.bytes
 	d.d = shared
 	if shared.bytes {
 		fp = msgpackFpDecBytes

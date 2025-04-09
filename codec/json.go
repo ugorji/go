@@ -512,37 +512,58 @@ func (e *jsonEncDriver[T]) quoteStr(s string) {
 		// encode all bytes < 0x20 (except \r, \n).
 		// also encode < > & to prevent security holes when served to some browsers.
 
-		// We optimize for ascii, by assumining that most characters are in the BMP
+		// We optimize for ascii, by assuming that most characters are in the BMP
 		// and natively consumed by json without much computation.
 
 		// if 0x20 <= b && b != '\\' && b != '"' && b != '<' && b != '>' && b != '&' {
 		// if (htmlasis && jsonCharSafeSet.isset(b)) || jsonCharHtmlSafeSet.isset(b) {
-		if e.s.isset(s[i]) {
+		b := s[i]
+		if e.s.isset(b) {
 			i++
 			continue
 		}
-		// b := s[i]
-		if s[i] < utf8.RuneSelf {
+		if b < utf8.RuneSelf {
 			if start < i {
 				e.w.writestr(s[start:i])
 			}
-			switch s[i] {
-			case '\\', '"':
-				e.w.writen2('\\', s[i])
+
+			// if b == '\\' || b == '"' {
+			// 	e.w.writen2('\\', b)
+			// } else if b == '\n' {
+			// 	e.w.writen2('\\', 'n')
+			// } else if b == '\t' {
+			// 	e.w.writen2('\\', 't')
+			// } else if b == '\r' {
+			// 	e.w.writen2('\\', 'r')
+			// } else if b == '\b' {
+			// 	e.w.writen2('\\', 'b')
+			// } else if b == '\f' {
+			// 	e.w.writen2('\\', 'f')
+			// } else {
+			// 	e.w.writestr(`\u00`)
+			// 	e.w.writen2(hex[b>>4], hex[b&0xF])
+			// }
+
+			switch b {
+			case '\\':
+				e.w.writen2('\\', '\\')
+			case '"':
+				e.w.writen2('\\', '"')
 			case '\n':
 				e.w.writen2('\\', 'n')
+			case '\t':
+				e.w.writen2('\\', 't')
 			case '\r':
 				e.w.writen2('\\', 'r')
 			case '\b':
 				e.w.writen2('\\', 'b')
 			case '\f':
 				e.w.writen2('\\', 'f')
-			case '\t':
-				e.w.writen2('\\', 't')
 			default:
 				e.w.writestr(`\u00`)
-				e.w.writen2(hex[s[i]>>4], hex[s[i]&0xF])
+				e.w.writen2(hex[b>>4], hex[b&0xF])
 			}
+
 			i++
 			start = i
 			continue
@@ -618,7 +639,7 @@ type jsonDecDriver[T decReader] struct {
 
 	// ---- cpu cache line boundary?
 
-	bytes bool
+	// bytes bool
 
 	dec decoderI
 }
@@ -1481,7 +1502,6 @@ func (e *jsonEncDriver[T]) resetOutIO(out io.Writer) {
 func (d *jsonDecDriver[T]) init(hh Handle, shared *decoderBase, dec decoderI) (fp interface{}) {
 	callMake(&d.r)
 	d.h = hh.(*JsonHandle)
-	d.bytes = shared.bytes
 	d.d = shared
 	if shared.bytes {
 		fp = jsonFpDecBytes

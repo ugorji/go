@@ -335,8 +335,8 @@ type cborDecDriver[T decReader] struct {
 	r   T
 	dec decoderI
 	bdAndBdread
-	st    bool // skip tags
-	bytes bool
+	st bool // skip tags
+	// bytes bool
 }
 
 func (d *cborDecDriver[T]) readNextBd() {
@@ -630,7 +630,7 @@ func (d *cborDecDriver[T]) DecodeBytes(bs []byte) (out []byte, scratchBuf bool) 
 	}
 	clen := d.decLen()
 	d.bdRead = false
-	if d.bytes && d.h.ZeroCopy {
+	if d.d.bytes && d.h.ZeroCopy {
 		return d.r.readx(uint(clen)), false
 	}
 	if bs == nil {
@@ -998,7 +998,6 @@ func (e *cborEncDriver[T]) resetOutIO(out io.Writer) {
 func (d *cborDecDriver[T]) init(hh Handle, shared *decoderBase, dec decoderI) (fp interface{}) {
 	callMake(&d.r)
 	d.h = hh.(*CborHandle)
-	d.bytes = shared.bytes
 	d.d = shared
 	if shared.bytes {
 		fp = cborFpDecBytes

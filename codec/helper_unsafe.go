@@ -922,99 +922,84 @@ func rvCopySlice(dest, src reflect.Value, elemType reflect.Type) {
 
 // ------------
 
+func rvPtr(rv reflect.Value) unsafe.Pointer {
+	return (*unsafeReflectValue)(unsafe.Pointer(&rv)).ptr
+}
+
 func rvGetBool(rv reflect.Value) bool {
-	v := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	return *(*bool)(v.ptr)
+	return *(*bool)(rvPtr(rv))
 }
 
 func rvGetBytes(rv reflect.Value) []byte {
-	v := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	return *(*[]byte)(v.ptr)
+	return *(*[]byte)(rvPtr(rv))
 }
 
 func rvGetTime(rv reflect.Value) time.Time {
-	v := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	return *(*time.Time)(v.ptr)
+	return *(*time.Time)(rvPtr(rv))
 }
 
 func rvGetString(rv reflect.Value) string {
-	v := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	return *(*string)(v.ptr)
+	return *(*string)(rvPtr(rv))
 }
 
 func rvGetFloat64(rv reflect.Value) float64 {
-	v := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	return *(*float64)(v.ptr)
+	return *(*float64)(rvPtr(rv))
 }
 
 func rvGetFloat32(rv reflect.Value) float32 {
-	v := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	return *(*float32)(v.ptr)
+	return *(*float32)(rvPtr(rv))
 }
 
 func rvGetComplex64(rv reflect.Value) complex64 {
-	v := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	return *(*complex64)(v.ptr)
+	return *(*complex64)(rvPtr(rv))
 }
 
 func rvGetComplex128(rv reflect.Value) complex128 {
-	v := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	return *(*complex128)(v.ptr)
+	return *(*complex128)(rvPtr(rv))
 }
 
 func rvGetInt(rv reflect.Value) int {
-	v := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	return *(*int)(v.ptr)
+	return *(*int)(rvPtr(rv))
 }
 
 func rvGetInt8(rv reflect.Value) int8 {
-	v := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	return *(*int8)(v.ptr)
+	return *(*int8)(rvPtr(rv))
 }
 
 func rvGetInt16(rv reflect.Value) int16 {
-	v := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	return *(*int16)(v.ptr)
+	return *(*int16)(rvPtr(rv))
 }
 
 func rvGetInt32(rv reflect.Value) int32 {
-	v := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	return *(*int32)(v.ptr)
+	return *(*int32)(rvPtr(rv))
 }
 
 func rvGetInt64(rv reflect.Value) int64 {
-	v := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	return *(*int64)(v.ptr)
+	return *(*int64)(rvPtr(rv))
 }
 
 func rvGetUint(rv reflect.Value) uint {
-	v := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	return *(*uint)(v.ptr)
+	return *(*uint)(rvPtr(rv))
 }
 
 func rvGetUint8(rv reflect.Value) uint8 {
-	v := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	return *(*uint8)(v.ptr)
+	return *(*uint8)(rvPtr(rv))
 }
 
 func rvGetUint16(rv reflect.Value) uint16 {
-	v := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	return *(*uint16)(v.ptr)
+	return *(*uint16)(rvPtr(rv))
 }
 
 func rvGetUint32(rv reflect.Value) uint32 {
-	v := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	return *(*uint32)(v.ptr)
+	return *(*uint32)(rvPtr(rv))
 }
 
 func rvGetUint64(rv reflect.Value) uint64 {
-	v := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	return *(*uint64)(v.ptr)
+	return *(*uint64)(rvPtr(rv))
 }
 
 func rvGetUintptr(rv reflect.Value) uintptr {
-	v := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	return *(*uintptr)(v.ptr)
+	return *(*uintptr)(rvPtr(rv))
 }
 
 func rvLenMap(rv reflect.Value) int {

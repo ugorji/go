@@ -448,7 +448,7 @@ type bincDecDriver[T decReader] struct {
 
 	bincDecState
 
-	bytes bool
+	// bytes bool
 }
 
 func (d *bincDecDriver[T]) readNextBd() {
@@ -753,7 +753,7 @@ func (d *bincDecDriver[T]) DecodeStringAsBytes(in []byte) (bs2 []byte, scratchBu
 	switch d.vd {
 	case bincVdString, bincVdByteArray:
 		slen = d.decLen()
-		if d.bytes {
+		if d.d.bytes {
 			bs2 = d.r.readx(uint(slen))
 		} else {
 			if in == nil {
@@ -834,7 +834,7 @@ func (d *bincDecDriver[T]) DecodeBytes(bs []byte) (out []byte, scratchBuf bool) 
 		halt.errorf("bytes - %s %x-%x/%s", msgBadDesc, d.vd, d.vs, bincdesc(d.vd, d.vs))
 	}
 	d.bdRead = false
-	if d.bytes && d.h.ZeroCopy {
+	if d.d.bytes && d.h.ZeroCopy {
 		return d.r.readx(uint(clen)), false
 	}
 	if bs == nil {
@@ -1202,7 +1202,6 @@ func (e *bincEncDriver[T]) resetOutIO(out io.Writer) {
 func (d *bincDecDriver[T]) init(hh Handle, shared *decoderBase, dec decoderI) (fp interface{}) {
 	callMake(&d.r)
 	d.h = hh.(*BincHandle)
-	d.bytes = shared.bytes
 	d.d = shared
 	if shared.bytes {
 		fp = bincFpDecBytes

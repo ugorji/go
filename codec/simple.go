@@ -264,7 +264,7 @@ type simpleDecDriver[T decReader] struct {
 	r T
 
 	bdAndBdread
-	bytes bool
+	// bytes bool
 
 	noBuiltInTypes
 	// decDriverNoopNumberHelper
@@ -480,7 +480,7 @@ func (d *simpleDecDriver[T]) DecodeBytes(bs []byte) (out []byte, scratchBuf bool
 	clen := d.decLen()
 	d.bdRead = false
 	// if d.d.zerocopy() {
-	if d.bytes && d.h.ZeroCopy {
+	if d.d.bytes && d.h.ZeroCopy {
 		return d.r.readx(uint(clen)), false
 	}
 	if bs == nil {
@@ -812,7 +812,6 @@ func (e *simpleEncDriver[T]) resetOutIO(out io.Writer) {
 func (d *simpleDecDriver[T]) init(hh Handle, shared *decoderBase, dec decoderI) (fp interface{}) {
 	callMake(&d.r)
 	d.h = hh.(*SimpleHandle)
-	d.bytes = shared.bytes
 	d.d = shared
 	if shared.bytes {
 		fp = simpleFpDecBytes
