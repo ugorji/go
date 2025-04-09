@@ -371,11 +371,7 @@ var (
 
 var poolForTypeInfoLoad = sync.Pool{
 	New: func() interface{} {
-		return &typeInfoLoad{
-			etypes:   make([]uintptr, 0, 4),
-			sfis:     make([]structFieldInfo, 0, 4),
-			sfiNames: make(map[string]uint16, 4),
-		}
+		return newTypeInfoLoad()
 	},
 }
 
@@ -628,6 +624,14 @@ type typeInfoLoad struct {
 	etypes   []uintptr
 	sfis     []structFieldInfo
 	sfiNames map[string]uint16
+}
+
+func newTypeInfoLoad() *typeInfoLoad {
+	return &typeInfoLoad{
+		etypes:   make([]uintptr, 0, 4),
+		sfis:     make([]structFieldInfo, 0, 4),
+		sfiNames: make(map[string]uint16, 4),
+	}
 }
 
 func (x *typeInfoLoad) reset() {
@@ -2157,7 +2161,7 @@ func (x *TypeInfos) load(rt reflect.Type) (pti *typeInfo) {
 			pv = pi.(*typeInfoLoad)
 			pv.reset()
 		} else {
-			pv = new(typeInfoLoad)
+			pv = newTypeInfoLoad()
 		}
 		pv.etypes = append(pv.etypes, ti.rtid)
 		x.rget(rt, nil, pv, omitEmpty)

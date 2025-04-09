@@ -29,7 +29,9 @@ type encDriverI interface {
 	EncodeBool(b bool)
 	EncodeFloat32(f float32)
 	EncodeFloat64(f float64)
+	// re is never nil
 	EncodeRawExt(re *RawExt)
+	// ext is never nil
 	EncodeExt(v interface{}, basetype reflect.Type, xtag uint64, ext Ext)
 	// EncodeString using cUTF8, honor'ing StringToRaw flag
 	EncodeString(v string)
@@ -308,7 +310,11 @@ type encoder[T encDriver] struct {
 }
 
 func (e *encoder[T]) rawExt(_ *encFnInfo, rv reflect.Value) {
-	e.e.EncodeRawExt(rv2i(rv).(*RawExt))
+	if re := rv2i(rv).(*RawExt); re == nil {
+		e.e.EncodeNil()
+	} else {
+		e.e.EncodeRawExt(re)
+	}
 }
 
 func (e *encoder[T]) ext(f *encFnInfo, rv reflect.Value) {

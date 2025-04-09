@@ -677,27 +677,39 @@ func (d *cborDecDriver[T]) decodeTime(xtag uint64) (t time.Time) {
 	return
 }
 
-func (d *cborDecDriver[T]) DecodeExt(rv interface{}, basetype reflect.Type, xtag uint64, ext Ext) {
+func (d *cborDecDriver[T]) preDecodeExt(checkTag bool, xtag uint64) (realxtag uint64, ok bool) {
 	if d.advanceNil() {
 		return
 	}
 	if d.bd>>5 != cborMajorTag {
 		halt.errorf("error reading tag; expected major type: %x, got: %x", cborMajorTag, d.bd>>5)
 	}
-	realxtag := d.decUint()
+	realxtag = d.decUint()
 	d.bdRead = false
-	if ext == nil {
-		re := rv.(*RawExt)
+	if checkTag && xtag != realxtag {
+		halt.errorf("Wrong extension tag. Got %b. Expecting: %v", realxtag, xtag)
+	}
+	ok = true
+	return
+}
+
+func (d *cborDecDriver[T]) DecodeRawExt(re *RawExt) {
+	if realxtag, ok := d.preDecodeExt(false, 0); ok {
 		re.Tag = realxtag
 		d.dec.decode(&re.Value)
-	} else if xtag != realxtag {
-		halt.errorf("Wrong extension tag. Got %b. Expecting: %v", realxtag, xtag)
-	} else if ext == SelfExt {
-		d.dec.decodeAs(rv, basetype, false)
-	} else {
-		d.dec.interfaceExtConvertAndDecode(rv, ext)
+		d.bdRead = false
 	}
-	d.bdRead = false
+}
+
+func (d *cborDecDriver[T]) DecodeExt(rv interface{}, basetype reflect.Type, xtag uint64, ext Ext) {
+	if _, ok := d.preDecodeExt(true, xtag); ok {
+		if ext == SelfExt {
+			d.dec.decodeAs(rv, basetype, false)
+		} else {
+			d.dec.interfaceExtConvertAndDecode(rv, ext)
+		}
+		d.bdRead = false
+	}
 }
 
 func (d *cborDecDriver[T]) DecodeNaked() {

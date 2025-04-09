@@ -942,21 +942,31 @@ func (d *jsonDecDriver[T]) DecodeFloat32() (f float32) {
 	return
 }
 
-func (d *jsonDecDriver[T]) DecodeExt(rv interface{}, basetype reflect.Type, xtag uint64, ext Ext) {
+func (d *jsonDecDriver[T]) advanceNil() (ok bool) {
 	d.advance()
 	if d.tok == 'n' {
 		d.checkLit3([3]byte{'u', 'l', 'l'}, d.r.readn3())
+		return true
+	}
+	return false
+}
+
+func (d *jsonDecDriver[T]) DecodeExt(rv interface{}, basetype reflect.Type, xtag uint64, ext Ext) {
+	if d.advanceNil() {
 		return
 	}
-	if ext == nil {
-		re := rv.(*RawExt)
-		re.Tag = xtag
-		d.dec.decode(&re.Value)
-	} else if ext == SelfExt {
+	if ext == SelfExt {
 		d.dec.decodeAs(rv, basetype, false)
 	} else {
 		d.dec.interfaceExtConvertAndDecode(rv, ext)
 	}
+}
+
+func (d *jsonDecDriver[T]) DecodeRawExt(re *RawExt) {
+	if d.advanceNil() {
+		return
+	}
+	d.dec.decode(&re.Value)
 }
 
 func (d *jsonDecDriver[T]) decBytesFromArray(bs []byte) []byte {

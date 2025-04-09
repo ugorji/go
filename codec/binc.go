@@ -846,26 +846,34 @@ func (d *bincDecDriver[T]) DecodeBytes(bs []byte) (out []byte, scratchBuf bool) 
 }
 
 func (d *bincDecDriver[T]) DecodeExt(rv interface{}, basetype reflect.Type, xtag uint64, ext Ext) {
-	if xtag > 0xff {
-		halt.errorf("ext: tag must be <= 0xff; got: %v", xtag)
-	}
-	if d.advanceNil() {
+	xbs, _, _, ok := d.decodeExtV(ext != nil, xtag)
+	if !ok {
 		return
 	}
-	xbs, realxtag1, zerocopy := d.decodeExtV(ext != nil, uint8(xtag))
-	realxtag := uint64(realxtag1)
-	if ext == nil {
-		re := rv.(*RawExt)
-		re.Tag = realxtag
-		re.setData(xbs, zerocopy)
-	} else if ext == SelfExt {
+	if ext == SelfExt {
 		sideDecode(d.h, &d.h.sideDecPool, func(sd decoderI) { oneOffDecode(sd, rv, xbs, basetype, true) })
 	} else {
 		ext.ReadExt(rv, xbs)
 	}
 }
 
-func (d *bincDecDriver[T]) decodeExtV(verifyTag bool, tag byte) (xbs []byte, xtag byte, zerocopy bool) {
+func (d *bincDecDriver[T]) DecodeRawExt(re *RawExt) {
+	xbs, realxtag, zerocopy, ok := d.decodeExtV(false, 0)
+	if !ok {
+		return
+	}
+	re.Tag = uint64(realxtag)
+	re.setData(xbs, zerocopy)
+}
+
+func (d *bincDecDriver[T]) decodeExtV(verifyTag bool, xtagIn uint64) (xbs []byte, xtag byte, zerocopy, ok bool) {
+	if xtagIn > 0xff {
+		halt.errorf("ext: tag must be <= 0xff; got: %v", xtagIn)
+	}
+	if d.advanceNil() {
+		return
+	}
+	tag := uint8(xtagIn)
 	if d.vd == bincVdCustomExt {
 		l := d.decLen()
 		xtag = d.r.readn1()
@@ -884,6 +892,7 @@ func (d *bincDecDriver[T]) decodeExtV(verifyTag bool, tag byte) (xbs []byte, xta
 		halt.errorf("ext expects extensions or byte array - %s %x-%x/%s", msgBadDesc, d.vd, d.vs, bincdesc(d.vd, d.vs))
 	}
 	d.bdRead = false
+	ok = true
 	return
 }
 

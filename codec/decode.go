@@ -144,9 +144,13 @@ type decDriverI interface {
 	DecodeBytes(in []byte) (out []byte, scratchBuf bool)
 	// DecodeBytes(bs []byte, isstring, zerocopy bool) (bsOut []byte)
 
-	// DecodeExt will decode into a *RawExt or into an extension.
+	// DecodeExt will decode into an extension.
+	// ext is never nil.
 	DecodeExt(v interface{}, basetype reflect.Type, xtag uint64, ext Ext)
 	// decodeExt(verifyTag bool, tag byte) (xtag byte, xbs []byte)
+
+	// DecodeRawExt will decode into a *RawExt
+	DecodeRawExt(re *RawExt)
 
 	DecodeTime() (t time.Time)
 
@@ -507,7 +511,7 @@ type decoder[T decDriver] struct {
 }
 
 func (d *decoder[T]) rawExt(f *decFnInfo, rv reflect.Value) {
-	d.d.DecodeExt(rv2i(rv), f.ti.rt, 0, nil)
+	d.d.DecodeRawExt(rv2i(rv).(*RawExt))
 }
 
 func (d *decoder[T]) ext(f *decFnInfo, rv reflect.Value) {
@@ -697,20 +701,18 @@ func (d *decoder[T]) kInterfaceNaked(f *decFnInfo) (rvn reflect.Value) {
 		bfn := d.h.getExtForTag(tag)
 		var re = RawExt{Tag: tag}
 		if bytes == nil {
-			// it is one of the InterfaceExt ones: json and cbor.
-			// most likely cbor, as json decoding never reveals valueTypeExt (no tagging support)
+			// one of the InterfaceExt ones: json and cbor.
+			// (likely cbor, as json has no tagging support and won't reveal valueTypeExt)
 			if bfn == nil {
 				d.decode(&re.Value)
 				rvn = rv4iptr(&re).Elem()
+			} else if bfn.ext == SelfExt {
+				rvn = rvZeroAddrK(bfn.rt, bfn.rt.Kind())
+				d.decodeValue(rvn, d.fnNoExt(bfn.rt))
 			} else {
-				if bfn.ext == SelfExt {
-					rvn = rvZeroAddrK(bfn.rt, bfn.rt.Kind())
-					d.decodeValue(rvn, d.fnNoExt(bfn.rt))
-				} else {
-					rvn = reflect.New(bfn.rt)
-					d.interfaceExtConvertAndDecode(rv2i(rvn), bfn.ext)
-					rvn = rvn.Elem()
-				}
+				rvn = reflect.New(bfn.rt)
+				d.interfaceExtConvertAndDecode(rv2i(rvn), bfn.ext)
+				rvn = rvn.Elem()
 			}
 		} else {
 			// one of the BytesExt ones: binc, msgpack, simple
