@@ -87,13 +87,15 @@ type jsonDecDriverBytes struct {
 	r bytesDecReader
 	jsonDecState
 
-	bytes bool
-
 	dec decoderI
 }
 
 func (e *encoderJsonBytes) rawExt(_ *encFnInfo, rv reflect.Value) {
-	e.e.EncodeRawExt(rv2i(rv).(*RawExt))
+	if re := rv2i(rv).(*RawExt); re == nil {
+		e.e.EncodeNil()
+	} else {
+		e.e.EncodeRawExt(re)
+	}
 }
 
 func (e *encoderJsonBytes) ext(f *encFnInfo, rv reflect.Value) {
@@ -584,7 +586,7 @@ func (e *encoderJsonBytes) kMap(f *encFnInfo, rv reflect.Value) {
 	for it.Next() {
 		e.mapElemKey()
 		if keyTypeIsString {
-			e.e.EncodeString(it.Key().String())
+			e.e.EncodeString(rvGetString(it.Key()))
 		} else {
 			e.encodeValue(it.Key(), keyFn)
 		}
@@ -628,7 +630,7 @@ func (e *encoderJsonBytes) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, ke
 		for i, k := range mks {
 			v := &mksv[i]
 			v.r = k
-			v.v = k.String()
+			v.v = rvGetString(k)
 		}
 		slices.SortFunc(mksv, cmpOrderedRv)
 		for i := range mksv {
@@ -735,9 +737,7 @@ func (e *encoderJsonBytes) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, ke
 		mksv := bs0
 		mksbv := make([]bytesRv, len(mks))
 
-		func() {
-			se := e.h.sideEncPool.Get().(encoderI)
-			defer e.h.sideEncPool.Put(se)
+		sideEncode(e.hh, &e.h.sideEncPool, func(se encoderI) {
 			se.ResetBytes(&mksv)
 			for i, k := range mks {
 				v := &mksbv[i]
@@ -749,7 +749,7 @@ func (e *encoderJsonBytes) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, ke
 				v.r = k
 				v.v = mksv[l:]
 			}
-		}()
+		})
 
 		slices.SortFunc(mksbv, cmpBytesRv)
 		for j := range mksbv {
@@ -1365,7 +1365,7 @@ func (dh helperEncDriverJsonBytes) encFnLoad(rt reflect.Type, rtid uintptr, tinf
 	return
 }
 func (d *decoderJsonBytes) rawExt(f *decFnInfo, rv reflect.Value) {
-	d.d.DecodeExt(rv2i(rv), f.ti.rt, 0, nil)
+	d.d.DecodeRawExt(rv2i(rv).(*RawExt))
 }
 
 func (d *decoderJsonBytes) ext(f *decFnInfo, rv reflect.Value) {
@@ -1550,15 +1550,13 @@ func (d *decoderJsonBytes) kInterfaceNaked(f *decFnInfo) (rvn reflect.Value) {
 			if bfn == nil {
 				d.decode(&re.Value)
 				rvn = rv4iptr(&re).Elem()
+			} else if bfn.ext == SelfExt {
+				rvn = rvZeroAddrK(bfn.rt, bfn.rt.Kind())
+				d.decodeValue(rvn, d.fnNoExt(bfn.rt))
 			} else {
-				if bfn.ext == SelfExt {
-					rvn = rvZeroAddrK(bfn.rt, bfn.rt.Kind())
-					d.decodeValue(rvn, d.fnNoExt(bfn.rt))
-				} else {
-					rvn = reflect.New(bfn.rt)
-					d.interfaceExtConvertAndDecode(rv2i(rvn), bfn.ext)
-					rvn = rvn.Elem()
-				}
+				rvn = reflect.New(bfn.rt)
+				d.interfaceExtConvertAndDecode(rv2i(rvn), bfn.ext)
+				rvn = rvn.Elem()
 			}
 		} else {
 
@@ -1568,7 +1566,7 @@ func (d *decoderJsonBytes) kInterfaceNaked(f *decFnInfo) (rvn reflect.Value) {
 			} else {
 				rvn = reflect.New(bfn.rt)
 				if bfn.ext == SelfExt {
-					sideDecode(d.h, rv2i(rvn), bytes, bfn.rt, true)
+					sideDecode(d.hh, &d.h.sideDecPool, func(sd decoderI) { oneOffDecode(sd, rv2i(rvn), bytes, bfn.rt, true) })
 				} else {
 					bfn.ext.ReadExt(rv2i(rvn), bytes)
 				}
@@ -3012,11 +3010,12 @@ func (e *jsonEncDriverBytes) EncodeExt(rv interface{}, basetype reflect.Type, xt
 }
 
 func (e *jsonEncDriverBytes) EncodeRawExt(re *RawExt) {
-
-	if re.Value == nil {
-		e.EncodeNil()
-	} else {
+	if re.Data != nil {
+		e.w.writeb(re.Data)
+	} else if re.Value != nil {
 		e.enc.encode(re.Value)
+	} else {
+		e.EncodeNil()
 	}
 }
 
@@ -3180,32 +3179,36 @@ func (e *jsonEncDriverBytes) quoteStr(s string) {
 	var i, start uint
 	for i < uint(len(s)) {
 
-		if e.s.isset(s[i]) {
+		b := s[i]
+		if e.s.isset(b) {
 			i++
 			continue
 		}
-
-		if s[i] < utf8.RuneSelf {
+		if b < utf8.RuneSelf {
 			if start < i {
 				e.w.writestr(s[start:i])
 			}
-			switch s[i] {
-			case '\\', '"':
-				e.w.writen2('\\', s[i])
+
+			switch b {
+			case '\\':
+				e.w.writen2('\\', '\\')
+			case '"':
+				e.w.writen2('\\', '"')
 			case '\n':
 				e.w.writen2('\\', 'n')
+			case '\t':
+				e.w.writen2('\\', 't')
 			case '\r':
 				e.w.writen2('\\', 'r')
 			case '\b':
 				e.w.writen2('\\', 'b')
 			case '\f':
 				e.w.writen2('\\', 'f')
-			case '\t':
-				e.w.writen2('\\', 't')
 			default:
 				e.w.writestr(`\u00`)
-				e.w.writen2(hex[s[i]>>4], hex[s[i]&0xF])
+				e.w.writen2(hex[b>>4], hex[b&0xF])
 			}
+
 			i++
 			start = i
 			continue
@@ -3538,21 +3541,31 @@ func (d *jsonDecDriverBytes) DecodeFloat32() (f float32) {
 	return
 }
 
-func (d *jsonDecDriverBytes) DecodeExt(rv interface{}, basetype reflect.Type, xtag uint64, ext Ext) {
+func (d *jsonDecDriverBytes) advanceNil() (ok bool) {
 	d.advance()
 	if d.tok == 'n' {
 		d.checkLit3([3]byte{'u', 'l', 'l'}, d.r.readn3())
+		return true
+	}
+	return false
+}
+
+func (d *jsonDecDriverBytes) DecodeExt(rv interface{}, basetype reflect.Type, xtag uint64, ext Ext) {
+	if d.advanceNil() {
 		return
 	}
-	if ext == nil {
-		re := rv.(*RawExt)
-		re.Tag = xtag
-		d.dec.decode(&re.Value)
-	} else if ext == SelfExt {
+	if ext == SelfExt {
 		d.dec.decodeAs(rv, basetype, false)
 	} else {
 		d.dec.interfaceExtConvertAndDecode(rv, ext)
 	}
+}
+
+func (d *jsonDecDriverBytes) DecodeRawExt(re *RawExt) {
+	if d.advanceNil() {
+		return
+	}
+	d.dec.decode(&re.Value)
 }
 
 func (d *jsonDecDriverBytes) decBytesFromArray(bs []byte) []byte {
@@ -3848,7 +3861,6 @@ func (e *jsonEncDriverBytes) resetOutIO(out io.Writer) {
 func (d *jsonDecDriverBytes) init(hh Handle, shared *decoderBase, dec decoderI) (fp interface{}) {
 	callMake(&d.r)
 	d.h = hh.(*JsonHandle)
-	d.bytes = shared.bytes
 	d.d = shared
 	if shared.bytes {
 		fp = jsonFpDecBytes
@@ -3955,13 +3967,15 @@ type jsonDecDriverIO struct {
 	r ioDecReader
 	jsonDecState
 
-	bytes bool
-
 	dec decoderI
 }
 
 func (e *encoderJsonIO) rawExt(_ *encFnInfo, rv reflect.Value) {
-	e.e.EncodeRawExt(rv2i(rv).(*RawExt))
+	if re := rv2i(rv).(*RawExt); re == nil {
+		e.e.EncodeNil()
+	} else {
+		e.e.EncodeRawExt(re)
+	}
 }
 
 func (e *encoderJsonIO) ext(f *encFnInfo, rv reflect.Value) {
@@ -4452,7 +4466,7 @@ func (e *encoderJsonIO) kMap(f *encFnInfo, rv reflect.Value) {
 	for it.Next() {
 		e.mapElemKey()
 		if keyTypeIsString {
-			e.e.EncodeString(it.Key().String())
+			e.e.EncodeString(rvGetString(it.Key()))
 		} else {
 			e.encodeValue(it.Key(), keyFn)
 		}
@@ -4496,7 +4510,7 @@ func (e *encoderJsonIO) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, keyFn
 		for i, k := range mks {
 			v := &mksv[i]
 			v.r = k
-			v.v = k.String()
+			v.v = rvGetString(k)
 		}
 		slices.SortFunc(mksv, cmpOrderedRv)
 		for i := range mksv {
@@ -4603,9 +4617,7 @@ func (e *encoderJsonIO) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, keyFn
 		mksv := bs0
 		mksbv := make([]bytesRv, len(mks))
 
-		func() {
-			se := e.h.sideEncPool.Get().(encoderI)
-			defer e.h.sideEncPool.Put(se)
+		sideEncode(e.hh, &e.h.sideEncPool, func(se encoderI) {
 			se.ResetBytes(&mksv)
 			for i, k := range mks {
 				v := &mksbv[i]
@@ -4617,7 +4629,7 @@ func (e *encoderJsonIO) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, keyFn
 				v.r = k
 				v.v = mksv[l:]
 			}
-		}()
+		})
 
 		slices.SortFunc(mksbv, cmpBytesRv)
 		for j := range mksbv {
@@ -5233,7 +5245,7 @@ func (dh helperEncDriverJsonIO) encFnLoad(rt reflect.Type, rtid uintptr, tinfos 
 	return
 }
 func (d *decoderJsonIO) rawExt(f *decFnInfo, rv reflect.Value) {
-	d.d.DecodeExt(rv2i(rv), f.ti.rt, 0, nil)
+	d.d.DecodeRawExt(rv2i(rv).(*RawExt))
 }
 
 func (d *decoderJsonIO) ext(f *decFnInfo, rv reflect.Value) {
@@ -5418,15 +5430,13 @@ func (d *decoderJsonIO) kInterfaceNaked(f *decFnInfo) (rvn reflect.Value) {
 			if bfn == nil {
 				d.decode(&re.Value)
 				rvn = rv4iptr(&re).Elem()
+			} else if bfn.ext == SelfExt {
+				rvn = rvZeroAddrK(bfn.rt, bfn.rt.Kind())
+				d.decodeValue(rvn, d.fnNoExt(bfn.rt))
 			} else {
-				if bfn.ext == SelfExt {
-					rvn = rvZeroAddrK(bfn.rt, bfn.rt.Kind())
-					d.decodeValue(rvn, d.fnNoExt(bfn.rt))
-				} else {
-					rvn = reflect.New(bfn.rt)
-					d.interfaceExtConvertAndDecode(rv2i(rvn), bfn.ext)
-					rvn = rvn.Elem()
-				}
+				rvn = reflect.New(bfn.rt)
+				d.interfaceExtConvertAndDecode(rv2i(rvn), bfn.ext)
+				rvn = rvn.Elem()
 			}
 		} else {
 
@@ -5436,7 +5446,7 @@ func (d *decoderJsonIO) kInterfaceNaked(f *decFnInfo) (rvn reflect.Value) {
 			} else {
 				rvn = reflect.New(bfn.rt)
 				if bfn.ext == SelfExt {
-					sideDecode(d.h, rv2i(rvn), bytes, bfn.rt, true)
+					sideDecode(d.hh, &d.h.sideDecPool, func(sd decoderI) { oneOffDecode(sd, rv2i(rvn), bytes, bfn.rt, true) })
 				} else {
 					bfn.ext.ReadExt(rv2i(rvn), bytes)
 				}
@@ -6880,11 +6890,12 @@ func (e *jsonEncDriverIO) EncodeExt(rv interface{}, basetype reflect.Type, xtag 
 }
 
 func (e *jsonEncDriverIO) EncodeRawExt(re *RawExt) {
-
-	if re.Value == nil {
-		e.EncodeNil()
-	} else {
+	if re.Data != nil {
+		e.w.writeb(re.Data)
+	} else if re.Value != nil {
 		e.enc.encode(re.Value)
+	} else {
+		e.EncodeNil()
 	}
 }
 
@@ -7048,32 +7059,36 @@ func (e *jsonEncDriverIO) quoteStr(s string) {
 	var i, start uint
 	for i < uint(len(s)) {
 
-		if e.s.isset(s[i]) {
+		b := s[i]
+		if e.s.isset(b) {
 			i++
 			continue
 		}
-
-		if s[i] < utf8.RuneSelf {
+		if b < utf8.RuneSelf {
 			if start < i {
 				e.w.writestr(s[start:i])
 			}
-			switch s[i] {
-			case '\\', '"':
-				e.w.writen2('\\', s[i])
+
+			switch b {
+			case '\\':
+				e.w.writen2('\\', '\\')
+			case '"':
+				e.w.writen2('\\', '"')
 			case '\n':
 				e.w.writen2('\\', 'n')
+			case '\t':
+				e.w.writen2('\\', 't')
 			case '\r':
 				e.w.writen2('\\', 'r')
 			case '\b':
 				e.w.writen2('\\', 'b')
 			case '\f':
 				e.w.writen2('\\', 'f')
-			case '\t':
-				e.w.writen2('\\', 't')
 			default:
 				e.w.writestr(`\u00`)
-				e.w.writen2(hex[s[i]>>4], hex[s[i]&0xF])
+				e.w.writen2(hex[b>>4], hex[b&0xF])
 			}
+
 			i++
 			start = i
 			continue
@@ -7406,21 +7421,31 @@ func (d *jsonDecDriverIO) DecodeFloat32() (f float32) {
 	return
 }
 
-func (d *jsonDecDriverIO) DecodeExt(rv interface{}, basetype reflect.Type, xtag uint64, ext Ext) {
+func (d *jsonDecDriverIO) advanceNil() (ok bool) {
 	d.advance()
 	if d.tok == 'n' {
 		d.checkLit3([3]byte{'u', 'l', 'l'}, d.r.readn3())
+		return true
+	}
+	return false
+}
+
+func (d *jsonDecDriverIO) DecodeExt(rv interface{}, basetype reflect.Type, xtag uint64, ext Ext) {
+	if d.advanceNil() {
 		return
 	}
-	if ext == nil {
-		re := rv.(*RawExt)
-		re.Tag = xtag
-		d.dec.decode(&re.Value)
-	} else if ext == SelfExt {
+	if ext == SelfExt {
 		d.dec.decodeAs(rv, basetype, false)
 	} else {
 		d.dec.interfaceExtConvertAndDecode(rv, ext)
 	}
+}
+
+func (d *jsonDecDriverIO) DecodeRawExt(re *RawExt) {
+	if d.advanceNil() {
+		return
+	}
+	d.dec.decode(&re.Value)
 }
 
 func (d *jsonDecDriverIO) decBytesFromArray(bs []byte) []byte {
@@ -7716,7 +7741,6 @@ func (e *jsonEncDriverIO) resetOutIO(out io.Writer) {
 func (d *jsonDecDriverIO) init(hh Handle, shared *decoderBase, dec decoderI) (fp interface{}) {
 	callMake(&d.r)
 	d.h = hh.(*JsonHandle)
-	d.bytes = shared.bytes
 	d.d = shared
 	if shared.bytes {
 		fp = jsonFpDecBytes

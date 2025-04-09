@@ -76,12 +76,14 @@ type bincDecDriverBytes struct {
 	r bytesDecReader
 
 	bincDecState
-
-	bytes bool
 }
 
 func (e *encoderBincBytes) rawExt(_ *encFnInfo, rv reflect.Value) {
-	e.e.EncodeRawExt(rv2i(rv).(*RawExt))
+	if re := rv2i(rv).(*RawExt); re == nil {
+		e.e.EncodeNil()
+	} else {
+		e.e.EncodeRawExt(re)
+	}
 }
 
 func (e *encoderBincBytes) ext(f *encFnInfo, rv reflect.Value) {
@@ -572,7 +574,7 @@ func (e *encoderBincBytes) kMap(f *encFnInfo, rv reflect.Value) {
 	for it.Next() {
 		e.mapElemKey()
 		if keyTypeIsString {
-			e.e.EncodeString(it.Key().String())
+			e.e.EncodeString(rvGetString(it.Key()))
 		} else {
 			e.encodeValue(it.Key(), keyFn)
 		}
@@ -616,7 +618,7 @@ func (e *encoderBincBytes) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, ke
 		for i, k := range mks {
 			v := &mksv[i]
 			v.r = k
-			v.v = k.String()
+			v.v = rvGetString(k)
 		}
 		slices.SortFunc(mksv, cmpOrderedRv)
 		for i := range mksv {
@@ -723,9 +725,7 @@ func (e *encoderBincBytes) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, ke
 		mksv := bs0
 		mksbv := make([]bytesRv, len(mks))
 
-		func() {
-			se := e.h.sideEncPool.Get().(encoderI)
-			defer e.h.sideEncPool.Put(se)
+		sideEncode(e.hh, &e.h.sideEncPool, func(se encoderI) {
 			se.ResetBytes(&mksv)
 			for i, k := range mks {
 				v := &mksbv[i]
@@ -737,7 +737,7 @@ func (e *encoderBincBytes) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, ke
 				v.r = k
 				v.v = mksv[l:]
 			}
-		}()
+		})
 
 		slices.SortFunc(mksbv, cmpBytesRv)
 		for j := range mksbv {
@@ -1353,7 +1353,7 @@ func (dh helperEncDriverBincBytes) encFnLoad(rt reflect.Type, rtid uintptr, tinf
 	return
 }
 func (d *decoderBincBytes) rawExt(f *decFnInfo, rv reflect.Value) {
-	d.d.DecodeExt(rv2i(rv), f.ti.rt, 0, nil)
+	d.d.DecodeRawExt(rv2i(rv).(*RawExt))
 }
 
 func (d *decoderBincBytes) ext(f *decFnInfo, rv reflect.Value) {
@@ -1538,15 +1538,13 @@ func (d *decoderBincBytes) kInterfaceNaked(f *decFnInfo) (rvn reflect.Value) {
 			if bfn == nil {
 				d.decode(&re.Value)
 				rvn = rv4iptr(&re).Elem()
+			} else if bfn.ext == SelfExt {
+				rvn = rvZeroAddrK(bfn.rt, bfn.rt.Kind())
+				d.decodeValue(rvn, d.fnNoExt(bfn.rt))
 			} else {
-				if bfn.ext == SelfExt {
-					rvn = rvZeroAddrK(bfn.rt, bfn.rt.Kind())
-					d.decodeValue(rvn, d.fnNoExt(bfn.rt))
-				} else {
-					rvn = reflect.New(bfn.rt)
-					d.interfaceExtConvertAndDecode(rv2i(rvn), bfn.ext)
-					rvn = rvn.Elem()
-				}
+				rvn = reflect.New(bfn.rt)
+				d.interfaceExtConvertAndDecode(rv2i(rvn), bfn.ext)
+				rvn = rvn.Elem()
 			}
 		} else {
 
@@ -1556,7 +1554,7 @@ func (d *decoderBincBytes) kInterfaceNaked(f *decFnInfo) (rvn reflect.Value) {
 			} else {
 				rvn = reflect.New(bfn.rt)
 				if bfn.ext == SelfExt {
-					sideDecode(d.h, rv2i(rvn), bytes, bfn.rt, true)
+					sideDecode(d.hh, &d.h.sideDecPool, func(sd decoderI) { oneOffDecode(sd, rv2i(rvn), bytes, bfn.rt, true) })
 				} else {
 					bfn.ext.ReadExt(rv2i(rvn), bytes)
 				}
@@ -3052,7 +3050,7 @@ func (e *bincEncDriverBytes) EncodeExt(v interface{}, basetype reflect.Type, xta
 	if ext == SelfExt {
 		bs0 = e.e.blist.get(1024)
 		bs = bs0
-		sideEncode(&e.h.BasicHandle, v, &bs, basetype, true)
+		sideEncode(e.h, &e.h.sideEncPool, func(se encoderI) { oneOffEncode(se, v, &bs, basetype, true) })
 	} else {
 		bs = ext.WriteExt(v)
 	}
@@ -3507,7 +3505,7 @@ func (d *bincDecDriverBytes) DecodeStringAsBytes(in []byte) (bs2 []byte, scratch
 	switch d.vd {
 	case bincVdString, bincVdByteArray:
 		slen = d.decLen()
-		if d.bytes {
+		if d.d.bytes {
 			bs2 = d.r.readx(uint(slen))
 		} else {
 			if in == nil {
@@ -3586,7 +3584,7 @@ func (d *bincDecDriverBytes) DecodeBytes(bs []byte) (out []byte, scratchBuf bool
 		halt.errorf("bytes - %s %x-%x/%s", msgBadDesc, d.vd, d.vs, bincdesc(d.vd, d.vs))
 	}
 	d.bdRead = false
-	if d.bytes && d.h.ZeroCopy {
+	if d.d.bytes && d.h.ZeroCopy {
 		return d.r.readx(uint(clen)), false
 	}
 	if bs == nil {
@@ -3598,26 +3596,34 @@ func (d *bincDecDriverBytes) DecodeBytes(bs []byte) (out []byte, scratchBuf bool
 }
 
 func (d *bincDecDriverBytes) DecodeExt(rv interface{}, basetype reflect.Type, xtag uint64, ext Ext) {
-	if xtag > 0xff {
-		halt.errorf("ext: tag must be <= 0xff; got: %v", xtag)
-	}
-	if d.advanceNil() {
+	xbs, _, _, ok := d.decodeExtV(ext != nil, xtag)
+	if !ok {
 		return
 	}
-	xbs, realxtag1, zerocopy := d.decodeExtV(ext != nil, uint8(xtag))
-	realxtag := uint64(realxtag1)
-	if ext == nil {
-		re := rv.(*RawExt)
-		re.Tag = realxtag
-		re.setData(xbs, zerocopy)
-	} else if ext == SelfExt {
-		sideDecode(&d.h.BasicHandle, rv, xbs, basetype, true)
+	if ext == SelfExt {
+		sideDecode(d.h, &d.h.sideDecPool, func(sd decoderI) { oneOffDecode(sd, rv, xbs, basetype, true) })
 	} else {
 		ext.ReadExt(rv, xbs)
 	}
 }
 
-func (d *bincDecDriverBytes) decodeExtV(verifyTag bool, tag byte) (xbs []byte, xtag byte, zerocopy bool) {
+func (d *bincDecDriverBytes) DecodeRawExt(re *RawExt) {
+	xbs, realxtag, zerocopy, ok := d.decodeExtV(false, 0)
+	if !ok {
+		return
+	}
+	re.Tag = uint64(realxtag)
+	re.setData(xbs, zerocopy)
+}
+
+func (d *bincDecDriverBytes) decodeExtV(verifyTag bool, xtagIn uint64) (xbs []byte, xtag byte, zerocopy, ok bool) {
+	if xtagIn > 0xff {
+		halt.errorf("ext: tag must be <= 0xff; got: %v", xtagIn)
+	}
+	if d.advanceNil() {
+		return
+	}
+	tag := uint8(xtagIn)
 	if d.vd == bincVdCustomExt {
 		l := d.decLen()
 		xtag = d.r.readn1()
@@ -3636,6 +3642,7 @@ func (d *bincDecDriverBytes) decodeExtV(verifyTag bool, tag byte) (xbs []byte, x
 		halt.errorf("ext expects extensions or byte array - %s %x-%x/%s", msgBadDesc, d.vd, d.vs, bincdesc(d.vd, d.vs))
 	}
 	d.bdRead = false
+	ok = true
 	return
 }
 
@@ -3863,7 +3870,6 @@ func (e *bincEncDriverBytes) resetOutIO(out io.Writer) {
 func (d *bincDecDriverBytes) init(hh Handle, shared *decoderBase, dec decoderI) (fp interface{}) {
 	callMake(&d.r)
 	d.h = hh.(*BincHandle)
-	d.bytes = shared.bytes
 	d.d = shared
 	if shared.bytes {
 		fp = bincFpDecBytes
@@ -3953,12 +3959,14 @@ type bincDecDriverIO struct {
 	r ioDecReader
 
 	bincDecState
-
-	bytes bool
 }
 
 func (e *encoderBincIO) rawExt(_ *encFnInfo, rv reflect.Value) {
-	e.e.EncodeRawExt(rv2i(rv).(*RawExt))
+	if re := rv2i(rv).(*RawExt); re == nil {
+		e.e.EncodeNil()
+	} else {
+		e.e.EncodeRawExt(re)
+	}
 }
 
 func (e *encoderBincIO) ext(f *encFnInfo, rv reflect.Value) {
@@ -4449,7 +4457,7 @@ func (e *encoderBincIO) kMap(f *encFnInfo, rv reflect.Value) {
 	for it.Next() {
 		e.mapElemKey()
 		if keyTypeIsString {
-			e.e.EncodeString(it.Key().String())
+			e.e.EncodeString(rvGetString(it.Key()))
 		} else {
 			e.encodeValue(it.Key(), keyFn)
 		}
@@ -4493,7 +4501,7 @@ func (e *encoderBincIO) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, keyFn
 		for i, k := range mks {
 			v := &mksv[i]
 			v.r = k
-			v.v = k.String()
+			v.v = rvGetString(k)
 		}
 		slices.SortFunc(mksv, cmpOrderedRv)
 		for i := range mksv {
@@ -4600,9 +4608,7 @@ func (e *encoderBincIO) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, keyFn
 		mksv := bs0
 		mksbv := make([]bytesRv, len(mks))
 
-		func() {
-			se := e.h.sideEncPool.Get().(encoderI)
-			defer e.h.sideEncPool.Put(se)
+		sideEncode(e.hh, &e.h.sideEncPool, func(se encoderI) {
 			se.ResetBytes(&mksv)
 			for i, k := range mks {
 				v := &mksbv[i]
@@ -4614,7 +4620,7 @@ func (e *encoderBincIO) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, keyFn
 				v.r = k
 				v.v = mksv[l:]
 			}
-		}()
+		})
 
 		slices.SortFunc(mksbv, cmpBytesRv)
 		for j := range mksbv {
@@ -5230,7 +5236,7 @@ func (dh helperEncDriverBincIO) encFnLoad(rt reflect.Type, rtid uintptr, tinfos 
 	return
 }
 func (d *decoderBincIO) rawExt(f *decFnInfo, rv reflect.Value) {
-	d.d.DecodeExt(rv2i(rv), f.ti.rt, 0, nil)
+	d.d.DecodeRawExt(rv2i(rv).(*RawExt))
 }
 
 func (d *decoderBincIO) ext(f *decFnInfo, rv reflect.Value) {
@@ -5415,15 +5421,13 @@ func (d *decoderBincIO) kInterfaceNaked(f *decFnInfo) (rvn reflect.Value) {
 			if bfn == nil {
 				d.decode(&re.Value)
 				rvn = rv4iptr(&re).Elem()
+			} else if bfn.ext == SelfExt {
+				rvn = rvZeroAddrK(bfn.rt, bfn.rt.Kind())
+				d.decodeValue(rvn, d.fnNoExt(bfn.rt))
 			} else {
-				if bfn.ext == SelfExt {
-					rvn = rvZeroAddrK(bfn.rt, bfn.rt.Kind())
-					d.decodeValue(rvn, d.fnNoExt(bfn.rt))
-				} else {
-					rvn = reflect.New(bfn.rt)
-					d.interfaceExtConvertAndDecode(rv2i(rvn), bfn.ext)
-					rvn = rvn.Elem()
-				}
+				rvn = reflect.New(bfn.rt)
+				d.interfaceExtConvertAndDecode(rv2i(rvn), bfn.ext)
+				rvn = rvn.Elem()
 			}
 		} else {
 
@@ -5433,7 +5437,7 @@ func (d *decoderBincIO) kInterfaceNaked(f *decFnInfo) (rvn reflect.Value) {
 			} else {
 				rvn = reflect.New(bfn.rt)
 				if bfn.ext == SelfExt {
-					sideDecode(d.h, rv2i(rvn), bytes, bfn.rt, true)
+					sideDecode(d.hh, &d.h.sideDecPool, func(sd decoderI) { oneOffDecode(sd, rv2i(rvn), bytes, bfn.rt, true) })
 				} else {
 					bfn.ext.ReadExt(rv2i(rvn), bytes)
 				}
@@ -6929,7 +6933,7 @@ func (e *bincEncDriverIO) EncodeExt(v interface{}, basetype reflect.Type, xtag u
 	if ext == SelfExt {
 		bs0 = e.e.blist.get(1024)
 		bs = bs0
-		sideEncode(&e.h.BasicHandle, v, &bs, basetype, true)
+		sideEncode(e.h, &e.h.sideEncPool, func(se encoderI) { oneOffEncode(se, v, &bs, basetype, true) })
 	} else {
 		bs = ext.WriteExt(v)
 	}
@@ -7384,7 +7388,7 @@ func (d *bincDecDriverIO) DecodeStringAsBytes(in []byte) (bs2 []byte, scratchBuf
 	switch d.vd {
 	case bincVdString, bincVdByteArray:
 		slen = d.decLen()
-		if d.bytes {
+		if d.d.bytes {
 			bs2 = d.r.readx(uint(slen))
 		} else {
 			if in == nil {
@@ -7463,7 +7467,7 @@ func (d *bincDecDriverIO) DecodeBytes(bs []byte) (out []byte, scratchBuf bool) {
 		halt.errorf("bytes - %s %x-%x/%s", msgBadDesc, d.vd, d.vs, bincdesc(d.vd, d.vs))
 	}
 	d.bdRead = false
-	if d.bytes && d.h.ZeroCopy {
+	if d.d.bytes && d.h.ZeroCopy {
 		return d.r.readx(uint(clen)), false
 	}
 	if bs == nil {
@@ -7475,26 +7479,34 @@ func (d *bincDecDriverIO) DecodeBytes(bs []byte) (out []byte, scratchBuf bool) {
 }
 
 func (d *bincDecDriverIO) DecodeExt(rv interface{}, basetype reflect.Type, xtag uint64, ext Ext) {
-	if xtag > 0xff {
-		halt.errorf("ext: tag must be <= 0xff; got: %v", xtag)
-	}
-	if d.advanceNil() {
+	xbs, _, _, ok := d.decodeExtV(ext != nil, xtag)
+	if !ok {
 		return
 	}
-	xbs, realxtag1, zerocopy := d.decodeExtV(ext != nil, uint8(xtag))
-	realxtag := uint64(realxtag1)
-	if ext == nil {
-		re := rv.(*RawExt)
-		re.Tag = realxtag
-		re.setData(xbs, zerocopy)
-	} else if ext == SelfExt {
-		sideDecode(&d.h.BasicHandle, rv, xbs, basetype, true)
+	if ext == SelfExt {
+		sideDecode(d.h, &d.h.sideDecPool, func(sd decoderI) { oneOffDecode(sd, rv, xbs, basetype, true) })
 	} else {
 		ext.ReadExt(rv, xbs)
 	}
 }
 
-func (d *bincDecDriverIO) decodeExtV(verifyTag bool, tag byte) (xbs []byte, xtag byte, zerocopy bool) {
+func (d *bincDecDriverIO) DecodeRawExt(re *RawExt) {
+	xbs, realxtag, zerocopy, ok := d.decodeExtV(false, 0)
+	if !ok {
+		return
+	}
+	re.Tag = uint64(realxtag)
+	re.setData(xbs, zerocopy)
+}
+
+func (d *bincDecDriverIO) decodeExtV(verifyTag bool, xtagIn uint64) (xbs []byte, xtag byte, zerocopy, ok bool) {
+	if xtagIn > 0xff {
+		halt.errorf("ext: tag must be <= 0xff; got: %v", xtagIn)
+	}
+	if d.advanceNil() {
+		return
+	}
+	tag := uint8(xtagIn)
 	if d.vd == bincVdCustomExt {
 		l := d.decLen()
 		xtag = d.r.readn1()
@@ -7513,6 +7525,7 @@ func (d *bincDecDriverIO) decodeExtV(verifyTag bool, tag byte) (xbs []byte, xtag
 		halt.errorf("ext expects extensions or byte array - %s %x-%x/%s", msgBadDesc, d.vd, d.vs, bincdesc(d.vd, d.vs))
 	}
 	d.bdRead = false
+	ok = true
 	return
 }
 
@@ -7740,7 +7753,6 @@ func (e *bincEncDriverIO) resetOutIO(out io.Writer) {
 func (d *bincDecDriverIO) init(hh Handle, shared *decoderBase, dec decoderI) (fp interface{}) {
 	callMake(&d.r)
 	d.h = hh.(*BincHandle)
-	d.bytes = shared.bytes
 	d.d = shared
 	if shared.bytes {
 		fp = bincFpDecBytes
