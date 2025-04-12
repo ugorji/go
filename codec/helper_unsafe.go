@@ -329,10 +329,14 @@ func rvAddr(rv reflect.Value, ptrType reflect.Type) reflect.Value {
 
 func rvIsNil(rv reflect.Value) bool {
 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	if urv.flag&unsafeFlagIndir != 0 {
-		return *(*unsafe.Pointer)(urv.ptr) == nil
+	if urv.flag&unsafeFlagIndir == 0 {
+		return urv.ptr == nil
 	}
-	return urv.ptr == nil
+	return *(*unsafe.Pointer)(urv.ptr) == nil
+}
+
+func rvIsNonNilPtr(rv reflect.Value) bool {
+	return rv.Kind() == reflect.Ptr && !rvIsNil(rv)
 }
 
 func rvSetSliceLen(rv reflect.Value, length int) {
@@ -1274,6 +1278,18 @@ func (n *structFieldInfoPathNode) rvField(v reflect.Value) (rv reflect.Value) {
 
 	return
 }
+
+// func (n *structFieldInfoPathNode) rvFieldAddr(v reflect.Value) (rv reflect.Value) {
+// 	// we already know this is exported, and maybe embedded (based on what si says)
+// 	uv := (*unsafeReflectValue)(unsafe.Pointer(&v))
+// 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
+// 	// clear flagEmbedRO if necessary, and inherit permission bits from v
+// 	urv.flag = uv.flag&(unsafeFlagStickyRO|unsafeFlagIndir|unsafeFlagAddr) | uintptr(n.kind)
+// 	urv.flag = (urv.flag & unsafeFlagRO) | uintptr(reflect.Ptr)
+// 	urv.typ = ((*unsafeIntf)(unsafe.Pointer(&n.ptrTyp))).ptr
+// 	urv.ptr = unsafe.Pointer(uintptr(uv.ptr) + uintptr(n.offset))
+// 	return
+// }
 
 // runtime chan and map are designed such that the first field is the count.
 // len builtin uses this to get the length of a chan/map easily.

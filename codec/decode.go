@@ -9,12 +9,46 @@ import (
 	"io"
 	"math"
 	"reflect"
+	"slices"
 	"strconv"
 	"sync"
 	"time"
 )
 
 const msgBadDesc = "unrecognized descriptor byte"
+
+var decBuiltinRtids []uintptr
+
+func init() {
+	fn := func(v interface{}) { decBuiltinRtids = append(decBuiltinRtids, i2rtid(v)) }
+	for _, v := range []interface{}{
+		(*string)(nil),
+		(*bool)(nil),
+		(*int)(nil),
+		(*int8)(nil),
+		(*int16)(nil),
+		(*int32)(nil),
+		(*int64)(nil),
+		(*uint)(nil),
+		(*uint8)(nil),
+		(*uint16)(nil),
+		(*uint32)(nil),
+		(*uint64)(nil),
+		(*uintptr)(nil),
+		(*float32)(nil),
+		(*float64)(nil),
+		(*complex64)(nil),
+		(*complex128)(nil),
+		(*[]byte)(nil),
+		([]byte)(nil),
+		(*time.Time)(nil),
+		(*Raw)(nil),
+		(*interface{})(nil),
+	} {
+		fn(v)
+	}
+	slices.Sort(decBuiltinRtids)
+}
 
 const (
 	decDefMaxDepth         = 1024                // maximum depth
@@ -240,7 +274,7 @@ type decFnInfo struct {
 	ti     *typeInfo
 	xfFn   Ext
 	xfTag  uint64
-	addrD  bool
+	addrD  bool // decoding into a pointer is preferred
 	addrDf bool // force: if addrD, then decode function MUST take a ptr
 }
 
@@ -819,12 +853,20 @@ func (d *decoder[T]) kInterface(f *decFnInfo, rv reflect.Value) {
 
 func (d *decoder[T]) kStructField(si *structFieldInfo, rv reflect.Value) {
 	if d.d.TryNil() {
-		if rv = si.path.field(rv); rv.IsValid() {
+		if rv = si.path.field(rv, false, false); rv.IsValid() {
 			decSetNonNilRV2Zero(rv)
 		}
 		return
 	}
-	d.decodeValueNoCheckNil(si.path.fieldAlloc(rv), nil)
+
+	if si.decBuiltin {
+		rv = si.path.field(rv, true, true)
+		d.decode(rv2i(rv))
+	} else {
+		fn := d.fn(si.path.baseTyp)
+		rv = si.path.field(rv, true, fn.i.addrD)
+		fn.fd(d, &fn.i, rv)
+	}
 }
 
 func (d *decoder[T]) kStructSimple(f *decFnInfo, rv reflect.Value) {
@@ -913,7 +955,8 @@ func (d *decoder[T]) kStruct(f *decFnInfo, rv reflect.Value) {
 			}
 
 			d.mapElemValue()
-			if si := ti.siForEncName(rvkencname); si != nil {
+			si := ti.siForEncName(rvkencname)
+			if si != nil {
 				d.kStructField(si, rv)
 			} else if mf != nil {
 				// store rvkencname in new []byte, as it previously shares Decoder.b, which is used in decode
@@ -1054,7 +1097,7 @@ func (d *decoder[T]) kSlice(f *decFnInfo, rv reflect.Value) {
 	var elemReset = d.h.SliceElementReset
 
 	var j int
-
+	builtin := ti.flagDecBuiltin
 	for ; d.containerNext(j, containerLenS, hasLen); j++ {
 		if j == 0 {
 			if rvIsNil(rv) { // means hasLen = false
@@ -1098,11 +1141,20 @@ func (d *decoder[T]) kSlice(f *decFnInfo, rv reflect.Value) {
 		} else {
 			slh.ElemContainerState(j)
 		}
+
+		// MARKER 2025 - check if we can make this an addr, and do builtin
+		// e.g. if []ints, then fastpath should handle it?
+		// but if not, we should treat it as each element is *int, and decode into it.
+
 		rv9 = rvSliceIndex(rv, j, f.ti)
 		if elemReset {
 			rvSetZero(rv9)
 		}
-		d.decodeValue(rv9, fn)
+		if builtin && rvIsNonNilPtr(rv9) {
+			d.decode(rv2i(rv9))
+		} else {
+			d.decodeValue(rv9, fn)
+		}
 	}
 	if j < rvlen {
 		if rvCanset {
@@ -1923,6 +1975,8 @@ func (d *decoder[T]) decode(iv interface{}) {
 		*v = uint32(chkOvf.UintV(d.d.DecodeUint64(), 32))
 	case *uint64:
 		*v = d.d.DecodeUint64()
+	case *uintptr:
+		*v = uintptr(chkOvf.UintV(d.d.DecodeUint64(), uintBitsize))
 	case *float32:
 		*v = d.d.DecodeFloat32()
 	case *float64:
@@ -1959,14 +2013,6 @@ func (d *decoder[T]) decode(iv interface{}) {
 	}
 }
 
-func (d *decoder[T]) decodeAs(v interface{}, t reflect.Type, ext bool) {
-	if ext {
-		d.decodeValue(baseRV(v), d.fn(t))
-	} else {
-		d.decodeValue(baseRV(v), d.fnNoExt(t))
-	}
-}
-
 // decodeValue MUST be called by the actual value we want to decode into,
 // not its addr or a reference to it.
 //
@@ -1978,9 +2024,9 @@ func (d *decoder[T]) decodeAs(v interface{}, t reflect.Type, ext bool) {
 func (d *decoder[T]) decodeValue(rv reflect.Value, fn *decFn[T]) {
 	if d.d.TryNil() {
 		decSetNonNilRV2Zero(rv)
-		return
+	} else {
+		d.decodeValueNoCheckNil(rv, fn)
 	}
-	d.decodeValueNoCheckNil(rv, fn)
 }
 
 func (d *decoder[T]) decodeValueNoCheckNil(rv reflect.Value, fn *decFn[T]) {
@@ -2012,6 +2058,14 @@ PTR:
 		}
 	}
 	fn.fd(d, &fn.i, rv)
+}
+
+func (d *decoder[T]) decodeAs(v interface{}, t reflect.Type, ext bool) {
+	if ext {
+		d.decodeValue(baseRV(v), d.fn(t))
+	} else {
+		d.decodeValue(baseRV(v), d.fnNoExt(t))
+	}
 }
 
 func (d *decoder[T]) structFieldNotFound(index int, rvkencname string) {

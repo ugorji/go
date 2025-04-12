@@ -21,6 +21,60 @@ const defEncByteBufSize = 1 << 10 // 4:16, 6:64, 8:256, 10:1024
 
 var errEncoderNotInitialized = errors.New("encoder not initialized")
 
+var encBuiltinRtids []uintptr
+
+func init() {
+	fn := func(v interface{}) { encBuiltinRtids = append(encBuiltinRtids, i2rtid(v)) }
+	for _, v := range []interface{}{
+		(string)(""),
+		(bool)(false),
+		(int)(0),
+		(int8)(0),
+		(int16)(0),
+		(int32)(0),
+		(int64)(0),
+		(uint)(0),
+		(uint8)(0),
+		(uint16)(0),
+		(uint32)(0),
+		(uint64)(0),
+		(uintptr)(0),
+		(float32)(0),
+		(float64)(0),
+		(complex64)(0),
+		(complex128)(0),
+		(time.Time{}),
+		([]byte)(nil),
+		(Raw{}),
+		// (interface{})(nil),
+
+		(*string)(nil),
+		(*bool)(nil),
+		(*int)(nil),
+		(*int8)(nil),
+		(*int16)(nil),
+		(*int32)(nil),
+		(*int64)(nil),
+		(*uint)(nil),
+		(*uint8)(nil),
+		(*uint16)(nil),
+		(*uint32)(nil),
+		(*uint64)(nil),
+		(*uintptr)(nil),
+		(*float32)(nil),
+		(*float64)(nil),
+		(*complex64)(nil),
+		(*complex128)(nil),
+		(*[]byte)(nil),
+		(*time.Time)(nil),
+		(*Raw)(nil),
+		// (*interface{})(nil),
+	} {
+		fn(v)
+	}
+	slices.Sort(encBuiltinRtids)
+}
+
 // encDriver abstracts the actual codec (binc vs msgpack, etc)
 type encDriverI interface {
 	EncodeNil()
@@ -97,6 +151,7 @@ type encStructFieldObj struct {
 	intf       interface{}
 	isRv       bool
 	noEsc4json bool
+	builtin    bool
 }
 
 type encStructFieldObjSlice []encStructFieldObj
@@ -497,10 +552,19 @@ func (e *encoder[T]) kSliceW(rv reflect.Value, ti *typeInfo) {
 	var l = rvLenSlice(rv)
 	e.arrayStart(l)
 	if l > 0 {
-		fn := e.kSeqFn(ti.elem)
+		var fn *encFn[T]
+		builtin := ti.tielem.flagEncBuiltin
+		if !builtin {
+			fn = e.kSeqFn(ti.elem)
+		}
 		for j := 0; j < l; j++ {
 			e.arrayElem()
-			e.encodeValue(rvSliceIndex(rv, j, ti), fn)
+			rv2 := rvSliceIndex(rv, j, ti)
+			if builtin {
+				e.encode(rv2i(rv2))
+			} else {
+				e.encodeValue(rv2, fn)
+			}
 		}
 	}
 	e.arrayEnd()
@@ -625,13 +689,6 @@ L1:
 	}
 }
 
-// func (e *encoderBase) kStructSfi(f *encFnInfo) []*structFieldInfo {
-// 	if e.h.Canonical {
-// 		return f.ti.sfi.sorted()
-// 	}
-// 	return f.ti.sfi.source()
-// }
-
 func (e *encoder[T]) kStructFieldKey(keyType valueType, encName string) {
 	// use if (not switch) block, so that branch prediction picks valueTypeString first
 	if keyType == valueTypeString {
@@ -654,7 +711,13 @@ func (e *encoder[T]) kStructSimple(f *encFnInfo, rv reflect.Value) {
 		e.arrayStart(len(tisfi))
 		for _, si := range tisfi {
 			e.arrayElem()
-			e.encodeValue(si.path.field(rv), nil)
+			// e.kStructFieldVal(si, rv)
+			frv := si.path.field(rv, false, false)
+			if si.encBuiltin {
+				e.encode(rv2i(frv))
+			} else {
+				e.encodeValue(frv, nil)
+			}
 		}
 		e.arrayEnd()
 	} else {
@@ -666,7 +729,13 @@ func (e *encoder[T]) kStructSimple(f *encFnInfo, rv reflect.Value) {
 			e.mapElemKey()
 			e.e.EncodeStringNoEscape4Json(si.encName)
 			e.mapElemValue()
-			e.encodeValue(si.path.field(rv), nil)
+			// e.kStructFieldVal(si, rv)
+			frv := si.path.field(rv, false, false)
+			if si.encBuiltin {
+				e.encode(rv2i(frv))
+			} else {
+				e.encodeValue(frv, nil)
+			}
 		}
 		e.mapEnd()
 	}
@@ -700,8 +769,8 @@ func (e *encoder[T]) kStruct(f *encFnInfo, rv reflect.Value) {
 			tisfi = f.ti.sfi.sorted()
 		}
 		for _, si := range tisfi {
-			kv.r = si.path.field(rv)
-			if si.path.omitEmpty && isEmptyValue(kv.r, e.h.TypeInfos, recur) {
+			kv.r = si.path.field(rv, false, false)
+			if si.omitEmpty && isEmptyValue(kv.r, e.h.TypeInfos, recur) {
 				continue
 			}
 			kv.v = si
@@ -733,10 +802,11 @@ func (e *encoder[T]) kStruct(f *encFnInfo, rv reflect.Value) {
 			mf2w := make([]encStructFieldObj, newlen+len(mf2s))
 			for j = 0; j < newlen; j++ {
 				kv = fkvs[j]
-				mf2w[j] = encStructFieldObj{kv.v.encName, kv.r, nil, !kv.v.path.encNameEscape4Json, true}
+				mf2w[j] = encStructFieldObj{kv.v.encName, kv.r, nil, true,
+					!kv.v.encNameEscape4Json, kv.v.encBuiltin}
 			}
 			for _, v := range mf2s {
-				mf2w[j] = encStructFieldObj{v.v, reflect.Value{}, v.i, false, false}
+				mf2w[j] = encStructFieldObj{v.v, reflect.Value{}, v.i, false, false, false}
 				j++
 			}
 			sort.Sort((encStructFieldObjSlice)(mf2w))
@@ -749,7 +819,11 @@ func (e *encoder[T]) kStruct(f *encFnInfo, rv reflect.Value) {
 				}
 				e.mapElemValue()
 				if v.isRv {
-					e.encodeValue(v.rv, nil)
+					if v.builtin {
+						e.encode(rv2i(v.rv))
+					} else {
+						e.encodeValue(v.rv, nil)
+					}
 				} else {
 					e.encode(v.intf)
 				}
@@ -759,13 +833,17 @@ func (e *encoder[T]) kStruct(f *encFnInfo, rv reflect.Value) {
 			for j = 0; j < newlen; j++ {
 				kv = fkvs[j]
 				e.mapElemKey()
-				if ti.keyType == valueTypeString && !kv.v.path.encNameEscape4Json {
+				if ti.keyType == valueTypeString && !kv.v.encNameEscape4Json {
 					e.e.EncodeStringNoEscape4Json(kv.v.encName)
 				} else {
 					e.kStructFieldKey(keytyp, kv.v.encName)
 				}
 				e.mapElemValue()
-				e.encodeValue(kv.r, nil)
+				if kv.v.encBuiltin {
+					e.encode(rv2i(kv.r))
+				} else {
+					e.encodeValue(kv.r, nil)
+				}
 			}
 			for _, v := range mf2s {
 				e.mapElemKey()
@@ -779,10 +857,10 @@ func (e *encoder[T]) kStruct(f *encFnInfo, rv reflect.Value) {
 	} else {
 		newlen = len(tisfi)
 		for i, si := range tisfi { // use unsorted array (to match sequence in struct)
-			kv.r = si.path.field(rv)
+			kv.r = si.path.field(rv, false, false)
 			// use the zero value.
 			// if a reference or struct, set to nil (so you do not output too much)
-			if si.path.omitEmpty && isEmptyValue(kv.r, e.h.TypeInfos, recur) {
+			if si.omitEmpty && isEmptyValue(kv.r, e.h.TypeInfos, recur) {
 				switch kv.r.Kind() {
 				case reflect.Struct, reflect.Interface, reflect.Ptr, reflect.Array, reflect.Map, reflect.Slice:
 					kv.r = reflect.Value{} //encode as nil
@@ -794,7 +872,12 @@ func (e *encoder[T]) kStruct(f *encFnInfo, rv reflect.Value) {
 		e.arrayStart(newlen)
 		for j = 0; j < newlen; j++ {
 			e.arrayElem()
-			e.encodeValue(fkvs[j].r, nil)
+			kv = fkvs[j]
+			if kv.v.encBuiltin {
+				e.encode(rv2i(kv.r))
+			} else {
+				e.encodeValue(kv.r, nil)
+			}
 		}
 		e.arrayEnd()
 	}
@@ -862,15 +945,25 @@ func (e *encoder[T]) kMap(f *encFnInfo, rv reflect.Value) {
 	var it mapIter
 	mapRange(&it, rv, rvk, rvv, true)
 
+	kbuiltin := f.ti.tikey.flagEncBuiltin
+	vbuiltin := f.ti.tielem.flagEncBuiltin
 	for it.Next() {
+		rv = it.Key()
 		e.mapElemKey()
 		if keyTypeIsString {
-			e.e.EncodeString(rvGetString(it.Key()))
+			e.e.EncodeString(rvGetString(rv))
+		} else if kbuiltin {
+			e.encode(rv2i(rv))
 		} else {
-			e.encodeValue(it.Key(), keyFn)
+			e.encodeValue(rv, keyFn)
 		}
 		e.mapElemValue()
-		e.encodeValue(it.Value(), valFn)
+		rv = it.Value()
+		if vbuiltin {
+			e.encode(rv2i(rv))
+		} else {
+			e.encodeValue(it.Value(), valFn)
+		}
 	}
 	it.Done()
 
@@ -1322,14 +1415,6 @@ func (e *encoder[T]) encode(iv interface{}) {
 	}
 }
 
-func (e *encoder[T]) encodeAs(v interface{}, t reflect.Type, ext bool) {
-	if ext {
-		e.encodeValue(baseRV(v), e.fn(t))
-	} else {
-		e.encodeValue(baseRV(v), e.fnNoExt(t))
-	}
-}
-
 // encodeValue will encode a value.
 //
 // Note that encodeValue will handle nil in the stream early, so that the
@@ -1402,15 +1487,24 @@ TOP:
 
 // encodeValueNonNil can encode a number, bool, or string
 // OR non-nil values of kind map, slice and chan.
+//
+// It expects fn to be non-nil.
 func (e *encoder[T]) encodeValueNonNil(rv reflect.Value, fn *encFn[T]) {
-	if fn == nil {
-		fn = e.fn(rv.Type())
-	}
-
+	// if fn == nil {
+	// 	fn = e.fn(rv.Type())
+	// }
 	if fn.i.addrE { // typically, addrE = false, so check it first
 		rv = e.addrRV(rv, fn.i.ti.rt, fn.i.ti.ptr)
 	}
 	fn.fe(e, &fn.i, rv)
+}
+
+func (e *encoder[T]) encodeAs(v interface{}, t reflect.Type, ext bool) {
+	if ext {
+		e.encodeValue(baseRV(v), e.fn(t))
+	} else {
+		e.encodeValue(baseRV(v), e.fnNoExt(t))
+	}
 }
 
 // addrRV returns a addressable value which may be readonly

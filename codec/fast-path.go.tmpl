@@ -89,9 +89,11 @@ var fastpathAvRtid fastpathARtid
 var fastpathAvRtRtid fastpathARtRtid
 
 func fastpathAvIndex(rtid uintptr) (i uint, ok bool) {
+	{{/*
+	// MARKER 2025 - delegate to searchRtids
 	// use binary search to grab the index (adapted from sort/search.go)
 	// Note: we use goto (instead of for loop) so this can be inlined.
- 	// h, i, j := 0, 0, {{ .FastpathLen }}
+ 	// h, i, j := 0, 0, {{ .FastpathLen }} */ -}}
 	var h uint
 	var j uint = {{ .FastpathLen }}
 LOOP:
@@ -114,6 +116,8 @@ func init() {
 		xrtid := rt2id(xrt)
         fastpathAvRtid[i] = xrtid
 		fastpathAvRtRtid[i] = fastpathRtRtid{ rtid: xrtid, rt: xrt }
+		encBuiltinRtids = append(encBuiltinRtids, xrtid)
+		decBuiltinRtids = append(decBuiltinRtids, xrtid)
 		i++
 	}
 	{{/* do not register []byte in fast-path */}}
@@ -127,6 +131,8 @@ func init() {
 
 	sort.Slice(fastpathAvRtid[:], func(i, j int) bool { return fastpathAvRtid[i] < fastpathAvRtid[j] })
 	sort.Slice(fastpathAvRtRtid[:], func(i, j int) bool { return fastpathAvRtRtid[i].rtid < fastpathAvRtRtid[j].rtid })
+	slices.Sort(encBuiltinRtids)
+	slices.Sort(decBuiltinRtids)
 }
 	
 func (helperEncDriver[T]) fastpathEList() *fastpathEs[T] {

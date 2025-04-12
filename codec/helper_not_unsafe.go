@@ -112,6 +112,10 @@ func rvIsNil(rv reflect.Value) bool {
 	return rv.IsNil()
 }
 
+func rvIsNonNilPtr(rv reflect.Value) bool {
+	return rv.Kind() == reflect.Ptr && !rv.IsNil()
+}
+
 func rvSetSliceLen(rv reflect.Value, length int) {
 	rv.SetLen(length)
 }
@@ -227,7 +231,7 @@ func isEmptyStruct(v reflect.Value, tinfos *TypeInfos, recursive bool) bool {
 	// We only care about what we can encode/decode,
 	// so that is what we use to check omitEmpty.
 	for _, si := range ti.sfi.source() {
-		sfv := si.path.field(v)
+		sfv := si.path.field(v, false, false)
 		if sfv.IsValid() && !isEmptyValue(sfv, tinfos, recursive) {
 			return false
 		}
@@ -712,6 +716,10 @@ func (d *decoderBase) mapKeyString(kstrbs, kstr2bs *[]byte, _ bool) (string, boo
 func (n *structFieldInfoPathNode) rvField(v reflect.Value) reflect.Value {
 	return v.Field(int(n.index))
 }
+
+// func (n *structFieldInfoPathNode) rvFieldAddr(v reflect.Value) reflect.Value {
+// 	return v.Field(int(n.index)).Addr()
+// }
 
 // ---------- others ---------------
 

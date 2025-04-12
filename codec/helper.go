@@ -255,6 +255,8 @@ const (
 	// to determine the function to use for values of that type.
 	skipFastpathTypeSwitchInDirectCall = false
 
+	// ---- below this line, useXXX consts should be true
+
 	usePoolForSFIs  = true
 	useArenaForSFIs = true
 
@@ -264,10 +266,13 @@ const (
 
 	usePoolForSideDecode = true
 
-	useBytesFreeList                    = true
-	useBytesFreeListPutGetSeparateCalls = false
+	useBytesFreeList = true
 
 	useSfiRvFreeList = true
+
+	// ---- below this line, useXXX consts should be false
+
+	useBytesFreeListPutGetSeparateCalls = false
 )
 
 const cpu32Bit = ^uint(0)>>32 == 0
@@ -488,6 +493,26 @@ func init() {
 	str256 = string(bstr256[:])
 }
 
+func searchRtids(s []uintptr, v uintptr) (i uint, ok bool) {
+	var h uint
+	var j uint = uint(len(s))
+LOOP:
+	if i < j {
+		h = (i + j) >> 1 // avoid overflow when computing h // h = i + (j-i)/2
+		if s[h] < v {
+			i = h + 1
+		} else {
+			j = h
+		}
+		goto LOOP
+	}
+	return i, i < uint(len(s)) && s[i] == v
+}
+
+// func addRtid(dest *[]uintptr, v interface{}) {
+// 	*dest = append(*dest, i2rtid(v))
+// }
+
 // // driverStateManager supports the runtime state of an (enc|dec)Driver.
 // //
 // // During a side(En|De)code call, we can capture the state, reset it,
@@ -638,9 +663,10 @@ func newTypeInfoLoad() *typeInfoLoad {
 func (x *typeInfoLoad) reset() {
 	x.etypes = x.etypes[:0]
 	x.sfis = x.sfis[:0]
-	for k := range x.sfiNames { // optimized to zero the map
-		delete(x.sfiNames, k)
-	}
+	clear(x.sfiNames)
+	// for k := range x.sfiNames { // optimized to zero the map
+	// 	delete(x.sfiNames, k)
+	// }
 }
 
 // mirror json.Marshaler and json.Unmarshaler here,
@@ -1491,6 +1517,7 @@ func (o intf2impls) intf2impl(rtid uintptr) (rv reflect.Value) {
 // In the typical case, the node is not embedded/anonymous, and thus the parent
 // will be nil and this information becomes a value (not needing any indirection).
 type structFieldInfoPathNode struct {
+	// 2025 ensure this fits witnin a cache line
 	parent *structFieldInfoPathNode
 
 	offset   uint16
@@ -1498,10 +1525,9 @@ type structFieldInfoPathNode struct {
 	kind     uint8
 	numderef uint8
 
-	encNameEscape4Json bool
-	omitEmpty          bool
-
-	typ reflect.Type
+	typ     reflect.Type
+	ptrTyp  reflect.Type
+	baseTyp reflect.Type
 }
 
 // depth returns number of valid nodes in the hierachy
@@ -1515,33 +1541,42 @@ TOP:
 	return
 }
 
-// field returns the field of the struct.
-func (path *structFieldInfoPathNode) field(v reflect.Value) (rv2 reflect.Value) {
-	if parent := path.parent; parent != nil {
-		v = parent.field(v)
-		for j, k := uint8(0), parent.numderef; j < k; j++ {
-			if rvIsNil(v) {
-				return
-			}
-			v = v.Elem()
-		}
-	}
-	return path.rvField(v)
+func (path *structFieldInfoPathNode) field(v reflect.Value, alloc, addr bool) (rv2 reflect.Value) {
+	rv2, _ = path.handle(v, alloc, addr)
+	return
 }
 
-// fieldAlloc returns the field of the struct.
-// It allocates if a nil value was seen while searching.
-func (path *structFieldInfoPathNode) fieldAlloc(v reflect.Value) (rv2 reflect.Value) {
-	if parent := path.parent; parent != nil {
-		v = parent.fieldAlloc(v)
-		for j, k := uint8(0), parent.numderef; j < k; j++ {
-			if rvIsNil(v) {
-				rvSetDirect(v, reflect.New(v.Type().Elem()))
+func (n *structFieldInfoPathNode) check(rv reflect.Value, alloc bool) (reflect.Value, bool) {
+	for j, k := uint8(0), n.numderef; j < k; j++ {
+		if rvIsNil(rv) {
+			if alloc {
+				rvSetDirect(rv, reflect.New(rv.Type().Elem()))
+			} else {
+				return rv, false
 			}
-			v = v.Elem()
+		}
+		rv = rv.Elem()
+	}
+	return rv, true
+}
+
+// field returns the field of the struct.
+func (n *structFieldInfoPathNode) handle(rv reflect.Value, alloc, addr bool) (v reflect.Value, ok bool) {
+	v = rv
+	if n.parent != nil {
+		if v, ok = n.parent.handle(v, alloc, false); !ok {
+			return
 		}
 	}
-	return path.rvField(v)
+	v = n.rvField(v)
+	if v, ok = n.check(v, alloc); !ok {
+		return
+	}
+	ok = true
+	if addr {
+		v = rvAddr(v, n.ptrTyp)
+	}
+	return
 }
 
 type structFieldInfo struct {
@@ -1551,8 +1586,13 @@ type structFieldInfo struct {
 
 	// fieldName string // currently unused
 
-	// encNameEscape4Json and omitEmpty should be here,
-	// but are stored in structFieldInfoPathNode for tighter packaging.
+	encNameEscape4Json bool
+	omitEmpty          bool
+
+	ptrKind bool
+
+	encBuiltin bool // is field supported for encoding as a builtin?
+	decBuiltin bool // is field addr supported for decoding as a builtin?
 
 	path structFieldInfoPathNode
 }
@@ -1587,22 +1627,22 @@ func parseStructInfo(stag string) (toArray, omitEmpty bool, keytype valueType) {
 	return
 }
 
-func (si *structFieldInfo) parseTag(stag string) {
+func parseStructFieldTag(stag string) (encName string, omitEmpty bool) {
 	if stag == "" {
 		return
 	}
 	for i, s := range strings.Split(stag, ",") {
 		if i == 0 {
 			if s != "" {
-				si.encName = s
+				encName = s
 			}
-		} else {
-			switch s {
-			case "omitempty":
-				si.path.omitEmpty = true
-			}
+			continue
+		}
+		if s == "omitempty" {
+			omitEmpty = true
 		}
 	}
+	return
 }
 
 // ----
@@ -1777,7 +1817,7 @@ type typeInfo4Container struct {
 	tielem *typeInfo
 }
 
-// typeInfo keeps static (non-changing readonly)information
+// typeInfo keeps static (non-changing readonly) information
 // about each (non-ptr) type referenced in the encode/decode sequence.
 //
 // During an encode/decode sequence, we work as below:
@@ -1856,6 +1896,11 @@ type typeInfo struct {
 
 	infoFieldOmitempty bool
 
+	flagEncBuiltin bool
+	flagDecBuiltin bool
+
+	// MARKER 2025 - fill this out (need to pad 6 bytes)
+
 	sfi structFieldInfos
 }
 
@@ -1908,7 +1953,7 @@ func (ti *typeInfo) init(x []structFieldInfo, n int) {
 		if sfi.encName == "" {
 			continue
 		}
-		if simple && (sfi.path.omitEmpty || sfi.path.encNameEscape4Json) {
+		if simple && (sfi.omitEmpty || sfi.encNameEscape4Json) {
 			simple = false
 		}
 		w[n] = *sfi
@@ -2086,6 +2131,9 @@ func (x *TypeInfos) load(rt reflect.Type) (pti *typeInfo) {
 		// pkgpath: rt.PkgPath(),
 		flagHasPkgPath: rt.PkgPath() != "",
 	}
+
+	_, ti.flagEncBuiltin = searchRtids(encBuiltinRtids, rtid)
+	_, ti.flagDecBuiltin = searchRtids(decBuiltinRtids, rtid)
 
 	// bset sets custom implementation flags
 	bset := func(when bool, b *bool) {
@@ -2267,7 +2315,7 @@ func (x *TypeInfos) load(rt reflect.Type) (pti *typeInfo) {
 	return
 }
 
-func (x *TypeInfos) rget(rt reflect.Type, path *structFieldInfoPathNode, pv *typeInfoLoad, omitEmpty bool) {
+func (x *TypeInfos) rget(rt reflect.Type, path *structFieldInfoPathNode, pv *typeInfoLoad, defaultOmitEmpty bool) {
 	// Read up fields and store how to access the value.
 	//
 	// It uses go's rules for message selectors,
@@ -2296,37 +2344,35 @@ LOOP:
 		if stag == "-" {
 			continue
 		}
-		var si structFieldInfo
 
 		var numderef uint8 = 0
 		for xft := f.Type; xft.Kind() == reflect.Ptr; xft = xft.Elem() {
 			numderef++
 		}
 
-		var parsed bool
+		var encName string
+		var parsed, omitEmpty bool
+
+		ft := baseRT(f.Type)
 		// if anonymous and no struct tag (or it's blank),
 		// and a struct (or pointer to struct), inline it.
 		if f.Anonymous && fkind != reflect.Interface {
 			// ^^ redundant but ok: per go spec, an embedded pointer type cannot be to an interface
-			ft := f.Type
-			isPtr := ft.Kind() == reflect.Ptr
-			for ft.Kind() == reflect.Ptr {
-				ft = ft.Elem()
-			}
+			isPtr := f.Type.Kind() == reflect.Ptr
 			isStruct := ft.Kind() == reflect.Struct
 
 			// Ignore embedded fields of unexported non-struct types.
 			// Also, from go1.10, ignore pointers to unexported struct types
 			// because unmarshal cannot assign a new struct to an unexported field.
 			// See https://golang.org/issue/21357
-			if (isUnexported && !isStruct) || (isUnexported && isPtr) {
+			if isUnexported && (!isStruct || isPtr) {
 				continue
 			}
 			doInline := stag == ""
 			if !doInline {
-				si.parseTag(stag)
+				encName, omitEmpty = parseStructFieldTag(stag)
 				parsed = true
-				doInline = si.encName == "" // si.isZero()
+				doInline = encName == "" // si.isZero()
 			}
 			if doInline && isStruct {
 				// if etypes contains this, don't call rget again (as fields are already seen here)
@@ -2351,50 +2397,67 @@ LOOP:
 					path2 := &structFieldInfoPathNode{
 						parent:   path,
 						typ:      f.Type,
+						baseTyp:  ft,
+						ptrTyp:   f.Type,
 						offset:   uint16(f.Offset),
 						index:    j,
 						kind:     uint8(fkind),
 						numderef: numderef,
 					}
-					x.rget(ft, path2, pv, omitEmpty)
+					if fkind != reflect.Pointer {
+						path2.ptrTyp = reflect.PointerTo(f.Type)
+					}
+					// no need to set (enc|dec)Builtin, as structs are generally not builtins
+					// (except Raw, RawExt, time.Time, which are not typically embedded
+					x.rget(ft, path2, pv, defaultOmitEmpty)
 				}
 				continue
 			}
 		}
 
 		// after the anonymous dance: if an unexported field, skip
-		if isUnexported || f.Name == "" { // f.Name cannot be "", but defensively handle it
+		if isUnexported || f.Name == "" || f.Name == structInfoFieldName { // f.Name cannot be "", but defensively handle it
 			continue
+		}
+
+		if !parsed {
+			encName, omitEmpty = parseStructFieldTag(stag)
+			parsed = true
+		}
+		if encName == "" {
+			encName = f.Name
+		}
+		if defaultOmitEmpty {
+			omitEmpty = true
+		}
+
+		var si = structFieldInfo{
+			encName:   encName,
+			omitEmpty: omitEmpty,
+			ptrKind:   fkind == reflect.Ptr,
 		}
 
 		si.path = structFieldInfoPathNode{
 			parent:   path,
 			typ:      f.Type,
+			baseTyp:  ft,
+			ptrTyp:   f.Type,
 			offset:   uint16(f.Offset),
 			index:    j,
 			kind:     uint8(fkind),
 			numderef: numderef,
-			// note: omitEmpty might have been set in an earlier parseTag call, etc - so carry it forward
-			omitEmpty: si.path.omitEmpty,
 		}
-
-		if !parsed {
-			si.encName = f.Name
-			si.parseTag(stag)
-			parsed = true
-		} else if si.encName == "" {
-			si.encName = f.Name
+		if !si.ptrKind {
+			si.path.ptrTyp = reflect.PointerTo(f.Type)
 		}
+		_, si.encBuiltin = searchRtids(encBuiltinRtids, rt2id(si.path.typ))
+		_, si.decBuiltin = searchRtids(decBuiltinRtids, rt2id(si.path.ptrTyp))
 
 		// si.encNameHash = maxUintptr() // hashShortString(bytesView(si.encName))
 
-		if omitEmpty {
-			si.path.omitEmpty = true
-		}
-
 		for i := len(si.encName) - 1; i >= 0; i-- { // bounds-check elimination
 			if !jsonCharSafeBitset.isset(si.encName[i]) {
-				si.path.encNameEscape4Json = true
+				si.encNameEscape4Json = true
 				break
 			}
 		}
@@ -2497,13 +2560,33 @@ func sprintf(format string, v ...interface{}) string {
 	return fmt.Sprintf(format, v...)
 }
 
+var (
+	hlSFX    = "\033[0m"
+	hlRED    = "\033[1;" + "31" + "m"
+	hlGREEN  = "\033[1;" + "32" + "m"
+	hlORANGE = "\033[1;" + "33" + "m"
+	hlBLUE   = "\033[1;" + "34" + "m"
+)
+
+// debugf will print debug statements to the screen whether or not debugging is on
+//
+// Note: if first parameter in a is one of the hlXXX vars, then we treat it as a hint
+// to highlight in different colors.
+//
 //go:noinline
-func printf(s string, a ...any) {
+func debugf(s string, a ...any) {
 	if len(s) == 0 {
 		return
 	}
 	if s[len(s)-1] != '\n' {
 		s = s + "\n"
+	}
+	if len(a) > 0 {
+		switch a[0] {
+		case hlRED, hlGREEN, hlBLUE, hlORANGE:
+			s = a[0].(string) + s + hlSFX
+			a = a[1:]
+		}
 	}
 	fmt.Printf(s, a...)
 }
