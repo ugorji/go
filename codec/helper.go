@@ -219,7 +219,7 @@ const (
 	//
 	// Note: RPC tests depend on getting the error from an Encode/Decode call.
 	// Consequently, they will always fail if debugging = true.
-	debugging = false
+	debugging = true // MARKER 2025
 
 	// containerLenUnknown is length returned from Read(Map|Array)Len
 	// when a format doesn't know apiori.
@@ -1541,42 +1541,36 @@ TOP:
 	return
 }
 
-func (path *structFieldInfoPathNode) field(v reflect.Value, alloc, addr bool) (rv2 reflect.Value) {
-	rv2, _ = path.handle(v, alloc, addr)
-	return
-}
-
-func (n *structFieldInfoPathNode) check(rv reflect.Value, alloc bool) (reflect.Value, bool) {
-	for j, k := uint8(0), n.numderef; j < k; j++ {
-		if rvIsNil(rv) {
-			if alloc {
-				rvSetDirect(rv, reflect.New(rv.Type().Elem()))
-			} else {
-				return rv, false
-			}
-		}
-		rv = rv.Elem()
-	}
-	return rv, true
-}
-
 // field returns the field of the struct.
-func (n *structFieldInfoPathNode) handle(rv reflect.Value, alloc, addr bool) (v reflect.Value, ok bool) {
-	v = rv
+func (n *structFieldInfoPathNode) field(v reflect.Value, alloc, addr bool) (rv2 reflect.Value) {
 	if n.parent != nil {
-		if v, ok = n.parent.handle(v, alloc, false); !ok {
+		v = n.parent.field(v, alloc, false)
+		if !v.IsValid() {
 			return
 		}
 	}
 	v = n.rvField(v)
-	if v, ok = n.check(v, alloc); !ok {
-		return
+	if alloc {
+		// for j, k := uint8(0), n.numderef; j < k; j++ {
+		for range n.numderef {
+			if rvIsNil(v) {
+				rvSetDirect(v, reflect.New(v.Type().Elem()))
+			}
+			v = v.Elem()
+		}
+	} else {
+		// for j, k := uint8(0), n.numderef; j < k; j++ {
+		for range n.numderef {
+			if rvIsNil(v) {
+				return
+			}
+			v = v.Elem()
+		}
 	}
-	ok = true
 	if addr {
 		v = rvAddr(v, n.ptrTyp)
 	}
-	return
+	return v
 }
 
 type structFieldInfo struct {
@@ -2398,14 +2392,11 @@ LOOP:
 						parent:   path,
 						typ:      f.Type,
 						baseTyp:  ft,
-						ptrTyp:   f.Type,
+						ptrTyp:   reflect.PointerTo(ft),
 						offset:   uint16(f.Offset),
 						index:    j,
 						kind:     uint8(fkind),
 						numderef: numderef,
-					}
-					if fkind != reflect.Pointer {
-						path2.ptrTyp = reflect.PointerTo(f.Type)
 					}
 					// no need to set (enc|dec)Builtin, as structs are generally not builtins
 					// (except Raw, RawExt, time.Time, which are not typically embedded
@@ -2441,14 +2432,11 @@ LOOP:
 			parent:   path,
 			typ:      f.Type,
 			baseTyp:  ft,
-			ptrTyp:   f.Type,
+			ptrTyp:   reflect.PointerTo(ft),
 			offset:   uint16(f.Offset),
 			index:    j,
 			kind:     uint8(fkind),
 			numderef: numderef,
-		}
-		if !si.ptrKind {
-			si.path.ptrTyp = reflect.PointerTo(f.Type)
 		}
 		_, si.encBuiltin = searchRtids(encBuiltinRtids, rt2id(si.path.typ))
 		_, si.decBuiltin = searchRtids(decBuiltinRtids, rt2id(si.path.ptrTyp))

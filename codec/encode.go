@@ -711,7 +711,6 @@ func (e *encoder[T]) kStructSimple(f *encFnInfo, rv reflect.Value) {
 		e.arrayStart(len(tisfi))
 		for _, si := range tisfi {
 			e.arrayElem()
-			// e.kStructFieldVal(si, rv)
 			frv := si.path.field(rv, false, false)
 			if si.encBuiltin {
 				e.encode(rv2i(frv))
@@ -729,7 +728,6 @@ func (e *encoder[T]) kStructSimple(f *encFnInfo, rv reflect.Value) {
 			e.mapElemKey()
 			e.e.EncodeStringNoEscape4Json(si.encName)
 			e.mapElemValue()
-			// e.kStructFieldVal(si, rv)
 			frv := si.path.field(rv, false, false)
 			if si.encBuiltin {
 				e.encode(rv2i(frv))
