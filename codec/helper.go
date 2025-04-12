@@ -219,7 +219,7 @@ const (
 	//
 	// Note: RPC tests depend on getting the error from an Encode/Decode call.
 	// Consequently, they will always fail if debugging = true.
-	debugging = false
+	debugging = true // false // 2025
 
 	// containerLenUnknown is length returned from Read(Map|Array)Len
 	// when a format doesn't know apiori.
@@ -1525,9 +1525,7 @@ type structFieldInfoPathNode struct {
 	kind     uint8
 	numderef uint8
 
-	typ     reflect.Type
-	ptrTyp  reflect.Type
-	baseTyp reflect.Type
+	typ reflect.Type
 }
 
 // depth returns number of valid nodes in the hierachy
@@ -1542,9 +1540,9 @@ TOP:
 }
 
 // field returns the field of the struct.
-func (n *structFieldInfoPathNode) field(v reflect.Value, alloc, addr bool) (rv2 reflect.Value) {
+func (n *structFieldInfoPathNode) field(v reflect.Value, alloc bool) (rv2 reflect.Value) {
 	if n.parent != nil {
-		v = n.parent.field(v, alloc, false)
+		v = n.parent.field(v, alloc)
 		if !v.IsValid() {
 			return
 		}
@@ -1567,9 +1565,6 @@ func (n *structFieldInfoPathNode) field(v reflect.Value, alloc, addr bool) (rv2 
 			v = v.Elem()
 		}
 	}
-	if addr {
-		v = rvAddr(v, n.ptrTyp)
-	}
 	return v
 }
 
@@ -1589,6 +1584,18 @@ type structFieldInfo struct {
 	decBuiltin bool // is field addr supported for decoding as a builtin?
 
 	path structFieldInfoPathNode
+
+	baseTyp reflect.Type
+	ptrTyp  reflect.Type
+}
+
+// field returns the field of the struct.
+func (n *structFieldInfo) field(v reflect.Value, alloc, addr bool) (rv2 reflect.Value) {
+	v = n.path.field(v, alloc)
+	if addr {
+		v = rvAddr(v, n.ptrTyp)
+	}
+	return v
 }
 
 func parseStructInfo(stag string) (toArray, omitEmpty bool, keytype valueType) {
@@ -2391,8 +2398,6 @@ LOOP:
 					path2 := &structFieldInfoPathNode{
 						parent:   path,
 						typ:      f.Type,
-						baseTyp:  ft,
-						ptrTyp:   reflect.PointerTo(ft),
 						offset:   uint16(f.Offset),
 						index:    j,
 						kind:     uint8(fkind),
@@ -2426,20 +2431,20 @@ LOOP:
 			encName:   encName,
 			omitEmpty: omitEmpty,
 			ptrKind:   fkind == reflect.Ptr,
+			baseTyp:   ft,
+			ptrTyp:    reflect.PointerTo(ft),
 		}
 
 		si.path = structFieldInfoPathNode{
 			parent:   path,
 			typ:      f.Type,
-			baseTyp:  ft,
-			ptrTyp:   reflect.PointerTo(ft),
 			offset:   uint16(f.Offset),
 			index:    j,
 			kind:     uint8(fkind),
 			numderef: numderef,
 		}
 		_, si.encBuiltin = searchRtids(encBuiltinRtids, rt2id(si.path.typ))
-		_, si.decBuiltin = searchRtids(decBuiltinRtids, rt2id(si.path.ptrTyp))
+		_, si.decBuiltin = searchRtids(decBuiltinRtids, rt2id(si.ptrTyp))
 
 		// si.encNameHash = maxUintptr() // hashShortString(bytesView(si.encName))
 

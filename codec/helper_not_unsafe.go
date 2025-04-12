@@ -101,7 +101,10 @@ func rv4istr(i interface{}) reflect.Value { return reflect.ValueOf(i) }
 // func rv4iK(i interface{}, kind byte, isref bool) reflect.Value { return reflect.ValueOf(i) }
 
 func rv2i(rv reflect.Value) interface{} {
-	return rv.Interface()
+	if rv.IsValid() {
+		return rv.Interface()
+	}
+	return nil
 }
 
 func rvAddr(rv reflect.Value, ptrType reflect.Type) reflect.Value {
@@ -231,7 +234,7 @@ func isEmptyStruct(v reflect.Value, tinfos *TypeInfos, recursive bool) bool {
 	// We only care about what we can encode/decode,
 	// so that is what we use to check omitEmpty.
 	for _, si := range ti.sfi.source() {
-		sfv := si.path.field(v, false, false)
+		sfv := si.field(v, false, false)
 		if sfv.IsValid() && !isEmptyValue(sfv, tinfos, recursive) {
 			return false
 		}
