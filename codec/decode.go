@@ -1096,8 +1096,13 @@ func (d *decoder[T]) kSlice(f *decFnInfo, rv reflect.Value) {
 	// consider creating new element once, and just decoding into it.
 	var elemReset = d.h.SliceElementReset
 
+	// when decoding into slices, there may be more values in the stream than the slice length.
+	// decodeValue handles this better when coming from an addressable value (known to reflect.Value).
+	// Consequently, builtin handling skips slices.
+
+	builtin := ti.tielem.flagDecBuiltin && ti.elemkind != uint8(reflect.Slice)
+
 	var j int
-	builtin := ti.flagDecBuiltin
 	for ; d.containerNext(j, containerLenS, hasLen); j++ {
 		if j == 0 {
 			if rvIsNil(rv) { // means hasLen = false
@@ -1145,12 +1150,15 @@ func (d *decoder[T]) kSlice(f *decFnInfo, rv reflect.Value) {
 		// MARKER 2025 - check if we can make this an addr, and do builtin
 		// e.g. if []ints, then fastpath should handle it?
 		// but if not, we should treat it as each element is *int, and decode into it.
+		//
+		// This will require a new var (addrIsBuiltin) and a check to call d.decode(rv2i(rvAddr(rv9)))
 
 		rv9 = rvSliceIndex(rv, j, f.ti)
 		if elemReset {
 			rvSetZero(rv9)
 		}
-		if builtin && rvIsNonNilPtr(rv9) {
+		if builtin {
+			// debugf(">>>> checking if we ever go here in our tests")
 			d.decode(rv2i(rv9))
 		} else {
 			d.decodeValue(rv9, fn)
@@ -1441,6 +1449,13 @@ func (d *decoder[T]) kMap(f *decFnInfo, rv reflect.Value) {
 
 	// Use a possibly transient (map) value (and key), to reduce allocation
 
+	// when decoding into slices, there may be more values in the stream than the slice length.
+	// decodeValue handles this better when coming from an addressable value (known to reflect.Value).
+	// Consequently, builtin handling skips slices.
+
+	kbuiltin := ti.tikey.flagDecBuiltin && ti.keykind != uint8(reflect.Slice)
+	vbuiltin := ti.tielem.flagDecBuiltin && ti.elemkind != uint8(reflect.Slice)
+
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
 		callFnRvk = false
 		if j == 0 {
@@ -1477,6 +1492,8 @@ func (d *decoder[T]) kMap(f *decFnInfo, rv reflect.Value) {
 		if ktypeIsString {
 			kstr2bs, scratchBuf = d.d.DecodeStringAsBytes(nil)
 			rvSetString(rvk, fnRvk2())
+		} else if kbuiltin {
+			d.decode(rv2i(rvk))
 		} else {
 			d.decodeValue(rvk, keyFn)
 			// special case if interface wrapping a byte slice
@@ -1560,8 +1577,11 @@ func (d *decoder[T]) kMap(f *decFnInfo, rv reflect.Value) {
 		}
 
 	DECODE_VALUE_NO_CHECK_NIL:
-		d.decodeValueNoCheckNil(rvv, valFn)
-
+		if vbuiltin {
+			d.decode(rv2i(rvv))
+		} else {
+			d.decodeValueNoCheckNil(rvv, valFn)
+		}
 		if doMapSet {
 			if callFnRvk {
 				s = d.string(kstr2bs)
