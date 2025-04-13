@@ -27,7 +27,7 @@ const (
 
 	// genFastpathCanonical configures whether we support Canonical in fast path. Low savings.
 	//
-	// MARKER: This MUST ALWAYS BE TRUE. fast-path.go.tmpl doesn't handle it being false.
+	// MARKER: This MUST ALWAYS BE TRUE. fastpath.go.tmpl doesn't handle it being false.
 	genFastpathCanonical = true
 
 	// genFastpathTrimTypes configures whether we trim uncommon fastpath types.
@@ -39,7 +39,7 @@ var genFormats = []string{"Json", "Cbor", "Msgpack", "Binc", "Simple"}
 var (
 	errGenAllTypesSamePkg        = errors.New("All types must be in the same package")
 	errGenExpectArrayOrMap       = errors.New("unexpected type - expecting array/map/slice")
-	errGenUnexpectedTypeFastpath = errors.New("fast-path: unexpected type - requires map or slice")
+	errGenUnexpectedTypeFastpath = errors.New("fastpath: unexpected type - requires map or slice")
 
 	// don't use base64, only 63 characters allowed in valid go identifiers
 	// ie ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_
@@ -306,7 +306,7 @@ func genTmplInit() {
 	mapvaltypes = types[:]
 
 	if genFastpathTrimTypes {
-		// Note: we only create fast-paths for commonly used types.
+		// Note: we only create fastpaths for commonly used types.
 		// Consequently, things like int8, uint16, uint, etc are commented out.
 		slicetypes = []string{
 			"interface{}",
@@ -314,7 +314,7 @@ func genTmplInit() {
 			"[]byte",
 			"float32",
 			"float64",
-			"uint8", // keep fast-path, so it doesn't have to go through reflection
+			"uint8", // keep fastpath, so it doesn't have to go through reflection
 			"uint64",
 			"int",
 			"int32", // rune
@@ -343,7 +343,7 @@ func genTmplInit() {
 
 	var gt = genTmpl{Formats: genFormats}
 
-	// For each slice or map type, there must be a (symmetrical) Encode and Decode fast-path function
+	// For each slice or map type, there must be a (symmetrical) Encode and Decode fastpath function
 
 	for _, s := range primitivetypes {
 		gt.Values = append(gt.Values,
@@ -463,7 +463,7 @@ func genTmplRun2Go(fnameIn, fnameOut string) {
 // as this will cause a circular reference, as (En|De)code will call Selfer methods.
 // Any type that implements Selfer must implement completely and not fallback to (En|De)code.
 //
-// In addition, code in this file manages the generation of fast-path implementations of
+// In addition, code in this file manages the generation of fastpath implementations of
 // encode/decode of slices/maps of primitive keys/values.
 //
 // Users MUST re-generate their implementations whenever the code shape changes.
@@ -493,7 +493,7 @@ func genTmplRun2Go(fnameIn, fnameOut string) {
 //   consequently, you cannot run with tags "codecgen codec.notfastpath".
 //
 // Note:
-//   genTmplXXX functions are used for generating fast-path and other internally generated
+//   genTmplXXX functions are used for generating fastpath and other internally generated
 //   files, and not for use in codecgen.
 
 // Size of a struct or value is not portable across machines, especially across 32-bit vs 64-bit
@@ -508,7 +508,7 @@ func genTmplRun2Go(fnameIn, fnameOut string) {
 // on 64-bit OS, and slightly larger than expected on 32-bit OS.
 // This is ok.
 //
-// For reference, look for 'Size' in fast-path.go.tmpl, gen-dec-(array|map).go.tmpl and gen.go (this file).
+// For reference, look for 'Size' in fastpath.go.tmpl, gen-dec-(array|map).go.tmpl and gen.go (this file).
 
 type genStringDecAsBytes string
 type genStringDecZC string
@@ -1006,7 +1006,7 @@ func (x *genRunner) registerXtraT(t reflect.Type, ti *typeInfo) {
 	default:
 		return
 	}
-	// only register the type if it will not default to a fast-path
+	// only register the type if it will not default to a fastpath
 	if ti == nil {
 		ti = x.ti.get(rt2id(t), t)
 	}

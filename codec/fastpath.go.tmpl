@@ -3,7 +3,7 @@
 // Copyright (c) 2012-2020 Ugorji Nwoke. All rights reserved.
 // Use of this source code is governed by a MIT license found in the LICENSE file.
 
-// Code generated from fast-path.go.tmpl - DO NOT EDIT.
+// Code generated from fastpath.go.tmpl - DO NOT EDIT.
 
 package codec
 
@@ -120,7 +120,7 @@ func init() {
 		decBuiltinRtids = append(decBuiltinRtids, xrtid)
 		i++
 	}
-	{{/* do not register []byte in fast-path */}}
+	{{/* do not register []byte in fastpath */}}
 	{{range .Values}}{{if not .Primitive}}{{if not .MapKey -}}
 	fn([]{{ .Elem }}(nil))
 	{{end}}{{end}}{{end}}
@@ -143,7 +143,7 @@ func (helperEncDriver[T]) fastpathEList() *fastpathEs[T] {
 		s[i] = fastpathE[T]{rt2id(xrt), xrt, fe}
 		i++
 	}
-	{{/* do not register []byte in fast-path */}}
+	{{/* do not register []byte in fastpath */}}
 	{{range .Values}}{{if not .Primitive}}{{if not .MapKey -}}
 	fn([]{{ .Elem }}(nil), (*encoder[T]).{{ .MethodNamePfx "fastpathEnc" false }}R)
 	{{end}}{{end}}{{end}}
@@ -164,7 +164,7 @@ func (helperDecDriver[T]) fastpathDList() *fastpathDs[T] {
 		s[i] = fastpathD[T]{rt2id(xrt), xrt, fd}
 		i++
 	}
-	{{/* do not register []byte in fast-path */}}
+	{{/* do not register []byte in fastpath */}}
 	{{range .Values}}{{if not .Primitive}}{{if not .MapKey -}}
 	fn([]{{ .Elem }}(nil), (*decoder[T]).{{ .MethodNamePfx "fastpathDec" false }}R)
 	{{end}}{{end}}{{end}}

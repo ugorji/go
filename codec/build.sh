@@ -15,7 +15,7 @@ _build_proceed() {
     return 1
 }
 
-# _build generates fast-path.go
+# _build generates fastpath.go
 _build() {
     # if ! [[ "${zforce}" || $(_ng "fastpath.generated.go") || $(_ng "json.mono.generated.go") ]]; then return 0; fi
     _build_proceed
@@ -23,7 +23,7 @@ _build() {
     if [ "${zbak}" ]; then
         _zts=`date '+%m%d%Y_%H%M%S'`
         _gg=".generated.go"
-        [ -e "fast-path${_gg}" ] && mv fast-path${_gg} fast-path${_gg}__${_zts}.bak
+        [ -e "fastpath${_gg}" ] && mv fastpath${_gg} fastpath${_gg}__${_zts}.bak
         [ -e "gen${_gg}" ] && mv gen${_gg} gen${_gg}__${_zts}.bak
     fi
     
@@ -42,8 +42,8 @@ EOF
 package main
 import "${zpkg}"
 func main() {
-codec.GenTmplRun2Go("fast-path.go.tmpl", "fastpath.generated.go")
-codec.GenTmplRun2Go("mammoth-test.go.tmpl", "mammoth_generated_test.go")
+codec.GenTmplRun2Go("fastpath.go.tmpl", "fastpath.generated.go")
+codec.GenTmplRun2Go("mammoth_test.go.tmpl", "mammoth_generated_test.go")
 codec.GenMonoAll()
 }
 EOF

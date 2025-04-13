@@ -1331,7 +1331,7 @@ func doTestCodecEmbeddedPointer(t *testing.T, h Handle) {
 func testCodecUnderlyingType(t *testing.T, h Handle) {
 	defer testSetup(t, &h)()
 	// Manual Test.
-	// Run by hand, with accompanying printf.statements in fast-path.go
+	// Run by hand, with accompanying printf.statements in fastpath.go
 	// to ensure that the fast functions are called.
 	type T1 map[string]string
 	v := T1{"1": "1s", "2": "2s"}
@@ -2696,7 +2696,7 @@ func doTestDifferentMapOrSliceType(t *testing.T, h Handle) {
 		testReleaseBytes(b)
 	}
 
-	// to ensure that we do not use fast-path for map[intf]string, use a custom string type (for goldMapIS).
+	// to ensure that we do not use fastpath for map[intf]string, use a custom string type (for goldMapIS).
 	// this will allow us to test out the path that sees a []byte where a map has an interface{} type,
 	// and convert it to a string for the decoded map key.
 
