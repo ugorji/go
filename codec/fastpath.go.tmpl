@@ -114,10 +114,13 @@ func init() {
 	fn := func(v interface{}) {
 		xrt := reflect.TypeOf(v)
 		xrtid := rt2id(xrt)
+		xptrtid := rt2id(reflect.PointerTo(xrt))
+		{{- /* only the base slice/map rtid is put in fastpathAvIndex, since we only handle slices/map/array */}}
         fastpathAvRtid[i] = xrtid
 		fastpathAvRtRtid[i] = fastpathRtRtid{ rtid: xrtid, rt: xrt }
-		encBuiltinRtids = append(encBuiltinRtids, xrtid)
-		decBuiltinRtids = append(decBuiltinRtids, xrtid)
+		{{- /* fastpath type switches howerer handle slices/map/array, and pointers to them */}}
+		encBuiltinRtids = append(encBuiltinRtids, xrtid, xptrtid)
+		decBuiltinRtids = append(decBuiltinRtids, xrtid, xptrtid)
 		i++
 	}
 	{{/* do not register []byte in fastpath */}}
