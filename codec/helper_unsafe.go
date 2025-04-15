@@ -186,6 +186,11 @@ func byteAt(b []byte, index uint) byte {
 	return *(*byte)(unsafe.Pointer(uintptr((*unsafeSlice)(unsafe.Pointer(&b)).Data) + uintptr(index)))
 }
 
+func setByteAt(b []byte, index uint, val byte) {
+	// b[index] = val
+	*(*byte)(unsafe.Pointer(uintptr((*unsafeSlice)(unsafe.Pointer(&b)).Data) + uintptr(index))) = val
+}
+
 func byteSliceOf(b []byte, start, end uint) []byte {
 	s := (*unsafeSlice)(unsafe.Pointer(&b))
 	s.Data = unsafe.Pointer(uintptr(s.Data) + uintptr(start))
@@ -198,11 +203,6 @@ func byteSliceOf(b []byte, start, end uint) []byte {
 // 	(*unsafeSlice)(unsafe.Pointer(&b)).Len = int(length)
 // 	return b
 // }
-
-func setByteAt(b []byte, index uint, val byte) {
-	// b[index] = val
-	*(*byte)(unsafe.Pointer(uintptr((*unsafeSlice)(unsafe.Pointer(&b)).Data) + uintptr(index))) = val
-}
 
 // stringView returns a view of the []byte as a string.
 // In unsafe mode, it doesn't incur allocation and copying caused by conversion.
@@ -335,9 +335,9 @@ func rvIsNil(rv reflect.Value) bool {
 	return *(*unsafe.Pointer)(urv.ptr) == nil
 }
 
-func rvIsNonNilPtr(rv reflect.Value) bool {
-	return rv.Kind() == reflect.Ptr && !rvIsNil(rv)
-}
+// func rvIsNonNilPtr(rv reflect.Value) bool {
+// 	return rv.Kind() == reflect.Ptr && !rvIsNil(rv)
+// }
 
 func rvSetSliceLen(rv reflect.Value, length int) {
 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
@@ -664,98 +664,79 @@ func (n *fauxUnion) rb() (v reflect.Value) {
 
 // --------------------------
 func rvSetBytes(rv reflect.Value, v []byte) {
-	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	*(*[]byte)(urv.ptr) = v
+	*(*[]byte)(rvPtr(rv)) = v
 }
 
 func rvSetString(rv reflect.Value, v string) {
-	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	*(*string)(urv.ptr) = v
+	*(*string)(rvPtr(rv)) = v
 }
 
 func rvSetBool(rv reflect.Value, v bool) {
-	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	*(*bool)(urv.ptr) = v
+	*(*bool)(rvPtr(rv)) = v
 }
 
 func rvSetTime(rv reflect.Value, v time.Time) {
-	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	*(*time.Time)(urv.ptr) = v
+	*(*time.Time)(rvPtr(rv)) = v
 }
 
 func rvSetFloat32(rv reflect.Value, v float32) {
-	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	*(*float32)(urv.ptr) = v
+	*(*float32)(rvPtr(rv)) = v
 }
 
 func rvSetFloat64(rv reflect.Value, v float64) {
-	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	*(*float64)(urv.ptr) = v
+	*(*float64)(rvPtr(rv)) = v
 }
 
 func rvSetComplex64(rv reflect.Value, v complex64) {
-	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	*(*complex64)(urv.ptr) = v
+	*(*complex64)(rvPtr(rv)) = v
 }
 
 func rvSetComplex128(rv reflect.Value, v complex128) {
-	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	*(*complex128)(urv.ptr) = v
+	*(*complex128)(rvPtr(rv)) = v
 }
 
 func rvSetInt(rv reflect.Value, v int) {
-	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	*(*int)(urv.ptr) = v
+	*(*int)(rvPtr(rv)) = v
 }
 
 func rvSetInt8(rv reflect.Value, v int8) {
-	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	*(*int8)(urv.ptr) = v
+	*(*int8)(rvPtr(rv)) = v
 }
 
 func rvSetInt16(rv reflect.Value, v int16) {
-	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	*(*int16)(urv.ptr) = v
+	*(*int16)(rvPtr(rv)) = v
 }
 
 func rvSetInt32(rv reflect.Value, v int32) {
-	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	*(*int32)(urv.ptr) = v
+	*(*int32)(rvPtr(rv)) = v
 }
 
 func rvSetInt64(rv reflect.Value, v int64) {
-	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	*(*int64)(urv.ptr) = v
+	*(*int64)(rvPtr(rv)) = v
 }
 
 func rvSetUint(rv reflect.Value, v uint) {
-	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	*(*uint)(urv.ptr) = v
+	*(*uint)(rvPtr(rv)) = v
 }
 
 func rvSetUintptr(rv reflect.Value, v uintptr) {
-	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	*(*uintptr)(urv.ptr) = v
+	*(*uintptr)(rvPtr(rv)) = v
 }
 
 func rvSetUint8(rv reflect.Value, v uint8) {
-	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	*(*uint8)(urv.ptr) = v
+	*(*uint8)(rvPtr(rv)) = v
 }
 
 func rvSetUint16(rv reflect.Value, v uint16) {
-	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	*(*uint16)(urv.ptr) = v
+	*(*uint16)(rvPtr(rv)) = v
 }
 
 func rvSetUint32(rv reflect.Value, v uint32) {
-	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	*(*uint32)(urv.ptr) = v
+	*(*uint32)(rvPtr(rv)) = v
 }
 
 func rvSetUint64(rv reflect.Value, v uint64) {
-	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	*(*uint64)(urv.ptr) = v
+	*(*uint64)(rvPtr(rv)) = v
 }
 
 // ----------------
@@ -865,11 +846,16 @@ func rvCapSlice(rv reflect.Value) int {
 	return (*unsafeSlice)(urv.ptr).Cap
 }
 
+// func rvArrayIndex(rv reflect.Value, i int, ti *typeInfo) (v reflect.Value) {
+// 	return rv.Index(i)
+// }
+
 func rvArrayIndex(rv reflect.Value, i int, ti *typeInfo) (v reflect.Value) {
 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
 	uv := (*unsafeReflectValue)(unsafe.Pointer(&v))
 	uv.ptr = unsafe.Pointer(uintptr(urv.ptr) + uintptr(int(ti.elemsize)*i))
 	uv.typ = ((*unsafeIntf)(unsafe.Pointer(&ti.elem))).ptr
+	// uv.flag = urv.flag&(unsafeFlagIndir|unsafeFlagAddr) | uintptr(ti.elemkind)
 	uv.flag = uintptr(ti.elemkind) | unsafeFlagIndir | unsafeFlagAddr
 	return
 }

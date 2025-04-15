@@ -115,9 +115,9 @@ func rvIsNil(rv reflect.Value) bool {
 	return rv.IsNil()
 }
 
-func rvIsNonNilPtr(rv reflect.Value) bool {
-	return rv.Kind() == reflect.Ptr && !rv.IsNil()
-}
+// func rvIsNonNilPtr(rv reflect.Value) bool {
+// 	return rv.Kind() == reflect.Ptr && !rv.IsNil()
+// }
 
 func rvSetSliceLen(rv reflect.Value, length int) {
 	rv.SetLen(length)
