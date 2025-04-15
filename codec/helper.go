@@ -2451,6 +2451,7 @@ LOOP:
 		var parsed, omitEmpty bool
 
 		ft := baseRT(f.Type)
+		ftid := rt2id(ft)
 		// if anonymous and no struct tag (or it's blank),
 		// and a struct (or pointer to struct), inline it.
 		if f.Anonymous && fkind != reflect.Interface {
@@ -2473,7 +2474,7 @@ LOOP:
 			}
 			if doInline && isStruct {
 				// if etypes contains this, don't call rget again (as fields are already seen here)
-				ftid := rt2id(ft)
+				//
 				// We cannot recurse forever, but we need to track other field depths.
 				// So - we break if we see a type twice (not the first time).
 				// This should be sufficient to handle an embedded type that refers to its
@@ -2537,9 +2538,12 @@ LOOP:
 			kind:     uint8(fkind),
 			numderef: numderef,
 		}
-		_, si.encBuiltin = searchRtids(encBuiltinRtids, rt2id(si.path.typ))
-		_, si.decBuiltin = searchRtids(decBuiltinRtids, rt2id(si.ptrTyp))
-
+		// ftid = rt2id(ft) where ft = si.baseTyp)
+		_, si.encBuiltin = searchRtids(encBuiltinRtids, ftid)
+		_, si.decBuiltin = searchRtids(decBuiltinRtids, ftid)
+		if !si.decBuiltin {
+			_, si.decBuiltin = searchRtids(decBuiltinRtids, rt2id(si.ptrTyp))
+		}
 		// si.encNameHash = maxUintptr() // hashShortString(bytesView(si.encName))
 
 		for i := len(si.encName) - 1; i >= 0; i-- { // bounds-check elimination
