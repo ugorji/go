@@ -20,6 +20,8 @@ type decReaderI interface {
 
 	readb([]byte)
 
+	readxb(n, maxInitLen int, in []byte) (out []byte)
+
 	readn1() byte
 	readn2() [2]byte
 	readn3() [3]byte
@@ -306,6 +308,26 @@ func (z *ioDecReader) readb(bs []byte) {
 	halt.onerror(err)
 }
 
+func (z *ioDecReader) readxb(n, maxInitLen int, in []byte) (out []byte) {
+	if n <= 0 {
+		out = zeroByteSlice
+	} else if cap(in) >= n {
+		out = in[:n]
+		z.readb(out)
+	} else {
+		var len2 int
+		for len2 < n {
+			len3 := decInferLen(n-len2, maxInitLen, 1)
+			bs3 := out
+			out = make([]byte, len2+len3)
+			copy(out, bs3)
+			z.readb(out[len2:])
+			len2 += len3
+		}
+	}
+	return
+}
+
 // func (z *ioDecReader) readn1eof() (b uint8, eof bool) {
 // 	b, err := z.br.ReadByte()
 // 	if err == nil {
@@ -460,6 +482,20 @@ func (z *bytesDecReader) readx(n uint) (bs []byte) {
 
 func (z *bytesDecReader) readb(bs []byte) {
 	copy(bs, z.readx(uint(len(bs))))
+}
+
+func (z *bytesDecReader) readxb(n, maxInitLen int, in []byte) (out []byte) {
+	if n <= 0 {
+		return zeroByteSlice
+	}
+	_ = z.b[int(z.c)+n-1] // quick fail if out of bounds
+	if cap(in) >= n {
+		out = in[:n]
+	} else {
+		out = make([]byte, n)
+	}
+	z.readb(out)
+	return
 }
 
 // MARKER: do not use this - as it calls into memmove (as the size of data to move is unknown)

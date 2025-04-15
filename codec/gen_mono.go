@@ -29,7 +29,7 @@ const genMonoParserMode = parser.AllErrors | parser.SkipObjectResolution
 var genMonoSpecialFieldTypes = []string{"helperDecReader"}
 
 // These functions should take the address of first param when monomorphized
-var genMonoSpecialFunc4Addr = []string{"decByteSlice"}
+var genMonoSpecialFunc4Addr = []string{} // {"decByteSlice"}
 
 var genMonoImportsToSkip = []string{`"errors"`, `"fmt"`, `"net/rpc"`}
 

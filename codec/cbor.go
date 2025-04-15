@@ -637,7 +637,7 @@ func (d *cborDecDriver[T]) DecodeBytes(bs []byte) (out []byte, scratchBuf bool) 
 		bs = d.d.b[:]
 		scratchBuf = true
 	}
-	out = decByteSlice(d.r, clen, d.h.MaxInitLen, bs)
+	out = d.r.readxb(clen, d.h.MaxInitLen, bs)
 	return
 }
 

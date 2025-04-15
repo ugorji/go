@@ -515,7 +515,7 @@ func (d *msgpackDecDriver[T]) DecodeNaked() {
 			} else if d.d.bytes {
 				n.l = d.r.readx(uint(clen))
 			} else {
-				n.l = decByteSlice(d.r, clen, d.h.MaxInitLen, d.d.b[:])
+				n.l = d.r.readxb(clen, d.h.MaxInitLen, d.d.b[:])
 			}
 		default:
 			halt.errorf("cannot infer value: %s: Ox%x/%d/%s", msgBadDesc, bd, bd, mpdesc(bd))
@@ -861,7 +861,7 @@ func (d *msgpackDecDriver[T]) DecodeBytes(bs []byte) (out []byte, scratchBuf boo
 		scratchBuf = false
 		bs = d.d.b[:]
 	}
-	out = decByteSlice(d.r, clen, d.h.MaxInitLen, bs)
+	out = d.r.readxb(clen, d.h.MaxInitLen, bs)
 	return
 }
 
@@ -1064,7 +1064,7 @@ func (d *msgpackDecDriver[T]) decodeExtV(verifyTag bool, xtagIn uint64) (xbs []b
 			xbs = d.r.readx(uint(clen))
 			zerocopy = true
 		} else {
-			xbs = decByteSlice(d.r, clen, d.h.MaxInitLen, d.d.b[:])
+			xbs = d.r.readxb(clen, d.h.MaxInitLen, d.d.b[:])
 		}
 	}
 	d.bdRead = false

@@ -760,7 +760,7 @@ func (d *bincDecDriver[T]) DecodeStringAsBytes(in []byte) (bs2 []byte, scratchBu
 				in = d.d.b[:]
 				scratchBuf = true
 			}
-			bs2 = decByteSlice(d.r, slen, d.h.MaxInitLen, in)
+			bs2 = d.r.readxb(slen, d.h.MaxInitLen, in)
 		}
 	case bincVdSymbol:
 		// zerocopy doesn't apply for symbols,
@@ -791,7 +791,7 @@ func (d *bincDecDriver[T]) DecodeStringAsBytes(in []byte) (bs2 []byte, scratchBu
 			}
 			// As we are using symbols, do not store any part of
 			// the parameter bs in the map, as it might be a shared buffer.
-			bs2 = decByteSlice(d.r, slen, d.h.MaxInitLen, nil)
+			bs2 = d.r.readxb(slen, d.h.MaxInitLen, nil)
 			scratchBuf = true
 			d.s[symbol] = bs2
 		}
@@ -841,7 +841,7 @@ func (d *bincDecDriver[T]) DecodeBytes(bs []byte) (out []byte, scratchBuf bool) 
 		bs = d.d.b[:]
 		scratchBuf = true
 	}
-	out = decByteSlice(d.r, clen, d.h.MaxInitLen, bs)
+	out = d.r.readxb(clen, d.h.MaxInitLen, bs)
 	return
 }
 
@@ -884,7 +884,7 @@ func (d *bincDecDriver[T]) decodeExtV(verifyTag bool, xtagIn uint64) (xbs []byte
 			xbs = d.r.readx(uint(l))
 			zerocopy = true
 		} else {
-			xbs = decByteSlice(d.r, l, d.h.MaxInitLen, d.d.b[:])
+			xbs = d.r.readxb(l, d.h.MaxInitLen, d.d.b[:])
 		}
 	} else if d.vd == bincVdByteArray {
 		xbs, _ = d.DecodeBytes(nil)
@@ -968,7 +968,7 @@ func (d *bincDecDriver[T]) DecodeNaked() {
 		if d.d.bytes {
 			n.l = d.r.readx(uint(l))
 		} else {
-			n.l = decByteSlice(d.r, l, d.h.MaxInitLen, d.d.b[:])
+			n.l = d.r.readxb(l, d.h.MaxInitLen, d.d.b[:])
 		}
 	case bincVdArray:
 		n.v = valueTypeArray

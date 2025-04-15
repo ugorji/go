@@ -234,7 +234,7 @@ func isEmptyStruct(v reflect.Value, tinfos *TypeInfos, recursive bool) bool {
 	// We only care about what we can encode/decode,
 	// so that is what we use to check omitEmpty.
 	for _, si := range ti.sfi.source() {
-		sfv := si.field(v, false, false)
+		sfv := si.path.field(v, false, true)
 		if sfv.IsValid() && !isEmptyValue(sfv, tinfos, recursive) {
 			return false
 		}

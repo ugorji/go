@@ -487,7 +487,7 @@ func (d *simpleDecDriver[T]) DecodeBytes(bs []byte) (out []byte, scratchBuf bool
 		scratchBuf = true
 		bs = d.d.b[:]
 	}
-	out = decByteSlice(d.r, clen, d.h.MaxInitLen, bs)
+	out = d.r.readxb(clen, d.h.MaxInitLen, bs)
 	return
 }
 
@@ -545,7 +545,7 @@ func (d *simpleDecDriver[T]) decodeExtV(verifyTag bool, xtagIn uint64) (xbs []by
 			xbs = d.r.readx(uint(l))
 			zerocopy = true
 		} else {
-			xbs = decByteSlice(d.r, l, d.h.MaxInitLen, d.d.b[:])
+			xbs = d.r.readxb(l, d.h.MaxInitLen, d.d.b[:])
 		}
 	case simpleVdByteArray, simpleVdByteArray + 1,
 		simpleVdByteArray + 2, simpleVdByteArray + 3, simpleVdByteArray + 4:
@@ -609,7 +609,7 @@ func (d *simpleDecDriver[T]) DecodeNaked() {
 		if d.d.bytes {
 			n.l = d.r.readx(uint(l))
 		} else {
-			n.l = decByteSlice(d.r, l, d.h.MaxInitLen, d.d.b[:])
+			n.l = d.r.readxb(l, d.h.MaxInitLen, d.d.b[:])
 		}
 	case simpleVdArray, simpleVdArray + 1, simpleVdArray + 2,
 		simpleVdArray + 3, simpleVdArray + 4:
