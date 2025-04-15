@@ -1109,7 +1109,6 @@ func (d *decoder[T]) kSlice(f *decFnInfo, rv reflect.Value) {
 		if rtelemIsPtr {
 			rtelemElem = ti.elem.Elem()
 		}
-		// debugf("decoder.kSlice: builtin: type: type: %v, elem: %v", hlRED, ti.rt, ti.tielem.rt)
 	}
 
 	var j int
@@ -1170,7 +1169,6 @@ func (d *decoder[T]) kSlice(f *decFnInfo, rv reflect.Value) {
 		if d.d.TryNil() {
 			rvSetZero(rv9)
 		} else if builtin {
-			// debugf("\tkSlice: rv9: %v (%v)", hlWHITE, rv2i(rv9), rv9.Type())
 			if rtelemIsPtr {
 				if rvIsNil(rv9) {
 					rvSetDirect(rv9, reflect.New(rtelemElem))
@@ -1238,7 +1236,6 @@ func (d *decoder[T]) kArray(f *decFnInfo, rv reflect.Value) {
 
 	rvlen := rv.Len() // same as cap
 	hasLen := containerLenS > 0
-	// debugf("kArray: hasLen: %v, containerLenS: %v, rvlen: %v", hlBLUE, hasLen, containerLenS, rvlen)
 	if hasLen && containerLenS > rvlen {
 		halt.errorf("cannot decode into array with length: %v, less than container length: %v", any(rvlen), any(containerLenS))
 	}
@@ -1255,7 +1252,6 @@ func (d *decoder[T]) kArray(f *decFnInfo, rv reflect.Value) {
 		if rtelemIsPtr {
 			rtelemElem = ti.elem.Elem()
 		}
-		// debugf("decoder.kArray: builtin: type: type: %v, elem: %v", hlBLUE, ti.rt, ti.tielem.rt)
 	} else {
 		fn = d.fn(rtelem)
 	}
@@ -1497,17 +1493,11 @@ func (d *decoder[T]) kMap(f *decFnInfo, rv reflect.Value) {
 	var vElem, kElem reflect.Type
 	kbuiltin := ti.tikey.flagDecBuiltin && ti.keykind != uint8(reflect.Slice)
 	vbuiltin := ti.tielem.flagDecBuiltin // && ti.elemkind != uint8(reflect.Slice)
-	if kbuiltin {
-		if ktypePtr {
-			kElem = ti.key.Elem()
-		}
-		// debugf("decoder.kMap: kbuiltin: type: type: %v, elem: %v", hlYELLOW, ti.rt, ti.tikey.rt)
+	if kbuiltin && ktypePtr {
+		kElem = ti.key.Elem()
 	}
-	if vbuiltin {
-		if vtypePtr {
-			vElem = ti.elem.Elem()
-		}
-		// debugf("decoder.kMap: vbuiltin: type: type: %v, elem: %v", hlGREEN, ti.rt, ti.tielem.rt)
+	if vbuiltin && vtypePtr {
+		vElem = ti.elem.Elem()
 	}
 
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
@@ -1551,8 +1541,6 @@ func (d *decoder[T]) kMap(f *decFnInfo, rv reflect.Value) {
 			rvSetString(rvk, fnRvk2())
 		} else {
 			if kbuiltin {
-				// rvk MUST not be a nil value - ensure it's allocated // TODO
-				// if rvIsNil(
 				if ktypePtr {
 					if rvIsNil(rvk) {
 						rvSetDirect(rvk, reflect.New(kElem))
@@ -1695,15 +1683,6 @@ type decoderI interface {
 
 	interfaceExtConvertAndDecode(v interface{}, ext InterfaceExt)
 }
-
-// func (d *Decoder) Decode(v interface{}) (err error) {}
-// func (d *Decoder) HandleName() string               {}
-// func (d *Decoder) MustDecode(v interface{})         {}
-// func (d *Decoder) NumBytesRead() int                {}
-// func (d *Decoder) Release() deprecated              {}
-// func (d *Decoder) Reset(r io.Reader)                {}
-// func (d *Decoder) ResetBytes(in []byte)             {}
-// func (d *Decoder) ResetString(s string)             {}
 
 func (d *decoderBase) HandleName() string {
 	return d.hh.Name()

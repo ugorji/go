@@ -537,7 +537,6 @@ func (e *encoder[T]) kSliceW(rv reflect.Value, ti *typeInfo) {
 		goto END
 	}
 	if ti.tielem.flagEncBuiltin {
-		// debugf("encoder.kSlice: builtin: type: type: %v, elem: %v", hlWHITE, ti.rt, ti.tielem.rt)
 		for j := 0; j < l; j++ {
 			e.arrayElem()
 			e.encode(rv2i(baseRVRV(rvSliceIndex(rv, j, ti))))
@@ -710,7 +709,6 @@ func (e *encoder[T]) kStructFieldKey(keyType valueType, encName string) {
 
 func (e *encoder[T]) kStructSimple(f *encFnInfo, rv reflect.Value) {
 	tisfi := f.ti.sfi.source()
-	// debugf(">>>> kStructSimple: (ptr: %p of type: %v with ti.rt: %v) %v", hlRED, rv2i(rv), rv.Type(), f.ti.rt, rv2i(rv))
 
 	// To bypass encodeValue, we need to handle cases where
 	// the field is an interface kind. To do this, we need to handle an
@@ -719,56 +717,13 @@ func (e *encoder[T]) kStructSimple(f *encFnInfo, rv reflect.Value) {
 	// Easiest to just delegate to encodeValue.
 
 	chkCirRef := e.h.CheckCircularRef
-	// var ci *circularRefChecker
-	// var ciPushes int
-	// if chkCirRef {
-	// 	ci = &e.ci
-	// }
 	var si *structFieldInfo
-
-	// fnField := func() {
-	// 	// debugf(">>>> frv: (%p) %v", hlRED, rv2i(frv), rv2i(frv))
-
-	// 	if si.encBuiltin {
-	// 		e.encode(rv2i(si.field(rv, false, false)))
-	// 	} else {
-	// 		e.encodeValue(si.field(rv, false, false), nil)
-	// 	}
-
-	// 	// e.encodeValue(si.field(rv, false, false), nil)
-
-	// 	// // debugf(">>>> frv: (%p) %v", hlRED, rv2i(frv), rv2i(frv))
-	// 	// if si.encBuiltin {
-	// 	// 	e.encode(rv2i(si.field(rv, false, false)))
-	// 	// } else if si.path.kind == uint8(reflect.Interface) {
-	// 	// 	e.encodeValue(si.field(rv, false, false), nil)
-	// 	// } else {
-	// 	// 	fn := e.fn(si.baseTyp)
-	// 	// 	frv := si.field(rv, false, fn.i.addrE)
-	// 	// 	if frv.IsValid() {
-	// 	// 		if chkCirRef {
-	// 	// 			ciPushes += ci.pushRV(frv)
-	// 	// 		}
-	// 	// 		fn.fe(e, &fn.i, frv)
-	// 	// 		// e.encodeValue(si.field(rv, false, fn.i.addrE), fn)
-	// 	// 	} else {
-	// 	// 		e.e.EncodeNil()
-	// 	// 	}
-	// 	// }
-	// }
 
 	// use value of chkCirRef ie if true, then send the addr of the value
 	if f.ti.toArray || e.h.StructToArray { // toArray
 		e.arrayStart(len(tisfi))
 		for _, si = range tisfi {
 			e.arrayElem()
-			// rv2 := si.field(rv, false, !si.encBuiltin && chkCirRef) // matches if/else below
-			// encBuiltin / chkCirRef
-			//   true/true -> false
-			//   true/false -> false
-			//   false/true -> true
-			//   false/false -> false
-			// !builtin && chk
 			if si.encBuiltin {
 				e.encode(rv2i(si.path.field(rv, false, true)))
 			} else {
@@ -793,9 +748,6 @@ func (e *encoder[T]) kStructSimple(f *encFnInfo, rv reflect.Value) {
 		}
 		e.mapEnd()
 	}
-	// if ciPushes > 0 {
-	// 	ci.pop(ciPushes)
-	// }
 }
 
 func (e *encoder[T]) kStruct(f *encFnInfo, rv reflect.Value) {
@@ -1011,12 +963,6 @@ func (e *encoder[T]) kMap(f *encFnInfo, rv reflect.Value) {
 
 	kbuiltin := f.ti.tikey.flagEncBuiltin
 	vbuiltin := f.ti.tielem.flagEncBuiltin
-	// if kbuiltin {
-	// 	debugf("encoder.kMap: kbuiltin: type: type: %v, elem: %v", hlBLUE, f.ti.rt, f.ti.tielem.rt)
-	// }
-	// if vbuiltin {
-	// 	debugf("encoder.kMap: vbuiltin: type: type: %v, elem: %v", hlPURPLE, f.ti.rt, f.ti.tielem.rt)
-	// }
 	for it.Next() {
 		rv = it.Key()
 		e.mapElemKey()
@@ -1504,7 +1450,6 @@ func (e *encoder[T]) encodeValue(rv reflect.Value, fn *encFn[T]) {
 TOP:
 	switch rv.Kind() {
 	case reflect.Ptr:
-		// debugf("encoder.encodeValue called with a pointer: %v", hlRED, rv.Type())
 		if rvIsNil(rv) {
 			e.e.EncodeNil()
 			goto END
@@ -1693,52 +1638,12 @@ func (e *encoder[T]) atEndOfEncode() {
 	e.e.atEndOfEncode()
 }
 
-// func encInBytes(out *[]byte) (in []byte) {
-// 	if out != nil {
-// 		in = *out
-// 	}
-// 	if in == nil {
-// 		in = make([]byte, defEncByteBufSize)
-// 	}
-// 	return
-// }
-
-// func (helperEncDriver[T]) encStructFieldKey(ee T, encName string,
-// 	keyType valueType, encNameAsciiAlphaNum bool, js bool) {
-// 	// use if-else-if, not switch (which compiles to binary-search)
-// 	// since keyType is typically valueTypeString, branch prediction is pretty good.
-
-// 	if keyType == valueTypeString {
-// 		if js && encNameAsciiAlphaNum { // keyType == valueTypeString
-// 			ee.writeStringAsisDblQuoted(encName) // w.writeqstr(encName)
-// 		} else { // keyType == valueTypeString
-// 			ee.EncodeString(encName)
-// 		}
-// 	} else if keyType == valueTypeInt {
-// 		ee.EncodeInt(must.Int(strconv.ParseInt(encName, 10, 64)))
-// 	} else if keyType == valueTypeUint {
-// 		ee.EncodeUint(must.Uint(strconv.ParseUint(encName, 10, 64)))
-// 	} else if keyType == valueTypeFloat {
-// 		ee.EncodeFloat64(must.Float(strconv.ParseFloat(encName, 64)))
-// 	} else {
-// 		halt.errorStr2("invalid struct key type: ", keyType.String())
-// 	}
-// }
-
-// type encInitCombo[T encDriver, T2 encWriter] struct {
-// 	wb bytesEncAppender
-// 	wi bufioEncWriter
-// 	e  encoder[T]
-// 	es encoder[T, bytesEncAppenderM]
-// }
-
 type encoderI interface {
 	Encode(v interface{}) error
 	MustEncode(v interface{})
 	Release()
 	Reset(w io.Writer)
 	ResetBytes(out *[]byte)
-	// WriteStr(s string)
 
 	wrapErr(v error, err *error)
 	atEndOfEncode()
@@ -1746,7 +1651,6 @@ type encoderI interface {
 
 	encode(v interface{})
 	encodeAs(v interface{}, t reflect.Type, ext bool)
-	// encodeValue(rv reflect.Value, fn *encFn)
 
 	setContainerState(cs containerState) // needed for canonical encoding via side encoder
 }

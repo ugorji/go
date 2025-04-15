@@ -295,14 +295,6 @@ const (
 	mapKeyFastKindStr
 )
 
-// type handleNewFn struct {
-// 	typ      uintptr
-// 	encBytes func(*[]byte, h Handle) encoderI
-// 	encIO    func(io.Writer) encoderI
-// 	decBytes func(in []byte) decoderI
-// 	decIO    func(io.Reader) decoderI
-// }
-
 var (
 	// use a global mutex to ensure each Handle is initialized.
 	// We do this, so we don't have to store the basicHandle mutex
@@ -509,10 +501,6 @@ LOOP:
 	return i, i < uint(len(s)) && s[i] == v
 }
 
-// func addRtid(dest *[]uintptr, v interface{}) {
-// 	*dest = append(*dest, i2rtid(v))
-// }
-
 // // driverStateManager supports the runtime state of an (enc|dec)Driver.
 // //
 // // During a side(En|De)code call, we can capture the state, reset it,
@@ -563,21 +551,6 @@ TOP:
 			goto TOP
 		}
 	}
-
-	// switch v.Kind() {
-	// case reflect.Map:
-	// 	ci.push(rv2i(v))
-	// 	num++
-	// case reflect.Pointer:
-	// 	switch v.Type().Elem().Kind() {
-	// 	case reflect.Struct, reflect.Slice, reflect.Array:
-	// 		ci.push(rv2i(v))
-	// 		num++
-	// 	case reflect.Map, reflect.Pointer:
-	// 		v = v.Elem()
-	// 		goto TOP
-	// 	}
-	// }
 	return
 }
 
@@ -1173,23 +1146,6 @@ func (x *BasicHandle) getTypeInfo(rtid uintptr, rt reflect.Type) (pti *typeInfo)
 	return x.typeInfos().get(rtid, rt)
 }
 
-// type rtidFner struct {
-// 	// At init time, they should have nothing in them.
-// 	rtidFns      atomicRtidFnSlice
-// 	rtidFnsNoExt atomicRtidFnSlice
-// }
-
-// func (r *rtidFner) init(v interface{}) {
-// 	var p1, p2 []codecRtidFn[E, D]
-// 	r.rtidFns.Store(&p1)
-// 	r.rtidFnsNoExt.Store(&p2)
-// }
-
-// func (r *rtidFner[E, D]) fnNoExt(x *BasicHandle, rt reflect.Type) (fn *codecFn[E, D]) {
-// 	return fnVia[E, D](rt, x.typeInfos(), &r.rtidFnsNoExt, &x.mu, x.extHandle,
-// 		false, x.CheckCircularRef, x.timeBuiltin, x.binaryHandle, x.jsonHandle)
-// }
-
 // type handle interface {
 // 	*SimpleHandle
 //
@@ -1655,35 +1611,6 @@ type structFieldInfo struct {
 	ptrTyp  reflect.Type
 }
 
-// // field returns the field of the struct.
-// func (n *structFieldInfo) field(v reflect.Value, alloc bool) (rv reflect.Value) {
-// 	return n.path.field(v, alloc, false)
-// }
-//
-// func (n *structFieldInfo) fieldW(v reflect.Value, alloc, builtin, chkCirRef bool) (rv reflect.Value) {
-// 	return n.path.field(v, alloc, builtin || !chkCirRef)
-// }
-//
-// func (n *structFieldInfo) fieldBase(v reflect.Value, alloc bool) (rv reflect.Value) {
-// 	return n.path.field(v, alloc, true)
-// }
-//
-// func (n *structFieldInfo) fieldBaseAddr(v reflect.Value, alloc, addr bool) (rv reflect.Value) {
-// 	rv = n.path.field(v, alloc, true)
-// 	if addr && rv.IsValid() {
-// 		rv = rvAddr(rv, n.ptrTyp)
-// 	}
-// 	return
-// }
-//
-// func (n *structFieldInfo) fieldBasePtr(v reflect.Value, alloc bool) (rv reflect.Value) {
-// 	rv = n.path.field(v, alloc, true)
-// 	if rv.IsValid() {
-// 		rv = rvAddr(rv, n.ptrTyp)
-// 	}
-// 	return
-// }
-//
 // func (n *structFieldInfo) fieldCirRef(ci *circularRefChecker, v reflect.Value, alloc, addr bool) (rv reflect.Value, numRefPush int) {
 // 	rv = n.path.field(v, alloc)
 // 	var rvAddrOK bool
@@ -2585,20 +2512,10 @@ type bytesRv struct {
 	r reflect.Value
 }
 
-// type bytesIntf struct {
-// 	v []byte
-// 	i interface{}
-// }
-
 type stringIntf struct {
 	v string
 	i interface{}
 }
-
-// type orderedIntf[T cmp.Ordered] struct {
-// 	v T
-// 	i interface{}
-// }
 
 func cmpOrderedRv[T cmp.Ordered](v1, v2 orderedRv[T]) int {
 	return cmp.Compare(v1.v, v2.v)
@@ -2611,18 +2528,6 @@ func cmpTimeRv(v1, v2 timeRv) int {
 func cmpBytesRv(v1, v2 bytesRv) int {
 	return bytes.Compare(v1.v, v2.v)
 }
-
-// func cmpOrderedIntf[T cmp.Ordered](v1, v2 orderedIntf[T]) int {
-// 	return cmp.Compare(v1.v, v2.v)
-// }
-
-// func cmpBytesIntf(v1, v2 bytesIntf) int {
-// 	return bytes.Compare(v1.v, v2.v)
-// }
-
-// func cmpStringIntf(v1, v2 stringIntf) int {
-// 	return strings.Compare(v1.v, v2.v)
-// }
 
 func implIntf(rt, iTyp reflect.Type) (base bool, indir bool) {
 	// return rt.Implements(iTyp), reflect.PtrTo(rt).Implements(iTyp)
@@ -3290,6 +3195,28 @@ func (x internerMap) string(v []byte) (s string) {
 	}
 	return
 }
+
+// type bytesIntf struct {
+// 	v []byte
+// 	i interface{}
+// }
+
+// type orderedIntf[T cmp.Ordered] struct {
+// 	v T
+// 	i interface{}
+// }
+
+// func cmpOrderedIntf[T cmp.Ordered](v1, v2 orderedIntf[T]) int {
+// 	return cmp.Compare(v1.v, v2.v)
+// }
+
+// func cmpBytesIntf(v1, v2 bytesIntf) int {
+// 	return bytes.Compare(v1.v, v2.v)
+// }
+
+// func cmpStringIntf(v1, v2 stringIntf) int {
+// 	return strings.Compare(v1.v, v2.v)
+// }
 
 // func initSoloField(v interface{}) {
 // 	r := reflect.ValueOf(v)
