@@ -3,7 +3,7 @@
 // Copyright (c) 2012-2020 Ugorji Nwoke. All rights reserved.
 // Use of this source code is governed by a MIT license found in the LICENSE file.
 
-// Code generated from fast-path.go.tmpl - DO NOT EDIT.
+// Code generated from fastpath.go.tmpl - DO NOT EDIT.
 
 package codec
 
@@ -67,9 +67,6 @@ var fastpathAvRtid fastpathARtid
 var fastpathAvRtRtid fastpathARtRtid
 
 func fastpathAvIndex(rtid uintptr) (i uint, ok bool) {
-	// use binary search to grab the index (adapted from sort/search.go)
-	// Note: we use goto (instead of for loop) so this can be inlined.
-	// h, i, j := 0, 0, 56
 	var h uint
 	var j uint = 56
 LOOP:
@@ -90,8 +87,11 @@ func init() {
 	fn := func(v interface{}) {
 		xrt := reflect.TypeOf(v)
 		xrtid := rt2id(xrt)
+		xptrtid := rt2id(reflect.PointerTo(xrt))
 		fastpathAvRtid[i] = xrtid
 		fastpathAvRtRtid[i] = fastpathRtRtid{rtid: xrtid, rt: xrt}
+		encBuiltinRtids = append(encBuiltinRtids, xrtid, xptrtid)
+		decBuiltinRtids = append(decBuiltinRtids, xrtid, xptrtid)
 		i++
 	}
 
@@ -155,6 +155,8 @@ func init() {
 
 	sort.Slice(fastpathAvRtid[:], func(i, j int) bool { return fastpathAvRtid[i] < fastpathAvRtid[j] })
 	sort.Slice(fastpathAvRtRtid[:], func(i, j int) bool { return fastpathAvRtRtid[i].rtid < fastpathAvRtRtid[j].rtid })
+	slices.Sort(encBuiltinRtids)
+	slices.Sort(decBuiltinRtids)
 }
 
 func (helperEncDriver[T]) fastpathEList() *fastpathEs[T] {
