@@ -770,9 +770,9 @@ func (e *encoder[T]) kStructSimple(f *encFnInfo, rv reflect.Value) {
 			//   false/false -> false
 			// !builtin && chk
 			if si.encBuiltin {
-				e.encode(rv2i(si.field(rv, false, false)))
+				e.encode(rv2i(si.path.field(rv, false, true)))
 			} else {
-				e.encodeValue(si.field(rv, false, chkCirRef), nil)
+				e.encodeValue(si.path.field(rv, false, !chkCirRef), nil)
 			}
 		}
 		e.arrayEnd()
@@ -786,9 +786,9 @@ func (e *encoder[T]) kStructSimple(f *encFnInfo, rv reflect.Value) {
 			e.e.EncodeStringNoEscape4Json(si.encName)
 			e.mapElemValue()
 			if si.encBuiltin {
-				e.encode(rv2i(si.field(rv, false, false)))
+				e.encode(rv2i(si.path.field(rv, false, true)))
 			} else {
-				e.encodeValue(si.field(rv, false, chkCirRef), nil)
+				e.encodeValue(si.path.field(rv, false, !chkCirRef), nil)
 			}
 		}
 		e.mapEnd()
@@ -830,7 +830,7 @@ func (e *encoder[T]) kStruct(f *encFnInfo, rv reflect.Value) {
 			tisfi = f.ti.sfi.sorted()
 		}
 		for _, si := range tisfi {
-			kv.r = si.field(rv, false, !si.encBuiltin && chkCirRef)
+			kv.r = si.path.field(rv, false, si.encBuiltin || !chkCirRef)
 			if si.omitEmpty && isEmptyValue(kv.r, e.h.TypeInfos, recur) {
 				continue
 			}
@@ -918,7 +918,7 @@ func (e *encoder[T]) kStruct(f *encFnInfo, rv reflect.Value) {
 	} else {
 		newlen = len(tisfi)
 		for i, si := range tisfi { // use unsorted array (to match sequence in struct)
-			kv.r = si.field(rv, false, !si.encBuiltin && chkCirRef)
+			kv.r = si.path.field(rv, false, si.encBuiltin || !chkCirRef)
 			// use the zero value.
 			// if a reference or struct, set to nil (so you do not output too much)
 			if si.omitEmpty && isEmptyValue(kv.r, e.h.TypeInfos, recur) {

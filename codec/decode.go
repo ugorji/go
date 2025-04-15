@@ -852,15 +852,19 @@ func (d *decoder[T]) kInterface(f *decFnInfo, rv reflect.Value) {
 
 func (d *decoder[T]) kStructField(si *structFieldInfo, rv reflect.Value) {
 	if d.d.TryNil() {
-		if rv = si.field(rv, false, false); rv.IsValid() {
+		rv = si.path.field(rv, false, true)
+		if rv.IsValid() {
 			decSetNonNilRV2Zero(rv)
 		}
 	} else if si.decBuiltin {
-		rv = si.field(rv, true, true)
+		rv = rvAddr(si.path.field(rv, true, true), si.ptrTyp)
 		d.decode(rv2i(rv))
 	} else {
 		fn := d.fn(si.baseTyp)
-		rv = si.field(rv, true, fn.i.addrD)
+		rv = si.path.field(rv, true, true)
+		if fn.i.addrD {
+			rv = rvAddr(rv, si.ptrTyp)
+		}
 		fn.fd(d, &fn.i, rv)
 	}
 }

@@ -1589,14 +1589,15 @@ TOP:
 }
 
 // field returns the field of the struct.
-func (n *structFieldInfoPathNode) field(v reflect.Value, alloc bool) (rv reflect.Value) {
+func (n *structFieldInfoPathNode) field(v reflect.Value, alloc, base bool) (rv reflect.Value) {
 	if n.parent != nil {
-		v = n.parent.field(v, alloc)
+		v = n.parent.field(v, alloc, true)
 		if !v.IsValid() {
 			return
 		}
 	}
 	v = n.rvField(v)
+	rv = v
 	if alloc {
 		// for j, k := uint8(0), n.numderef; j < k; j++ {
 		for range n.numderef {
@@ -1609,12 +1610,14 @@ func (n *structFieldInfoPathNode) field(v reflect.Value, alloc bool) (rv reflect
 		// for j, k := uint8(0), n.numderef; j < k; j++ {
 		for range n.numderef {
 			if rvIsNil(v) {
-				return
+				return reflect.Value{}
 			}
 			v = v.Elem()
 		}
 	}
-	rv = v
+	if base {
+		rv = v
+	}
 	return
 }
 
@@ -1639,15 +1642,35 @@ type structFieldInfo struct {
 	ptrTyp  reflect.Type
 }
 
-// field returns the field of the struct.
-func (n *structFieldInfo) field(v reflect.Value, alloc, addr bool) (rv reflect.Value) {
-	rv = n.path.field(v, alloc)
-	if addr && rv.IsValid() {
-		rv = rvAddr(rv, n.ptrTyp)
-	}
-	return
-}
-
+// // field returns the field of the struct.
+// func (n *structFieldInfo) field(v reflect.Value, alloc bool) (rv reflect.Value) {
+// 	return n.path.field(v, alloc, false)
+// }
+//
+// func (n *structFieldInfo) fieldW(v reflect.Value, alloc, builtin, chkCirRef bool) (rv reflect.Value) {
+// 	return n.path.field(v, alloc, builtin || !chkCirRef)
+// }
+//
+// func (n *structFieldInfo) fieldBase(v reflect.Value, alloc bool) (rv reflect.Value) {
+// 	return n.path.field(v, alloc, true)
+// }
+//
+// func (n *structFieldInfo) fieldBaseAddr(v reflect.Value, alloc, addr bool) (rv reflect.Value) {
+// 	rv = n.path.field(v, alloc, true)
+// 	if addr && rv.IsValid() {
+// 		rv = rvAddr(rv, n.ptrTyp)
+// 	}
+// 	return
+// }
+//
+// func (n *structFieldInfo) fieldBasePtr(v reflect.Value, alloc bool) (rv reflect.Value) {
+// 	rv = n.path.field(v, alloc, true)
+// 	if rv.IsValid() {
+// 		rv = rvAddr(rv, n.ptrTyp)
+// 	}
+// 	return
+// }
+//
 // func (n *structFieldInfo) fieldCirRef(ci *circularRefChecker, v reflect.Value, alloc, addr bool) (rv reflect.Value, numRefPush int) {
 // 	rv = n.path.field(v, alloc)
 // 	var rvAddrOK bool
