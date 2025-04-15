@@ -927,6 +927,7 @@ func (e *encoder[T]) kStruct(f *encFnInfo, rv reflect.Value) {
 					kv.r = reflect.Value{} //encode as nil
 				}
 			}
+			kv.v = si
 			fkvs[i] = kv
 		}
 		// encode it all
@@ -934,7 +935,9 @@ func (e *encoder[T]) kStruct(f *encFnInfo, rv reflect.Value) {
 		for j = 0; j < newlen; j++ {
 			e.arrayElem()
 			kv = fkvs[j]
-			if kv.v.encBuiltin {
+			if !kv.r.IsValid() {
+				e.e.EncodeNil()
+			} else if kv.v.encBuiltin {
 				e.encode(rv2i(baseRVRV(kv.r)))
 			} else {
 				e.encodeValue(kv.r, nil)

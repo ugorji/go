@@ -550,21 +550,34 @@ func (ci *circularRefChecker) push(v interface{}) {
 }
 
 func (ci *circularRefChecker) pushRV(v reflect.Value) (num int) {
+	// only push comparable values if a pointer to a container (struct, slice, array, map)
+
 TOP:
-	switch v.Kind() {
-	case reflect.Map:
-		ci.push(rv2i(v))
-		num++
-	case reflect.Pointer:
+	if v.Kind() == reflect.Pointer {
 		switch v.Type().Elem().Kind() {
-		case reflect.Struct, reflect.Slice, reflect.Array:
+		case reflect.Struct, reflect.Slice, reflect.Array, reflect.Map:
 			ci.push(rv2i(v))
 			num++
-		case reflect.Map, reflect.Pointer:
+		case reflect.Pointer:
 			v = v.Elem()
 			goto TOP
 		}
 	}
+
+	// switch v.Kind() {
+	// case reflect.Map:
+	// 	ci.push(rv2i(v))
+	// 	num++
+	// case reflect.Pointer:
+	// 	switch v.Type().Elem().Kind() {
+	// 	case reflect.Struct, reflect.Slice, reflect.Array:
+	// 		ci.push(rv2i(v))
+	// 		num++
+	// 	case reflect.Map, reflect.Pointer:
+	// 		v = v.Elem()
+	// 		goto TOP
+	// 	}
+	// }
 	return
 }
 
