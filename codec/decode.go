@@ -20,7 +20,6 @@ const msgBadDesc = "unrecognized descriptor byte"
 var decBuiltinRtids []uintptr
 
 func init() {
-	fn := func(v interface{}) { decBuiltinRtids = append(decBuiltinRtids, i2rtid(v)) }
 	for _, v := range []interface{}{
 		(*string)(nil),
 		(*bool)(nil),
@@ -45,7 +44,7 @@ func init() {
 		(*Raw)(nil),
 		(*interface{})(nil),
 	} {
-		fn(v)
+		decBuiltinRtids = append(decBuiltinRtids, i2rtid(v))
 	}
 	slices.Sort(decBuiltinRtids)
 }
@@ -856,10 +855,7 @@ func (d *decoder[T]) kStructField(si *structFieldInfo, rv reflect.Value) {
 		if rv = si.field(rv, false, false); rv.IsValid() {
 			decSetNonNilRV2Zero(rv)
 		}
-		return
-	}
-
-	if si.decBuiltin {
+	} else if si.decBuiltin {
 		rv = si.field(rv, true, true)
 		d.decode(rv2i(rv))
 	} else {
@@ -1100,7 +1096,17 @@ func (d *decoder[T]) kSlice(f *decFnInfo, rv reflect.Value) {
 	// decodeValue handles this better when coming from an addressable value (known to reflect.Value).
 	// Consequently, builtin handling skips slices.
 
-	builtin := ti.tielem.flagDecBuiltin && ti.elemkind != uint8(reflect.Slice)
+	// builtin := ti.tielem.flagDecBuiltin && ti.elemkind != uint8(reflect.Slice) // 2025
+	var rtelemIsPtr bool
+	var rtelemElem reflect.Type
+	builtin := ti.tielem.flagDecBuiltin
+	if builtin {
+		rtelemIsPtr = ti.elemkind == uint8(reflect.Ptr)
+		if rtelemIsPtr {
+			rtelemElem = ti.elem.Elem()
+		}
+		// debugf("decoder.kSlice: builtin: type: type: %v, elem: %v", hlRED, ti.rt, ti.tielem.rt)
+	}
 
 	var j int
 	for ; d.containerNext(j, containerLenS, hasLen); j++ {
@@ -1157,11 +1163,20 @@ func (d *decoder[T]) kSlice(f *decFnInfo, rv reflect.Value) {
 		if elemReset {
 			rvSetZero(rv9)
 		}
-		if builtin {
-			// debugf(">>>> checking if we ever go here in our tests")
-			d.decode(rv2i(rv9))
+		if d.d.TryNil() {
+			rvSetZero(rv9)
+		} else if builtin {
+			// debugf("\tkSlice: rv9: %v (%v)", hlWHITE, rv2i(rv9), rv9.Type())
+			if rtelemIsPtr {
+				if rvIsNil(rv9) {
+					rvSetDirect(rv9, reflect.New(rtelemElem))
+				}
+				d.decode(rv2i(rv9))
+			} else {
+				d.decode(rv2i(rvAddr(rv9, ti.tielem.ptr))) // d.decode(rv2i(rv9.Addr()))
+			}
 		} else {
-			d.decodeValue(rv9, fn)
+			d.decodeValueNoCheckNil(rv9, fn)
 		}
 	}
 	if j < rvlen {
@@ -1187,12 +1202,12 @@ func (d *decoder[T]) kSlice(f *decFnInfo, rv reflect.Value) {
 
 func (d *decoder[T]) kArray(f *decFnInfo, rv reflect.Value) {
 	// An array can be set from a map or array in stream.
-
+	ti := f.ti
 	ctyp := d.d.ContainerType()
 	if handleBytesWithinKArray && (ctyp == valueTypeBytes || ctyp == valueTypeString) {
 		// you can only decode bytes or string in the stream into a slice or array of bytes
-		if f.ti.elemkind != uint8(reflect.Uint8) {
-			halt.errorf("bytes/string in stream can decode into array of bytes, but not %v", f.ti.rt)
+		if ti.elemkind != uint8(reflect.Uint8) {
+			halt.errorf("bytes/string in stream can decode into array of bytes, but not %v", ti.rt)
 		}
 		rvbs := rvGetArrayBytes(rv, nil)
 		bs2 := d.decodeBytesInto(rvbs)
@@ -1210,23 +1225,36 @@ func (d *decoder[T]) kArray(f *decFnInfo, rv reflect.Value) {
 		return
 	}
 
-	rtelem := f.ti.elem
-	for k := reflect.Kind(f.ti.elemkind); k == reflect.Ptr; k = rtelem.Kind() {
+	rtelem := ti.elem
+	for k := reflect.Kind(ti.elemkind); k == reflect.Ptr; k = rtelem.Kind() {
 		rtelem = rtelem.Elem()
 	}
-
-	var fn *decFn[T]
 
 	var rv9 reflect.Value
 
 	rvlen := rv.Len() // same as cap
 	hasLen := containerLenS > 0
+	// debugf("kArray: hasLen: %v, containerLenS: %v, rvlen: %v", hlBLUE, hasLen, containerLenS, rvlen)
 	if hasLen && containerLenS > rvlen {
 		halt.errorf("cannot decode into array with length: %v, less than container length: %v", any(rvlen), any(containerLenS))
 	}
 
 	// consider creating new element once, and just decoding into it.
 	var elemReset = d.h.SliceElementReset
+
+	var rtelemIsPtr bool
+	var rtelemElem reflect.Type
+	var fn *decFn[T]
+	builtin := ti.tielem.flagDecBuiltin
+	if builtin {
+		rtelemIsPtr = ti.elemkind == uint8(reflect.Ptr)
+		if rtelemIsPtr {
+			rtelemElem = ti.elem.Elem()
+		}
+		// debugf("decoder.kArray: builtin: type: type: %v, elem: %v", hlBLUE, ti.rt, ti.tielem.rt)
+	} else {
+		fn = d.fn(rtelem)
+	}
 
 	for j := 0; d.containerNext(j, containerLenS, hasLen); j++ {
 		// note that you cannot expand the array if indefinite and we go past array length
@@ -1240,11 +1268,20 @@ func (d *decoder[T]) kArray(f *decFnInfo, rv reflect.Value) {
 		if elemReset {
 			rvSetZero(rv9)
 		}
-
-		if fn == nil {
-			fn = d.fn(rtelem)
+		if d.d.TryNil() {
+			rvSetZero(rv9)
+		} else if builtin {
+			if rtelemIsPtr {
+				if rvIsNil(rv9) {
+					rvSetDirect(rv9, reflect.New(rtelemElem))
+				}
+				d.decode(rv2i(rv9))
+			} else {
+				d.decode(rv2i(rvAddr(rv9, ti.tielem.ptr))) // d.decode(rv2i(rv9.Addr()))
+			}
+		} else {
+			d.decodeValueNoCheckNil(rv9, fn)
 		}
-		d.decodeValue(rv9, fn)
 	}
 	slh.End()
 }
@@ -1453,8 +1490,21 @@ func (d *decoder[T]) kMap(f *decFnInfo, rv reflect.Value) {
 	// decodeValue handles this better when coming from an addressable value (known to reflect.Value).
 	// Consequently, builtin handling skips slices.
 
+	var vElem, kElem reflect.Type
 	kbuiltin := ti.tikey.flagDecBuiltin && ti.keykind != uint8(reflect.Slice)
-	vbuiltin := ti.tielem.flagDecBuiltin && ti.elemkind != uint8(reflect.Slice)
+	vbuiltin := ti.tielem.flagDecBuiltin // && ti.elemkind != uint8(reflect.Slice)
+	if kbuiltin {
+		if ktypePtr {
+			kElem = ti.key.Elem()
+		}
+		// debugf("decoder.kMap: kbuiltin: type: type: %v, elem: %v", hlYELLOW, ti.rt, ti.tikey.rt)
+	}
+	if vbuiltin {
+		if vtypePtr {
+			vElem = ti.elem.Elem()
+		}
+		// debugf("decoder.kMap: vbuiltin: type: type: %v, elem: %v", hlGREEN, ti.rt, ti.tielem.rt)
+	}
 
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
 		callFnRvk = false
@@ -1489,13 +1539,27 @@ func (d *decoder[T]) kMap(f *decFnInfo, rv reflect.Value) {
 		}
 
 		d.mapElemKey()
-		if ktypeIsString {
+
+		if d.d.TryNil() {
+			rvSetZero(rvk)
+		} else if ktypeIsString {
 			kstr2bs, scratchBuf = d.d.DecodeStringAsBytes(nil)
 			rvSetString(rvk, fnRvk2())
-		} else if kbuiltin {
-			d.decode(rv2i(rvk))
 		} else {
-			d.decodeValue(rvk, keyFn)
+			if kbuiltin {
+				// rvk MUST not be a nil value - ensure it's allocated // TODO
+				// if rvIsNil(
+				if ktypePtr {
+					if rvIsNil(rvk) {
+						rvSetDirect(rvk, reflect.New(kElem))
+					}
+					d.decode(rv2i(rvk))
+				} else {
+					d.decode(rv2i(rvAddr(rvk, ti.tikey.ptr)))
+				}
+			} else {
+				d.decodeValueNoCheckNil(rvk, keyFn)
+			}
 			// special case if interface wrapping a byte slice
 			if ktypeIsIntf {
 				if rvk2 := rvk.Elem(); rvk2.IsValid() && rvk2.Type() == uint8SliceTyp {
@@ -1578,7 +1642,14 @@ func (d *decoder[T]) kMap(f *decFnInfo, rv reflect.Value) {
 
 	DECODE_VALUE_NO_CHECK_NIL:
 		if vbuiltin {
-			d.decode(rv2i(rvv))
+			if vtypePtr {
+				if rvIsNil(rvv) {
+					rvSetDirect(rvv, reflect.New(vElem))
+				}
+				d.decode(rv2i(rvv))
+			} else {
+				d.decode(rv2i(rvAddr(rvv, ti.tielem.ptr)))
+			}
 		} else {
 			d.decodeValueNoCheckNil(rvv, valFn)
 		}

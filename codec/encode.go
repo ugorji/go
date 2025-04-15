@@ -24,7 +24,6 @@ var errEncoderNotInitialized = errors.New("encoder not initialized")
 var encBuiltinRtids []uintptr
 
 func init() {
-	fn := func(v interface{}) { encBuiltinRtids = append(encBuiltinRtids, i2rtid(v)) }
 	for _, v := range []interface{}{
 		(string)(""),
 		(bool)(false),
@@ -47,30 +46,9 @@ func init() {
 		([]byte)(nil),
 		(Raw{}),
 		// (interface{})(nil),
-
-		(*string)(nil),
-		(*bool)(nil),
-		(*int)(nil),
-		(*int8)(nil),
-		(*int16)(nil),
-		(*int32)(nil),
-		(*int64)(nil),
-		(*uint)(nil),
-		(*uint8)(nil),
-		(*uint16)(nil),
-		(*uint32)(nil),
-		(*uint64)(nil),
-		(*uintptr)(nil),
-		(*float32)(nil),
-		(*float64)(nil),
-		(*complex64)(nil),
-		(*complex128)(nil),
-		(*[]byte)(nil),
-		(*time.Time)(nil),
-		(*Raw)(nil),
-		// (*interface{})(nil),
 	} {
-		fn(v)
+		t := reflect.TypeOf(v)
+		encBuiltinRtids = append(encBuiltinRtids, rt2id(t), rt2id(reflect.PointerTo(t)))
 	}
 	slices.Sort(encBuiltinRtids)
 }
@@ -320,14 +298,7 @@ type encoderBase struct {
 
 	// ---- writable fields during execution --- *try* to keep in sep cache line
 
-	// ci holds interfaces during an encoding (if CheckCircularRef=true)
-	//
-	// We considered using a []uintptr (slice of pointer addresses) retrievable via rv.UnsafeAddr.
-	// However, it is possible for the same pointer to point to 2 different types e.g.
-	//    type T struct { tHelper }
-	//    Here, for var v T; &v and &v.tHelper are the same pointer.
-	// Consequently, we need a tuple of type and pointer, which interface{} natively provides.
-	ci []interface{} // []uintptr
+	ci circularRefChecker
 
 	slist sfiRvFreeList
 }
@@ -486,7 +457,7 @@ func (e *encoder[T]) kUintptr(_ *encFnInfo, rv reflect.Value) {
 }
 
 func (e *encoderBase) kErr(_ *encFnInfo, rv reflect.Value) {
-	halt.errorf("unsupported encoding kind %s, for %#v", rv.Kind(), any(rv))
+	halt.errorf("unsupported encoding kind: %s, for %#v", rv.Kind(), any(rv))
 }
 
 func chanToSlice(rv reflect.Value, rtslice reflect.Type, timeout time.Duration) (rvcs reflect.Value) {
@@ -529,77 +500,109 @@ func (e *encoder[T]) kSeqFn(rt reflect.Type) (fn *encFn[T]) {
 }
 
 func (e *encoder[T]) kSliceWMbs(rv reflect.Value, ti *typeInfo) {
+	var builtin bool
+	var fn *encFn[T]
 	var l = rvLenSlice(rv)
 	if l == 0 {
 		e.mapStart(0)
-	} else {
-		e.haltOnMbsOddLen(l)
-		e.mapStart(l >> 1) // e.mapStart(l / 2)
-		fn := e.kSeqFn(ti.elem)
-		for j := 0; j < l; j++ {
-			if j&1 == 0 { // j%2 == 0 {
-				e.mapElemKey()
-			} else {
-				e.mapElemValue()
-			}
-			e.encodeValue(rvSliceIndex(rv, j, ti), fn)
+		goto END
+	}
+	e.haltOnMbsOddLen(l)
+	e.mapStart(l >> 1) // e.mapStart(l / 2)
+	builtin = ti.tielem.flagEncBuiltin
+	if !builtin {
+		fn = e.kSeqFn(ti.elem)
+	}
+	for j := 0; j < l; j++ {
+		if j&1 == 0 { // j%2 == 0 {
+			e.mapElemKey()
+		} else {
+			e.mapElemValue()
+		}
+		rvv := rvSliceIndex(rv, j, ti)
+		if builtin {
+			e.encode(rv2i(baseRVRV(rvv)))
+		} else {
+			e.encodeValue(rvv, fn)
 		}
 	}
+END:
 	e.mapEnd()
 }
 
 func (e *encoder[T]) kSliceW(rv reflect.Value, ti *typeInfo) {
 	var l = rvLenSlice(rv)
 	e.arrayStart(l)
-	if l > 0 {
-		var fn *encFn[T]
-		builtin := ti.tielem.flagEncBuiltin
-		if !builtin {
-			fn = e.kSeqFn(ti.elem)
-		}
+	if l <= 0 {
+		goto END
+	}
+	if ti.tielem.flagEncBuiltin {
+		// debugf("encoder.kSlice: builtin: type: type: %v, elem: %v", hlWHITE, ti.rt, ti.tielem.rt)
 		for j := 0; j < l; j++ {
 			e.arrayElem()
-			rv2 := rvSliceIndex(rv, j, ti)
-			if builtin {
-				e.encode(rv2i(rv2))
-			} else {
-				e.encodeValue(rv2, fn)
-			}
+			e.encode(rv2i(baseRVRV(rvSliceIndex(rv, j, ti))))
+		}
+	} else {
+		fn := e.kSeqFn(ti.elem)
+		for j := 0; j < l; j++ {
+			e.arrayElem()
+			e.encodeValue(rvSliceIndex(rv, j, ti), fn)
 		}
 	}
+END:
 	e.arrayEnd()
 }
 
 func (e *encoder[T]) kArrayWMbs(rv reflect.Value, ti *typeInfo) {
+	var builtin bool
+	var fn *encFn[T]
 	var l = rv.Len()
 	if l == 0 {
 		e.mapStart(0)
-	} else {
-		e.haltOnMbsOddLen(l)
-		e.mapStart(l >> 1) // e.mapStart(l / 2)
-		fn := e.kSeqFn(ti.elem)
-		for j := 0; j < l; j++ {
-			if j&1 == 0 { // j%2 == 0 {
-				e.mapElemKey()
-			} else {
-				e.mapElemValue()
-			}
-			e.encodeValue(rv.Index(j), fn)
+		goto END
+	}
+	e.haltOnMbsOddLen(l)
+	e.mapStart(l >> 1) // e.mapStart(l / 2)
+	builtin = ti.tielem.flagEncBuiltin
+	if !builtin {
+		fn = e.kSeqFn(ti.elem)
+	}
+	for j := 0; j < l; j++ {
+		if j&1 == 0 { // j%2 == 0 {
+			e.mapElemKey()
+		} else {
+			e.mapElemValue()
+		}
+		rvv := rvArrayIndex(rv, j, ti)
+		if builtin {
+			e.encode(rv2i(baseRVRV(rvv)))
+		} else {
+			e.encodeValue(rvv, fn)
 		}
 	}
+END:
 	e.mapEnd()
 }
 
 func (e *encoder[T]) kArrayW(rv reflect.Value, ti *typeInfo) {
 	var l = rv.Len()
 	e.arrayStart(l)
-	if l > 0 {
+	if l <= 0 {
+		goto END
+	}
+	if ti.tielem.flagEncBuiltin {
+		for j := 0; j < l; j++ {
+			e.arrayElem()
+			e.encode(rv2i(baseRVRV(rvArrayIndex(rv, j, ti))))
+		}
+	} else {
 		fn := e.kSeqFn(ti.elem)
 		for j := 0; j < l; j++ {
 			e.arrayElem()
-			e.encodeValue(rv.Index(j), fn)
+			e.encodeValue(rvArrayIndex(rv, j, ti), fn)
 		}
 	}
+END:
 	e.arrayEnd()
 }
 
@@ -707,15 +710,69 @@ func (e *encoder[T]) kStructFieldKey(keyType valueType, encName string) {
 
 func (e *encoder[T]) kStructSimple(f *encFnInfo, rv reflect.Value) {
 	tisfi := f.ti.sfi.source()
+	// debugf(">>>> kStructSimple: (ptr: %p of type: %v with ti.rt: %v) %v", hlRED, rv2i(rv), rv.Type(), f.ti.rt, rv2i(rv))
+
+	// To bypass encodeValue, we need to handle cases where
+	// the field is an interface kind. To do this, we need to handle an
+	// interface or a pointer to an interface differently.
+	//
+	// Easiest to just delegate to encodeValue.
+
+	chkCirRef := e.h.CheckCircularRef
+	// var ci *circularRefChecker
+	// var ciPushes int
+	// if chkCirRef {
+	// 	ci = &e.ci
+	// }
+	var si *structFieldInfo
+
+	// fnField := func() {
+	// 	// debugf(">>>> frv: (%p) %v", hlRED, rv2i(frv), rv2i(frv))
+
+	// 	if si.encBuiltin {
+	// 		e.encode(rv2i(si.field(rv, false, false)))
+	// 	} else {
+	// 		e.encodeValue(si.field(rv, false, false), nil)
+	// 	}
+
+	// 	// e.encodeValue(si.field(rv, false, false), nil)
+
+	// 	// // debugf(">>>> frv: (%p) %v", hlRED, rv2i(frv), rv2i(frv))
+	// 	// if si.encBuiltin {
+	// 	// 	e.encode(rv2i(si.field(rv, false, false)))
+	// 	// } else if si.path.kind == uint8(reflect.Interface) {
+	// 	// 	e.encodeValue(si.field(rv, false, false), nil)
+	// 	// } else {
+	// 	// 	fn := e.fn(si.baseTyp)
+	// 	// 	frv := si.field(rv, false, fn.i.addrE)
+	// 	// 	if frv.IsValid() {
+	// 	// 		if chkCirRef {
+	// 	// 			ciPushes += ci.pushRV(frv)
+	// 	// 		}
+	// 	// 		fn.fe(e, &fn.i, frv)
+	// 	// 		// e.encodeValue(si.field(rv, false, fn.i.addrE), fn)
+	// 	// 	} else {
+	// 	// 		e.e.EncodeNil()
+	// 	// 	}
+	// 	// }
+	// }
+
+	// use value of chkCirRef ie if true, then send the addr of the value
 	if f.ti.toArray || e.h.StructToArray { // toArray
 		e.arrayStart(len(tisfi))
-		for _, si := range tisfi {
+		for _, si = range tisfi {
 			e.arrayElem()
-			frv := si.field(rv, false, false)
+			// rv2 := si.field(rv, false, !si.encBuiltin && chkCirRef) // matches if/else below
+			// encBuiltin / chkCirRef
+			//   true/true -> false
+			//   true/false -> false
+			//   false/true -> true
+			//   false/false -> false
+			// !builtin && chk
 			if si.encBuiltin {
-				e.encode(rv2i(frv))
+				e.encode(rv2i(si.field(rv, false, false)))
 			} else {
-				e.encodeValue(frv, nil)
+				e.encodeValue(si.field(rv, false, chkCirRef), nil)
 			}
 		}
 		e.arrayEnd()
@@ -724,19 +781,21 @@ func (e *encoder[T]) kStructSimple(f *encFnInfo, rv reflect.Value) {
 			tisfi = f.ti.sfi.sorted()
 		}
 		e.mapStart(len(tisfi))
-		for _, si := range tisfi {
+		for _, si = range tisfi {
 			e.mapElemKey()
 			e.e.EncodeStringNoEscape4Json(si.encName)
 			e.mapElemValue()
-			frv := si.field(rv, false, false)
 			if si.encBuiltin {
-				e.encode(rv2i(frv))
+				e.encode(rv2i(si.field(rv, false, false)))
 			} else {
-				e.encodeValue(frv, nil)
+				e.encodeValue(si.field(rv, false, chkCirRef), nil)
 			}
 		}
 		e.mapEnd()
 	}
+	// if ciPushes > 0 {
+	// 	ci.pop(ciPushes)
+	// }
 }
 
 func (e *encoder[T]) kStruct(f *encFnInfo, rv reflect.Value) {
@@ -744,12 +803,15 @@ func (e *encoder[T]) kStruct(f *encFnInfo, rv reflect.Value) {
 	toMap := !(ti.toArray || e.h.StructToArray)
 	var mf map[string]interface{}
 	if ti.flagMissingFielder {
+		toMap = true
 		mf = rv2i(rv).(MissingFielder).CodecMissingFields()
-		toMap = true
 	} else if ti.flagMissingFielderPtr {
-		rv2 := e.addrRV(rv, ti.rt, ti.ptr)
-		mf = rv2i(rv2).(MissingFielder).CodecMissingFields()
 		toMap = true
+		if rv.CanAddr() {
+			mf = rv2i(rvAddr(rv, ti.ptr)).(MissingFielder).CodecMissingFields()
+		} else {
+			mf = rv2i(e.addrRV(rv, ti.rt, ti.ptr)).(MissingFielder).CodecMissingFields()
+		}
 	}
 	newlen := len(mf)
 	tisfi := ti.sfi.source()
@@ -758,6 +820,7 @@ func (e *encoder[T]) kStruct(f *encFnInfo, rv reflect.Value) {
 	var fkvs = e.slist.get(newlen)[:newlen]
 
 	recur := e.h.RecursiveEmptyCheck
+	chkCirRef := e.h.CheckCircularRef
 
 	var kv sfiRv
 	var j int
@@ -767,7 +830,7 @@ func (e *encoder[T]) kStruct(f *encFnInfo, rv reflect.Value) {
 			tisfi = f.ti.sfi.sorted()
 		}
 		for _, si := range tisfi {
-			kv.r = si.field(rv, false, false)
+			kv.r = si.field(rv, false, !si.encBuiltin && chkCirRef)
 			if si.omitEmpty && isEmptyValue(kv.r, e.h.TypeInfos, recur) {
 				continue
 			}
@@ -818,7 +881,7 @@ func (e *encoder[T]) kStruct(f *encFnInfo, rv reflect.Value) {
 				e.mapElemValue()
 				if v.isRv {
 					if v.builtin {
-						e.encode(rv2i(v.rv))
+						e.encode(rv2i(baseRVRV(v.rv)))
 					} else {
 						e.encodeValue(v.rv, nil)
 					}
@@ -838,7 +901,7 @@ func (e *encoder[T]) kStruct(f *encFnInfo, rv reflect.Value) {
 				}
 				e.mapElemValue()
 				if kv.v.encBuiltin {
-					e.encode(rv2i(kv.r))
+					e.encode(rv2i(baseRVRV(kv.r)))
 				} else {
 					e.encodeValue(kv.r, nil)
 				}
@@ -855,7 +918,7 @@ func (e *encoder[T]) kStruct(f *encFnInfo, rv reflect.Value) {
 	} else {
 		newlen = len(tisfi)
 		for i, si := range tisfi { // use unsorted array (to match sequence in struct)
-			kv.r = si.field(rv, false, false)
+			kv.r = si.field(rv, false, !si.encBuiltin && chkCirRef)
 			// use the zero value.
 			// if a reference or struct, set to nil (so you do not output too much)
 			if si.omitEmpty && isEmptyValue(kv.r, e.h.TypeInfos, recur) {
@@ -872,7 +935,7 @@ func (e *encoder[T]) kStruct(f *encFnInfo, rv reflect.Value) {
 			e.arrayElem()
 			kv = fkvs[j]
 			if kv.v.encBuiltin {
-				e.encode(rv2i(kv.r))
+				e.encode(rv2i(baseRVRV(kv.r)))
 			} else {
 				e.encodeValue(kv.r, nil)
 			}
@@ -945,20 +1008,26 @@ func (e *encoder[T]) kMap(f *encFnInfo, rv reflect.Value) {
 
 	kbuiltin := f.ti.tikey.flagEncBuiltin
 	vbuiltin := f.ti.tielem.flagEncBuiltin
+	// if kbuiltin {
+	// 	debugf("encoder.kMap: kbuiltin: type: type: %v, elem: %v", hlBLUE, f.ti.rt, f.ti.tielem.rt)
+	// }
+	// if vbuiltin {
+	// 	debugf("encoder.kMap: vbuiltin: type: type: %v, elem: %v", hlPURPLE, f.ti.rt, f.ti.tielem.rt)
+	// }
 	for it.Next() {
 		rv = it.Key()
 		e.mapElemKey()
 		if keyTypeIsString {
 			e.e.EncodeString(rvGetString(rv))
 		} else if kbuiltin {
-			e.encode(rv2i(rv))
+			e.encode(rv2i(baseRVRV(rv)))
 		} else {
 			e.encodeValue(rv, keyFn)
 		}
 		e.mapElemValue()
 		rv = it.Value()
 		if vbuiltin {
-			e.encode(rv2i(rv))
+			e.encode(rv2i(baseRVRV(rv)))
 		} else {
 			e.encodeValue(it.Value(), valFn)
 		}
@@ -1422,15 +1491,20 @@ func (e *encoder[T]) encodeValue(rv reflect.Value, fn *encFn[T]) {
 
 	// MARKER: We check if value is nil here, so that the kXXX method do not have to.
 
-	var sptr interface{}
+	var ciPushes int
+	if e.h.CheckCircularRef {
+		ciPushes = e.ci.pushRV(rv)
+	}
+
 	var rvp reflect.Value
 	var rvpValid bool
 TOP:
 	switch rv.Kind() {
 	case reflect.Ptr:
+		// debugf("encoder.encodeValue called with a pointer: %v", hlRED, rv.Type())
 		if rvIsNil(rv) {
 			e.e.EncodeNil()
-			return
+			goto END
 		}
 		rvpValid = true
 		rvp = rv
@@ -1439,30 +1513,20 @@ TOP:
 	case reflect.Interface:
 		if rvIsNil(rv) {
 			e.e.EncodeNil()
-			return
+			goto END
 		}
 		rvpValid = false
 		rvp = reflect.Value{}
 		rv = rv.Elem()
 		goto TOP
-	case reflect.Struct:
-		if rvpValid && e.h.CheckCircularRef {
-			sptr = rv2i(rvp)
-			for _, vv := range e.ci {
-				if eq4i(sptr, vv) { // error if sptr already seen
-					halt.errorf("circular reference found: %p, %T", sptr, sptr)
-				}
-			}
-			e.ci = append(e.ci, sptr)
-		}
-	case reflect.Slice, reflect.Map, reflect.Chan:
+	case reflect.Map, reflect.Slice, reflect.Chan:
 		if rvIsNil(rv) {
 			e.e.EncodeNil()
-			return
+			goto END
 		}
 	case reflect.Invalid, reflect.Func:
 		e.e.EncodeNil()
-		return
+		goto END
 	}
 
 	if fn == nil {
@@ -1473,13 +1537,15 @@ TOP:
 		// keep rv same
 	} else if rvpValid {
 		rv = rvp
+	} else if rv.CanAddr() {
+		rv = rvAddr(rv, fn.i.ti.ptr)
 	} else {
 		rv = e.addrRV(rv, fn.i.ti.rt, fn.i.ti.ptr)
 	}
 	fn.fe(e, &fn.i, rv)
-
-	if sptr != nil { // remove sptr
-		e.ci = e.ci[:len(e.ci)-1]
+END:
+	if ciPushes > 0 {
+		e.ci.pop(ciPushes)
 	}
 }
 
@@ -1492,7 +1558,11 @@ func (e *encoder[T]) encodeValueNonNil(rv reflect.Value, fn *encFn[T]) {
 	// 	fn = e.fn(rv.Type())
 	// }
 	if fn.i.addrE { // typically, addrE = false, so check it first
-		rv = e.addrRV(rv, fn.i.ti.rt, fn.i.ti.ptr)
+		if rv.CanAddr() {
+			rv = rvAddr(rv, fn.i.ti.ptr)
+		} else {
+			rv = e.addrRV(rv, fn.i.ti.rt, fn.i.ti.ptr)
+		}
 	}
 	fn.fe(e, &fn.i, rv)
 }
@@ -1505,11 +1575,11 @@ func (e *encoder[T]) encodeAs(v interface{}, t reflect.Type, ext bool) {
 	}
 }
 
-// addrRV returns a addressable value which may be readonly
+// addrRV returns a addressable value given that rv is not addressable
 func (e *encoderBase) addrRV(rv reflect.Value, typ, ptrType reflect.Type) (rva reflect.Value) {
-	if rv.CanAddr() {
-		return rvAddr(rv, ptrType)
-	}
+	// if rv.CanAddr() {
+	// 	return rvAddr(rv, ptrType)
+	// }
 	if e.h.NoAddressableReadonly {
 		rva = reflect.New(typ)
 		rvSetDirect(rva.Elem(), rv)
