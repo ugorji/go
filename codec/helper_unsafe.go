@@ -514,6 +514,42 @@ func isEmptyValueFallbackRecur(urv *unsafeReflectValue, v reflect.Value, tinfos 
 	return false
 }
 
+// is this an empty interface/ptr/struct/map/slice/chan/array
+func isEmptyContainerValue(v reflect.Value, tinfos *TypeInfos, recursive bool) bool {
+	urv := (*unsafeReflectValue)(unsafe.Pointer(&v))
+	switch v.Kind() {
+	case reflect.Slice:
+		return (*unsafeSlice)(urv.ptr).Len == 0
+	case reflect.Struct:
+		if tinfos == nil {
+			tinfos = defTypeInfos
+		}
+		ti := tinfos.find(uintptr(urv.typ))
+		if ti == nil {
+			ti = tinfos.load(v.Type())
+		}
+		return unsafeCmpZero(urv.ptr, int(ti.size))
+	case reflect.Interface, reflect.Ptr:
+		// isnil := urv.ptr == nil // (not sufficient, as a pointer value encodes the type)
+		isnil := urv.ptr == nil || *(*unsafe.Pointer)(urv.ptr) == nil
+		if recursive && !isnil {
+			return isEmptyValue(v.Elem(), tinfos, recursive)
+		}
+		return isnil
+	case reflect.Chan:
+		return urv.ptr == nil || len_chan(rvRefPtr(urv)) == 0
+	case reflect.Map:
+		return urv.ptr == nil || len_map(rvRefPtr(urv)) == 0
+	case reflect.Array:
+		return v.Len() == 0 ||
+			urv.ptr == nil ||
+			urv.typ == nil ||
+			rtsize2(urv.typ) == 0 ||
+			unsafeCmpZero(urv.ptr, int(rtsize2(urv.typ)))
+	}
+	return false
+}
+
 // --------------------------
 
 type structFieldInfos struct {

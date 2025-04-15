@@ -782,9 +782,17 @@ func (e *encoder[T]) kStruct(f *encFnInfo, rv reflect.Value) {
 			tisfi = f.ti.sfi.sorted()
 		}
 		for _, si := range tisfi {
-			kv.r = si.path.field(rv, false, si.encBuiltin || !chkCirRef)
-			if si.omitEmpty && isEmptyValue(kv.r, e.h.TypeInfos, recur) {
-				continue
+			// kv.r = si.path.field(rv, false, si.encBuiltin || !chkCirRef)
+			// if si.omitEmpty && isEmptyValue(kv.r, e.h.TypeInfos, recur) {
+			// 	continue
+			// }
+			if si.omitEmpty {
+				kv.r = si.path.field(rv, false, false) // test actual field val
+				if isEmptyValue(kv.r, e.h.TypeInfos, recur) {
+					continue
+				}
+			} else {
+				kv.r = si.path.field(rv, false, si.encBuiltin || !chkCirRef)
 			}
 			kv.v = si
 			fkvs[newlen] = kv
@@ -870,14 +878,17 @@ func (e *encoder[T]) kStruct(f *encFnInfo, rv reflect.Value) {
 	} else {
 		newlen = len(tisfi)
 		for i, si := range tisfi { // use unsorted array (to match sequence in struct)
-			kv.r = si.path.field(rv, false, si.encBuiltin || !chkCirRef)
-			// use the zero value.
-			// if a reference or struct, set to nil (so you do not output too much)
-			if si.omitEmpty && isEmptyValue(kv.r, e.h.TypeInfos, recur) {
-				switch kv.r.Kind() {
-				case reflect.Struct, reflect.Interface, reflect.Ptr, reflect.Array, reflect.Map, reflect.Slice:
+			// kv.r = si.path.field(rv, false, si.encBuiltin || !chkCirRef)
+			// kv.r = si.path.field(rv, false, !si.omitEmpty || si.encBuiltin || !chkCirRef)
+			if si.omitEmpty {
+				// use the zero value.
+				// if a reference or struct, set to nil (so you do not output too much)
+				kv.r = si.path.field(rv, false, false) // test actual field val
+				if isEmptyContainerValue(kv.r, e.h.TypeInfos, recur) {
 					kv.r = reflect.Value{} //encode as nil
 				}
+			} else {
+				kv.r = si.path.field(rv, false, si.encBuiltin || !chkCirRef)
 			}
 			kv.v = si
 			fkvs[i] = kv

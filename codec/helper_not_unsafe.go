@@ -150,6 +150,30 @@ func i2rtid(i interface{}) uintptr {
 
 // --------------------------
 
+// is this an empty interface/ptr/struct/map/slice/chan/array
+func isEmptyContainerValue(v reflect.Value, tinfos *TypeInfos, recursive bool) (empty bool) {
+	switch v.Kind() {
+	case reflect.Array:
+		for i, vlen := 0, v.Len(); i < vlen; i++ {
+			if !isEmptyValue(v.Index(i), tinfos, false) {
+				return false
+			}
+		}
+		return true
+	case reflect.Map, reflect.Slice, reflect.Chan:
+		return v.IsNil() || v.Len() == 0
+	case reflect.Interface, reflect.Ptr:
+		empty = v.IsNil()
+		if recursive && !empty {
+			return isEmptyValue(v.Elem(), tinfos, recursive)
+		}
+		return empty
+	case reflect.Struct:
+		return isEmptyStruct(v, tinfos, recursive)
+	}
+	return false
+}
+
 func isEmptyValue(v reflect.Value, tinfos *TypeInfos, recursive bool) bool {
 	switch v.Kind() {
 	case reflect.Invalid:
