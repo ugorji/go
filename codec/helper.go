@@ -219,7 +219,7 @@ const (
 	//
 	// Note: RPC tests depend on getting the error from an Encode/Decode call.
 	// Consequently, they will always fail if debugging = true.
-	debugging = true // false // 2025
+	debugging = false
 
 	// containerLenUnknown is length returned from Read(Map|Array)Len
 	// when a format doesn't know apiori.
@@ -522,6 +522,55 @@ LOOP:
 // 	captureState() interface{}
 // 	restoreState(state interface{})
 // }
+
+// circularRefChecker holds interfaces during an encoding (if CheckCircularRef=true)
+//
+// We considered using a []uintptr (slice of pointer addresses) retrievable via rv.UnsafeAddr.
+// However, it is possible for the same pointer to point to 2 different types e.g.
+//
+//	type T struct { tHelper }
+//	Here, for var v T; &v and &v.tHelper are the same pointer.
+//
+// Consequently, we need a tuple of type and pointer, which interface{} natively provides.
+//
+// Note: the following references, if seen, can lead to circular references
+//   - Pointer to struct/slice/array/map (any container)
+//   - map (reference, where a value in a kv pair could be the map itself)
+//   - addr of slice/array element
+//   - add of struct field
+type circularRefChecker []interface{} // []uintptr
+
+func (ci *circularRefChecker) push(v interface{}) {
+	for _, vv := range *ci {
+		if eq4i(v, vv) { // error if sptr already seen
+			halt.errorf("circular reference found: %p, %T", v, v)
+		}
+	}
+	*ci = append(*ci, v)
+}
+
+func (ci *circularRefChecker) pushRV(v reflect.Value) (num int) {
+TOP:
+	switch v.Kind() {
+	case reflect.Map:
+		ci.push(rv2i(v))
+		num++
+	case reflect.Pointer:
+		switch v.Type().Elem().Kind() {
+		case reflect.Struct, reflect.Slice, reflect.Array:
+			ci.push(rv2i(v))
+			num++
+		case reflect.Map, reflect.Pointer:
+			v = v.Elem()
+			goto TOP
+		}
+	}
+	return
+}
+
+func (ci *circularRefChecker) pop(num int) {
+	*ci = (*ci)[:len(*ci)-num]
+}
 
 type bdAndBdread struct {
 	bdRead bool
@@ -1540,7 +1589,7 @@ TOP:
 }
 
 // field returns the field of the struct.
-func (n *structFieldInfoPathNode) field(v reflect.Value, alloc bool) (rv2 reflect.Value) {
+func (n *structFieldInfoPathNode) field(v reflect.Value, alloc bool) (rv reflect.Value) {
 	if n.parent != nil {
 		v = n.parent.field(v, alloc)
 		if !v.IsValid() {
@@ -1565,7 +1614,8 @@ func (n *structFieldInfoPathNode) field(v reflect.Value, alloc bool) (rv2 reflec
 			v = v.Elem()
 		}
 	}
-	return v
+	rv = v
+	return
 }
 
 type structFieldInfo struct {
@@ -1590,13 +1640,33 @@ type structFieldInfo struct {
 }
 
 // field returns the field of the struct.
-func (n *structFieldInfo) field(v reflect.Value, alloc, addr bool) (rv2 reflect.Value) {
-	v = n.path.field(v, alloc)
-	if addr {
-		v = rvAddr(v, n.ptrTyp)
+func (n *structFieldInfo) field(v reflect.Value, alloc, addr bool) (rv reflect.Value) {
+	rv = n.path.field(v, alloc)
+	if addr && rv.IsValid() {
+		rv = rvAddr(rv, n.ptrTyp)
 	}
-	return v
+	return
 }
+
+// func (n *structFieldInfo) fieldCirRef(ci *circularRefChecker, v reflect.Value, alloc, addr bool) (rv reflect.Value, numRefPush int) {
+// 	rv = n.path.field(v, alloc)
+// 	var rvAddrOK bool
+// 	if ci != nil {
+// 		if rv.IsValid() {
+// 			rvAddrOK = true
+// 			v = rvAddr(rv, n.ptrTyp)
+// 			numRefPush = ci.pushRV(v)
+// 		}
+// 	}
+// 	if addr {
+// 		if rvAddrOK {
+// 			rv = v
+// 		} else if rv.IsValid() {
+// 			rv = rvAddr(rv, n.ptrTyp)
+// 		}
+// 	}
+// 	return
+// }
 
 func parseStructInfo(stag string) (toArray, omitEmpty bool, keytype valueType) {
 	keytype = valueTypeString // default
@@ -2122,7 +2192,7 @@ func (x *TypeInfos) load(rt reflect.Type) (pti *typeInfo) {
 	// it may lead to duplication, but that's ok.
 	ti := typeInfo{
 		rt:      rt,
-		ptr:     reflect.PtrTo(rt),
+		ptr:     reflect.PointerTo(rt),
 		rtid:    rtid,
 		kind:    uint8(rk),
 		size:    uint32(rt.Size()),
@@ -2135,6 +2205,9 @@ func (x *TypeInfos) load(rt reflect.Type) (pti *typeInfo) {
 
 	_, ti.flagEncBuiltin = searchRtids(encBuiltinRtids, rtid)
 	_, ti.flagDecBuiltin = searchRtids(decBuiltinRtids, rtid)
+	if !ti.flagDecBuiltin {
+		_, ti.flagDecBuiltin = searchRtids(decBuiltinRtids, rt2id(ti.ptr))
+	}
 
 	// bset sets custom implementation flags
 	bset := func(when bool, b *bool) {
@@ -2403,8 +2476,6 @@ LOOP:
 						kind:     uint8(fkind),
 						numderef: numderef,
 					}
-					// no need to set (enc|dec)Builtin, as structs are generally not builtins
-					// (except Raw, RawExt, time.Time, which are not typically embedded
 					x.rget(ft, path2, pv, defaultOmitEmpty)
 				}
 				continue
@@ -2474,20 +2545,20 @@ type bytesRv struct {
 	r reflect.Value
 }
 
-type bytesIntf struct {
-	v []byte
-	i interface{}
-}
+// type bytesIntf struct {
+// 	v []byte
+// 	i interface{}
+// }
 
 type stringIntf struct {
 	v string
 	i interface{}
 }
 
-type orderedIntf[T cmp.Ordered] struct {
-	v T
-	i interface{}
-}
+// type orderedIntf[T cmp.Ordered] struct {
+// 	v T
+// 	i interface{}
+// }
 
 func cmpOrderedRv[T cmp.Ordered](v1, v2 orderedRv[T]) int {
 	return cmp.Compare(v1.v, v2.v)
@@ -2553,12 +2624,18 @@ func sprintf(format string, v ...interface{}) string {
 	return fmt.Sprintf(format, v...)
 }
 
-var (
+const (
 	hlSFX    = "\033[0m"
-	hlRED    = "\033[1;" + "31" + "m"
-	hlGREEN  = "\033[1;" + "32" + "m"
-	hlORANGE = "\033[1;" + "33" + "m"
-	hlBLUE   = "\033[1;" + "34" + "m"
+	hlPFX    = "\033[1;"
+	hlBLACK  = hlPFX + "30" + "m"
+	hlRED    = hlPFX + "31" + "m"
+	hlGREEN  = hlPFX + "32" + "m"
+	hlYELLOW = hlPFX + "33" + "m"
+	hlBLUE   = hlPFX + "34" + "m"
+	hlPURPLE = hlPFX + "35" + "m"
+	hlCYAN   = hlPFX + "36" + "m"
+	hlWHITE  = hlPFX + "37" + "m"
+	// hlORANGE = hlYELLOW
 )
 
 // debugf will print debug statements to the screen whether or not debugging is on
@@ -2576,7 +2653,7 @@ func debugf(s string, a ...any) {
 	}
 	if len(a) > 0 {
 		switch a[0] {
-		case hlRED, hlGREEN, hlBLUE, hlORANGE:
+		case hlBLACK, hlRED, hlGREEN, hlYELLOW, hlBLUE, hlPURPLE, hlCYAN, hlWHITE:
 			s = a[0].(string) + s + hlSFX
 			a = a[1:]
 		}
