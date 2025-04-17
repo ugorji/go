@@ -87,39 +87,7 @@ const (
 	// and treat as nil, true or false.
 	jsonNakedBoolNullInQuotedStr = true
 
-	// encode performance is at par with libraries that just iterate over bytes directly,
-	// because encWr (with inlined bytesEncAppender calls) is inlined.
-	// Conversely, decode performance suffers because decRd (with inlined bytesDecReader calls)
-	// isn't inlinable.
-	//
-	// To improve decode performamnce from json:
-	// - readn1 is only called for \u
-	// - consequently, to optimize json decoding, we specifically need inlining
-	//   for bytes use-case of some other decReader methods:
-	//   - jsonReadAsisChars, skipWhitespace (advance) and jsonReadNum
-	//   - AND THEN readn3, readn4 (for ull, rue and alse).
-	//   - (readn1 is only called when a char is escaped).
-	// - without inlining, we still pay the cost of a method invocation, and this dominates time
-	// - To mitigate, we manually inline in hot zones
-	//   *excluding places where used sparingly (e.g. nextValueBytes, and other atypical cases)*.
-	//   - jsonReadAsisChars *only* called in: appendStringAsBytes
-	//   - advance called: everywhere
-	//   - jsonReadNum: decNumBytes, DecodeNaked
-	// - From running go test (our anecdotal findings):
-	//   - calling jsonReadAsisChars in appendStringAsBytes: 23431
-	//   - calling jsonReadNum in decNumBytes: 15251
-	//   - calling jsonReadNum in DecodeNaked: 612
-	// Consequently, we manually inline jsonReadAsisChars (in appendStringAsBytes)
-	// and jsonReadNum (in decNumbytes)
-
-	// jsonManualInlineDecRdInHotZones controls whether we manually inline some decReader calls.
-	//
-	// CURRENTLY UNUSED (2025-03-27)
-	// jsonManualInlineDecRdInHotZones = true
-
 	jsonSpacesOrTabsLen = 128
-
-	// jsonAlwaysReturnInternString = false
 )
 
 var (

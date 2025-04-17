@@ -111,6 +111,10 @@ func rvAddr(rv reflect.Value, ptrType reflect.Type) reflect.Value {
 	return rv.Addr()
 }
 
+func rvPtrIsNil(rv reflect.Value) bool {
+	return rv.IsNil()
+}
+
 func rvIsNil(rv reflect.Value) bool {
 	return rv.IsNil()
 }

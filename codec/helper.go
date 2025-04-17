@@ -1535,13 +1535,13 @@ func (o intf2impls) intf2impl(rtid uintptr) (rv reflect.Value) {
 // In the typical case, the node is not embedded/anonymous, and thus the parent
 // will be nil and this information becomes a value (not needing any indirection).
 type structFieldInfoPathNode struct {
-	// 2025 ensure this fits witnin a cache line
 	parent *structFieldInfoPathNode
 
 	offset   uint16
 	index    uint16
 	kind     uint8
 	numderef uint8
+	_        uint16 // padding
 
 	typ reflect.Type
 }
@@ -1567,22 +1567,20 @@ func (n *structFieldInfoPathNode) field(v reflect.Value, alloc, base bool) (rv r
 	}
 	v = n.rvField(v)
 	rv = v
-	if alloc {
-		// for j, k := uint8(0), n.numderef; j < k; j++ {
-		for range n.numderef {
-			if rvIsNil(v) {
+
+	// typically, fields only have at numderef = 0 or 1.
+	// (You don't typically see fields like **int).
+	// Consequently, there's not much value in hoisting the conditional out of the loop.
+
+	for range n.numderef {
+		if rvPtrIsNil(v) {
+			if alloc {
 				rvSetDirect(v, reflect.New(v.Type().Elem()))
-			}
-			v = v.Elem()
-		}
-	} else {
-		// for j, k := uint8(0), n.numderef; j < k; j++ {
-		for range n.numderef {
-			if rvIsNil(v) {
+			} else {
 				return reflect.Value{}
 			}
-			v = v.Elem()
 		}
+		v = v.Elem()
 	}
 	if base {
 		rv = v

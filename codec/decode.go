@@ -1100,7 +1100,6 @@ func (d *decoder[T]) kSlice(f *decFnInfo, rv reflect.Value) {
 	// decodeValue handles this better when coming from an addressable value (known to reflect.Value).
 	// Consequently, builtin handling skips slices.
 
-	// builtin := ti.tielem.flagDecBuiltin && ti.elemkind != uint8(reflect.Slice) // 2025
 	var rtelemIsPtr bool
 	var rtelemElem reflect.Type
 	builtin := ti.tielem.flagDecBuiltin
@@ -1156,11 +1155,9 @@ func (d *decoder[T]) kSlice(f *decFnInfo, rv reflect.Value) {
 			slh.ElemContainerState(j)
 		}
 
-		// MARKER 2025 - check if we can make this an addr, and do builtin
+		// we check if we can make this an addr, and do builtin
 		// e.g. if []ints, then fastpath should handle it?
 		// but if not, we should treat it as each element is *int, and decode into it.
-		//
-		// This will require a new var (addrIsBuiltin) and a check to call d.decode(rv2i(rvAddr(rv9)))
 
 		rv9 = rvSliceIndex(rv, j, f.ti)
 		if elemReset {

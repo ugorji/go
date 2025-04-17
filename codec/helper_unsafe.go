@@ -327,11 +327,30 @@ func rvAddr(rv reflect.Value, ptrType reflect.Type) reflect.Value {
 	return rv
 }
 
+// return true if this rv - got from a pointer kind - is nil.
+// For now, only use for struct fields of pointer types, as we're guaranteed
+// that flagIndir will never be set.
+func rvPtrIsNil(rv reflect.Value) bool {
+	if true {
+		return rvIsNil(rv)
+	}
+	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
+	// debugf("rvPtrIsNil: flagIndir set: %v, type: %v", hlRED, urv.flag&unsafeFlagIndir != 0, rv.Type())
+	if urv.flag&unsafeFlagIndir == 0 {
+		debugf("rvPtrIsNil: flagIndir NOT set, type: %v", hlRED, rv.Type())
+	} else {
+		debugf("rvPtrIsNil: flagIndir SET, type: %v", hlGREEN, rv.Type())
+	}
+	return rvPtr(rv) == nil
+}
+
 func rvIsNil(rv reflect.Value) bool {
 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
 	if urv.flag&unsafeFlagIndir == 0 {
+		// debugf("rvIsNil: flagIndir not set, type: %v", hlRED, rv.Type())
 		return urv.ptr == nil
 	}
+	// debugf("rvIsNil: flagIndir set, type: %v", hlYELLOW, rv.Type())
 	return *(*unsafe.Pointer)(urv.ptr) == nil
 }
 
