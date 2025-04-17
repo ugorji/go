@@ -710,7 +710,10 @@ func (d *decoder[T]) kInterfaceNaked(f *decFnInfo) (rvn reflect.Value) {
 			d.decode(rv2i(rvn))
 			rvn = rvn.Elem()
 		} else {
-			rvn = rvZeroAddrK(d.h.MapType, reflect.Map)
+			// made map is fully initialized for direct modification.
+			// There's no need to make a pointer to it first.
+			// rvn = rvZeroAddrK(d.h.MapType, reflect.Map)
+			rvn = makeMapReflect(d.h.MapType, 0)
 			d.decodeValue(rvn, nil)
 		}
 	case valueTypeArray:
