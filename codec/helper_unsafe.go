@@ -20,7 +20,7 @@ import (
 
 // This file has unsafe variants of some helper functions.
 // MARKER: See helper_unsafe.go for the usage documentation.
-
+//
 // There are a number of helper_*unsafe*.go files.
 //
 // - helper_unsafe
@@ -40,19 +40,32 @@ import (
 // As of March 2021, we cannot differentiate whether running with gccgo or gollvm
 // using a build constraint, as both satisfy 'gccgo' build tag.
 // Consequently, we must use the lowest common denominator to support both.
-
+//
 // For reflect.Value code, we decided to do the following:
 //    - if we know the kind, we can elide conditional checks for
 //      - SetXXX (Int, Uint, String, Bool, etc)
 //      - SetLen
 //
-// We can also optimize
-//      - IsNil
-
+// We can also optimize many others, incl IsNil, etc
+//
 // MARKER: Some functions here will not be hit during code coverage runs due to optimizations, e.g.
 //   - rvCopySlice:      called by decode if rvGrowSlice did not set new slice into pointer to orig slice.
 //                       however, helper_unsafe sets it, so no need to call rvCopySlice later
 //   - rvSlice:          same as above
+//
+// MARKER: Handling flagIndir ----
+//
+// flagIndir means that the reflect.Value holds a pointer to the data itself.
+//
+// flagIndir can be set for:
+// - references
+//   Here, type.IfaceIndir() --> false
+//   flagIndir is usually false (except when the value is addressable, where in flagIndir may be true)
+// - everything else (numbers, bools, string, slice, struct, etc).
+//   Here, type.IfaceIndir() --> true
+//   flagIndir is always true
+//
+// This knowlege is used across this file, e.g. in rv2i and rvRefPtr
 
 const safeMode = false
 
@@ -143,7 +156,8 @@ func (x *unsafePerTypeElem) addrFor(k reflect.Kind) unsafe.Pointer {
 		x.slice = unsafeSlice{} // memclr
 		return unsafe.Pointer(&x.slice)
 	}
-	x.arr = [transientSizeMax]byte{} // memclr
+	clear(x.arr[:])
+	// x.arr = [transientSizeMax]byte{} // memclr
 	return unsafe.Pointer(&x.arr)
 }
 
@@ -248,6 +262,8 @@ func okBytes8(b []byte) [8]byte {
 // isNil says whether the value v is nil.
 // This applies to references like map/ptr/unsafepointer/chan/func,
 // and non-reference values like interface/slice.
+//
+// Note: rv is guaranteed valid iff isnil = false
 func isNil(v interface{}) (rv reflect.Value, isnil bool) {
 	var ui = (*unsafeIntf)(unsafe.Pointer(&v))
 	isnil = ui.ptr == nil
@@ -272,10 +288,7 @@ func lowLevelToPtr[T any](v unsafe.Pointer) *T {
 	return (*T)(v)
 }
 
-// return the pointer for a reference (map/chan/func/pointer/unsafe.Pointer).
-// true references (map, func, chan, ptr - NOT slice) may be double-referenced? as flagIndir
-//
-// Assumes that v is a reference (map/func/chan/ptr/func)
+// Given that v is a reference (map/func/chan/ptr/unsafepointer) kind, return the pointer
 func rvRefPtr(v *unsafeReflectValue) unsafe.Pointer {
 	if v.flag&unsafeFlagIndir != 0 {
 		return *(*unsafe.Pointer)(v.ptr)
@@ -306,13 +319,6 @@ func rv4istr(i interface{}) (v reflect.Value) {
 }
 
 func rv2i(rv reflect.Value) (i interface{}) {
-	// We tap into implememtation details from
-	// the source go stdlib reflect/value.go, and trims the implementation.
-	//
-	// e.g.
-	// - a map/ptr is a reference,        thus flagIndir is not set on it
-	// - an int/slice is not a reference, thus flagIndir is set on it
-
 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
 	if refBitset.isset(byte(rv.Kind())) && urv.flag&unsafeFlagIndir != 0 {
 		urv.ptr = *(*unsafe.Pointer)(urv.ptr)
@@ -331,26 +337,16 @@ func rvAddr(rv reflect.Value, ptrType reflect.Type) reflect.Value {
 // For now, only use for struct fields of pointer types, as we're guaranteed
 // that flagIndir will never be set.
 func rvPtrIsNil(rv reflect.Value) bool {
-	if true {
-		return rvIsNil(rv)
-	}
-	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	// debugf("rvPtrIsNil: flagIndir set: %v, type: %v", hlRED, urv.flag&unsafeFlagIndir != 0, rv.Type())
-	if urv.flag&unsafeFlagIndir == 0 {
-		debugf("rvPtrIsNil: flagIndir NOT set, type: %v", hlRED, rv.Type())
-	} else {
-		debugf("rvPtrIsNil: flagIndir SET, type: %v", hlGREEN, rv.Type())
-	}
-	return rvPtr(rv) == nil
+	return rvIsNil(rv)
 }
 
 func rvIsNil(rv reflect.Value) bool {
 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
 	if urv.flag&unsafeFlagIndir == 0 {
-		// debugf("rvIsNil: flagIndir not set, type: %v", hlRED, rv.Type())
 		return urv.ptr == nil
 	}
-	// debugf("rvIsNil: flagIndir set, type: %v", hlYELLOW, rv.Type())
+	// flagIndir is set for a reference (ptr/map/func/unsafepointer/chan)
+	// OR kind is slice/interface
 	return *(*unsafe.Pointer)(urv.ptr) == nil
 }
 
@@ -372,6 +368,7 @@ func rvZeroAddrK(t reflect.Type, k reflect.Kind) (rv reflect.Value) {
 }
 
 func rvZeroAddrTransientAnyK(t reflect.Type, k reflect.Kind, addr unsafe.Pointer) (rv reflect.Value) {
+	// debugf("rvZeroAddrTransientAnyK: t: %v, k: %v", hlYELLOW, t, k)
 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
 	urv.typ = ((*unsafeIntf)(unsafe.Pointer(&t))).ptr
 	urv.flag = uintptr(k) | unsafeFlagIndir | unsafeFlagAddr
@@ -815,12 +812,10 @@ func rvSetDirect(rv reflect.Value, v reflect.Value) {
 	uv := (*unsafeReflectValue)(unsafe.Pointer(&v))
 	if uv.flag&unsafeFlagIndir == 0 {
 		*(*unsafe.Pointer)(urv.ptr) = uv.ptr
-	} else if uv.ptr == unsafeZeroAddr {
-		if urv.ptr != unsafeZeroAddr {
-			typedmemclr(urv.typ, urv.ptr)
-		}
-	} else {
+	} else if uv.ptr != unsafeZeroAddr {
 		typedmemmove(urv.typ, urv.ptr, uv.ptr)
+	} else if urv.ptr != unsafeZeroAddr {
+		typedmemclr(urv.typ, urv.ptr)
 	}
 }
 
@@ -852,11 +847,9 @@ func rvMakeSlice(rv reflect.Value, ti *typeInfo, xlen, xcap int) (_ reflect.Valu
 // It is typically called when we know that SetLen(...) cannot be done.
 func rvSlice(rv reflect.Value, length int) reflect.Value {
 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	var x []struct{}
-	ux := (*unsafeSlice)(unsafe.Pointer(&x))
-	*ux = *(*unsafeSlice)(urv.ptr)
+	ux := *(*unsafeSlice)(urv.ptr) // copy slice header
 	ux.Len = length
-	urv.ptr = unsafe.Pointer(ux)
+	urv.ptr = unsafe.Pointer(&ux)
 	return rv
 }
 
