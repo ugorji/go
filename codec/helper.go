@@ -789,11 +789,10 @@ var (
 	jsonMarshalerTyp   = reflect.TypeOf((*jsonMarshaler)(nil)).Elem()
 	jsonUnmarshalerTyp = reflect.TypeOf((*jsonUnmarshaler)(nil)).Elem()
 
-	selferTyp                = reflect.TypeOf((*Selfer)(nil)).Elem()
-	missingFielderTyp        = reflect.TypeOf((*MissingFielder)(nil)).Elem()
-	iszeroTyp                = reflect.TypeOf((*isZeroer)(nil)).Elem()
-	isCodecEmptyerTyp        = reflect.TypeOf((*isCodecEmptyer)(nil)).Elem()
-	isSelferViaCodecgenerTyp = reflect.TypeOf((*isSelferViaCodecgener)(nil)).Elem()
+	selferTyp         = reflect.TypeOf((*Selfer)(nil)).Elem()
+	missingFielderTyp = reflect.TypeOf((*MissingFielder)(nil)).Elem()
+	iszeroTyp         = reflect.TypeOf((*isZeroer)(nil)).Elem()
+	isCodecEmptyerTyp = reflect.TypeOf((*isCodecEmptyer)(nil)).Elem()
 
 	uint8TypId      = rt2id(uint8Typ)
 	uint8SliceTypId = rt2id(uint8SliceTyp)
@@ -848,10 +847,6 @@ var SelfExt = &extFailWrapper{}
 type Selfer interface {
 	CodecEncodeSelf(*Encoder)
 	CodecDecodeSelf(*Decoder)
-}
-
-type isSelferViaCodecgener interface {
-	codecSelferViaCodecgen()
 }
 
 // MissingFielder defines the interface allowing structs to internally decode or encode
@@ -1892,8 +1887,7 @@ type typeInfo struct {
 	flagComparable   bool
 	flagCanTransient bool
 
-	flagMarshalInterface  bool // does this have custom (un)marshal implementation?
-	flagSelferViaCodecgen bool
+	flagMarshalInterface bool // does this have custom (un)marshal implementation?
 
 	// custom implementation flags
 	flagIsZeroer    bool
@@ -1926,11 +1920,10 @@ type typeInfo struct {
 	flagMissingFielder    bool
 	flagMissingFielderPtr bool
 
-	infoFieldOmitempty bool
-
 	flagEncBuiltin bool
 	flagDecBuiltin bool
 
+	infoFieldOmitempty bool
 	// MARKER 2025 - fill this out (need to pad 6 bytes)
 
 	sfi structFieldInfos
@@ -2210,11 +2203,7 @@ func (x *TypeInfos) load(rt reflect.Type) (pti *typeInfo) {
 	bset(b1, &ti.flagIsCodecEmptyer)
 	bset(b2, &ti.flagIsCodecEmptyerPtr)
 
-	b1, b2 = implIntf(rt, isSelferViaCodecgenerTyp)
-	ti.flagSelferViaCodecgen = b1 || b2
-
 	ti.flagMarshalInterface = ti.flagSelfer || ti.flagSelferPtr ||
-		ti.flagSelferViaCodecgen ||
 		ti.flagBinaryMarshaler || ti.flagBinaryMarshalerPtr ||
 		ti.flagBinaryUnmarshaler || ti.flagBinaryUnmarshalerPtr ||
 		ti.flagTextMarshaler || ti.flagTextMarshalerPtr ||
