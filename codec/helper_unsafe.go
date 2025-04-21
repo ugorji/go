@@ -1069,15 +1069,18 @@ func rvLenMap(rv reflect.Value) int {
 // go 1.4+ has runtime/hashmap.go or runtime/map.go which has a
 // hIter struct with the first 2 values being key and value
 // of the current iteration.
+// And go 1.24+ has runtime/linkname_swiss.go which has a linknameIter for compatibility
+// with hIter.
 //
-// This *hIter is passed to mapiterinit, mapiternext, mapiterkey, mapiterelem.
-// We bypass the reflect wrapper functions and just use the *hIter directly.
+// This *hIter and *linknameIter are passed to mapiterinit, mapiternext, mapiterkey, mapiterelem.
+// We bypass the reflect wrapper functions and just use these directly.
 //
-// Though *hIter has many fields, we only care about the first 2.
+// *hIter and *linknameIter share the same first 4 fields.
 //
 // We directly embed this in unsafeMapIter below
 //
-// hiter is typically about 12 words, but we just fill up unsafeMapIter to 32 words,
+// hiter is typically about 12 words, and linknameIter is typically about 4 words,
+// but we just fill up unsafeMapIter to 32 words,
 // so it fills multiple cache lines and can give some extra space to accomodate small growth.
 
 type unsafeMapIter struct {
@@ -1092,7 +1095,9 @@ type unsafeMapIter struct {
 	it         struct {
 		key   unsafe.Pointer
 		value unsafe.Pointer
-		_     [20]uintptr // padding for other fields (to make up 32 words for enclosing struct)
+		t     unsafe.Pointer
+		h     unsafe.Pointer
+		_     [18]uintptr // padding for other fields (to make up 32 words for enclosing struct)
 	}
 }
 
