@@ -36,6 +36,7 @@ package codec
 import (
 	"reflect"
 	"runtime"
+	"runtime/metrics"
 	"strings"
 	"testing"
 	"time"
@@ -214,24 +215,18 @@ func fnBenchmarkEncode(b *testing.B, encName string, ts interface{}, encfn bench
 	testOnce.Do(testInitAll)
 	// ignore method params: ts, and work on benchTs directly
 	ts = benchTs
-	var err error
-	bs := make([]byte, 0, approxSize)
-
 	// do initial warm up by running encode one time
-	if bs, err = encfn(ts, bs); err != nil {
-		b.Logf("Error encoding benchTs: %s: %v", encName, err)
-		b.FailNow()
-	}
-
-	runtime.GC()
-	// b.ResetTimer()
-	// for i := 0; i < b.N; i++ {
-	for b.Loop() {
+	bs, err := encfn(ts, make([]byte, 0, approxSize))
+	// var err error
+	// bs := make([]byte, 0, approxSize)
+	fnRun := func() {
 		if _, err = encfn(ts, bs); err != nil {
 			b.Logf("Error encoding benchTs: %s: %v", encName, err)
 			b.FailNow()
 		}
 	}
+	fnRun()
+	fnBenchmarkRun(b, fnRun)
 }
 
 func fnBenchmarkDecode(b *testing.B, encName string, ts interface{},
@@ -267,11 +262,17 @@ func fnBenchmarkDecode(b *testing.B, encName string, ts interface{},
 	// do initial warm up by running decode one time
 	locTs := new(TestStruc)
 	ts = locTs
-	// ts = newfn()
-	if err = decfn(buf, ts); err != nil {
-		b.Logf("Error decoding into new TestStruc: %s: %v", encName, err)
-		b.FailNow()
+
+	fnRun := func() {
+		*locTs = TestStruc{}
+		if err = decfn(buf, ts); err != nil {
+			b.Logf("Error decoding into new TestStruc: %s: %v", encName, err)
+			b.FailNow()
+		}
 	}
+
+	fnRun()
+	fnBenchmarkRun(b, fnRun)
 
 	// if false && benchVerify { // do not do benchVerify during decode
 	// 	// ts2 := newfn()
@@ -284,16 +285,72 @@ func fnBenchmarkDecode(b *testing.B, encName string, ts interface{},
 	// 		failT(b, "BenchVerify: Error comparing benchTs: %s: %v", encName, err)
 	// 	}
 	// }
+}
 
+func fnBenchmarkRun(b *testing.B, fn func()) {
+	if testBenchmarkWithRuntimeMetrics {
+		fnBenchmarkRunWithMetrics(b, fn)
+	} else {
+		fnBenchmarkRunNoMetrics(b, fn)
+	}
+}
+
+func fnBenchmarkRunNoMetrics(b *testing.B, fn func()) {
 	runtime.GC()
 	// b.ResetTimer()
 	// for i := 0; i < b.N; i++ {
 	for b.Loop() {
-		*locTs = TestStruc{}
-		// ts = newfn()
-		if err = decfn(buf, ts); err != nil {
-			b.Logf("Error decoding into new TestStruc: %s: %v", encName, err)
-			b.FailNow()
+		fn()
+	}
+}
+
+func fnBenchmarkRunWithMetrics(b *testing.B, fn func()) {
+	var names = [...]string{
+		`/gc/cycles/automatic:gc-cycles`,
+		`/gc/scan/heap:bytes`,
+		`/cpu/classes/gc/total:cpu-seconds`,
+		//`/cpu/classes/total:cpu-seconds`,
+		`/cpu/classes/idle:cpu-seconds`,
+		`/cpu/classes/user:cpu-seconds`,
+	}
+	var cols = [...]string{
+		`gc0Runs`,
+		`gc0ScanBytes`,
+		`gcCpuSec`,
+		//`userRtCpuSec`,
+		`idleCpuSec`,
+		`userCpuSec`,
+	}
+	var s1, s2 [len(names)]metrics.Sample
+	for i, s := range names {
+		s1[i].Name = s
+		s2[i].Name = s
+	}
+
+	fnRM := func(i int) {
+		if strings.HasSuffix(cols[i], "CpuSec") {
+			b.ReportMetric(float64(s2[i].Value.Float64()-s1[i].Value.Float64()), cols[i])
+		} else {
+			b.ReportMetric(float64(s2[i].Value.Uint64()-s1[i].Value.Uint64()), cols[i])
 		}
+	}
+
+	runtime.GC()
+
+	// runtime.ReadMemStats(&m0)
+	metrics.Read(s1[:])
+
+	for b.Loop() {
+		fn()
+	}
+
+	// runtime.ReadMemStats(&m1)
+	// b.ReportMetric(float64(m1.NumGC-m0.NumGC), "gcRuns")
+	// b.ReportMetric(float64(m1.Lookups-m0.Lookups), "ptrLookups")
+	// // b.ReportMetric(float64(gcRuns)/float64(b.N), "gc_runs/op")
+
+	metrics.Read(s2[:])
+	for i := range len(names) {
+		fnRM(i)
 	}
 }

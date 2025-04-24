@@ -96,6 +96,8 @@ var (
 	testMapStringKeyOnly bool
 
 	testBenchmarkNoConfig bool
+
+	testBenchmarkWithRuntimeMetrics bool
 )
 
 func init() {
@@ -125,6 +127,7 @@ func testInitFlags() {
 
 func benchInitFlags() {
 	flag.BoolVar(&testBenchmarkNoConfig, "bnc", false, "benchmarks: do not make configuration changes for fair benchmarking")
+	flag.BoolVar(&testBenchmarkWithRuntimeMetrics, "brm", false, "benchmarks: include runtime metrics")
 	// flags reproduced here for compatibility (duplicate some in testInitFlags)
 	flag.BoolVar(&testMapStringKeyOnly, "bs", false, "benchmarks: use maps with string keys only")
 	flag.IntVar(&testDepth, "bd", 1, "Benchmarks: Test Struc Depth")
