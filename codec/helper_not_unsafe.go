@@ -262,7 +262,7 @@ func isEmptyStruct(v reflect.Value, tinfos *TypeInfos, recursive bool) bool {
 	// We only care about what we can encode/decode,
 	// so that is what we use to check omitEmpty.
 	for _, si := range ti.sfi.source() {
-		sfv := si.path.field(v, false, true)
+		sfv := si.fieldNoAlloc(v, true)
 		if sfv.IsValid() && !isEmptyValue(sfv, tinfos, recursive) {
 			return false
 		}
@@ -744,11 +744,11 @@ func (d *decoderBase) mapKeyString(kstrbs, kstr2bs *[]byte, _ bool) (string, boo
 
 // ---------- structFieldInfo optimized ---------------
 
-func (n *structFieldInfoPathNode) rvField(v reflect.Value) reflect.Value {
+func (n *structFieldInfoNode) rvField(v reflect.Value) reflect.Value {
 	return v.Field(int(n.index))
 }
 
-// func (n *structFieldInfoPathNode) rvFieldAddr(v reflect.Value) reflect.Value {
+// func (n *structFieldInfoNode) rvFieldAddr(v reflect.Value) reflect.Value {
 // 	return v.Field(int(n.index)).Addr()
 // }
 

@@ -1524,14 +1524,7 @@ func (o intf2impls) intf2impl(rtid uintptr) (rv reflect.Value) {
 	return
 }
 
-// structFieldinfopathNode is a node in a tree, which allows us easily
-// walk the anonymous path.
-//
-// In the typical case, the node is not embedded/anonymous, and thus the parent
-// will be nil and this information becomes a value (not needing any indirection).
-type structFieldInfoPathNode struct {
-	parent *structFieldInfoPathNode
-
+type structFieldInfoNode struct {
 	offset   uint16
 	index    uint16
 	kind     uint8
@@ -1539,6 +1532,41 @@ type structFieldInfoPathNode struct {
 	_        uint16 // padding
 
 	typ reflect.Type
+}
+
+// // field returns the field of the struct.
+// func (n *structFieldInfoNode) field(v reflect.Value, alloc, base bool) (rv reflect.Value) {
+// 	v = n.rvField(v)
+// 	rv = v
+//
+// 	// typically, fields only have at numderef = 0 or 1.
+// 	// (You don't typically see fields like **int).
+// 	// Consequently, not much value in hoisting 'if alloc' conditional out of the loop.
+//
+// 	for range n.numderef {
+// 		if rvPtrIsNil(v) {
+// 			if alloc {
+// 				rvSetDirect(v, reflect.New(v.Type().Elem()))
+// 			} else {
+// 				return reflect.Value{}
+// 			}
+// 		}
+// 		v = v.Elem()
+// 	}
+// 	if base {
+// 		rv = v
+// 	}
+// 	return
+// }
+
+// structFieldinfopathNode is a node in a tree, which allows us easily
+// walk the anonymous path.
+//
+// In the typical case, the node is not embedded/anonymous, and thus the parent
+// will be nil and this information becomes a value (not needing any indirection).
+type structFieldInfoPathNode struct {
+	parent *structFieldInfoPathNode
+	structFieldInfoNode
 }
 
 // depth returns number of valid nodes in the hierachy
@@ -1552,36 +1580,17 @@ TOP:
 	return
 }
 
-// field returns the field of the struct.
-func (n *structFieldInfoPathNode) field(v reflect.Value, alloc, base bool) (rv reflect.Value) {
-	if n.parent != nil {
-		v = n.parent.field(v, alloc, true)
-		if !v.IsValid() {
-			return
-		}
-	}
-	v = n.rvField(v)
-	rv = v
-
-	// typically, fields only have at numderef = 0 or 1.
-	// (You don't typically see fields like **int).
-	// Consequently, there's not much value in hoisting the conditional out of the loop.
-
-	for range n.numderef {
-		if rvPtrIsNil(v) {
-			if alloc {
-				rvSetDirect(v, reflect.New(v.Type().Elem()))
-			} else {
-				return reflect.Value{}
-			}
-		}
-		v = v.Elem()
-	}
-	if base {
-		rv = v
-	}
-	return
-}
+// MARKER: fully working code - commented out as we inline the code in sfi.field(No)Alloc
+// // field returns the field of the struct.
+// func (n *structFieldInfoPathNode) field(v reflect.Value, alloc, base bool) (rv reflect.Value) {
+// 	if n.parent != nil {
+// 		v = n.parent.field(v, alloc, true)
+// 		if !v.IsValid() {
+// 			return
+// 		}
+// 	}
+// 	return n.structFieldInfoNode.field(v, alloc, base)
+// }
 
 type structFieldInfo struct {
 	encName string // encode name
@@ -1598,10 +1607,72 @@ type structFieldInfo struct {
 	encBuiltin bool // is field supported for encoding as a builtin?
 	decBuiltin bool // is field addr supported for decoding as a builtin?
 
-	path structFieldInfoPathNode
+	node    structFieldInfoNode
+	parents []structFieldInfoNode
+
+	// path structFieldInfoPathNode
 
 	baseTyp reflect.Type
 	ptrTyp  reflect.Type
+}
+
+// MARKER: fully working code - commented out as we inline the code in sfi.field(No)Alloc
+// func (n *structFieldInfo) field(v reflect.Value, alloc, base bool) (rv reflect.Value) {
+// 	for i := range n.parents {
+// 		v = n.parents[i].field(v, alloc, true)
+// 		if !v.IsValid() {
+// 			return
+// 		}
+// 	}
+// 	return n.node.field(v, alloc, base)
+// }
+
+func (n *structFieldInfo) fieldAlloc(v reflect.Value) reflect.Value {
+	// return n.path.field(v, true, true)
+	// return n.field(v, true, true)
+	for i := range n.parents {
+		v = n.parents[i].rvField(v)
+		for range n.parents[i].numderef {
+			if rvPtrIsNil(v) {
+				rvSetDirect(v, reflect.New(v.Type().Elem()))
+			}
+			v = v.Elem()
+		}
+	}
+	v = n.node.rvField(v)
+	for range n.node.numderef {
+		if rvPtrIsNil(v) {
+			rvSetDirect(v, reflect.New(v.Type().Elem()))
+		}
+		v = v.Elem()
+	}
+	return v
+}
+
+func (n *structFieldInfo) fieldNoAlloc(v reflect.Value, base bool) (rv reflect.Value) {
+	// return n.path.field(v, false, base)
+	// return n.field(v, false, base)
+	for i := range n.parents {
+		v = n.parents[i].rvField(v)
+		for range n.parents[i].numderef {
+			if rvPtrIsNil(v) {
+				return reflect.Value{}
+			}
+			v = v.Elem()
+		}
+	}
+	v = n.node.rvField(v)
+	rv = v
+	for range n.node.numderef {
+		if rvPtrIsNil(v) {
+			return reflect.Value{}
+		}
+		v = v.Elem()
+	}
+	if base {
+		rv = v
+	}
+	return
 }
 
 // func (n *structFieldInfo) fieldCirRef(ci *circularRefChecker, v reflect.Value, alloc, addr bool) (rv reflect.Value, numRefPush int) {
@@ -1702,7 +1773,7 @@ func (x *uint8To32TrieNode) expandKids() (r *uint8To32TrieNode) {
 
 func (x *uint8To32TrieNode) put(v uint8) (r *uint8To32TrieNode) {
 	kids := x.getKids()
-	for i := range kids {
+	for i := range len(kids) {
 		if kids[i].key == v {
 			return &kids[i]
 		}
@@ -1714,7 +1785,7 @@ func (x *uint8To32TrieNode) put(v uint8) (r *uint8To32TrieNode) {
 }
 
 func (x *uint8To32TrieNode) puts(s string, v uint32) (r *uint8To32TrieNode) {
-	for i := 0; i < len(s); i++ {
+	for i := range len(s) {
 		x = x.put(s[i])
 	}
 	x.value = v
@@ -1941,8 +2012,9 @@ func (ti *typeInfo) resolve(x []structFieldInfo, ss map[string]uint16) (n int) {
 		xn := x[i].encName
 		j, ok := ss[xn]
 		if ok {
-			i2clear := ui                              // index to be cleared
-			if x[i].path.depth() < x[j].path.depth() { // this one is shallower
+			i2clear := ui // index to be cleared
+			// if x[i].path.depth() < x[j].path.depth() { // this one is shallower
+			if len(x[i].parents) < len(x[j].parents) { // this one is shallower
 				ss[xn] = ui
 				i2clear = j
 			}
@@ -2420,12 +2492,14 @@ LOOP:
 				if processIt {
 					pv.etypes = append(pv.etypes, ftid)
 					path2 := &structFieldInfoPathNode{
-						parent:   path,
-						typ:      f.Type,
-						offset:   uint16(f.Offset),
-						index:    j,
-						kind:     uint8(fkind),
-						numderef: numderef,
+						parent: path,
+						structFieldInfoNode: structFieldInfoNode{
+							typ:      f.Type,
+							offset:   uint16(f.Offset),
+							index:    j,
+							kind:     uint8(fkind),
+							numderef: numderef,
+						},
 					}
 					x.rget(ft, path2, pv, defaultOmitEmpty)
 				}
@@ -2457,14 +2531,33 @@ LOOP:
 			ptrTyp:    reflect.PointerTo(ft),
 		}
 
-		si.path = structFieldInfoPathNode{
-			parent:   path,
+		// si.path = structFieldInfoPathNode{
+		// 	parent: path,
+		// 	structFieldInfoNode: structFieldInfoNode{
+		// 		typ:      f.Type,
+		// 		offset:   uint16(f.Offset),
+		// 		index:    j,
+		// 		kind:     uint8(fkind),
+		// 		numderef: numderef,
+		// 	},
+		// }
+
+		si.node = structFieldInfoNode{
 			typ:      f.Type,
 			offset:   uint16(f.Offset),
 			index:    j,
 			kind:     uint8(fkind),
 			numderef: numderef,
 		}
+
+		if path != nil {
+			si.parents = make([]structFieldInfoNode, path.depth())
+			for k, p := len(si.parents)-1, path; k >= 0; k-- {
+				si.parents[k] = p.structFieldInfoNode
+				p = p.parent
+			}
+		}
+
 		// ftid = rt2id(ft) where ft = si.baseTyp)
 		_, si.encBuiltin = searchRtids(encBuiltinRtids, ftid)
 		_, si.decBuiltin = searchRtids(decBuiltinRtids, ftid)

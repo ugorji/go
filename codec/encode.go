@@ -725,9 +725,9 @@ func (e *encoder[T]) kStructSimple(f *encFnInfo, rv reflect.Value) {
 		for _, si = range tisfi {
 			e.arrayElem()
 			if si.encBuiltin {
-				e.encode(rv2i(si.path.field(rv, false, true)))
+				e.encode(rv2i(si.fieldNoAlloc(rv, true)))
 			} else {
-				e.encodeValue(si.path.field(rv, false, !chkCirRef), nil)
+				e.encodeValue(si.fieldNoAlloc(rv, !chkCirRef), nil)
 			}
 		}
 		e.arrayEnd()
@@ -741,9 +741,9 @@ func (e *encoder[T]) kStructSimple(f *encFnInfo, rv reflect.Value) {
 			e.e.EncodeStringNoEscape4Json(si.encName)
 			e.mapElemValue()
 			if si.encBuiltin {
-				e.encode(rv2i(si.path.field(rv, false, true)))
+				e.encode(rv2i(si.fieldNoAlloc(rv, true)))
 			} else {
-				e.encodeValue(si.path.field(rv, false, !chkCirRef), nil)
+				e.encodeValue(si.fieldNoAlloc(rv, !chkCirRef), nil)
 			}
 		}
 		e.mapEnd()
@@ -787,12 +787,12 @@ func (e *encoder[T]) kStruct(f *encFnInfo, rv reflect.Value) {
 			// 	continue
 			// }
 			if si.omitEmpty {
-				kv.r = si.path.field(rv, false, false) // test actual field val
+				kv.r = si.fieldNoAlloc(rv, false) // test actual field val
 				if isEmptyValue(kv.r, e.h.TypeInfos, recur) {
 					continue
 				}
 			} else {
-				kv.r = si.path.field(rv, false, si.encBuiltin || !chkCirRef)
+				kv.r = si.fieldNoAlloc(rv, si.encBuiltin || !chkCirRef)
 			}
 			kv.v = si
 			fkvs[newlen] = kv
@@ -883,12 +883,12 @@ func (e *encoder[T]) kStruct(f *encFnInfo, rv reflect.Value) {
 			if si.omitEmpty {
 				// use the zero value.
 				// if a reference or struct, set to nil (so you do not output too much)
-				kv.r = si.path.field(rv, false, false) // test actual field val
+				kv.r = si.fieldNoAlloc(rv, false) // test actual field val
 				if isEmptyContainerValue(kv.r, e.h.TypeInfos, recur) {
 					kv.r = reflect.Value{} //encode as nil
 				}
 			} else {
-				kv.r = si.path.field(rv, false, si.encBuiltin || !chkCirRef)
+				kv.r = si.fieldNoAlloc(rv, si.encBuiltin || !chkCirRef)
 			}
 			kv.v = si
 			fkvs[i] = kv

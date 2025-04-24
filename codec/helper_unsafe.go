@@ -1089,24 +1089,26 @@ func rvLenMap(rv reflect.Value) int {
 //
 // It is more performant to provide a value that the map entry is set into,
 // and that elides the allocation.
-
-// go 1.4+ has runtime/hashmap.go or runtime/map.go which has a
-// hIter struct with the first 2 values being key and value
-// of the current iteration.
 //
+// go 1.4 through go 1.23 (in runtime/hashmap.go or runtime/map.go) has a hIter struct
+// with the first 2 values being pointers for key and value of the current iteration.
+// The next 6 values are pointers, followed by numeric types (uintptr, uint8, bool, etc).
 // This *hIter is passed to mapiterinit, mapiternext, mapiterkey, mapiterelem.
-// We bypass the reflect wrapper functions and just use the *hIter directly.
 //
-// Though *hIter has many fields, we only care about the first 2.
+// In go 1.24, swissmap was introduced, and it provides a compatibility layer
+// for hIter (called linknameIter). This has only 2 pointer fields after the key and value pointers.
 //
-// We directly embed this in unsafeMapIter below
+// Note: We bypass the reflect wrapper functions and just use the *hIter directly.
 //
-// hiter is typically about 12 words, but we just fill up unsafeMapIter to 32 words,
-// so it fills multiple cache lines and can give some extra space to accomodate small growth.
+// When 'faking' these types with our own, we MUST ensure that the GC sees the pointers
+// appropriately. These are reflected in goversion_(no)swissmap_unsafe.go files.
+// In these files, we pad the extra spaces appropriately.
+//
+// Note: the faux hIter/linknameIter is directly embedded in unsafeMapIter below
 
 type unsafeMapIter struct {
 	mtyp, mptr unsafe.Pointer
-	k, v       reflect.Value
+	k, v       unsafeReflectValue
 	kisref     bool
 	visref     bool
 	mapvalues  bool
@@ -1116,7 +1118,7 @@ type unsafeMapIter struct {
 	it         struct {
 		key   unsafe.Pointer
 		value unsafe.Pointer
-		_     [20]uintptr // padding for other fields (to make up 32 words for enclosing struct)
+		_     unsafeMapIterPadding
 	}
 }
 
@@ -1136,18 +1138,16 @@ func (t *unsafeMapIter) Next() (r bool) {
 	}
 
 	if helperUnsafeDirectAssignMapEntry || t.kisref {
-		(*unsafeReflectValue)(unsafe.Pointer(&t.k)).ptr = t.it.key
+		t.k.ptr = t.it.key
 	} else {
-		k := (*unsafeReflectValue)(unsafe.Pointer(&t.k))
-		typedmemmove(k.typ, k.ptr, t.it.key)
+		typedmemmove(t.k.typ, t.k.ptr, t.it.key)
 	}
 
 	if t.mapvalues {
 		if helperUnsafeDirectAssignMapEntry || t.visref {
-			(*unsafeReflectValue)(unsafe.Pointer(&t.v)).ptr = t.it.value
+			t.v.ptr = t.it.value
 		} else {
-			v := (*unsafeReflectValue)(unsafe.Pointer(&t.v))
-			typedmemmove(v.typ, v.ptr, t.it.value)
+			typedmemmove(t.v.typ, t.v.ptr, t.it.value)
 		}
 	}
 
@@ -1155,11 +1155,11 @@ func (t *unsafeMapIter) Next() (r bool) {
 }
 
 func (t *unsafeMapIter) Key() (r reflect.Value) {
-	return t.k
+	return *(*reflect.Value)(unsafe.Pointer(&t.k))
 }
 
 func (t *unsafeMapIter) Value() (r reflect.Value) {
-	return t.v
+	return *(*reflect.Value)(unsafe.Pointer(&t.v))
 }
 
 func (t *unsafeMapIter) Done() {}
@@ -1186,14 +1186,14 @@ func mapRange(t *mapIter, m, k, v reflect.Value, mapvalues bool) {
 	// t.it = (*unsafeMapHashIter)(reflect_mapiterinit(t.mtyp, t.mptr))
 	mapiterinit(t.mtyp, t.mptr, unsafe.Pointer(&t.it))
 
-	t.k = k
+	t.k = *(*unsafeReflectValue)(unsafe.Pointer(&k))
 	t.kisref = refBitset.isset(byte(k.Kind()))
 
 	if mapvalues {
-		t.v = v
+		t.v = *(*unsafeReflectValue)(unsafe.Pointer(&v))
 		t.visref = refBitset.isset(byte(v.Kind()))
 	} else {
-		t.v = reflect.Value{}
+		t.v = unsafeReflectValue{}
 	}
 }
 
@@ -1292,7 +1292,7 @@ func (d *decoderBase) mapKeyString(kstrbs, kstr2bs *[]byte, scratchBuf bool) (s 
 
 // ---------- structFieldInfo optimized ---------------
 
-func (n *structFieldInfoPathNode) rvField(v reflect.Value) (rv reflect.Value) {
+func (n *structFieldInfoNode) rvField(v reflect.Value) (rv reflect.Value) {
 	// we already know this is exported, and maybe embedded (based on what si says)
 	uv := (*unsafeReflectValue)(unsafe.Pointer(&v))
 
@@ -1313,7 +1313,7 @@ func (n *structFieldInfoPathNode) rvField(v reflect.Value) (rv reflect.Value) {
 	return
 }
 
-// func (n *structFieldInfoPathNode) rvFieldAddr(v reflect.Value) (rv reflect.Value) {
+// func (n *structFieldInfoNode) rvFieldAddr(v reflect.Value) (rv reflect.Value) {
 // 	// we already know this is exported, and maybe embedded (based on what si says)
 // 	uv := (*unsafeReflectValue)(unsafe.Pointer(&v))
 // 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
