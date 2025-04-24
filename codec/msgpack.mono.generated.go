@@ -425,9 +425,9 @@ func (e *encoderMsgpackBytes) kStructSimple(f *encFnInfo, rv reflect.Value) {
 		for _, si = range tisfi {
 			e.arrayElem()
 			if si.encBuiltin {
-				e.encode(rv2i(si.path.field(rv, false, true)))
+				e.encode(rv2i(si.fieldNoAlloc(rv, true)))
 			} else {
-				e.encodeValue(si.path.field(rv, false, !chkCirRef), nil)
+				e.encodeValue(si.fieldNoAlloc(rv, !chkCirRef), nil)
 			}
 		}
 		e.arrayEnd()
@@ -441,9 +441,9 @@ func (e *encoderMsgpackBytes) kStructSimple(f *encFnInfo, rv reflect.Value) {
 			e.e.EncodeStringNoEscape4Json(si.encName)
 			e.mapElemValue()
 			if si.encBuiltin {
-				e.encode(rv2i(si.path.field(rv, false, true)))
+				e.encode(rv2i(si.fieldNoAlloc(rv, true)))
 			} else {
-				e.encodeValue(si.path.field(rv, false, !chkCirRef), nil)
+				e.encodeValue(si.fieldNoAlloc(rv, !chkCirRef), nil)
 			}
 		}
 		e.mapEnd()
@@ -484,12 +484,12 @@ func (e *encoderMsgpackBytes) kStruct(f *encFnInfo, rv reflect.Value) {
 		for _, si := range tisfi {
 
 			if si.omitEmpty {
-				kv.r = si.path.field(rv, false, false)
+				kv.r = si.fieldNoAlloc(rv, false)
 				if isEmptyValue(kv.r, e.h.TypeInfos, recur) {
 					continue
 				}
 			} else {
-				kv.r = si.path.field(rv, false, si.encBuiltin || !chkCirRef)
+				kv.r = si.fieldNoAlloc(rv, si.encBuiltin || !chkCirRef)
 			}
 			kv.v = si
 			fkvs[newlen] = kv
@@ -574,12 +574,12 @@ func (e *encoderMsgpackBytes) kStruct(f *encFnInfo, rv reflect.Value) {
 
 			if si.omitEmpty {
 
-				kv.r = si.path.field(rv, false, false)
+				kv.r = si.fieldNoAlloc(rv, false)
 				if isEmptyContainerValue(kv.r, e.h.TypeInfos, recur) {
 					kv.r = reflect.Value{}
 				}
 			} else {
-				kv.r = si.path.field(rv, false, si.encBuiltin || !chkCirRef)
+				kv.r = si.fieldNoAlloc(rv, si.encBuiltin || !chkCirRef)
 			}
 			kv.v = si
 			fkvs[i] = kv
@@ -1334,9 +1334,7 @@ func (dh helperEncDriverMsgpackBytes) encFnLoad(rt reflect.Type, rtid uintptr, t
 		if rk == reflect.Struct || rk == reflect.Array {
 			fi.addrE = true
 		}
-	} else if (ti.flagSelfer || ti.flagSelferPtr) &&
-		!(checkCircularRef && ti.flagSelferViaCodecgen && ti.kind == byte(reflect.Struct)) {
-
+	} else if ti.flagSelfer || ti.flagSelferPtr {
 		fn.fe = (*encoderMsgpackBytes).selferMarshal
 		fi.addrE = ti.flagSelferPtr
 	} else if supportMarshalInterfaces && binaryEncoding &&
@@ -1598,7 +1596,8 @@ func (d *decoderMsgpackBytes) kInterfaceNaked(f *decFnInfo) (rvn reflect.Value) 
 			d.decode(rv2i(rvn))
 			rvn = rvn.Elem()
 		} else {
-			rvn = rvZeroAddrK(d.h.MapType, reflect.Map)
+
+			rvn = makeMapReflect(d.h.MapType, 0)
 			d.decodeValue(rvn, nil)
 		}
 	case valueTypeArray:
@@ -1724,16 +1723,16 @@ func (d *decoderMsgpackBytes) kInterface(f *decFnInfo, rv reflect.Value) {
 
 func (d *decoderMsgpackBytes) kStructField(si *structFieldInfo, rv reflect.Value) {
 	if d.d.TryNil() {
-		rv = si.path.field(rv, false, true)
+		rv = si.fieldNoAlloc(rv, true)
 		if rv.IsValid() {
 			decSetNonNilRV2Zero(rv)
 		}
 	} else if si.decBuiltin {
-		rv = rvAddr(si.path.field(rv, true, true), si.ptrTyp)
+		rv = rvAddr(si.fieldAlloc(rv), si.ptrTyp)
 		d.decode(rv2i(rv))
 	} else {
 		fn := d.fn(si.baseTyp)
-		rv = si.path.field(rv, true, true)
+		rv = si.fieldAlloc(rv)
 		if fn.i.addrD {
 			rv = rvAddr(rv, si.ptrTyp)
 		}
@@ -2979,9 +2978,7 @@ func (dh helperDecDriverMsgpackBytes) decFnLoad(rt reflect.Type, rtid uintptr, t
 		fi.xfTag, fi.xfFn = xfFn.tag, xfFn.ext
 		fn.fd = (*decoderMsgpackBytes).ext
 		fi.addrD = true
-	} else if (ti.flagSelfer || ti.flagSelferPtr) &&
-		!(checkCircularRef && ti.flagSelferViaCodecgen && ti.kind == byte(reflect.Struct)) {
-
+	} else if ti.flagSelfer || ti.flagSelferPtr {
 		fn.fd = (*decoderMsgpackBytes).selferUnmarshal
 		fi.addrD = ti.flagSelferPtr
 	} else if supportMarshalInterfaces && binaryEncoding &&
@@ -4422,9 +4419,9 @@ func (e *encoderMsgpackIO) kStructSimple(f *encFnInfo, rv reflect.Value) {
 		for _, si = range tisfi {
 			e.arrayElem()
 			if si.encBuiltin {
-				e.encode(rv2i(si.path.field(rv, false, true)))
+				e.encode(rv2i(si.fieldNoAlloc(rv, true)))
 			} else {
-				e.encodeValue(si.path.field(rv, false, !chkCirRef), nil)
+				e.encodeValue(si.fieldNoAlloc(rv, !chkCirRef), nil)
 			}
 		}
 		e.arrayEnd()
@@ -4438,9 +4435,9 @@ func (e *encoderMsgpackIO) kStructSimple(f *encFnInfo, rv reflect.Value) {
 			e.e.EncodeStringNoEscape4Json(si.encName)
 			e.mapElemValue()
 			if si.encBuiltin {
-				e.encode(rv2i(si.path.field(rv, false, true)))
+				e.encode(rv2i(si.fieldNoAlloc(rv, true)))
 			} else {
-				e.encodeValue(si.path.field(rv, false, !chkCirRef), nil)
+				e.encodeValue(si.fieldNoAlloc(rv, !chkCirRef), nil)
 			}
 		}
 		e.mapEnd()
@@ -4481,12 +4478,12 @@ func (e *encoderMsgpackIO) kStruct(f *encFnInfo, rv reflect.Value) {
 		for _, si := range tisfi {
 
 			if si.omitEmpty {
-				kv.r = si.path.field(rv, false, false)
+				kv.r = si.fieldNoAlloc(rv, false)
 				if isEmptyValue(kv.r, e.h.TypeInfos, recur) {
 					continue
 				}
 			} else {
-				kv.r = si.path.field(rv, false, si.encBuiltin || !chkCirRef)
+				kv.r = si.fieldNoAlloc(rv, si.encBuiltin || !chkCirRef)
 			}
 			kv.v = si
 			fkvs[newlen] = kv
@@ -4571,12 +4568,12 @@ func (e *encoderMsgpackIO) kStruct(f *encFnInfo, rv reflect.Value) {
 
 			if si.omitEmpty {
 
-				kv.r = si.path.field(rv, false, false)
+				kv.r = si.fieldNoAlloc(rv, false)
 				if isEmptyContainerValue(kv.r, e.h.TypeInfos, recur) {
 					kv.r = reflect.Value{}
 				}
 			} else {
-				kv.r = si.path.field(rv, false, si.encBuiltin || !chkCirRef)
+				kv.r = si.fieldNoAlloc(rv, si.encBuiltin || !chkCirRef)
 			}
 			kv.v = si
 			fkvs[i] = kv
@@ -5331,9 +5328,7 @@ func (dh helperEncDriverMsgpackIO) encFnLoad(rt reflect.Type, rtid uintptr, tinf
 		if rk == reflect.Struct || rk == reflect.Array {
 			fi.addrE = true
 		}
-	} else if (ti.flagSelfer || ti.flagSelferPtr) &&
-		!(checkCircularRef && ti.flagSelferViaCodecgen && ti.kind == byte(reflect.Struct)) {
-
+	} else if ti.flagSelfer || ti.flagSelferPtr {
 		fn.fe = (*encoderMsgpackIO).selferMarshal
 		fi.addrE = ti.flagSelferPtr
 	} else if supportMarshalInterfaces && binaryEncoding &&
@@ -5595,7 +5590,8 @@ func (d *decoderMsgpackIO) kInterfaceNaked(f *decFnInfo) (rvn reflect.Value) {
 			d.decode(rv2i(rvn))
 			rvn = rvn.Elem()
 		} else {
-			rvn = rvZeroAddrK(d.h.MapType, reflect.Map)
+
+			rvn = makeMapReflect(d.h.MapType, 0)
 			d.decodeValue(rvn, nil)
 		}
 	case valueTypeArray:
@@ -5721,16 +5717,16 @@ func (d *decoderMsgpackIO) kInterface(f *decFnInfo, rv reflect.Value) {
 
 func (d *decoderMsgpackIO) kStructField(si *structFieldInfo, rv reflect.Value) {
 	if d.d.TryNil() {
-		rv = si.path.field(rv, false, true)
+		rv = si.fieldNoAlloc(rv, true)
 		if rv.IsValid() {
 			decSetNonNilRV2Zero(rv)
 		}
 	} else if si.decBuiltin {
-		rv = rvAddr(si.path.field(rv, true, true), si.ptrTyp)
+		rv = rvAddr(si.fieldAlloc(rv), si.ptrTyp)
 		d.decode(rv2i(rv))
 	} else {
 		fn := d.fn(si.baseTyp)
-		rv = si.path.field(rv, true, true)
+		rv = si.fieldAlloc(rv)
 		if fn.i.addrD {
 			rv = rvAddr(rv, si.ptrTyp)
 		}
@@ -6976,9 +6972,7 @@ func (dh helperDecDriverMsgpackIO) decFnLoad(rt reflect.Type, rtid uintptr, tinf
 		fi.xfTag, fi.xfFn = xfFn.tag, xfFn.ext
 		fn.fd = (*decoderMsgpackIO).ext
 		fi.addrD = true
-	} else if (ti.flagSelfer || ti.flagSelferPtr) &&
-		!(checkCircularRef && ti.flagSelferViaCodecgen && ti.kind == byte(reflect.Struct)) {
-
+	} else if ti.flagSelfer || ti.flagSelferPtr {
 		fn.fd = (*decoderMsgpackIO).selferUnmarshal
 		fi.addrD = ti.flagSelferPtr
 	} else if supportMarshalInterfaces && binaryEncoding &&
