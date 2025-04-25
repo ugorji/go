@@ -30,6 +30,8 @@ jobs:
       - uses: actions/setup-go@v3
         with:
           go-version: ${{ matrix.go }}
+      - run: go get github.com/google/go-cmp/cmp
+        if: github.ref_name == 'devel'
       - name: Run tests
         if: >-
           (github.ref_name == 'master' && matrix.go == '1.24') ||
