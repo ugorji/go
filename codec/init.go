@@ -88,63 +88,6 @@ type encDriver interface {
 	encDriverI
 }
 
-// NewEncoder returns an Encoder for encoding into an io.Writer.
-//
-// For efficiency, Users are encouraged to configure WriterBufferSize on the handle
-// OR pass in a memory buffered writer (eg bufio.Writer, bytes.Buffer).
-func NewEncoder(w io.Writer, h Handle) *Encoder {
-	var e encoderI
-	switch h.(type) {
-	case *SimpleHandle:
-		var dh helperEncDriver[simpleEncDriverM[bufioEncWriterM]]
-		e = dh.newEncoderIO(w, h)
-	case *JsonHandle:
-		var dh helperEncDriver[jsonEncDriverM[bufioEncWriterM]]
-		e = dh.newEncoderIO(w, h)
-	case *CborHandle:
-		var dh helperEncDriver[cborEncDriverM[bufioEncWriterM]]
-		e = dh.newEncoderIO(w, h)
-	case *MsgpackHandle:
-		var dh helperEncDriver[msgpackEncDriverM[bufioEncWriterM]]
-		e = dh.newEncoderIO(w, h)
-	case *BincHandle:
-		var dh helperEncDriver[bincEncDriverM[bufioEncWriterM]]
-		e = dh.newEncoderIO(w, h)
-	default:
-		return nil
-	}
-	return &Encoder{e}
-}
-
-// NewEncoderBytes returns an encoder for encoding directly and efficiently
-// into a byte slice, using zero-copying to temporary slices.
-//
-// It will potentially replace the output byte slice pointed to.
-// After encoding, the out parameter contains the encoded contents.
-func NewEncoderBytes(out *[]byte, h Handle) *Encoder {
-	var e encoderI
-	switch h.(type) {
-	case *SimpleHandle:
-		var dh helperEncDriver[simpleEncDriverM[bytesEncAppenderM]]
-		e = dh.newEncoderBytes(out, h)
-	case *JsonHandle:
-		var dh helperEncDriver[jsonEncDriverM[bytesEncAppenderM]]
-		e = dh.newEncoderBytes(out, h)
-	case *CborHandle:
-		var dh helperEncDriver[cborEncDriverM[bytesEncAppenderM]]
-		e = dh.newEncoderBytes(out, h)
-	case *MsgpackHandle:
-		var dh helperEncDriver[msgpackEncDriverM[bytesEncAppenderM]]
-		e = dh.newEncoderBytes(out, h)
-	case *BincHandle:
-		var dh helperEncDriver[bincEncDriverM[bytesEncAppenderM]]
-		e = dh.newEncoderBytes(out, h)
-	default:
-		return nil
-	}
-	return &Encoder{e}
-}
-
 // ---- (decode.go)
 
 type decDriver interface {
@@ -160,60 +103,6 @@ type decDriver interface {
 		bincDecDriverM[ioDecReaderM]
 
 	decDriverI
-}
-
-// NewDecoder returns a Decoder for decoding a stream of bytes from an io.Reader.
-//
-// For efficiency, Users are encouraged to configure ReaderBufferSize on the handle
-// OR pass in a memory buffered reader (eg bufio.Reader, bytes.Buffer).
-func NewDecoder(r io.Reader, h Handle) *Decoder {
-	var d decoderI
-	switch h.(type) {
-	case *SimpleHandle:
-		var dh helperDecDriver[simpleDecDriverM[ioDecReaderM]]
-		d = dh.newDecoderIO(r, h)
-	case *JsonHandle:
-		var dh helperDecDriver[jsonDecDriverM[ioDecReaderM]]
-		d = dh.newDecoderIO(r, h)
-	case *CborHandle:
-		var dh helperDecDriver[cborDecDriverM[ioDecReaderM]]
-		d = dh.newDecoderIO(r, h)
-	case *MsgpackHandle:
-		var dh helperDecDriver[msgpackDecDriverM[ioDecReaderM]]
-		d = dh.newDecoderIO(r, h)
-	case *BincHandle:
-		var dh helperDecDriver[bincDecDriverM[ioDecReaderM]]
-		d = dh.newDecoderIO(r, h)
-	default:
-		return nil
-	}
-	return &Decoder{d}
-}
-
-// NewDecoderBytes returns a Decoder which efficiently decodes directly
-// from a byte slice with zero copying.
-func NewDecoderBytes(in []byte, h Handle) *Decoder {
-	var d decoderI
-	switch h.(type) {
-	case *SimpleHandle:
-		var dh helperDecDriver[simpleDecDriverM[bytesDecReaderM]]
-		d = dh.newDecoderBytes(in, h)
-	case *JsonHandle:
-		var dh helperDecDriver[jsonDecDriverM[bytesDecReaderM]]
-		d = dh.newDecoderBytes(in, h)
-	case *CborHandle:
-		var dh helperDecDriver[cborDecDriverM[bytesDecReaderM]]
-		d = dh.newDecoderBytes(in, h)
-	case *MsgpackHandle:
-		var dh helperDecDriver[msgpackDecDriverM[bytesDecReaderM]]
-		d = dh.newDecoderBytes(in, h)
-	case *BincHandle:
-		var dh helperDecDriver[bincDecDriverM[bytesDecReaderM]]
-		d = dh.newDecoderBytes(in, h)
-	default:
-		return nil
-	}
-	return &Decoder{d}
 }
 
 // Below: <format>.go files
@@ -343,6 +232,86 @@ var (
 	simpleFpDecBytes = helperDecDriver[simpleDecDriverM[bytesDecReaderM]]{}.fastpathDList()
 )
 
+func (h *SimpleHandle) newEncoderBytes(out *[]byte) encoderI {
+	return helperEncDriver[simpleEncDriverM[bytesEncAppenderM]]{}.newEncoderBytes(out, h)
+}
+
+func (h *SimpleHandle) newEncoder(w io.Writer) encoderI {
+	return helperEncDriver[simpleEncDriverM[bufioEncWriterM]]{}.newEncoderIO(w, h)
+}
+
+func (h *SimpleHandle) newDecoderBytes(in []byte) decoderI {
+	return helperDecDriver[simpleDecDriverM[bytesDecReaderM]]{}.newDecoderBytes(in, h)
+}
+
+func (h *SimpleHandle) newDecoder(r io.Reader) decoderI {
+	return helperDecDriver[simpleDecDriverM[ioDecReaderM]]{}.newDecoderIO(r, h)
+}
+
+func (h *JsonHandle) newEncoderBytes(out *[]byte) encoderI {
+	return helperEncDriver[jsonEncDriverM[bytesEncAppenderM]]{}.newEncoderBytes(out, h)
+}
+
+func (h *JsonHandle) newEncoder(w io.Writer) encoderI {
+	return helperEncDriver[jsonEncDriverM[bufioEncWriterM]]{}.newEncoderIO(w, h)
+}
+
+func (h *JsonHandle) newDecoderBytes(in []byte) decoderI {
+	return helperDecDriver[jsonDecDriverM[bytesDecReaderM]]{}.newDecoderBytes(in, h)
+}
+
+func (h *JsonHandle) newDecoder(r io.Reader) decoderI {
+	return helperDecDriver[jsonDecDriverM[ioDecReaderM]]{}.newDecoderIO(r, h)
+}
+
+func (h *MsgpackHandle) newEncoderBytes(out *[]byte) encoderI {
+	return helperEncDriver[msgpackEncDriverM[bytesEncAppenderM]]{}.newEncoderBytes(out, h)
+}
+
+func (h *MsgpackHandle) newEncoder(w io.Writer) encoderI {
+	return helperEncDriver[msgpackEncDriverM[bufioEncWriterM]]{}.newEncoderIO(w, h)
+}
+
+func (h *MsgpackHandle) newDecoderBytes(in []byte) decoderI {
+	return helperDecDriver[msgpackDecDriverM[bytesDecReaderM]]{}.newDecoderBytes(in, h)
+}
+
+func (h *MsgpackHandle) newDecoder(r io.Reader) decoderI {
+	return helperDecDriver[msgpackDecDriverM[ioDecReaderM]]{}.newDecoderIO(r, h)
+}
+
+func (h *CborHandle) newEncoderBytes(out *[]byte) encoderI {
+	return helperEncDriver[cborEncDriverM[bytesEncAppenderM]]{}.newEncoderBytes(out, h)
+}
+
+func (h *CborHandle) newEncoder(w io.Writer) encoderI {
+	return helperEncDriver[cborEncDriverM[bufioEncWriterM]]{}.newEncoderIO(w, h)
+}
+
+func (h *CborHandle) newDecoderBytes(in []byte) decoderI {
+	return helperDecDriver[cborDecDriverM[bytesDecReaderM]]{}.newDecoderBytes(in, h)
+}
+
+func (h *CborHandle) newDecoder(r io.Reader) decoderI {
+	return helperDecDriver[cborDecDriverM[ioDecReaderM]]{}.newDecoderIO(r, h)
+}
+
+func (h *BincHandle) newEncoderBytes(out *[]byte) encoderI {
+	return helperEncDriver[bincEncDriverM[bytesEncAppenderM]]{}.newEncoderBytes(out, h)
+}
+
+func (h *BincHandle) newEncoder(w io.Writer) encoderI {
+	return helperEncDriver[bincEncDriverM[bufioEncWriterM]]{}.newEncoderIO(w, h)
+}
+
+func (h *BincHandle) newDecoderBytes(in []byte) decoderI {
+	return helperDecDriver[bincDecDriverM[bytesDecReaderM]]{}.newDecoderBytes(in, h)
+}
+
+func (h *BincHandle) newDecoder(r io.Reader) decoderI {
+	return helperDecDriver[bincDecDriverM[ioDecReaderM]]{}.newDecoderIO(r, h)
+}
+
 // ---- commented out stuff
 
 // func encResetBytes[T encWriter](w T, out *[]byte) (ok bool) {
@@ -375,4 +344,115 @@ var (
 // 		v.resetIO(in, bufsize, blist)
 // 	}
 // 	return
+// }
+
+// // NewEncoder returns an Encoder for encoding into an io.Writer.
+// //
+// // For efficiency, Users are encouraged to configure WriterBufferSize on the handle
+// // OR pass in a memory buffered writer (eg bufio.Writer, bytes.Buffer).
+// func NewEncoder(w io.Writer, h Handle) *Encoder {
+// 	var e encoderI
+// 	switch h.(type) {
+// 	case *SimpleHandle:
+// 		var dh helperEncDriver[simpleEncDriverM[bufioEncWriterM]]
+// 		e = dh.newEncoderIO(w, h)
+// 	case *JsonHandle:
+// 		var dh helperEncDriver[jsonEncDriverM[bufioEncWriterM]]
+// 		e = dh.newEncoderIO(w, h)
+// 	case *CborHandle:
+// 		var dh helperEncDriver[cborEncDriverM[bufioEncWriterM]]
+// 		e = dh.newEncoderIO(w, h)
+// 	case *MsgpackHandle:
+// 		var dh helperEncDriver[msgpackEncDriverM[bufioEncWriterM]]
+// 		e = dh.newEncoderIO(w, h)
+// 	case *BincHandle:
+// 		var dh helperEncDriver[bincEncDriverM[bufioEncWriterM]]
+// 		e = dh.newEncoderIO(w, h)
+// 	default:
+// 		return nil
+// 	}
+// 	return &Encoder{e}
+// }
+
+// // NewEncoderBytes returns an encoder for encoding directly and efficiently
+// // into a byte slice, using zero-copying to temporary slices.
+// //
+// // It will potentially replace the output byte slice pointed to.
+// // After encoding, the out parameter contains the encoded contents.
+// func NewEncoderBytes(out *[]byte, h Handle) *Encoder {
+// 	var e encoderI
+// 	switch h.(type) {
+// 	case *SimpleHandle:
+// 		var dh helperEncDriver[simpleEncDriverM[bytesEncAppenderM]]
+// 		e = dh.newEncoderBytes(out, h)
+// 	case *JsonHandle:
+// 		var dh helperEncDriver[jsonEncDriverM[bytesEncAppenderM]]
+// 		e = dh.newEncoderBytes(out, h)
+// 	case *CborHandle:
+// 		var dh helperEncDriver[cborEncDriverM[bytesEncAppenderM]]
+// 		e = dh.newEncoderBytes(out, h)
+// 	case *MsgpackHandle:
+// 		var dh helperEncDriver[msgpackEncDriverM[bytesEncAppenderM]]
+// 		e = dh.newEncoderBytes(out, h)
+// 	case *BincHandle:
+// 		var dh helperEncDriver[bincEncDriverM[bytesEncAppenderM]]
+// 		e = dh.newEncoderBytes(out, h)
+// 	default:
+// 		return nil
+// 	}
+// 	return &Encoder{e}
+// }
+
+// // NewDecoder returns a Decoder for decoding a stream of bytes from an io.Reader.
+// //
+// // For efficiency, Users are encouraged to configure ReaderBufferSize on the handle
+// // OR pass in a memory buffered reader (eg bufio.Reader, bytes.Buffer).
+// func NewDecoder(r io.Reader, h Handle) *Decoder {
+// 	var d decoderI
+// 	switch h.(type) {
+// 	case *SimpleHandle:
+// 		var dh helperDecDriver[simpleDecDriverM[ioDecReaderM]]
+// 		d = dh.newDecoderIO(r, h)
+// 	case *JsonHandle:
+// 		var dh helperDecDriver[jsonDecDriverM[ioDecReaderM]]
+// 		d = dh.newDecoderIO(r, h)
+// 	case *CborHandle:
+// 		var dh helperDecDriver[cborDecDriverM[ioDecReaderM]]
+// 		d = dh.newDecoderIO(r, h)
+// 	case *MsgpackHandle:
+// 		var dh helperDecDriver[msgpackDecDriverM[ioDecReaderM]]
+// 		d = dh.newDecoderIO(r, h)
+// 	case *BincHandle:
+// 		var dh helperDecDriver[bincDecDriverM[ioDecReaderM]]
+// 		d = dh.newDecoderIO(r, h)
+// 	default:
+// 		return nil
+// 	}
+// 	return &Decoder{d}
+// }
+
+// // NewDecoderBytes returns a Decoder which efficiently decodes directly
+// // from a byte slice with zero copying.
+// func NewDecoderBytes(in []byte, h Handle) *Decoder {
+// 	var d decoderI
+// 	switch h.(type) {
+// 	case *SimpleHandle:
+// 		var dh helperDecDriver[simpleDecDriverM[bytesDecReaderM]]
+// 		d = dh.newDecoderBytes(in, h)
+// 	case *JsonHandle:
+// 		var dh helperDecDriver[jsonDecDriverM[bytesDecReaderM]]
+// 		d = dh.newDecoderBytes(in, h)
+// 	case *CborHandle:
+// 		var dh helperDecDriver[cborDecDriverM[bytesDecReaderM]]
+// 		d = dh.newDecoderBytes(in, h)
+// 	case *MsgpackHandle:
+// 		var dh helperDecDriver[msgpackDecDriverM[bytesDecReaderM]]
+// 		d = dh.newDecoderBytes(in, h)
+// 	case *BincHandle:
+// 		var dh helperDecDriver[bincDecDriverM[bytesDecReaderM]]
+// 		d = dh.newDecoderBytes(in, h)
+// 	default:
+// 		return nil
+// 	}
+// 	return &Decoder{d}
 // }

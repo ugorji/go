@@ -2577,6 +2577,20 @@ type Decoder struct {
 	decoderI
 }
 
+// NewDecoder returns a Decoder for decoding a stream of bytes from an io.Reader.
+//
+// For efficiency, Users are encouraged to configure ReaderBufferSize on the handle
+// OR pass in a memory buffered reader (eg bufio.Reader, bytes.Buffer).
+func NewDecoder(r io.Reader, h Handle) *Decoder {
+	return &Decoder{h.newDecoder(r)}
+}
+
+// NewDecoderBytes returns a Decoder which efficiently decodes directly
+// from a byte slice with zero copying.
+func NewDecoderBytes(in []byte, h Handle) *Decoder {
+	return &Decoder{h.newDecoderBytes(in)}
+}
+
 // NewDecoderString returns a Decoder which efficiently decodes directly
 // from a string with zero copying.
 //

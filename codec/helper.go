@@ -1172,6 +1172,11 @@ type Handle interface {
 	// init initializes the handle based on handle-specific info (beyond what is in BasicHandle)
 	init()
 	// clone() Handle
+	newEncoderBytes(out *[]byte) encoderI
+	newEncoder(w io.Writer) encoderI
+
+	newDecoderBytes(in []byte) decoderI
+	newDecoder(r io.Reader) decoderI
 }
 
 // Raw represents raw formatted bytes.

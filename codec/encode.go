@@ -1711,6 +1711,23 @@ type Encoder struct {
 	encoderI
 }
 
+// NewEncoder returns an Encoder for encoding into an io.Writer.
+//
+// For efficiency, Users are encouraged to configure WriterBufferSize on the handle
+// OR pass in a memory buffered writer (eg bufio.Writer, bytes.Buffer).
+func NewEncoder(w io.Writer, h Handle) *Encoder {
+	return &Encoder{h.newEncoder(w)}
+}
+
+// NewEncoderBytes returns an encoder for encoding directly and efficiently
+// into a byte slice, using zero-copying to temporary slices.
+//
+// It will potentially replace the output byte slice pointed to.
+// After encoding, the out parameter contains the encoded contents.
+func NewEncoderBytes(out *[]byte, h Handle) *Encoder {
+	return &Encoder{h.newEncoderBytes(out)}
+}
+
 // ----
 
 func (helperEncDriver[T]) newEncoderBytes(out *[]byte, h Handle) *encoder[T] {
