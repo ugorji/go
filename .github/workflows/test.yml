@@ -2,7 +2,7 @@ name: Build and Test go-codec
 on:
   workflow_dispatch: {}
   push:
-    branches: [ master ]
+    branches: [ master, devel ]
     paths: [ '**.go' ]
   pull_request:
     branches: [ master ]
@@ -12,17 +12,17 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        go: [ '1.19', '1.17', '1.11', '1.20.0-rc.1' ]
+        go: [ '1.24', '1.22', '1.19', '1.17', '1.11' ]
         arch: [ amd64 ]
         os: [ ubuntu-latest ]
         include:
-          - go: '1.19'
+          - go: '1.22'
             arch: '386'
             os: ubuntu-latest
     runs-on: ${{ matrix.os }}
     env:
       GO111MODULE: 'on'
-      COVER_GO_VERSION: '1.19'
+      COVER_GO_VERSION: '1.22'
       GOARCH: ${{ matrix.arch }}
     name: go ${{ matrix.go }} on ${{ matrix.arch }}
     steps:
@@ -31,12 +31,21 @@ jobs:
         with:
           go-version: ${{ matrix.go }}
       - name: Run tests
+        if: >-
+          (github.ref_name == 'master' && matrix.go == '1.24') ||
+          (github.ref_name == 'master' && matrix.go == '1.19') ||
+          (github.ref_name == 'master' && matrix.go == '1.17') ||
+          (github.ref_name == 'master' && matrix.go == '1.11') ||
+          (github.ref_name == 'devel' && matrix.go == '1.24') ||
+          (github.ref_name == 'devel' && matrix.go == '1.22')
         shell: bash
         run: |
           cd codec
           go mod edit -droprequire github.com/ugorji/go
-          t=( "" "safe" "notfastpath" "codecgen" )
-          for i in "${t[@]}"; do go test "-tags=alltests ${i}" "-run=Suite" "-coverprofile=coverage.${{ matrix.go }}.${{ matrix.arch }}.${i}.txt"; done
+          t=( "" "safe" "notfastpath" "notmono" )
+          for i in "${t[@]}"; do
+          go test "-tags=alltests ${i}" "-run=Suite" "-coverprofile=coverage.${{ matrix.go }}.${{ matrix.arch }}.${i}.txt"
+          done
       - uses: codecov/codecov-action@v3
         if: matrix.go == env.COVER_GO_VERSION
         with:
@@ -66,8 +75,6 @@ jobs:
 # We put a requirements cycle with github.com/ugorji/go to allow folks requiring .../ugorji/go in 2019 to work ok.
 # Now, everyone should have updated to a go-codec version >= 1.17 or preferably >= 1.2.0.
 # Now is a good time to remove that requirements cycle.
-#
-#
 #
 #
 # --- SCRATCH ---
