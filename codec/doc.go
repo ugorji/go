@@ -12,7 +12,7 @@ Supported Serialization formats are:
   - binc:    http://github.com/ugorji/binc
   - cbor:    http://cbor.io http://tools.ietf.org/html/rfc7049
   - json:    http://json.org http://tools.ietf.org/html/rfc7159
-  - simple:
+  - simple:  (unpublished)
 
 This package will carefully use 'package unsafe' for performance reasons in specific places.
 You can build without unsafe use by passing the safe or appengine tag
