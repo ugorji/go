@@ -17,7 +17,7 @@ import (
 
 var errDeepEqualNotMatch = errors.New("not match")
 
-var cmpOpts = []cmp.Option{}
+// var cmpOpts = []cmp.Option{}
 
 func deepEqual(v1, v2 interface{}) (err error) {
 	if !reflect.DeepEqual(v1, v2) {
