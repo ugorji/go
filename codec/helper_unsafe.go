@@ -1,11 +1,15 @@
 // Copyright (c) 2012-2020 Ugorji Nwoke. All rights reserved.
 // Use of this source code is governed by a MIT license found in the LICENSE file.
 
-//go:build !safe && !codec.safe && !appengine && go1.9
+//go:build !safe && !codec.safe && !appengine && go1.21
 
-// minimum of go 1.9 is needed, as that is the minimum for all features and linked functions we need
-// - typedmemclr was introduced in go 1.8
-// - mapassign_fastXXX was introduced in go 1.9
+// minimum of go 1.21 is needed, as that is the minimum for all features and linked functions we need
+// - typedmemclr : go1.8
+// - mapassign_fastXXX: go1.9
+// - clear was added in go1.21
+// - unsafe.String(Data): go1.20
+// - unsafe.Add: go1.17
+// - generics/any: go1.18
 // etc
 
 package codec
