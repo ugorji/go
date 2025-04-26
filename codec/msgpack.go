@@ -1160,7 +1160,7 @@ func (c *msgpackSpecRpcCodec) ReadRequestBody(body interface{}) error {
 }
 
 func (c *msgpackSpecRpcCodec) parseCustomHeader(expectTypeByte byte, msgid *uint64, methodOrError *string) (err error) {
-	if cls := c.cls.Load(); cls.closed {
+	if c.cls.Load().closed {
 		return io.ErrUnexpectedEOF
 	}
 

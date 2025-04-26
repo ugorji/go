@@ -135,8 +135,8 @@ func (c *rpcCodec) Close() (err error) {
 	if c.c != nil {
 		cls := c.cls.Load()
 		if !cls.closed {
-			cls.err = c.c.Close()
-			cls.closed = true
+			// writing to same pointer could lead to a data race (always make new one)
+			cls = &clsErr{closed: true, err: c.c.Close()}
 			c.cls.Store(cls)
 		}
 		err = cls.err
