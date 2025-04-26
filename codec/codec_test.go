@@ -219,7 +219,8 @@ var (
 	// set this when running using bufio, etc
 	testSkipRPCTests = false
 
-	testSkipRPCTestsMsg = "testSkipRPCTests=true"
+	testSkipRPCTestsMsg      = "testSkipRPCTests=true"
+	testSkipParallelTestsMsg = "testSkipParallelTestsMsg=true && Handle being modified"
 )
 
 var (
@@ -509,9 +510,6 @@ func testSetupWithChecks(t *testing.T, h *Handle, allowParallel bool) (fn func()
 	testOnce.Do(testInitAll)
 	if allowParallel && testUseParallel {
 		t.Parallel()
-		if h != nil {
-			*h = testHandleCopy(*h)
-		}
 	}
 	// in case an error is seen, recover it here.
 	if testRecoverPanicToErr {
@@ -534,11 +532,11 @@ func testSetupWithChecks(t *testing.T, h *Handle, allowParallel bool) (fn func()
 func testBasicHandle(h Handle) *BasicHandle { return h.getBasicHandle() }
 
 func testCodecEncode(ts interface{}, bsIn []byte, fn func([]byte) *bytes.Buffer, h Handle, useMust bool) (bs []byte, err error) {
-	return testSharedCodecEncode(ts, bsIn, fn, h, testBasicHandle(h), useMust)
+	return testSharedCodecEncode(ts, bsIn, fn, h, useMust)
 }
 
 func testCodecDecode(bs []byte, ts interface{}, h Handle, useMust bool) (err error) {
-	return testSharedCodecDecode(bs, ts, h, testBasicHandle(h), useMust)
+	return testSharedCodecDecode(bs, ts, h, useMust)
 }
 
 func testCheckErr(t *testing.T, err error) {
@@ -875,13 +873,13 @@ func testGetBytes() (bs []byte) {
 	return
 }
 
-func testHandleCopy(h Handle) (h2 Handle) {
-	// interface --> pointer --> value
-	rv := baseRVRV(reflect.ValueOf(h).Elem())
-	rv2 := reflect.New(rv.Type())
-	rv2.Elem().Set(rv)
-	return rv2.Interface().(Handle)
-}
+// func testHandleCopy(h Handle) (h2 Handle) {
+// 	// interface --> pointer --> value
+// 	rv := baseRVRV(reflect.ValueOf(h).Elem())
+// 	rv2 := reflect.New(rv.Type())
+// 	rv2.Elem().Set(rv)
+// 	return rv2.Interface().(Handle)
+// }
 
 func testMarshal(v interface{}, h Handle) (bs []byte, err error) {
 	// return testCodecEncode(v, nil, testByteBuf, h)
@@ -947,6 +945,10 @@ func testReadWriteCloser(c io.ReadWriteCloser) io.ReadWriteCloser {
 // testCodecTableOne allows us test for different variations based on arguments passed.
 func testCodecTableOne(t *testing.T, testNil bool, h Handle,
 	vs []interface{}, vsVerify []interface{}) {
+
+	if testUseParallel {
+		t.Skip(testSkipParallelTestsMsg)
+	}
 	//if testNil, then just test for when a pointer to a nil interface{} is passed. It should work.
 	//Current setup allows us test (at least manually) the nil interface or typed interface.
 	if testVerbose {
@@ -1099,6 +1101,10 @@ func doTestCodecTableOne(t *testing.T, h Handle) {
 	// since this test modifies maps (and slices?), it should not be run in parallel,
 	// else we may get "concurrent modification/range/set" errors.
 
+	if testUseParallel {
+		t.Skip(testSkipParallelTestsMsg)
+	}
+
 	defer testSetupWithChecks(t, &h, false)()
 
 	numPrim, numMap, idxTime, idxMap := testTableNumPrimitives, testTableNumMaps, testTableIdxTime, testTableNumPrimitives+2
@@ -1149,6 +1155,9 @@ func doTestCodecTableOne(t *testing.T, h Handle) {
 }
 
 func doTestCodecMiscOne(t *testing.T, h Handle) {
+	if testUseParallel {
+		t.Skip(testSkipParallelTestsMsg)
+	}
 	defer testSetup(t, &h)()
 	var err error
 	bh := testBasicHandle(h)
@@ -1482,13 +1491,16 @@ func doTestCodecChan(t *testing.T, h Handle) {
 }
 
 func doTestCodecRpcOne(t *testing.T, rr Rpc, h Handle, doRequest bool, exitSleep time.Duration) (port int) {
-	defer testSetup(t, &h)()
+	if testUseParallel {
+		t.Skip(testSkipParallelTestsMsg)
+	}
 	if testSkipRPCTests {
 		t.Skip(testSkipRPCTestsMsg)
 	}
 	if !testRecoverPanicToErr {
 		t.Skip(testSkipIfNotRecoverPanicToErrMsg)
 	}
+	defer testSetup(t, &h)()
 
 	// if mh, ok := h.(*MsgpackHandle); ok && mh.SliceElementReset {
 	if h.Name() == "msgpack" && testFI.get(h, "SliceElementReset").(bool) {
@@ -1611,6 +1623,9 @@ func doTestCodecRpcOne(t *testing.T, rr Rpc, h Handle, doRequest bool, exitSleep
 }
 
 func doTestMapEncodeForCanonical(t *testing.T, h Handle) {
+	if testUseParallel {
+		t.Skip(testSkipParallelTestsMsg)
+	}
 	defer testSetup(t, &h)()
 	// println("doTestMapEncodeForCanonical")
 	v1 := map[stringUint64T]interface{}{
@@ -1734,6 +1749,14 @@ func doTestEncCircularRef(t *testing.T, h Handle) {
 		t.Skip(testSkipIfNotRecoverPanicToErrMsg)
 	}
 	defer testSetup(t, &h)()
+	bh := testBasicHandle(h)
+	if !bh.CheckCircularRef {
+		if testUseParallel {
+			t.Skip(testSkipParallelTestsMsg)
+		}
+		bh.CheckCircularRef = true
+		defer func() { bh.CheckCircularRef = false }()
+	}
 	type T1 struct {
 		S string
 		B bool
@@ -1755,11 +1778,6 @@ func doTestEncCircularRef(t *testing.T, h Handle) {
 	var bs []byte
 	var err error
 
-	bh := testBasicHandle(h)
-	if !bh.CheckCircularRef {
-		bh.CheckCircularRef = true
-		defer func() { bh.CheckCircularRef = false }()
-	}
 	err = NewEncoderBytes(&bs, h).Encode(&t3)
 	if err == nil || !strings.Contains(err.Error(), "circular reference found") {
 		t.Logf("expect circular reference error, got: %v", err)
@@ -1813,9 +1831,6 @@ func doTestAllErrWriter(t *testing.T, hh ...Handle) {
 	}
 	defer testSetup(t, nil)()
 	for _, h := range hh {
-		if testUseParallel {
-			h = testHandleCopy(h)
-		}
 		__doTestErrWriter(t, h)
 	}
 }
@@ -1840,6 +1855,9 @@ func doTestRawValue(t *testing.T, h Handle) {
 	defer testSetup(t, &h)()
 	bh := testBasicHandle(h)
 	if !bh.Raw {
+		if testUseParallel {
+			t.Skip(testSkipParallelTestsMsg)
+		}
 		bh.Raw = true
 		defer func() { bh.Raw = false }()
 	}
@@ -1886,6 +1904,9 @@ func doTestRawValue(t *testing.T, h Handle) {
 // We keep this unexported here, and put actual test in ext_dep_test.go.
 // This way, it can be excluded by excluding file completely.
 func doTestPythonGenStreams(t *testing.T, h Handle) {
+	if testUseParallel {
+		t.Skip(testSkipParallelTestsMsg)
+	}
 	defer testSetup(t, &h)()
 
 	// time0 := time.Now()
@@ -2065,10 +2086,13 @@ func doTestRawExt(t *testing.T, h Handle) {
 	if b != nil {
 		b = b[:0]
 	}
-	oldRawMode := bh.Raw
-	defer func() { bh.Raw = oldRawMode }()
-	bh.Raw = true
-
+	if !bh.Raw {
+		if testUseParallel {
+			t.Skip(testSkipParallelTestsMsg)
+		}
+		bh.Raw = true
+		defer func() { bh.Raw = false }()
+	}
 	var v2 Raw
 	for _, s := range []string{
 		"goodbye",
@@ -2091,6 +2115,9 @@ func doTestRawExt(t *testing.T, h Handle) {
 // }
 
 func doTestMapStructKey(t *testing.T, h Handle) {
+	if testUseParallel {
+		t.Skip(testSkipParallelTestsMsg)
+	}
 	defer testSetup(t, &h)()
 	var b []byte
 	var v interface{} // map[stringUint64T]wrapUint64Slice // interface{}
@@ -2119,6 +2146,9 @@ func doTestMapStructKey(t *testing.T, h Handle) {
 }
 
 func doTestDecodeNilMapValue(t *testing.T, h Handle) {
+	if testUseParallel {
+		t.Skip(testSkipParallelTestsMsg)
+	}
 	defer testSetup(t, &h)()
 	type Struct struct {
 		Field map[uint16]map[uint32]struct{}
@@ -2190,6 +2220,9 @@ func __doTestDecodeNilMapEntryValue(t *testing.T, h Handle) {
 }
 
 func doTestEmbeddedFieldPrecedence(t *testing.T, h Handle) {
+	if testUseParallel {
+		t.Skip(testSkipParallelTestsMsg)
+	}
 	defer testSetup(t, &h)()
 	type Embedded struct {
 		Field byte
@@ -2204,11 +2237,11 @@ func doTestEmbeddedFieldPrecedence(t *testing.T, h Handle) {
 	}
 	// _, isJsonHandle := h.(*JsonHandle)
 	isJsonHandle := h.Name() == "json"
-	handle := testBasicHandle(h)
-	oldMapType := handle.MapType
-	defer func() { handle.MapType = oldMapType }()
+	bh := testBasicHandle(h)
+	oldMapType := bh.MapType
+	defer func() { bh.MapType = oldMapType }()
 
-	handle.MapType = reflect.TypeOf(map[interface{}]interface{}(nil))
+	bh.MapType = reflect.TypeOf(map[interface{}]interface{}(nil))
 
 	bs, err := testMarshal(toEncode, h)
 	if err != nil {
@@ -2234,6 +2267,10 @@ func doTestEmbeddedFieldPrecedence(t *testing.T, h Handle) {
 }
 
 func doTestLargeContainerLen(t *testing.T, h Handle) {
+	okbinc := h.Name() == "binc"
+	if testUseParallel && okbinc {
+		t.Skip(testSkipParallelTestsMsg)
+	}
 	defer testSetup(t, &h)()
 
 	// This test can take a while if run multiple times in a loop, as it creates
@@ -2250,7 +2287,7 @@ func doTestLargeContainerLen(t *testing.T, h Handle) {
 	// 	t.Skipf("skipping as cbor Indefinite Length doesn't use prefixed lengths")
 	// }
 
-	bh := testBasicHandle(h)
+	// bh := testBasicHandle(h)
 
 	var sizes []int
 	// sizes = []int{
@@ -2286,9 +2323,8 @@ func doTestLargeContainerLen(t *testing.T, h Handle) {
 	testUnmarshalErr(m2, bs, h, t, "-slices")
 	testDeepEqualErr(m, m2, t, "-slices")
 
-	d, x := testSharedCodecDecoder(bs, h, bh)
+	d := testSharedCodecDecoder(bs, h)
 	bs2 := d.nextValueBytes([]byte{})
-	testSharedCodecDecoderAfter(d, x, bh)
 	testDeepEqualErr(bs, bs2, t, "nextvaluebytes-slices")
 	// if len(bs2) != 0 || len(bs2) != len(bs) { }
 	testReleaseBytes(bs)
@@ -2304,9 +2340,8 @@ func doTestLargeContainerLen(t *testing.T, h Handle) {
 		testUnmarshalErr(mm2, bs, h, t, "-map")
 		testDeepEqualErr(mm, mm2, t, "-map")
 
-		d, x = testSharedCodecDecoder(bs, h, bh)
+		d = testSharedCodecDecoder(bs, h)
 		bs2 = d.nextValueBytes([]byte{})
-		testSharedCodecDecoderAfter(d, x, bh)
 		testDeepEqualErr(bs, bs2, t, "nextvaluebytes-map")
 		testReleaseBytes(bs)
 	}
@@ -2327,7 +2362,6 @@ func doTestLargeContainerLen(t *testing.T, h Handle) {
 	// 	oldAsSymbols := hbinc.AsSymbols
 	// 	defer func() { hbinc.AsSymbols = oldAsSymbols }()
 	// }
-	okbinc := h.Name() == "binc"
 	if okbinc {
 		oldAsSymbols := testFI.get(h, "AsSymbols").(uint8)
 		defer func() { testFI.set(h, "AsSymbols", oldAsSymbols) }()
@@ -2374,9 +2408,8 @@ func doTestLargeContainerLen(t *testing.T, h Handle) {
 		testUnmarshalErr(m2, out, h, t, "no-symbols-string")
 		testDeepEqualErr(m1, m2, t, "no-symbols-string")
 
-		d, x = testSharedCodecDecoder(out, h, bh)
+		d = testSharedCodecDecoder(out, h)
 		bs2 = d.nextValueBytes([]byte{})
-		testSharedCodecDecoderAfter(d, x, bh)
 		testDeepEqualErr(out, bs2, t, "nextvaluebytes-no-symbols-string")
 
 		if okbinc {
@@ -2390,9 +2423,8 @@ func doTestLargeContainerLen(t *testing.T, h Handle) {
 			testUnmarshalErr(m2, out, h, t, "symbols-string")
 			testDeepEqualErr(m1, m2, t, "symbols-string")
 
-			d, x = testSharedCodecDecoder(out, h, bh)
+			d = testSharedCodecDecoder(out, h)
 			bs2 = d.nextValueBytes([]byte{})
-			testSharedCodecDecoderAfter(d, x, bh)
 			testDeepEqualErr(out, bs2, t, "nextvaluebytes-symbols-string")
 			testFI.set(h, "AsSymbols", uint8(2)) // hbinc.AsSymbols = 2
 		}
@@ -2405,9 +2437,8 @@ func doTestLargeContainerLen(t *testing.T, h Handle) {
 	testUnmarshalErr(&xl2, bs, h, t, "-large-extension-bytes")
 	testDeepEqualErr(xl, xl2, t, "-large-extension-bytes")
 
-	d, x = testSharedCodecDecoder(bs, h, bh)
+	d = testSharedCodecDecoder(bs, h)
 	bs2 = d.nextValueBytes([]byte{})
-	testSharedCodecDecoderAfter(d, x, bh)
 	testDeepEqualErr(bs, bs2, t, "nextvaluebytes-large-extension-bytes")
 
 	xl = testUintToBytes(0) // so it's WriteExt returns nil
@@ -2578,6 +2609,10 @@ func doTestUintToInt(t *testing.T, h Handle) {
 }
 
 func doTestDifferentMapOrSliceType(t *testing.T, h Handle) {
+	okmsgp := h.Name() == "msgpack"
+	if testUseParallel {
+		t.Skip(testSkipParallelTestsMsg)
+	}
 	if !testRecoverPanicToErr {
 		t.Skip(testSkipIfNotRecoverPanicToErrMsg)
 	}
@@ -2587,7 +2622,7 @@ func doTestDifferentMapOrSliceType(t *testing.T, h Handle) {
 	// 	defer func(b bool) { mh.RawToString = b }(mh.RawToString)
 	// 	mh.RawToString = true
 	// }
-	if h.Name() == "msgpack" {
+	if okmsgp {
 		defer func(b bool) { testFI.set(h, "RawToString", b) }(testFI.get(h, "RawToString").(bool))
 		testFI.set(h, "RawToString", true)
 	}
@@ -2814,6 +2849,9 @@ func doTestScalars(t *testing.T, h Handle) {
 
 	bh := testBasicHandle(h)
 	if !bh.Canonical {
+		if testUseParallel {
+			t.Skip(testSkipParallelTestsMsg)
+		}
 		bh.Canonical = true
 		defer func() { bh.Canonical = false }()
 	}
@@ -2901,6 +2939,9 @@ func doTestScalars(t *testing.T, h Handle) {
 }
 
 func doTestIntfMapping(t *testing.T, h Handle) {
+	if testUseParallel {
+		t.Skip(testSkipParallelTestsMsg)
+	}
 	defer testSetup(t, &h)()
 	name := h.Name()
 	rti := reflect.TypeOf((*testIntfMapI)(nil)).Elem()
@@ -2985,11 +3026,13 @@ func doTestMissingFields(t *testing.T, h Handle) {
 	// test canonical interaction - with structs having some missing fields and some regular fields
 	bh := testBasicHandle(h)
 
-	defer func(c bool) {
-		bh.Canonical = c
-	}(bh.Canonical)
-	bh.Canonical = true
-
+	if !bh.Canonical {
+		if testUseParallel {
+			t.Skip(testSkipParallelTestsMsg)
+		}
+		bh.Canonical = true
+		defer func() { bh.Canonical = false }()
+	}
 	b1 = nil
 
 	var s1 = struct {
@@ -3024,6 +3067,9 @@ func doTestMissingFields(t *testing.T, h Handle) {
 func doTestMaxDepth(t *testing.T, h Handle) {
 	if !testRecoverPanicToErr {
 		t.Skip(testSkipIfNotRecoverPanicToErrMsg)
+	}
+	if testUseParallel {
+		t.Skip(testSkipParallelTestsMsg)
 	}
 	defer testSetup(t, &h)()
 	name := h.Name()
@@ -3220,12 +3266,13 @@ func doTestStrucEncDec(t *testing.T, h Handle) {
 }
 
 func doTestStructKeyType(t *testing.T, h Handle) {
+	if testUseParallel {
+		t.Skip(testSkipParallelTestsMsg)
+	}
 	defer testSetup(t, &h)()
 	name := h.Name()
-
-	mok := h.Name() == "msgpack"
-
-	bcok := h.Name() == "binc"
+	mok := name == "msgpack"
+	bcok := name == "binc"
 
 	bh := testBasicHandle(h)
 	s2a := bh.StructToArray
@@ -3310,6 +3357,9 @@ func doTestStructKeyType(t *testing.T, h Handle) {
 }
 
 func doTestRawToStringToRawEtc(t *testing.T, h Handle) {
+	if testUseParallel {
+		t.Skip(testSkipParallelTestsMsg)
+	}
 	defer testSetup(t, &h)()
 	// name := h.Name()
 
@@ -3327,7 +3377,6 @@ func doTestRawToStringToRawEtc(t *testing.T, h Handle) {
 	mvr := bh.MapValueReset
 
 	mok := h.Name() == "msgpack"
-
 	jok := h.Name() == "json"
 
 	defer func() {
@@ -3447,6 +3496,10 @@ MAP_VALUE_RESET:
 // -----------------
 
 func doTestPreferArrayOverSlice(t *testing.T, h Handle) {
+	if testUseParallel {
+		t.Skip(testSkipParallelTestsMsg)
+	}
+
 	defer testSetup(t, &h)()
 	// encode a slice, decode it with PreferArrayOverSlice
 	bh := testBasicHandle(h)
@@ -3479,11 +3532,13 @@ func doTestZeroCopyBytes(t *testing.T, h Handle) {
 	// }
 
 	bh := testBasicHandle(h)
-	zc := bh.ZeroCopy
-	defer func() {
-		bh.ZeroCopy = zc
-	}()
-	bh.ZeroCopy = true
+	if !bh.ZeroCopy {
+		if testUseParallel {
+			t.Skip(testSkipParallelTestsMsg)
+		}
+		bh.ZeroCopy = true
+		defer func() { bh.ZeroCopy = false }()
+	}
 
 	s := []byte("hello")
 	var v []byte
@@ -3514,6 +3569,9 @@ func doTestNextValueBytes(t *testing.T, h Handle) {
 	defer testSetup(t, &h)()
 
 	bh := testBasicHandle(h)
+	if testUseParallel && (testUseIoEncDec >= 0 || bh.InterfaceReset) {
+		t.Skip(testSkipParallelTestsMsg)
+	}
 
 	// - encode uint, int, float, bool, struct, map, slice, string - all separated by nil
 	// - use nextvaluebytes to grab he's got each one, and decode it, and compare
@@ -3545,16 +3603,17 @@ func doTestNextValueBytes(t *testing.T, h Handle) {
 
 	var valueBytes = make([][]byte, len(inputs)*2)
 
-	d, oldReadBufferSize := testSharedCodecDecoder(out, h, testBasicHandle(h))
+	d := testSharedCodecDecoder(out, h)
 	for i := 0; i < len(inputs)*2; i++ {
 		valueBytes[i] = d.nextValueBytes([]byte{})
 	}
-	if testUseIoEncDec >= 0 {
-		bh.ReaderBufferSize = oldReadBufferSize
+	// if testUseIoEncDec >= 0 {
+	// 	bh.ReaderBufferSize = oldReadBufferSize
+	// }
+	if bh.InterfaceReset {
+		bh.InterfaceReset = false
+		defer func() { bh.InterfaceReset = true }()
 	}
-
-	defer func(b bool) { bh.InterfaceReset = b }(bh.InterfaceReset)
-	bh.InterfaceReset = false
 
 	var result interface{}
 	for i := 0; i < len(inputs); i++ {
@@ -3578,6 +3637,10 @@ func doTestNumbers(t *testing.T, h Handle) {
 func __doTestIntegers(t *testing.T, h Handle) {
 	// handle SignedInteger=true|false
 	// decode into an interface{}
+
+	if testUseParallel {
+		t.Skip(testSkipParallelTestsMsg)
+	}
 
 	bh := testBasicHandle(h)
 
@@ -3761,8 +3824,13 @@ func doTestStructFieldInfoToArray(t *testing.T, h Handle) {
 	defer testSetup(t, &h)()
 	bh := testBasicHandle(h)
 
-	defer func(b bool) { bh.CheckCircularRef = b }(bh.CheckCircularRef)
-	bh.CheckCircularRef = true
+	if !bh.CheckCircularRef {
+		if testUseParallel {
+			t.Skip(testSkipParallelTestsMsg)
+		}
+		bh.CheckCircularRef = true
+		defer func() { bh.CheckCircularRef = false }()
+	}
 
 	var vs = Sstructsmall{A: 99}
 	var vb = Sstructbig{

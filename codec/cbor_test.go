@@ -33,6 +33,9 @@ func cborTestInit() {
 }
 
 func TestCborIndefiniteLength(t *testing.T) {
+	if testUseParallel {
+		t.Skip(testSkipParallelTestsMsg)
+	}
 	var h Handle = testCborH
 	defer testSetup(t, &h)()
 	bh := testBasicHandle(h)
@@ -147,10 +150,13 @@ func TestCborIndefiniteLengthTextStringChunksAreUTF8(t *testing.T) {
 	defer testSetup(t, &h)()
 
 	bh := testBasicHandle(h)
-	defer func(oldValidateUnicode bool) {
-		bh.ValidateUnicode = oldValidateUnicode
-	}(bh.ValidateUnicode)
-	bh.ValidateUnicode = true
+	if !bh.ValidateUnicode {
+		if testUseParallel {
+			t.Skip(testSkipParallelTestsMsg)
+		}
+		bh.ValidateUnicode = true
+		defer func() { bh.ValidateUnicode = false }()
+	}
 
 	var out string
 	in := []byte{cborBdIndefiniteString, 0x61, 0xc2, 0x61, 0xa3, cborBdBreak}
@@ -171,6 +177,9 @@ type testCborGolden struct {
 
 // Some tests are skipped because they include numbers outside the range of int64/uint64
 func TestCborGoldens(t *testing.T) {
+	if testUseParallel {
+		t.Skip(testSkipParallelTestsMsg)
+	}
 	var h Handle = testCborH
 	defer testSetup(t, &h)()
 	bh := testBasicHandle(h)

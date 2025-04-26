@@ -33,6 +33,9 @@ func jsonTestInit() {
 }
 
 func doTestJsonDecodeNonStringScalarInStringContext(t *testing.T, h Handle) {
+	if testUseParallel {
+		t.Skip(testSkipParallelTestsMsg)
+	}
 	defer testSetup(t, &h)()
 	var b = `{"s.true": "true", "b.true": true, "s.false": "false", "b.false": false, "s.10": "10", "i.10": 10, "i.-10": -10}`
 	var golden = map[string]string{"s.true": "true", "b.true": "true", "s.false": "false", "b.false": "false", "s.10": "10", "i.10": "10", "i.-10": "-10"}
@@ -109,6 +112,9 @@ func doTestJsonDecodeNonStringScalarInStringContext(t *testing.T, h Handle) {
 }
 
 func doTestJsonEncodeIndent(t *testing.T, h Handle) {
+	if testUseParallel {
+		t.Skip(testSkipParallelTestsMsg)
+	}
 	defer testSetup(t, &h)()
 	v := TestSimplish{
 		Ii: -794,
@@ -246,9 +252,13 @@ func doTestJsonLargeInteger(t *testing.T, h Handle) {
 		}
 	}
 
-	oldIAS := jh.IntegerAsString
-	defer func() { jh.IntegerAsString = oldIAS }()
-	jh.IntegerAsString = 0
+	if oldIAS := jh.IntegerAsString; oldIAS != 0 {
+		if testUseParallel {
+			t.Skip(testSkipParallelTestsMsg)
+		}
+		jh.IntegerAsString = 0
+		defer func() { jh.IntegerAsString = oldIAS }()
+	}
 
 	type tt struct {
 		s           string
@@ -546,9 +556,14 @@ func __doTestJsonLargeInteger(t *testing.T, v interface{}, ias uint8, jh *JsonHa
 	if testVerbose {
 		t.Logf("Running TestJsonLargeInteger: v: %#v, ias: %c", v, ias)
 	}
-	oldIAS := jh.IntegerAsString
-	defer func() { jh.IntegerAsString = oldIAS }()
-	jh.IntegerAsString = ias
+
+	if oldIAS := jh.IntegerAsString; oldIAS != ias {
+		if testUseParallel {
+			t.Skip(testSkipParallelTestsMsg)
+		}
+		jh.IntegerAsString = ias
+		defer func() { jh.IntegerAsString = oldIAS }()
+	}
 
 	var vu uint
 	var vi int

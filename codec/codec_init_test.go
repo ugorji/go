@@ -24,6 +24,11 @@ type testHED struct {
 	Dio *Decoder
 }
 
+// the handles are declared here, and initialized during the init function.
+//
+// Note the following:
+//   - if running parallel tests, then skip all tests which modify the Handle.
+//     This prevents data races during the test execution.
 var (
 	// testNoopH    = NoopHandle(8)
 	testBincH    *BincHandle
@@ -55,7 +60,14 @@ func doTestInit() {
 	testJsonH.HTMLCharsAsIs = true
 	// testJsonH.InternString = true
 
-	testHandles = append(testHandles, testSimpleH, testJsonH, testCborH, testMsgpackH, testBincH)
+	testHandles = append(testHandles,
+		testSimpleH, testJsonH, testCborH, testMsgpackH, testBincH)
+
+	for _, h := range testHandles {
+		bh := h.getBasicHandle()
+		bh.WriterBufferSize = testUseIoEncDec
+		bh.ReaderBufferSize = testUseIoEncDec
+	}
 	testHEDs = nil
 }
 
@@ -77,8 +89,9 @@ func testHEDGet(h Handle) (d *testHED) {
 	return
 }
 
-func testSharedCodecEncode(ts interface{}, bsIn []byte, fn func([]byte) *bytes.Buffer,
-	h Handle, bh *BasicHandle, useMust bool) (bs []byte, err error) {
+func testSharedCodecEncode(ts interface{}, bsIn []byte,
+	fn func([]byte) *bytes.Buffer,
+	h Handle, useMust bool) (bs []byte, err error) {
 	// bs = make([]byte, 0, approxSize)
 	var e *Encoder
 	var buf *bytes.Buffer
@@ -96,12 +109,9 @@ func testSharedCodecEncode(ts interface{}, bsIn []byte, fn func([]byte) *bytes.B
 		e = NewEncoderBytes(nil, h)
 	}
 
-	var oldWriteBufferSize int
+	// var oldWriteBufferSize int
 	if useIO {
 		buf = fn(bsIn)
-		// set the encode options for using a buffer
-		oldWriteBufferSize = bh.WriterBufferSize
-		bh.WriterBufferSize = testUseIoEncDec
 		if testUseIoWrapper {
 			e.Reset(ioWriterWrapper{buf})
 		} else {
@@ -118,12 +128,11 @@ func testSharedCodecEncode(ts interface{}, bsIn []byte, fn func([]byte) *bytes.B
 	}
 	if testUseIoEncDec >= 0 {
 		bs = buf.Bytes()
-		bh.WriterBufferSize = oldWriteBufferSize
 	}
 	return
 }
 
-func testSharedCodecDecoder(bs []byte, h Handle, bh *BasicHandle) (d *Decoder, oldReadBufferSize int) {
+func testSharedCodecDecoder(bs []byte, h Handle) (d *Decoder) {
 	// var buf *bytes.Reader
 	useIO := testUseIoEncDec >= 0
 	if testUseReset && !testUseParallel {
@@ -140,8 +149,6 @@ func testSharedCodecDecoder(bs []byte, h Handle, bh *BasicHandle) (d *Decoder, o
 	}
 	if useIO {
 		buf := bytes.NewReader(bs)
-		oldReadBufferSize = bh.ReaderBufferSize
-		bh.ReaderBufferSize = testUseIoEncDec
 		if testUseIoWrapper {
 			d.Reset(ioReaderWrapper{buf})
 		} else {
@@ -153,19 +160,12 @@ func testSharedCodecDecoder(bs []byte, h Handle, bh *BasicHandle) (d *Decoder, o
 	return
 }
 
-func testSharedCodecDecoderAfter(_ *Decoder, oldReadBufferSize int, bh *BasicHandle) {
-	if testUseIoEncDec >= 0 {
-		bh.ReaderBufferSize = oldReadBufferSize
-	}
-}
-
-func testSharedCodecDecode(bs []byte, ts interface{}, h Handle, bh *BasicHandle, useMust bool) (err error) {
-	d, oldReadBufferSize := testSharedCodecDecoder(bs, h, bh)
+func testSharedCodecDecode(bs []byte, ts interface{}, h Handle, useMust bool) (err error) {
+	d := testSharedCodecDecoder(bs, h)
 	if useMust {
 		d.MustDecode(ts)
 	} else {
 		err = d.Decode(ts)
 	}
-	testSharedCodecDecoderAfter(d, oldReadBufferSize, bh)
 	return
 }
