@@ -33,10 +33,7 @@ func jsonTestInit() {
 }
 
 func doTestJsonDecodeNonStringScalarInStringContext(t *testing.T, h Handle) {
-	if testUseParallel {
-		t.Skip(testSkipParallelTestsMsg)
-	}
-	defer testSetup(t, &h)()
+	defer testSetup2(t, &h)()
 	var b = `{"s.true": "true", "b.true": true, "s.false": "false", "b.false": false, "s.10": "10", "i.10": 10, "i.-10": -10}`
 	var golden = map[string]string{"s.true": "true", "b.true": "true", "s.false": "false", "b.false": "false", "s.10": "10", "i.10": "10", "i.-10": "-10"}
 
@@ -112,10 +109,7 @@ func doTestJsonDecodeNonStringScalarInStringContext(t *testing.T, h Handle) {
 }
 
 func doTestJsonEncodeIndent(t *testing.T, h Handle) {
-	if testUseParallel {
-		t.Skip(testSkipParallelTestsMsg)
-	}
-	defer testSetup(t, &h)()
+	defer testSetup2(t, &h)()
 	v := TestSimplish{
 		Ii: -794,
 		Ss: `A Man is
@@ -233,7 +227,7 @@ func doTestJsonLargeInteger(t *testing.T, h Handle) {
 	if !testRecoverPanicToErr {
 		t.Skip(testSkipIfNotRecoverPanicToErrMsg)
 	}
-	defer testSetup(t, &h)()
+	defer testSetup2(t, &h)()
 	jh := h.(*JsonHandle)
 	for _, i := range []uint8{'L', 'A', 0} {
 		for _, j := range []interface{}{
@@ -253,9 +247,6 @@ func doTestJsonLargeInteger(t *testing.T, h Handle) {
 	}
 
 	if oldIAS := jh.IntegerAsString; oldIAS != 0 {
-		if testUseParallel {
-			t.Skip(testSkipParallelTestsMsg)
-		}
 		jh.IntegerAsString = 0
 		defer func() { jh.IntegerAsString = oldIAS }()
 	}
@@ -558,9 +549,6 @@ func __doTestJsonLargeInteger(t *testing.T, v interface{}, ias uint8, jh *JsonHa
 	}
 
 	if oldIAS := jh.IntegerAsString; oldIAS != ias {
-		if testUseParallel {
-			t.Skip(testSkipParallelTestsMsg)
-		}
 		jh.IntegerAsString = ias
 		defer func() { jh.IntegerAsString = oldIAS }()
 	}

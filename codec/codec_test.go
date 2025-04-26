@@ -500,6 +500,10 @@ func testSetup(t *testing.T, h *Handle) (fn func()) {
 	return testSetupWithChecks(t, h, true)
 }
 
+func testSetup2(t *testing.T, h *Handle) (fn func()) {
+	return testSetupWithChecks(t, h, false)
+}
+
 // testSetup will ensure testInitAll is run, and then
 // return a function that should be deferred to run at the end
 // of the test.
@@ -945,10 +949,6 @@ func testReadWriteCloser(c io.ReadWriteCloser) io.ReadWriteCloser {
 // testCodecTableOne allows us test for different variations based on arguments passed.
 func testCodecTableOne(t *testing.T, testNil bool, h Handle,
 	vs []interface{}, vsVerify []interface{}) {
-
-	if testUseParallel {
-		t.Skip(testSkipParallelTestsMsg)
-	}
 	//if testNil, then just test for when a pointer to a nil interface{} is passed. It should work.
 	//Current setup allows us test (at least manually) the nil interface or typed interface.
 	if testVerbose {
@@ -1101,11 +1101,7 @@ func doTestCodecTableOne(t *testing.T, h Handle) {
 	// since this test modifies maps (and slices?), it should not be run in parallel,
 	// else we may get "concurrent modification/range/set" errors.
 
-	if testUseParallel {
-		t.Skip(testSkipParallelTestsMsg)
-	}
-
-	defer testSetupWithChecks(t, &h, false)()
+	defer testSetup2(t, &h)()
 
 	numPrim, numMap, idxTime, idxMap := testTableNumPrimitives, testTableNumMaps, testTableIdxTime, testTableNumPrimitives+2
 
@@ -1155,10 +1151,7 @@ func doTestCodecTableOne(t *testing.T, h Handle) {
 }
 
 func doTestCodecMiscOne(t *testing.T, h Handle) {
-	if testUseParallel {
-		t.Skip(testSkipParallelTestsMsg)
-	}
-	defer testSetup(t, &h)()
+	defer testSetup2(t, &h)()
 	var err error
 	bh := testBasicHandle(h)
 	b := testMarshalErr(32, h, t, "32")
@@ -1491,16 +1484,13 @@ func doTestCodecChan(t *testing.T, h Handle) {
 }
 
 func doTestCodecRpcOne(t *testing.T, rr Rpc, h Handle, doRequest bool, exitSleep time.Duration) (port int) {
-	if testUseParallel {
-		t.Skip(testSkipParallelTestsMsg)
-	}
 	if testSkipRPCTests {
 		t.Skip(testSkipRPCTestsMsg)
 	}
 	if !testRecoverPanicToErr {
 		t.Skip(testSkipIfNotRecoverPanicToErrMsg)
 	}
-	defer testSetup(t, &h)()
+	defer testSetup2(t, &h)()
 
 	// if mh, ok := h.(*MsgpackHandle); ok && mh.SliceElementReset {
 	if h.Name() == "msgpack" && testFI.get(h, "SliceElementReset").(bool) {
@@ -1623,10 +1613,7 @@ func doTestCodecRpcOne(t *testing.T, rr Rpc, h Handle, doRequest bool, exitSleep
 }
 
 func doTestMapEncodeForCanonical(t *testing.T, h Handle) {
-	if testUseParallel {
-		t.Skip(testSkipParallelTestsMsg)
-	}
-	defer testSetup(t, &h)()
+	defer testSetup2(t, &h)()
 	// println("doTestMapEncodeForCanonical")
 	v1 := map[stringUint64T]interface{}{
 		{"a", 1}: 1,
@@ -1748,12 +1735,9 @@ func doTestEncCircularRef(t *testing.T, h Handle) {
 	if !testRecoverPanicToErr {
 		t.Skip(testSkipIfNotRecoverPanicToErrMsg)
 	}
-	defer testSetup(t, &h)()
+	defer testSetup2(t, &h)()
 	bh := testBasicHandle(h)
 	if !bh.CheckCircularRef {
-		if testUseParallel {
-			t.Skip(testSkipParallelTestsMsg)
-		}
 		bh.CheckCircularRef = true
 		defer func() { bh.CheckCircularRef = false }()
 	}
@@ -1852,12 +1836,9 @@ func __doTestErrWriter(t *testing.T, h Handle) {
 	}
 }
 func doTestRawValue(t *testing.T, h Handle) {
-	defer testSetup(t, &h)()
+	defer testSetup2(t, &h)()
 	bh := testBasicHandle(h)
 	if !bh.Raw {
-		if testUseParallel {
-			t.Skip(testSkipParallelTestsMsg)
-		}
 		bh.Raw = true
 		defer func() { bh.Raw = false }()
 	}
@@ -1904,10 +1885,7 @@ func doTestRawValue(t *testing.T, h Handle) {
 // We keep this unexported here, and put actual test in ext_dep_test.go.
 // This way, it can be excluded by excluding file completely.
 func doTestPythonGenStreams(t *testing.T, h Handle) {
-	if testUseParallel {
-		t.Skip(testSkipParallelTestsMsg)
-	}
-	defer testSetup(t, &h)()
+	defer testSetup2(t, &h)()
 
 	// time0 := time.Now()
 	// defer func() { xdebugf("python-gen-streams: %s: took: %v", h.Name(), time.Since(time0)) }()
@@ -2039,7 +2017,7 @@ func doTestSwallowAndZero(t *testing.T, h Handle) {
 }
 
 func doTestRawExt(t *testing.T, h Handle) {
-	defer testSetup(t, &h)()
+	defer testSetup2(t, &h)()
 	var b []byte
 	var v RawExt // interface{}
 	isJson, isCbor := h.Name() == "json", h.Name() == "cbor"
@@ -2087,9 +2065,6 @@ func doTestRawExt(t *testing.T, h Handle) {
 		b = b[:0]
 	}
 	if !bh.Raw {
-		if testUseParallel {
-			t.Skip(testSkipParallelTestsMsg)
-		}
 		bh.Raw = true
 		defer func() { bh.Raw = false }()
 	}
@@ -2115,10 +2090,7 @@ func doTestRawExt(t *testing.T, h Handle) {
 // }
 
 func doTestMapStructKey(t *testing.T, h Handle) {
-	if testUseParallel {
-		t.Skip(testSkipParallelTestsMsg)
-	}
-	defer testSetup(t, &h)()
+	defer testSetup2(t, &h)()
 	var b []byte
 	var v interface{} // map[stringUint64T]wrapUint64Slice // interface{}
 	bh := testBasicHandle(h)
@@ -2146,10 +2118,7 @@ func doTestMapStructKey(t *testing.T, h Handle) {
 }
 
 func doTestDecodeNilMapValue(t *testing.T, h Handle) {
-	if testUseParallel {
-		t.Skip(testSkipParallelTestsMsg)
-	}
-	defer testSetup(t, &h)()
+	defer testSetup2(t, &h)()
 	type Struct struct {
 		Field map[uint16]map[uint32]struct{}
 	}
@@ -2220,10 +2189,7 @@ func __doTestDecodeNilMapEntryValue(t *testing.T, h Handle) {
 }
 
 func doTestEmbeddedFieldPrecedence(t *testing.T, h Handle) {
-	if testUseParallel {
-		t.Skip(testSkipParallelTestsMsg)
-	}
-	defer testSetup(t, &h)()
+	defer testSetup2(t, &h)()
 	type Embedded struct {
 		Field byte
 	}
@@ -2268,10 +2234,7 @@ func doTestEmbeddedFieldPrecedence(t *testing.T, h Handle) {
 
 func doTestLargeContainerLen(t *testing.T, h Handle) {
 	okbinc := h.Name() == "binc"
-	if testUseParallel && okbinc {
-		t.Skip(testSkipParallelTestsMsg)
-	}
-	defer testSetup(t, &h)()
+	defer testSetupWithChecks(t, &h, okbinc)()
 
 	// This test can take a while if run multiple times in a loop, as it creates
 	// large maps/slices. Use t.Short() appropriately to limit its execution time.
@@ -2610,13 +2573,10 @@ func doTestUintToInt(t *testing.T, h Handle) {
 
 func doTestDifferentMapOrSliceType(t *testing.T, h Handle) {
 	okmsgp := h.Name() == "msgpack"
-	if testUseParallel {
-		t.Skip(testSkipParallelTestsMsg)
-	}
 	if !testRecoverPanicToErr {
 		t.Skip(testSkipIfNotRecoverPanicToErrMsg)
 	}
-	defer testSetup(t, &h)()
+	defer testSetup2(t, &h)()
 
 	// if mh, ok := h.(*MsgpackHandle); ok {
 	// 	defer func(b bool) { mh.RawToString = b }(mh.RawToString)
@@ -2829,7 +2789,7 @@ func doTestDifferentMapOrSliceType(t *testing.T, h Handle) {
 }
 
 func doTestScalars(t *testing.T, h Handle) {
-	defer testSetup(t, &h)()
+	defer testSetup2(t, &h)()
 
 	// if mh, ok := h.(*MsgpackHandle); ok {
 	// 	defer func(b bool) { mh.RawToString = b }(mh.RawToString)
@@ -2849,9 +2809,6 @@ func doTestScalars(t *testing.T, h Handle) {
 
 	bh := testBasicHandle(h)
 	if !bh.Canonical {
-		if testUseParallel {
-			t.Skip(testSkipParallelTestsMsg)
-		}
 		bh.Canonical = true
 		defer func() { bh.Canonical = false }()
 	}
@@ -2939,10 +2896,7 @@ func doTestScalars(t *testing.T, h Handle) {
 }
 
 func doTestIntfMapping(t *testing.T, h Handle) {
-	if testUseParallel {
-		t.Skip(testSkipParallelTestsMsg)
-	}
-	defer testSetup(t, &h)()
+	defer testSetup2(t, &h)()
 	name := h.Name()
 	rti := reflect.TypeOf((*testIntfMapI)(nil)).Elem()
 	defer func() { testBasicHandle(h).Intf2Impl(rti, nil) }()
@@ -2993,7 +2947,7 @@ func doTestOmitempty(t *testing.T, h Handle) {
 }
 
 func doTestMissingFields(t *testing.T, h Handle) {
-	defer testSetup(t, &h)()
+	defer testSetup2(t, &h)()
 	name := h.Name()
 	if testBasicHandle(h).StructToArray {
 		t.Skipf("skipping Missing Fields test when StructToArray=true")
@@ -3027,9 +2981,6 @@ func doTestMissingFields(t *testing.T, h Handle) {
 	bh := testBasicHandle(h)
 
 	if !bh.Canonical {
-		if testUseParallel {
-			t.Skip(testSkipParallelTestsMsg)
-		}
 		bh.Canonical = true
 		defer func() { bh.Canonical = false }()
 	}
@@ -3068,10 +3019,7 @@ func doTestMaxDepth(t *testing.T, h Handle) {
 	if !testRecoverPanicToErr {
 		t.Skip(testSkipIfNotRecoverPanicToErrMsg)
 	}
-	if testUseParallel {
-		t.Skip(testSkipParallelTestsMsg)
-	}
-	defer testSetup(t, &h)()
+	defer testSetup2(t, &h)()
 	name := h.Name()
 	type T struct {
 		I interface{} // value to encode
@@ -3266,10 +3214,7 @@ func doTestStrucEncDec(t *testing.T, h Handle) {
 }
 
 func doTestStructKeyType(t *testing.T, h Handle) {
-	if testUseParallel {
-		t.Skip(testSkipParallelTestsMsg)
-	}
-	defer testSetup(t, &h)()
+	defer testSetup2(t, &h)()
 	name := h.Name()
 	mok := name == "msgpack"
 	bcok := name == "binc"
@@ -3357,10 +3302,7 @@ func doTestStructKeyType(t *testing.T, h Handle) {
 }
 
 func doTestRawToStringToRawEtc(t *testing.T, h Handle) {
-	if testUseParallel {
-		t.Skip(testSkipParallelTestsMsg)
-	}
-	defer testSetup(t, &h)()
+	defer testSetup2(t, &h)()
 	// name := h.Name()
 
 	// Tests:
@@ -3496,11 +3438,7 @@ MAP_VALUE_RESET:
 // -----------------
 
 func doTestPreferArrayOverSlice(t *testing.T, h Handle) {
-	if testUseParallel {
-		t.Skip(testSkipParallelTestsMsg)
-	}
-
-	defer testSetup(t, &h)()
+	defer testSetup2(t, &h)()
 	// encode a slice, decode it with PreferArrayOverSlice
 	bh := testBasicHandle(h)
 	paos := bh.PreferArrayOverSlice
@@ -3522,7 +3460,7 @@ func doTestPreferArrayOverSlice(t *testing.T, h Handle) {
 }
 
 func doTestZeroCopyBytes(t *testing.T, h Handle) {
-	defer testSetup(t, &h)()
+	defer testSetup2(t, &h)()
 	// jsonhandle and cborhandle with indefiniteLength do not support inline bytes, so skip them.
 	// if h.Name() == "json" {
 	// 	t.Skipf("skipping ... zero copy bytes not supported by json handle")
@@ -3533,9 +3471,6 @@ func doTestZeroCopyBytes(t *testing.T, h Handle) {
 
 	bh := testBasicHandle(h)
 	if !bh.ZeroCopy {
-		if testUseParallel {
-			t.Skip(testSkipParallelTestsMsg)
-		}
 		bh.ZeroCopy = true
 		defer func() { bh.ZeroCopy = false }()
 	}
@@ -3566,12 +3501,13 @@ func doTestZeroCopyBytes(t *testing.T, h Handle) {
 }
 
 func doTestNextValueBytes(t *testing.T, h Handle) {
-	defer testSetup(t, &h)()
-
+	// defer testSetup(t, &h)()
+	// bh := testBasicHandle(h)
+	// if testUseParallel && (testUseIoEncDec >= 0 || bh.InterfaceReset) {
+	// 	t.Skip(testSkipParallelTestsMsg)
+	// }
+	defer testSetup2(t, &h)()
 	bh := testBasicHandle(h)
-	if testUseParallel && (testUseIoEncDec >= 0 || bh.InterfaceReset) {
-		t.Skip(testSkipParallelTestsMsg)
-	}
 
 	// - encode uint, int, float, bool, struct, map, slice, string - all separated by nil
 	// - use nextvaluebytes to grab he's got each one, and decode it, and compare
@@ -3821,13 +3757,10 @@ func doTestStructFieldInfoToArray(t *testing.T, h Handle) {
 	if !testRecoverPanicToErr {
 		t.Skip(testSkipIfNotRecoverPanicToErrMsg)
 	}
-	defer testSetup(t, &h)()
+	defer testSetup2(t, &h)()
 	bh := testBasicHandle(h)
 
 	if !bh.CheckCircularRef {
-		if testUseParallel {
-			t.Skip(testSkipParallelTestsMsg)
-		}
 		bh.CheckCircularRef = true
 		defer func() { bh.CheckCircularRef = false }()
 	}

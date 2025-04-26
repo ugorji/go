@@ -33,11 +33,8 @@ func cborTestInit() {
 }
 
 func TestCborIndefiniteLength(t *testing.T) {
-	if testUseParallel {
-		t.Skip(testSkipParallelTestsMsg)
-	}
 	var h Handle = testCborH
-	defer testSetup(t, &h)()
+	defer testSetup2(t, &h)()
 	bh := testBasicHandle(h)
 	defer func(oldMapType reflect.Type, oldRawToString, oldSignedInteger bool) {
 		bh.MapType = oldMapType
@@ -147,13 +144,10 @@ func TestCborIndefiniteLengthTextStringChunksAreUTF8(t *testing.T) {
 		t.Skip(testSkipIfNotRecoverPanicToErrMsg)
 	}
 	var h Handle = testCborH
-	defer testSetup(t, &h)()
+	defer testSetup2(t, &h)()
 
 	bh := testBasicHandle(h)
 	if !bh.ValidateUnicode {
-		if testUseParallel {
-			t.Skip(testSkipParallelTestsMsg)
-		}
 		bh.ValidateUnicode = true
 		defer func() { bh.ValidateUnicode = false }()
 	}
@@ -177,11 +171,8 @@ type testCborGolden struct {
 
 // Some tests are skipped because they include numbers outside the range of int64/uint64
 func TestCborGoldens(t *testing.T) {
-	if testUseParallel {
-		t.Skip(testSkipParallelTestsMsg)
-	}
 	var h Handle = testCborH
-	defer testSetup(t, &h)()
+	defer testSetup2(t, &h)()
 	bh := testBasicHandle(h)
 	defer func(oldMapType reflect.Type, oldRawToString, oldSignedInteger bool) {
 		bh.MapType = oldMapType
