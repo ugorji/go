@@ -92,19 +92,20 @@ type ioReaderByteScanner interface {
 	// Read(p []byte) (n int, err error)
 }
 
-// ioReaderByteScannerT does a simple wrapper of a io.ByteScanner
+// ioReaderByteScannerImpl does a simple wrapper of a io.ByteScanner
 // over a io.Reader
-type ioReaderByteScannerT struct {
+type ioReaderByteScannerImpl struct {
 	r io.Reader
 
 	l  byte             // last byte
 	ls unreadByteStatus // last byte status
 
-	_ [2]byte // padding
-	b [4]byte // tiny buffer for reading single bytes
+	recording bool
+	bufio     bool
+	b         [4]byte // tiny buffer for reading single bytes
 }
 
-func (z *ioReaderByteScannerT) ReadByte() (c byte, err error) {
+func (z *ioReaderByteScannerImpl) ReadByte() (c byte, err error) {
 	if z.ls == unreadByteCanRead {
 		z.ls = unreadByteCanUnread
 		c = z.l
@@ -115,7 +116,7 @@ func (z *ioReaderByteScannerT) ReadByte() (c byte, err error) {
 	return
 }
 
-func (z *ioReaderByteScannerT) UnreadByte() (err error) {
+func (z *ioReaderByteScannerImpl) UnreadByte() (err error) {
 	switch z.ls {
 	case unreadByteCanUnread:
 		z.ls = unreadByteCanRead
@@ -129,7 +130,7 @@ func (z *ioReaderByteScannerT) UnreadByte() (err error) {
 	return
 }
 
-func (z *ioReaderByteScannerT) Read(p []byte) (n int, err error) {
+func (z *ioReaderByteScannerImpl) Read(p []byte) (n int, err error) {
 	if len(p) == 0 {
 		return
 	}
@@ -158,7 +159,7 @@ func (z *ioReaderByteScannerT) Read(p []byte) (n int, err error) {
 	return
 }
 
-func (z *ioReaderByteScannerT) reset(r io.Reader) {
+func (z *ioReaderByteScannerImpl) reset(r io.Reader) {
 	z.r = r
 	z.ls = unreadByteUndefined
 	z.l = 0
@@ -166,19 +167,16 @@ func (z *ioReaderByteScannerT) reset(r io.Reader) {
 
 // ioDecReader is a decReader that reads off an io.Reader.
 type ioDecReader struct {
-	bb *bufio.Reader // created internally, and reused on reset if needed
-
-	rr ioReaderByteScannerT // the reader passed in, wrapped into a reader+bytescanner
-	br ioReaderByteScanner  // main reader used for Read|ReadByte|UnreadByte
+	rr ioReaderByteScannerImpl // the reader passed in, wrapped into a reader+bytescanner
+	br ioReaderByteScanner     // main reader used for Read|ReadByte|UnreadByte
 
 	n uint // num read
 
 	bufr []byte // buffer for readTo/readUntil
 
-	x [64 + 40]byte // for: get struct field name, swallow valueTypeBytes, etc
+	x [40]byte // for: readx
 
-	rec       []byte
-	recording bool
+	rec []byte
 }
 
 // var errNoBytesReadFromSupport = errors.New("bytesReadFrom() is not supported")
@@ -199,28 +197,34 @@ func (z *ioDecReader) resetBytes(in []byte) {
 func (z *ioDecReader) resetIO(r io.Reader, bufsize int, blist *bytesFreeList) {
 	z.n = 0
 	z.bufr = blist.check(z.bufr, 256)
-	z.br = nil
+
+	// - if r == nil: use eofReader
+	// - else if bufsize > 0: use bufio.Reader
+	//   - if we own it already and bufsize not change: reset it
+	//   - else new bufio.Reader
+	// - else if Reader+ByteScanner AND fixed type: use it
+	// - else if wrapper
+	// - else: use wrapper type: ioReaderByteScannerImpl
 
 	if r == nil {
 		z.br = &eofReader
+		z.rr.bufio = false
 		return
 	}
 
-	var ok bool
-
-	if bufsize <= 0 {
-		z.br, ok = r.(ioReaderByteScanner)
-		if !ok {
-			z.rr.reset(r)
-			z.br = &z.rr
+	if bufsize > 0 {
+		if z.rr.bufio {
+			if bb := z.br.(*bufio.Reader); bb.Size() == bufsize {
+				bb.Reset(r)
+				return
+			}
 		}
+		z.rr.bufio = true
+		z.br = bufio.NewReaderSize(r, bufsize)
 		return
 	}
 
-	// bufsize > 0 ...
-
-	// if bytes.[Buffer|Reader], no value in adding extra buffer
-	// if bufio.Reader, no value in extra buffer unless size changes
+	z.rr.bufio = false
 	switch bb := r.(type) {
 	case *strings.Reader:
 		z.br = bb
@@ -229,19 +233,14 @@ func (z *ioDecReader) resetIO(r io.Reader, bufsize int, blist *bytesFreeList) {
 	case *bytes.Reader:
 		z.br = bb
 	case *bufio.Reader:
-		if bb.Size() == bufsize {
-			z.br = bb
-		}
+		z.br = bb
+	default:
+		goto RR
 	}
-
-	if z.br == nil {
-		if z.bb != nil && z.bb.Size() == bufsize {
-			z.bb.Reset(r)
-		} else {
-			z.bb = bufio.NewReaderSize(r, bufsize)
-		}
-		z.br = z.bb
-	}
+	return
+RR:
+	z.rr.reset(r)
+	z.br = &z.rr
 }
 
 func (z *ioDecReader) numread() uint {
@@ -251,7 +250,7 @@ func (z *ioDecReader) numread() uint {
 func (z *ioDecReader) readn1() (b uint8) {
 	b, err := z.br.ReadByte()
 	halt.onerror(err)
-	if z.recording {
+	if z.rr.recording {
 		z.rec = append(z.rec, b)
 	}
 	z.n++
@@ -288,7 +287,7 @@ func (z *ioDecReader) readx(n uint) (bs []byte) {
 		bs = make([]byte, n)
 	}
 	nn, err := readFull(z.br, bs)
-	if z.recording {
+	if z.rr.recording {
 		z.rec = append(z.rec, bs[:nn]...)
 	}
 	z.n += nn
@@ -301,7 +300,7 @@ func (z *ioDecReader) readb(bs []byte) {
 		return
 	}
 	nn, err := readFull(z.br, bs)
-	if z.recording {
+	if z.rr.recording {
 		z.rec = append(z.rec, bs[:nn]...)
 	}
 	z.n += nn
@@ -352,7 +351,7 @@ LOOP:
 	if err != nil {
 		halt.onerror(err)
 	}
-	if z.recording {
+	if z.rr.recording {
 		z.rec = append(z.rec, i)
 	}
 	z.n++
@@ -409,7 +408,7 @@ LOOP:
 func (z *ioDecReader) unreadn1() {
 	err := z.br.UnreadByte()
 	halt.onerror(err)
-	if z.recording && len(z.rec) > 0 {
+	if z.rr.recording && len(z.rec) > 0 {
 		z.rec = z.rec[:len(z.rec)-1]
 	}
 	z.n--
@@ -417,13 +416,13 @@ func (z *ioDecReader) unreadn1() {
 
 func (z *ioDecReader) startRecording(v []byte) {
 	z.rec = v
-	z.recording = true
+	z.rr.recording = true
 }
 
 func (z *ioDecReader) stopRecording() (v []byte) {
 	v = z.rec
 	z.rec = nil
-	z.recording = false
+	z.rr.recording = false
 	return
 }
 
