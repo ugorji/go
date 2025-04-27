@@ -479,16 +479,10 @@ func (d *simpleDecDriver[T]) DecodeBytes(bs []byte) (out []byte, scratchBuf bool
 
 	clen := d.decLen()
 	d.bdRead = false
-	// if d.d.zerocopy() {
-	if d.d.bytes && d.h.ZeroCopy {
+	if d.d.bytes {
 		return d.r.readx(uint(clen)), false
 	}
-	if bs == nil {
-		scratchBuf = true
-		bs = d.d.b[:]
-	}
-	out = d.r.readxb(clen, d.h.MaxInitLen, bs)
-	return
+	return d.r.readxb(clen, bs)
 }
 
 func (d *simpleDecDriver[T]) DecodeTime() (t time.Time) {
@@ -541,12 +535,8 @@ func (d *simpleDecDriver[T]) decodeExtV(verifyTag bool, xtagIn uint64) (xbs []by
 		if verifyTag && xtag != tag {
 			halt.errorf("wrong extension tag. Got %b. Expecting: %v", xtag, tag)
 		}
-		if d.d.bytes {
-			xbs = d.r.readx(uint(l))
-			zerocopy = true
-		} else {
-			xbs = d.r.readxb(l, d.h.MaxInitLen, d.d.b[:])
-		}
+		xbs = d.r.readx(uint(l))
+		zerocopy = d.d.bytes
 	case simpleVdByteArray, simpleVdByteArray + 1,
 		simpleVdByteArray + 2, simpleVdByteArray + 3, simpleVdByteArray + 4:
 		xbs, _ = d.DecodeBytes(nil)
@@ -606,11 +596,7 @@ func (d *simpleDecDriver[T]) DecodeNaked() {
 		n.v = valueTypeExt
 		l := d.decLen()
 		n.u = uint64(d.r.readn1())
-		if d.d.bytes {
-			n.l = d.r.readx(uint(l))
-		} else {
-			n.l = d.r.readxb(l, d.h.MaxInitLen, d.d.b[:])
-		}
+		n.l = d.r.readx(uint(l))
 	case simpleVdArray, simpleVdArray + 1, simpleVdArray + 2,
 		simpleVdArray + 3, simpleVdArray + 4:
 		n.v = valueTypeArray
@@ -832,7 +818,7 @@ func (d *simpleDecDriver[T]) resetInBytes(in []byte) {
 }
 
 func (d *simpleDecDriver[T]) resetInIO(r io.Reader) {
-	d.r.resetIO(r, d.h.ReaderBufferSize, &d.d.blist)
+	d.r.resetIO(r, d.h.ReaderBufferSize, d.h.MaxInitLen, &d.d.blist)
 }
 
 // ---- (custom stanza)

@@ -20,7 +20,7 @@ type decReaderI interface {
 
 	readb([]byte)
 
-	readxb(n, maxInitLen int, in []byte) (out []byte)
+	readxb(n int, in []byte) (out []byte, useBuf bool)
 
 	readn1() byte
 	readn2() [2]byte
@@ -59,7 +59,7 @@ type decReaderI interface {
 	// bytesReadFrom(startpos uint) []byte
 
 	// isBytes() bool
-	resetIO(r io.Reader, bufsize int, blist *bytesFreeList)
+	resetIO(r io.Reader, bufsize int, maxInitLen int, blist *bytesFreeList)
 
 	resetBytes(in []byte)
 
@@ -172,6 +172,8 @@ type ioDecReader struct {
 
 	blist *bytesFreeList
 
+	maxInitLen uint
+
 	n uint // num read
 
 	bufr []byte // buffer for jsonXXX, readx, readUntil
@@ -194,10 +196,15 @@ func (z *ioDecReader) resetBytes(in []byte) {
 	halt.errorStr("resetBytes unsupported by ioDecReader")
 }
 
-func (z *ioDecReader) resetIO(r io.Reader, bufsize int, blist *bytesFreeList) {
+func (z *ioDecReader) resetIO(r io.Reader, bufsize int, maxInitLen int, blist *bytesFreeList) {
 	z.n = 0
 	z.bufr = blist.check(z.bufr, 256)
 	z.blist = blist
+	if maxInitLen > 1024 {
+		z.maxInitLen = uint(maxInitLen)
+	} else {
+		z.maxInitLen = 1024
+	}
 
 	// - if r == nil: use eofReader
 	// - else if bufsize > 0: use bufio.Reader
@@ -275,27 +282,6 @@ func (z *ioDecReader) readn8() (bs [8]byte) {
 	return
 }
 
-func (z *ioDecReader) readx(n uint) (bs []byte) {
-	if n == 0 {
-		return zeroByteSlice
-	}
-	if n < uint(cap(z.bufr)) {
-		bs = z.bufr[:n]
-	} else if z.blist != nil {
-		z.bufr = z.blist.putGet(z.bufr, int(n))
-		bs = z.bufr[:n]
-	} else {
-		bs = make([]byte, n)
-	}
-	nn, err := readFull(z.br, bs)
-	if z.rr.recording {
-		z.rec = append(z.rec, bs[:nn]...)
-	}
-	z.n += nn
-	halt.onerror(err)
-	return
-}
-
 func (z *ioDecReader) readb(bs []byte) {
 	if len(bs) == 0 {
 		return
@@ -308,22 +294,62 @@ func (z *ioDecReader) readb(bs []byte) {
 	halt.onerror(err)
 }
 
-func (z *ioDecReader) readxb(n, maxInitLen int, in []byte) (out []byte) {
+// func (z *ioDecReader) readx(n uint) (bs []byte) {
+// 	if n == 0 {
+// 		return zeroByteSlice
+// 	}
+// 	if n < uint(cap(z.bufr)) {
+// 		bs = z.bufr[:n]
+// 		z.readb(bs)
+// 		return
+// 	}
+// 	if z.blist != nil {
+// 		z.bufr = z.blist.putGet(z.bufr, int(n))
+// 		bs = z.bufr[:n]
+// 	} else {
+// 		bs = make([]byte, n)
+// 	}
+// 	nn, err := readFull(z.br, bs)
+// 	if z.rr.recording {
+// 		z.rec = append(z.rec, bs[:nn]...)
+// 	}
+// 	z.n += nn
+// 	halt.onerror(err)
+// 	return
+// }
+
+func (z *ioDecReader) readx(n uint) (bs []byte) {
+	if n == 0 {
+		return zeroByteSlice
+	}
+	z.bufr, _ = z.readInfer(int(n), z.bufr)
+	return z.bufr
+}
+
+func (z *ioDecReader) readxb(n int, in []byte) (out []byte, useBuf bool) {
 	if n <= 0 {
-		out = zeroByteSlice
-	} else if cap(in) >= n {
+		return zeroByteSlice, false
+	}
+	return z.readInfer(n, in)
+}
+
+func (z *ioDecReader) readInfer(n int, in []byte) (out []byte, useBuf bool) {
+	if cap(in) >= n {
 		out = in[:n]
 		z.readb(out)
-	} else {
-		var len2 int
-		for len2 < n {
-			len3 := decInferLen(n-len2, maxInitLen, 1)
-			bs3 := out
-			out = make([]byte, len2+len3)
-			copy(out, bs3)
-			z.readb(out[len2:])
-			len2 += len3
-		}
+		return
+	}
+	useBuf = true
+	var len2 int
+	for len2 < n {
+		len3 := decInferLen(n-len2, int(z.maxInitLen), 1)
+		bs3 := out
+		newlen := len2 + len3
+		out = z.blist.putGet(out, newlen)[:newlen]
+		// out = make([]byte, len2+len3)
+		copy(out, bs3)
+		z.readb(out[len2:])
+		len2 = newlen
 	}
 	return
 }
@@ -440,16 +466,17 @@ func (z *ioDecReader) stopRecording() (v []byte) {
 //
 // see panicValToErr(...) function in helper.go.
 type bytesDecReader struct {
-	b []byte // data
-	c uint   // cursor
-	r uint   // recording cursor
+	b  []byte // data
+	c  uint   // cursor
+	r  uint   // recording cursor
+	xb []byte // buffer for readxb
 }
 
 // func (z *bytesDecReader) isBytes() bool {
 // 	return true
 // }
 
-func (z *bytesDecReader) resetIO(r io.Reader, bufsize int, blist *bytesFreeList) {
+func (z *bytesDecReader) resetIO(r io.Reader, bufsize int, maxInitLen int, blist *bytesFreeList) {
 	halt.errorStr("resetIO unsupported by bytesDecReader")
 }
 
@@ -484,17 +511,22 @@ func (z *bytesDecReader) readb(bs []byte) {
 	copy(bs, z.readx(uint(len(bs))))
 }
 
-func (z *bytesDecReader) readxb(n, maxInitLen int, in []byte) (out []byte) {
+func (z *bytesDecReader) readxb(n int, in []byte) (out []byte, useBuf bool) {
 	if n <= 0 {
-		return zeroByteSlice
+		return zeroByteSlice, false
 	}
 	_ = z.b[int(z.c)+n-1] // quick fail if out of bounds
 	if cap(in) >= n {
 		out = in[:n]
+	} else if cap(z.xb) >= n {
+		useBuf = true
+		out = z.xb[:n]
 	} else {
-		out = make([]byte, n)
+		useBuf = true
+		z.xb = make([]byte, n)
+		out = z.xb
 	}
-	z.readb(out)
+	copy(out, z.readx(uint(n)))
 	return
 }
 

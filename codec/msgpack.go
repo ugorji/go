@@ -512,10 +512,8 @@ func (d *msgpackDecDriver[T]) DecodeNaked() {
 			if n.u == uint64(mpTimeExtTagU) {
 				n.v = valueTypeTime
 				n.t = d.decodeTime(clen)
-			} else if d.d.bytes {
-				n.l = d.r.readx(uint(clen))
 			} else {
-				n.l = d.r.readxb(clen, d.h.MaxInitLen, d.d.b[:])
+				n.l = d.r.readx(uint(clen))
 			}
 		default:
 			halt.errorf("cannot infer value: %s: Ox%x/%d/%s", msgBadDesc, bd, bd, mpdesc(bd))
@@ -854,15 +852,10 @@ func (d *msgpackDecDriver[T]) DecodeBytes(bs []byte) (out []byte, scratchBuf boo
 	}
 
 	d.bdRead = false
-	if d.d.bytes && d.h.ZeroCopy {
+	if d.d.bytes {
 		return d.r.readx(uint(clen)), false
 	}
-	if bs == nil {
-		scratchBuf = false
-		bs = d.d.b[:]
-	}
-	out = d.r.readxb(clen, d.h.MaxInitLen, bs)
-	return
+	return d.r.readxb(clen, bs)
 }
 
 func (d *msgpackDecDriver[T]) DecodeStringAsBytes(bs []byte) (s []byte, scratchBuf bool) {
@@ -1060,12 +1053,8 @@ func (d *msgpackDecDriver[T]) decodeExtV(verifyTag bool, xtagIn uint64) (xbs []b
 		if verifyTag && xtag != tag {
 			halt.errorf("wrong extension tag - got %b, expecting %v", xtag, tag)
 		}
-		if d.d.bytes {
-			xbs = d.r.readx(uint(clen))
-			zerocopy = true
-		} else {
-			xbs = d.r.readxb(clen, d.h.MaxInitLen, d.d.b[:])
-		}
+		xbs = d.r.readx(uint(clen))
+		zerocopy = d.d.bytes
 	}
 	d.bdRead = false
 	ok = true
@@ -1281,7 +1270,7 @@ func (d *msgpackDecDriver[T]) resetInBytes(in []byte) {
 }
 
 func (d *msgpackDecDriver[T]) resetInIO(r io.Reader) {
-	d.r.resetIO(r, d.h.ReaderBufferSize, &d.d.blist)
+	d.r.resetIO(r, d.h.ReaderBufferSize, d.h.MaxInitLen, &d.d.blist)
 }
 
 // ---- (custom stanza)

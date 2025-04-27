@@ -630,15 +630,28 @@ func (d *cborDecDriver[T]) DecodeBytes(bs []byte) (out []byte, scratchBuf bool) 
 	}
 	clen := d.decLen()
 	d.bdRead = false
-	if d.d.bytes && d.h.ZeroCopy {
+
+	if d.d.bytes {
 		return d.r.readx(uint(clen)), false
 	}
-	if bs == nil {
-		bs = d.d.b[:]
-		scratchBuf = true
-	}
-	out = d.r.readxb(clen, d.h.MaxInitLen, bs)
-	return
+	return d.r.readxb(clen, bs)
+
+	// return d.r.readx(uint(clen)), !d.d.bytes
+
+	// if d.h.ZeroCopy {
+	// 	return d.r.readx(uint(clen)), !d.d.bytes
+	// }
+	// return d.r.readxb(clen, bs)
+
+	// if d.d.bytes && d.h.ZeroCopy {
+	// 	return d.r.readx(uint(clen)), false
+	// }
+	// if bs == nil {
+	// 	scratchBuf = true
+	// 	bs = d.d.b[:]
+	// }
+	// out, _ = d.r.readxb(clen, bs)
+	// return
 }
 
 func (d *cborDecDriver[T]) DecodeStringAsBytes(in []byte) (out []byte, scratchBuf bool) {
@@ -1018,7 +1031,7 @@ func (d *cborDecDriver[T]) resetInBytes(in []byte) {
 }
 
 func (d *cborDecDriver[T]) resetInIO(r io.Reader) {
-	d.r.resetIO(r, d.h.ReaderBufferSize, &d.d.blist)
+	d.r.resetIO(r, d.h.ReaderBufferSize, d.h.MaxInitLen, &d.d.blist)
 }
 
 // ---- (custom stanza)

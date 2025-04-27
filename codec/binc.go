@@ -753,14 +753,11 @@ func (d *bincDecDriver[T]) DecodeStringAsBytes(in []byte) (bs2 []byte, scratchBu
 	switch d.vd {
 	case bincVdString, bincVdByteArray:
 		slen = d.decLen()
+		// bs2, scratchBuf = d.r.readx(uint(slen)), !d.d.bytes
 		if d.d.bytes {
 			bs2 = d.r.readx(uint(slen))
 		} else {
-			if in == nil {
-				in = d.d.b[:]
-				scratchBuf = true
-			}
-			bs2 = d.r.readxb(slen, d.h.MaxInitLen, in)
+			bs2, scratchBuf = d.r.readxb(slen, in)
 		}
 	case bincVdSymbol:
 		// zerocopy doesn't apply for symbols,
@@ -791,8 +788,7 @@ func (d *bincDecDriver[T]) DecodeStringAsBytes(in []byte) (bs2 []byte, scratchBu
 			}
 			// As we are using symbols, do not store any part of
 			// the parameter bs in the map, as it might be a shared buffer.
-			bs2 = d.r.readxb(slen, d.h.MaxInitLen, nil)
-			scratchBuf = true
+			bs2, scratchBuf = d.r.readxb(slen, nil)
 			d.s[symbol] = bs2
 		}
 	default:
@@ -834,15 +830,10 @@ func (d *bincDecDriver[T]) DecodeBytes(bs []byte) (out []byte, scratchBuf bool) 
 		halt.errorf("bytes - %s %x-%x/%s", msgBadDesc, d.vd, d.vs, bincdesc(d.vd, d.vs))
 	}
 	d.bdRead = false
-	if d.d.bytes && d.h.ZeroCopy {
+	if d.d.bytes {
 		return d.r.readx(uint(clen)), false
 	}
-	if bs == nil {
-		bs = d.d.b[:]
-		scratchBuf = true
-	}
-	out = d.r.readxb(clen, d.h.MaxInitLen, bs)
-	return
+	return d.r.readxb(clen, bs)
 }
 
 func (d *bincDecDriver[T]) DecodeExt(rv interface{}, basetype reflect.Type, xtag uint64, ext Ext) {
@@ -880,12 +871,8 @@ func (d *bincDecDriver[T]) decodeExtV(verifyTag bool, xtagIn uint64) (xbs []byte
 		if verifyTag && xtag != tag {
 			halt.errorf("wrong extension tag - got %b, expecting: %v", xtag, tag)
 		}
-		if d.d.bytes {
-			xbs = d.r.readx(uint(l))
-			zerocopy = true
-		} else {
-			xbs = d.r.readxb(l, d.h.MaxInitLen, d.d.b[:])
-		}
+		xbs = d.r.readx(uint(l))
+		zerocopy = d.d.bytes
 	} else if d.vd == bincVdByteArray {
 		xbs, _ = d.DecodeBytes(nil)
 	} else {
@@ -965,11 +952,7 @@ func (d *bincDecDriver[T]) DecodeNaked() {
 		n.v = valueTypeExt
 		l := d.decLen()
 		n.u = uint64(d.r.readn1())
-		if d.d.bytes {
-			n.l = d.r.readx(uint(l))
-		} else {
-			n.l = d.r.readxb(l, d.h.MaxInitLen, d.d.b[:])
-		}
+		n.l = d.r.readx(uint(l))
 	case bincVdArray:
 		n.v = valueTypeArray
 		decodeFurther = true
@@ -1222,7 +1205,7 @@ func (d *bincDecDriver[T]) resetInBytes(in []byte) {
 }
 
 func (d *bincDecDriver[T]) resetInIO(r io.Reader) {
-	d.r.resetIO(r, d.h.ReaderBufferSize, &d.d.blist)
+	d.r.resetIO(r, d.h.ReaderBufferSize, d.h.MaxInitLen, &d.d.blist)
 }
 
 // ---- (custom stanza)

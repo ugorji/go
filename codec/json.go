@@ -1490,7 +1490,7 @@ func (d *jsonDecDriver[T]) resetInBytes(in []byte) {
 }
 
 func (d *jsonDecDriver[T]) resetInIO(r io.Reader) {
-	d.r.resetIO(r, d.h.ReaderBufferSize, &d.d.blist)
+	d.r.resetIO(r, d.h.ReaderBufferSize, d.h.MaxInitLen, &d.d.blist)
 }
 
 // ---- (custom stanza)
