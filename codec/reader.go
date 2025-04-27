@@ -170,11 +170,11 @@ type ioDecReader struct {
 	rr ioReaderByteScannerImpl // the reader passed in, wrapped into a reader+bytescanner
 	br ioReaderByteScanner     // main reader used for Read|ReadByte|UnreadByte
 
+	blist *bytesFreeList
+
 	n uint // num read
 
-	bufr []byte // buffer for readTo/readUntil
-
-	x [40]byte // for: readx
+	bufr []byte // buffer for jsonXXX, readx, readUntil
 
 	rec []byte
 }
@@ -197,13 +197,13 @@ func (z *ioDecReader) resetBytes(in []byte) {
 func (z *ioDecReader) resetIO(r io.Reader, bufsize int, blist *bytesFreeList) {
 	z.n = 0
 	z.bufr = blist.check(z.bufr, 256)
+	z.blist = blist
 
 	// - if r == nil: use eofReader
 	// - else if bufsize > 0: use bufio.Reader
 	//   - if we own it already and bufsize not change: reset it
 	//   - else new bufio.Reader
 	// - else if Reader+ByteScanner AND fixed type: use it
-	// - else if wrapper
 	// - else: use wrapper type: ioReaderByteScannerImpl
 
 	if r == nil {
@@ -235,12 +235,10 @@ func (z *ioDecReader) resetIO(r io.Reader, bufsize int, blist *bytesFreeList) {
 	case *bufio.Reader:
 		z.br = bb
 	default:
-		goto RR
+		z.rr.reset(r)
+		z.br = &z.rr
 	}
 	return
-RR:
-	z.rr.reset(r)
-	z.br = &z.rr
 }
 
 func (z *ioDecReader) numread() uint {
@@ -281,8 +279,11 @@ func (z *ioDecReader) readx(n uint) (bs []byte) {
 	if n == 0 {
 		return zeroByteSlice
 	}
-	if n < uint(len(z.x)) {
-		bs = z.x[:n]
+	if n < uint(cap(z.bufr)) {
+		bs = z.bufr[:n]
+	} else if z.blist != nil {
+		z.bufr = z.blist.putGet(z.bufr, int(n))
+		bs = z.bufr[:n]
 	} else {
 		bs = make([]byte, n)
 	}
