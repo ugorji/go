@@ -82,6 +82,8 @@ var (
 
 	testMaxInitLen int
 
+	testUseDiff bool
+
 	testUseReset    bool
 	testUseParallel bool
 
@@ -117,6 +119,8 @@ func testInitFlags() {
 	flag.BoolVar(&testUseReset, "tr", false, "Use Reset")
 	flag.BoolVar(&testUseParallel, "tp", false, "Run tests in parallel")
 	flag.IntVar(&testNumRepeatString, "trs", 8, "Create string variables by repeating a string N times")
+	flag.BoolVar(&testUseDiff, "tdiff", false, "Use Diff")
+
 	flag.BoolVar(&bIgnore, "tm", true, "(Deprecated) Use Must(En|De)code")
 
 	flag.IntVar(&testMaxInitLen, "tx", 0, "Max Init Len")

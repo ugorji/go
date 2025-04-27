@@ -21,8 +21,11 @@ var errDeepEqualNotMatch = errors.New("not match")
 
 func deepEqual(v1, v2 interface{}) (err error) {
 	if !reflect.DeepEqual(v1, v2) {
-		err = errors.New(cmp.Diff(v1, v2))
-		// err = errDeepEqualNotMatch
+		if testUseDiff {
+			err = errors.New(cmp.Diff(v1, v2))
+		} else {
+			err = errDeepEqualNotMatch
+		}
 	}
 	return
 }
