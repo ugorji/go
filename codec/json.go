@@ -581,7 +581,7 @@ func (e *jsonEncDriver[T]) atEndOfEncode() {
 type jsonDecState struct {
 	// scratch buffer used for base64 decoding (DecodeBytes in reuseBuf mode),
 	// or reading doubleQuoted string (DecodeStringAsBytes, DecodeNaked)
-	buf *[]byte
+	buf []byte
 
 	rawext bool // rawext configured on the handle
 
@@ -746,9 +746,8 @@ func (d *jsonDecDriver[T]) advance() {
 func (d *jsonDecDriver[T]) nextValueBytes(v []byte) []byte {
 	consumeString := func() {
 	TOP:
-		bs := d.r.jsonReadAsisChars()
-		if bs[len(bs)-1] != '"' {
-			// last char is '\', so consume next one and try again
+		_, c := d.r.jsonReadAsisChars()
+		if c == '\\' { // consume next one and try again
 			d.r.readn1()
 			goto TOP
 		}
@@ -993,10 +992,19 @@ func (d *jsonDecDriver[T]) DecodeBytes(bs []byte) (out []byte, scratchBuf bool) 
 	if d.tok == '[' {
 		// bsOut, _ = fastpathTV.DecSliceUint8V(bs, true, d.d)
 		if bs == nil {
-			bs = d.d.b[:]
+			out = d.decBytesFromArray(d.buf[:0])
+			d.buf = out
+			// bs = d.d.b[:]
 			scratchBuf = true
+		} else {
+			out = d.decBytesFromArray(bs)
+			// // MARKER 2025 - below may not be necessary
+			// // especially if scratchBuf means that caller copies this over
+			// if cap(out) > cap(bs) && cap(out) > cap(d.buf) {
+			// 	d.buf = out
+			// 	scratchBuf = true
+			// }
 		}
-		out = d.decBytesFromArray(bs)
 		return
 	}
 
@@ -1012,9 +1020,9 @@ func (d *jsonDecDriver[T]) DecodeBytes(bs []byte) (out []byte, scratchBuf bool) 
 		out = bs[:slen]
 	} else if bs == nil {
 		scratchBuf = true
-		out = d.d.blist.check(*d.buf, slen)
-		out = out[:slen]
-		*d.buf = out
+		out = d.d.blist.check(d.buf, slen)[:slen]
+		// out = out[:slen]
+		d.buf = out
 	} else {
 		out = make([]byte, slen)
 	}
@@ -1033,7 +1041,7 @@ func (d *jsonDecDriver[T]) DecodeStringAsBytes(bs []byte) (out []byte, scratchBu
 
 	// common case - hoist outside the switch statement
 	if d.tok == '"' {
-		return d.dblQuoteStringAsBytes(), false
+		return d.dblQuoteStringAsBytes()
 	}
 
 	// handle non-string scalar: null, true, false or a number
@@ -1068,33 +1076,20 @@ func (d *jsonDecDriver[T]) readUnescapedString() (bs []byte) {
 	return
 }
 
-func (d *jsonDecDriver[T]) dblQuoteStringAsBytes() (buf []byte) {
-	checkUtf8 := d.h.ValidateUnicode
-	// use a local buf variable, so we don't do pointer chasing within loop
-	buf = (*d.buf)[:0]
+func (d *jsonDecDriver[T]) dblQuoteStringAsBytes() (buf []byte, usingBuf bool) {
 	d.tok = 0
 
-	var bs []byte
-	var c byte
-	var firstTime bool = true
+	bs, c := d.r.jsonReadAsisChars()
+	if c == '"' {
+		return bs, false
+	}
+
+	checkUtf8 := d.h.ValidateUnicode
+	usingBuf = true
+	// use a local buf variable, so we don't do pointer chasing within loop
+	buf = append(d.buf[:0], bs...)
 
 	for {
-		bs = d.r.jsonReadAsisChars()
-		_ = bs[0] // bounds check hint - slice must be > 0 elements
-		if firstTime {
-			firstTime = false
-			if bs[len(bs)-1] == '"' {
-				return bs[:len(bs)-1]
-			}
-		}
-
-		buf = append(buf, bs[:len(bs)-1]...)
-		c = bs[len(bs)-1]
-
-		if c == '"' {
-			break
-		}
-
 		// c is now '\'
 		c = d.r.readn1()
 
@@ -1114,15 +1109,23 @@ func (d *jsonDecDriver[T]) dblQuoteStringAsBytes() (buf []byte) {
 		case 'u':
 			rr := d.appendStringAsBytesSlashU()
 			if checkUtf8 && rr == unicode.ReplacementChar {
+				d.buf = buf
 				halt.errorBytes("invalid UTF-8 character found after: ", buf)
 			}
 			buf = append(buf, d.bstr[:utf8.EncodeRune(d.bstr[:], rr)]...)
 		default:
-			*d.buf = buf
+			d.buf = buf
 			halt.errorByte("unsupported escaped value: ", c)
 		}
+
+		bs, c = d.r.jsonReadAsisChars()
+		// _ = bs[0] // bounds check hint - slice must be > 0 elements
+		buf = append(buf, bs...)
+		if c == '"' {
+			break
+		}
 	}
-	*d.buf = buf
+	d.buf = buf
 	return
 }
 
@@ -1199,7 +1202,7 @@ func (d *jsonDecDriver[T]) DecodeNaked() {
 		z.v = valueTypeArray // don't consume. kInterfaceNaked will call ReadArrayStart
 	case '"':
 		// if a string, and MapKeyAsString, then try to decode it as a bool or number first
-		bs = d.dblQuoteStringAsBytes()
+		bs, _ = d.dblQuoteStringAsBytes()
 		if jsonNakedBoolNullInQuotedStr &&
 			d.h.MapKeyAsString && len(bs) > 0 && d.d.c == containerMapKey {
 			switch string(bs) {
@@ -1388,7 +1391,7 @@ func (e *jsonEncDriver[T]) reset() {
 // }
 
 func (d *jsonDecDriver[T]) reset() {
-	*d.buf = d.d.blist.check(*d.buf, 256)
+	d.buf = d.d.blist.check(d.buf, 256)
 	d.tok = 0
 	// d.resetState()
 	d.rawext = d.h.RawBytesExt != nil
@@ -1511,7 +1514,8 @@ func (d *jsonDecDriver[T]) init2(dec decoderI) {
 	d.dec = dec
 	// var x []byte
 	// d.buf = &x
-	d.buf = new([]byte)
+	// d.buf = new([]byte)
+	d.buf = d.buf[:0]
 	// d.d.js = true
 	d.d.jsms = d.h.MapKeyAsString
 }
