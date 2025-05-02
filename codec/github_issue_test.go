@@ -42,8 +42,7 @@ func TestGH417(t *testing.T) {
 		go func() {
 			defer wg.Done()
 			var b bytes.Buffer
-			var msgpackHandle MsgpackHandle
-			NewEncoder(&b, &msgpackHandle).MustEncode(e)
+			NewEncoder(&b, testSimpleH).MustEncode(e)
 			// if err := NewEncoder(&b, &msgpackHandle).Encode(e); err != nil {
 			// 	fmt.Printf("error: %v\n", err)
 			// }
