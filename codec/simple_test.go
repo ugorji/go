@@ -9,7 +9,7 @@ import (
 )
 
 func init() {
-	testPreInitFns = append(testPreInitFns, simpleTestInit)
+	testPostInitFns = append(testPostInitFns, simpleTestInit)
 }
 
 func simpleTestInit() {

@@ -4,6 +4,7 @@
 package codec
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"math/rand"
@@ -16,7 +17,7 @@ import (
 )
 
 func init() {
-	testPreInitFns = append(testPreInitFns, msgpackTestInit)
+	testPostInitFns = append(testPostInitFns, msgpackTestInit)
 }
 
 func msgpackTestInit() {
@@ -113,7 +114,8 @@ func doTestMsgpackDecodeMapAndExtSizeMismatch(t *testing.T, h Handle) {
 	}
 	defer testSetup(t, &h)()
 	fn := func(t *testing.T, b []byte, v interface{}) {
-		if err := NewDecoderBytes(b, h).Decode(v); err != io.EOF && err != io.ErrUnexpectedEOF {
+		err := NewDecoderBytes(b, h).Decode(v)
+		if !errors.Is(err, io.EOF) && !errors.Is(err, io.ErrUnexpectedEOF) {
 			t.Fatalf("expected EOF or ErrUnexpectedEOF, got %v", err)
 		}
 	}
