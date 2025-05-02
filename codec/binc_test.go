@@ -6,7 +6,7 @@ package codec
 import "testing"
 
 func init() {
-	testPreInitFns = append(testPreInitFns, bincTestInit)
+	testPostInitFns = append(testPostInitFns, bincTestInit)
 }
 
 func bincTestInit() {

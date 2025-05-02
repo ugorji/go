@@ -5,6 +5,7 @@ package codec
 
 import (
 	"bytes"
+	"io"
 	// using codec.XXX directly
 	// . "github.com/ugorji/go/codec"
 )
@@ -22,6 +23,22 @@ type testHED struct {
 	Db  *Decoder
 	Eio *Encoder
 	Dio *Decoder
+}
+
+type ioReaderWrapper struct {
+	r io.Reader
+}
+
+func (x ioReaderWrapper) Read(p []byte) (n int, err error) {
+	return x.r.Read(p)
+}
+
+type ioWriterWrapper struct {
+	w io.Writer
+}
+
+func (x ioWriterWrapper) Write(p []byte) (n int, err error) {
+	return x.w.Write(p)
 }
 
 // the handles are declared here, and initialized during the init function.
@@ -43,7 +60,8 @@ var (
 )
 
 func init() {
-	doTestInit()
+	// doTestInit()
+	testPreInitFns = append(testPreInitFns, doTestInit)
 	testReInitFns = append(testReInitFns, doTestInit)
 }
 
@@ -60,14 +78,9 @@ func doTestInit() {
 	testJsonH.HTMLCharsAsIs = true
 	// testJsonH.InternString = true
 
-	testHandles = append(testHandles,
-		testSimpleH, testJsonH, testCborH, testMsgpackH, testBincH)
+	testHandles = nil
+	testHandles = append(testHandles, testSimpleH, testJsonH, testCborH, testMsgpackH, testBincH)
 
-	for _, h := range testHandles {
-		bh := h.getBasicHandle()
-		bh.WriterBufferSize = testUseIoEncDec
-		bh.ReaderBufferSize = testUseIoEncDec
-	}
 	testHEDs = nil
 }
 

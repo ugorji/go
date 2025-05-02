@@ -8,12 +8,29 @@ package codec
 // after flags are parsed.
 //
 // init is a multi-step process:
-//   - setup vars (handled by init functions in each file)
-//   - parse flags
-//   - setup derived vars (handled by pre-init registered functions - registered in init function)
-//   - post init (handled by post-init registered functions - registered in init function)
+//   - pre-init:
+//     - each file will fully define and pre-configure their variables
+//       (open to everyone in the package)
+//     - preloaded with configure test/benchmark flags and parsing cmdline flags.
+//   - post-init:
+//     - configure variables which depend on fully configured state from other files
+//
+// Each file will append init functions of the form func() to the
+// pre-init, post-init or re-init slices.
+//
+// Suite tests may require each of the pre-defined handles to modify
+// their configuration and reinit. This is what the testReinit function handles.
+//
 // This way, no one has to manage carefully control the initialization
 // using file names, etc.
+//
+// Note: during preInit: update testEncodeOptions and testDecodeOptions
+// with values from the flags. Each handle will be updated by basically
+// copying these into the EncodeOptions and DecodeOptions of the Handle's BasicHandle
+// embedded value.
+//
+// TestMain will call the full init (via testInitAll) as a one-time initialization
+// for the full test run. Consequently, no need to use sync.Once to manage that.
 //
 // Tests which require external dependencies need the -tag=x parameter.
 // They should be run as:
@@ -25,7 +42,7 @@ package codec
 //
 // To fully test everything:
 //    go test -tags=x -benchtime=100ms -tv -bg -bi  -brw -bu -v -run=. -bench=.
-
+//
 // Handling flags
 // define a set of global flags for testing, including:
 //   - Use Reset
@@ -43,33 +60,27 @@ package codec
 import (
 	"bytes"
 	"flag"
-	"io"
-	"log"
-	"sync"
+	"testing"
 )
 
-type ioReaderWrapper struct {
-	r io.Reader
+func init() {
+	// log.SetOutput(io.Discard) // don't allow things log to standard out/err // MARKER 2025
+	testPreInitFns = append(testPreInitFns, testInitFlags, benchInitFlags, testParseFlags)
+	testPreInitFns = append(testPreInitFns, testUpdateOptionsFromFlags)
+	testPostInitFns = append(testPostInitFns, testUpdateHandleOptions)
+	testReInitFns = append(testReInitFns, testUpdateHandleOptions)
 }
 
-func (x ioReaderWrapper) Read(p []byte) (n int, err error) {
-	return x.r.Read(p)
-}
-
-type ioWriterWrapper struct {
-	w io.Writer
-}
-
-func (x ioWriterWrapper) Write(p []byte) (n int, err error) {
-	return x.w.Write(p)
+func TestMain(m *testing.M) {
+	testInitAll() // with this, we can remove testOnce.Do(testInitAll) everywhere
+	m.Run()
 }
 
 var (
 	testPreInitFns  []func()
 	testPostInitFns []func()
 	testReInitFns   []func()
-
-	testOnce sync.Once
+	// testOnce sync.Once
 )
 
 // flag variables used by tests (and bench)
@@ -102,12 +113,6 @@ var (
 	testBenchmarkWithRuntimeMetrics bool
 )
 
-func init() {
-	log.SetOutput(io.Discard) // don't allow things log to standard out/err
-	testInitFlags()
-	benchInitFlags()
-}
-
 func testInitFlags() {
 	var bIgnore bool
 	// delete(testDecOpts.ExtFuncs, timeTyp)
@@ -137,18 +142,42 @@ func benchInitFlags() {
 	flag.IntVar(&testDepth, "bd", 1, "Benchmarks: Test Struc Depth")
 }
 
+func testParseFlags() {
+	// only parse it once.
+	if !flag.Parsed() {
+		flag.Parse()
+	}
+}
+
+func testUpdateOptionsFromFlags() {
+	testEncodeOptions.WriterBufferSize = testUseIoEncDec
+	testDecodeOptions.ReaderBufferSize = testUseIoEncDec
+	testDecodeOptions.MaxInitLen = testMaxInitLen
+}
+
+func testUpdateHandleOptions() {
+	for _, v := range testHandles {
+		bh := testBasicHandle(v)
+		// bh.clearInited() // so it is reinitialized next time around // MARKER 2025
+		// pre-fill them first
+		bh.EncodeOptions = testEncodeOptions
+		bh.DecodeOptions = testDecodeOptions
+		bh.RPCOptions = testRPCOptions
+		// bh.InterfaceReset = true
+		// bh.PreferArrayOverSlice = true
+		// modify from flag'ish things
+		// bh.MaxInitLen = testMaxInitLen
+	}
+}
+
 func testReinit() {
-	testOnce = sync.Once{}
+	// testOnce = sync.Once{}
 	for _, f := range testReInitFns {
 		f()
 	}
 }
 
 func testInitAll() {
-	// only parse it once.
-	if !flag.Parsed() {
-		flag.Parse()
-	}
 	for _, f := range testPreInitFns {
 		f()
 	}

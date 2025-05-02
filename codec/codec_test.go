@@ -33,7 +33,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"math"
 	"math/rand"
 	"net"
@@ -50,7 +49,7 @@ import (
 )
 
 func init() {
-	testPreInitFns = append(testPreInitFns, testInit)
+	testPostInitFns = append(testPostInitFns, testInit)
 }
 
 const testRecoverPanicToErr = !debugging
@@ -58,14 +57,6 @@ const testRecoverPanicToErr = !debugging
 // tests which check for errors will fail if testRecoverPanicToErr=false (debugging=true).
 // Consequently, skip them.
 var testSkipIfNotRecoverPanicToErrMsg = "tests checks for errors, and testRecoverPanicToErr=false"
-
-func testPanicToErr(h errDecorator, err *error) {
-	// Note: This method MUST be called directly from defer i.e. defer testPanicToErr ...
-	// else it seems the recover is not fully handled
-	if x := recover(); x != nil {
-		panicValToErr(h, x, err)
-	}
-}
 
 // helper type for dynamically getting or setting a field value
 type testFieldIntrospect struct{}
@@ -511,7 +502,7 @@ func testSetup2(t *testing.T, h *Handle) (fn func()) {
 // This function can track how much time a test took,
 // or recover from panic's and fail the test appropriately.
 func testSetupWithChecks(t *testing.T, h *Handle, allowParallel bool) (fn func()) {
-	testOnce.Do(testInitAll)
+	// testOnce.Do(testInitAll)
 	if allowParallel && testUseParallel {
 		t.Parallel()
 	}
@@ -520,8 +511,8 @@ func testSetupWithChecks(t *testing.T, h *Handle, allowParallel bool) (fn func()
 		fnRecoverPanic := func() {
 			if x := recover(); x != nil {
 				var err error
-				panicValToErr(errDecoratorDef{}, x, &err)
-				t.Logf("recovered error: %v", err)
+				panicValToErr(basicErrDecorator, x, &err, nil, false)
+				t.Logf("recovered error: (%T) %v", err, err)
 				t.FailNow()
 			}
 		}
@@ -562,32 +553,19 @@ func testCheckEqual(t *testing.T, v1 interface{}, v2 interface{}, desc string) {
 }
 
 func basicTestExtEncFn(x BytesExt, rv reflect.Value) (bs []byte, err error) {
-	defer testPanicToErr(errDecoratorDef{}, &err)
+	defer panicValToErr(basicErrDecorator, callRecoverSentinel, &err, nil, false)
 	bs = x.WriteExt(rv.Interface())
 	return
 }
 
 func basicTestExtDecFn(x BytesExt, rv reflect.Value, bs []byte) (err error) {
-	defer testPanicToErr(errDecoratorDef{}, &err)
+	defer panicValToErr(basicErrDecorator, callRecoverSentinel, &err, nil, false)
 	x.ReadExt(rv.Interface(), bs)
 	return
 }
 
 func testInit() {
 	gob.Register(new(TestStrucFlex))
-
-	for _, v := range testHandles {
-		bh := testBasicHandle(v)
-		bh.clearInited() // so it is reinitialized next time around
-		// pre-fill them first
-		bh.EncodeOptions = testEncodeOptions
-		bh.DecodeOptions = testDecodeOptions
-		bh.RPCOptions = testRPCOptions
-		// bh.InterfaceReset = true
-		// bh.PreferArrayOverSlice = true
-		// modify from flag'ish things
-		bh.MaxInitLen = testMaxInitLen
-	}
 
 	// var tTimeExt timeBytesExt
 	// var tBytesExt wrapBytesExt
@@ -1835,6 +1813,7 @@ func __doTestErrWriter(t *testing.T, h Handle) {
 		}
 	}
 }
+
 func doTestRawValue(t *testing.T, h Handle) {
 	defer testSetup2(t, &h)()
 	bh := testBasicHandle(h)
@@ -1894,7 +1873,7 @@ func doTestPythonGenStreams(t *testing.T, h Handle) {
 	if testVerbose {
 		t.Logf("TestPythonGenStreams-%v", name)
 	}
-	tmpdir, err := ioutil.TempDir("", "golang-"+name+"-test")
+	tmpdir, err := os.MkdirTemp("", "golang-"+name+"-test")
 	if err != nil {
 		t.Logf("-------- Unable to create temp directory\n")
 		t.FailNow()
@@ -1936,7 +1915,7 @@ func doTestPythonGenStreams(t *testing.T, h Handle) {
 			t.Logf("         Testing: #%d: %T, %#v\n", i, v, v)
 		}
 		var bss []byte
-		bss, err = ioutil.ReadFile(filepath.Join(tmpdir, strconv.Itoa(i)+"."+name+".golden"))
+		bss, err = os.ReadFile(filepath.Join(tmpdir, strconv.Itoa(i)+"."+name+".golden"))
 		if err != nil {
 			t.Logf("-------- Error reading golden file: %d. Err: %v", i, err)
 			t.FailNow()

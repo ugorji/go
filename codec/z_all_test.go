@@ -103,6 +103,7 @@ func testGroupResetFlags() {
 	testDepth = 0
 	testDecodeOptions = DecodeOptions{}
 	testEncodeOptions = EncodeOptions{}
+	testUpdateOptionsFromFlags()
 
 	testJsonH.Indent = 0 // -1?
 	testJsonH.HTMLCharsAsIs = false

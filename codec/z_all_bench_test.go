@@ -25,7 +25,7 @@ var benchmarkGroupSave struct {
 }
 
 func benchmarkGroupInitAll() {
-	testInitAll() // calls flag.Parse
+	// testInitAll() // calls flag.Parse
 	benchmarkGroupSave.testUseIoEncDec = testUseIoEncDec
 	benchmarkGroupSave.testUseReset = testUseReset
 
@@ -57,7 +57,7 @@ func benchmarkOneFn(fns []func(*testing.B)) func(*testing.B) {
 }
 
 func benchmarkSuiteNoop(b *testing.B) {
-	testOnce.Do(testInitAll)
+	// testOnce.Do(testInitAll)
 	// b.ResetTimer()
 	// for i := 0; i < b.N; i++ {
 	for b.Loop() {
