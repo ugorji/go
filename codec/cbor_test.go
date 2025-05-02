@@ -4,7 +4,6 @@
 package codec
 
 import (
-	"bufio"
 	"bytes"
 	"encoding/hex"
 	"math"
@@ -16,7 +15,7 @@ import (
 )
 
 func init() {
-	testPreInitFns = append(testPreInitFns, cborTestInit)
+	testPostInitFns = append(testPostInitFns, cborTestInit)
 }
 
 func cborTestInit() {
@@ -190,16 +189,18 @@ func TestCborGoldens(t *testing.T) {
 	// - compare both using deepequal
 	// - for any miss, record it
 	var gs []*testCborGolden
-	f, err := os.Open("test-cbor-goldens.json")
+	f, err := os.ReadFile("test-cbor-goldens.json")
 	if err != nil {
 		t.Logf("error opening test-cbor-goldens.json: %v", err)
 		t.FailNow()
 	}
-	defer f.Close()
-	jh := new(JsonHandle)
+	jh := testJsonH // new(JsonHandle)
+	defer func(v reflect.Type) { jh.MapType = v }(jh.MapType)
 	jh.MapType = testMapStrIntfTyp
+
 	// d := NewDecoder(f, jh)
-	d := NewDecoder(bufio.NewReader(f), jh)
+	// d := NewDecoder(bufio.NewReader(f), jh)
+	d := NewDecoderBytes(f, jh)
 	// err = d.Decode(&gs)
 	d.MustDecode(&gs)
 	if err != nil {
@@ -403,12 +404,13 @@ func TestCborSkipTags(t *testing.T) {
 		w.writen1(cborBdTrue)
 	}
 
-	var h CborHandle
+	var h = testCborH // &CborHandle{}
+	defer func(a, b bool) { h.SkipUnexpectedTags, h.Canonical = a, b }(h.SkipUnexpectedTags, h.Canonical)
 	h.SkipUnexpectedTags = true
 	h.Canonical = true
 
 	var gold []byte
-	NewEncoderBytes(&gold, &h).MustEncode(v)
+	NewEncoderBytes(&gold, h).MustEncode(v)
 	// xdebug2f("encoded:    gold: %v", gold)
 
 	// w.b is the encoded bytes
@@ -418,15 +420,17 @@ func TestCborSkipTags(t *testing.T) {
 	// xdebug2f("manual:  no-tags: %v", w.b)
 
 	testDeepEqualErr(gold, w.b, t, "cbor-skip-tags--bytes---")
-	NewDecoderBytes(w.b, &h).MustDecode(&v2)
+	NewDecoderBytes(w.b, h).MustDecode(&v2)
 	testDeepEqualErr(v, v2, t, "cbor-skip-tags--no-tags-")
 
 	var v3 Tcbortags
 	doAddTag = true
 	fnEncode()
 	// xdebug2f("manual: has-tags: %v", w.b)
-	NewDecoderBytes(w.b, &h).MustDecode(&v3)
-	testDeepEqualErr(v, v2, t, "cbor-skip-tags--has-tags")
+	NewDecoderBytes(w.b, h).MustDecode(&v3)
+	// // MARKER 2025 (fails in unsafe mode - uncomment out to fix fully)
+	// testDeepEqualErr(v, v2, t, "cbor-skip-tags--has-tags")
+	testDeepEqualErr(v, v3, t, "cbor-skip-tags--has-tags")
 
 	// Github 300 - tests naked path
 	{
@@ -435,12 +439,12 @@ func TestCborSkipTags(t *testing.T) {
 
 		var raw interface{}
 
-		NewDecoderBytes(toDecode, &h).MustDecode(&raw)
+		NewDecoderBytes(toDecode, h).MustDecode(&raw)
 		testDeepEqualErr(expected, raw, t, "cbor-skip-tags--gh-300---no-skips")
 
 		toDecode = []byte{0xd9, 0xd9, 0xf7, 0x82, 0x61, 0x78, 0x00}
 		raw = nil
-		NewDecoderBytes(toDecode, &h).MustDecode(&raw)
+		NewDecoderBytes(toDecode, h).MustDecode(&raw)
 		testDeepEqualErr(expected, raw, t, "cbor-skip-tags--gh-300--has-skips")
 	}
 }
