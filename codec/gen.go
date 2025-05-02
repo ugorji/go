@@ -11,7 +11,6 @@ import (
 	"errors"
 	"go/format"
 	"io"
-	"io/ioutil"
 	"os"
 	"regexp"
 	"strings"
@@ -381,7 +380,7 @@ func genTmplGoFile(r io.Reader, w io.Writer) (err error) {
 
 	t := template.New("").Funcs(genTmplFuncs)
 
-	tmplstr, err := ioutil.ReadAll(r)
+	tmplstr, err := io.ReadAll(r)
 	if err != nil {
 		return
 	}
