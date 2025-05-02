@@ -5,6 +5,7 @@ package codec
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"io"
 	"math"
@@ -16,7 +17,7 @@ import (
 // ----
 
 func init() {
-	testPreInitFns = append(testPreInitFns, jsonTestInit)
+	testPostInitFns = append(testPostInitFns, jsonTestInit)
 }
 
 func jsonTestInit() {
@@ -351,7 +352,7 @@ func doTestJsonInvalidUnicode(t *testing.T, h Handle) {
 		var s string
 		err = testUnmarshal(&s, []byte(k), jh)
 		if err != nil {
-			if err == io.EOF || err == io.ErrUnexpectedEOF {
+			if errors.Is(err, io.EOF) || errors.Is(err, io.ErrUnexpectedEOF) {
 				continue
 			}
 			t.Logf("%s: unmarshal failed: %v", "-", err)
