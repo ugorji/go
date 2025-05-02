@@ -1858,16 +1858,8 @@ func (d *decoder[T]) Decode(v interface{}) (err error) {
 	// tried to use closure, as runtime optimizes defer with no params.
 	// This seemed to be causing weird issues (like circular reference found, unexpected panic, etc).
 	// Also, see https://github.com/golang/go/issues/14939#issuecomment-417836139
-	if !debugging {
-		defer func() {
-			if x := recover(); x != nil {
-				panicValToErr(d, x, &d.err)
-				err = d.err
-			}
-		}()
-	}
-
-	d.MustDecode(v)
+	defer panicValToErr(d, callRecoverSentinel, &d.err, &err, debugging)
+	d.mustDecode(v)
 	return
 }
 
@@ -1875,6 +1867,12 @@ func (d *decoder[T]) Decode(v interface{}) (err error) {
 //
 // Note: This provides insight to the code location that triggered the error.
 func (d *decoder[T]) MustDecode(v interface{}) {
+	defer panicValToErr(d, callRecoverSentinel, &d.err, nil, true)
+	d.mustDecode(v)
+	return
+}
+
+func (d *decoder[T]) mustDecode(v interface{}) {
 	halt.onerror(d.err)
 	if d.hh == nil {
 		halt.onerror(errNoFormatHandle)

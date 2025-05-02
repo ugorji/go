@@ -1207,24 +1207,6 @@ func (e *encoder[T]) reset() {
 	e.err = nil
 }
 
-// MustEncode is like Encode, but panics if unable to Encode.
-//
-// Note: This provides insight to the code location that triggered the error.
-func (e *encoder[T]) MustEncode(v interface{}) {
-	halt.onerror(e.err)
-	if e.hh == nil {
-		halt.onerror(errNoFormatHandle)
-	}
-
-	e.calls++
-	e.encode(v)
-	e.calls--
-	if e.calls == 0 {
-		e.e.atEndOfEncode()
-		e.e.writerEnd()
-	}
-}
-
 // Encode writes an object into a stream.
 //
 // Encoding can be configured via the struct tag for the fields.
@@ -1314,19 +1296,33 @@ func (e *encoder[T]) Encode(v interface{}) (err error) {
 	// tried to use closure, as runtime optimizes defer with no params.
 	// This seemed to be causing weird issues (like circular reference found, unexpected panic, etc).
 	// Also, see https://github.com/golang/go/issues/14939#issuecomment-417836139
-	if !debugging {
-		defer func() {
-			// if error occurred during encoding, return that error;
-			// else if error occurred on end'ing (i.e. during flush), return that error.
-			if x := recover(); x != nil {
-				panicValToErr(e, x, &e.err)
-				err = e.err
-			}
-		}()
+	defer panicValToErr(e, callRecoverSentinel, &e.err, &err, debugging)
+	e.mustEncode(v)
+	return
+}
+
+// MustEncode is like Encode, but panics if unable to Encode.
+//
+// Note: This provides insight to the code location that triggered the error.
+func (e *encoder[T]) MustEncode(v interface{}) {
+	defer panicValToErr(e, callRecoverSentinel, &e.err, nil, true)
+	e.mustEncode(v)
+	return
+}
+
+func (e *encoder[T]) mustEncode(v interface{}) {
+	halt.onerror(e.err)
+	if e.hh == nil {
+		halt.onerror(errNoFormatHandle)
 	}
 
-	e.MustEncode(v)
-	return
+	e.calls++
+	e.encode(v)
+	e.calls--
+	if e.calls == 0 {
+		e.e.atEndOfEncode()
+		e.e.writerEnd()
+	}
 }
 
 func (e *encoder[T]) encode(iv interface{}) {

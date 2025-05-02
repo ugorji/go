@@ -221,6 +221,9 @@ const (
 	// Consequently, they will always fail if debugging = true.
 	debugging = false
 
+	// if debugLogging is false, debugf calls will be a No-op
+	debugLogging = true // false // MARKER 2025
+
 	// containerLenUnknown is length returned from Read(Map|Array)Len
 	// when a format doesn't know apiori.
 	// For example, json doesn't pre-determine the length of a container (sequence/map).
@@ -349,6 +352,11 @@ var (
 	str256 string
 
 	// handleNewFns []handleNewFn
+
+	basicErrDecorator errDecoratorDef
+
+	// sentinel value passed to panicValToErr, signifying to call recover yourself
+	callRecoverSentinel = new(byte)
 )
 
 var (
@@ -2654,6 +2662,12 @@ func sprintf(format string, v ...interface{}) string {
 	return fmt.Sprintf(format, v...)
 }
 
+// These constants are used within debugf.
+// If the first parameter to debugf is one of these, it determines
+// the ANSI color used within the ANSI terminal.
+//
+// They make it easier to write different groups of debug statements
+// with a visual aid.
 const (
 	hlSFX    = "\033[0m"
 	hlPFX    = "\033[1;"
@@ -2675,6 +2689,9 @@ const (
 //
 //go:noinline
 func debugf(s string, a ...any) {
+	if !debugLogging {
+		return
+	}
 	if len(s) == 0 {
 		return
 	}
@@ -2692,29 +2709,43 @@ func debugf(s string, a ...any) {
 }
 
 func panicToErr(h errDecorator, fn func()) (err error) {
-	if !debugging {
-		defer func() {
-			if x := recover(); x != nil {
-				panicValToErr(h, x, &err)
-			}
-		}()
-	}
+	defer panicValToErr(h, callRecoverSentinel, &err, nil, debugging)
 	fn()
 	return
 }
 
-// recovered panics can be runtime.Error, error, string or anything else.
-func panicValToErr(h errDecorator, v interface{}, err *error) {
-	if v == *err {
+// // recovered panics can be runtime.Error, error, string or anything else.
+// func panicValToErr(h errDecorator, err, errCopy *error, panicAgain bool) {
+// 	r := recover()
+// 	if r == nil || err == nil {
+// 		return
+// 	}
+// 	panicValToErr2(h, r, err, errCopy, panicAgain)
+// }
+
+// panicValToErr will convert a panic value into an error
+//
+// err and recovered are guaranteed to be not nil
+func panicValToErr(h errDecorator, recovered interface{}, err, errCopy *error, panicAgain bool) {
+	if recovered == callRecoverSentinel {
+		recovered = recover()
+	}
+	if recovered == nil || err == nil {
 		return
 	}
-	switch xerr := v.(type) {
+	if recovered == *err {
+		goto HANDLE_COPY
+	}
+	switch xerr := recovered.(type) {
 	case nil:
 	case runtime.Error:
 		switch d := h.(type) {
 		case decoderI:
 			if d.isBytes() && isSliceBoundsError(xerr.Error()) {
-				*err = io.ErrUnexpectedEOF
+				// *err = io.ErrUnexpectedEOF
+				h.wrapErr(io.ErrUnexpectedEOF, err)
+			} else {
+				h.wrapErr(xerr, err)
 			}
 		default:
 			h.wrapErr(xerr, err)
@@ -2724,15 +2755,24 @@ func panicValToErr(h errDecorator, v interface{}, err *error) {
 		case nil:
 		case io.EOF, io.ErrUnexpectedEOF, errEncoderNotInitialized, errDecoderNotInitialized:
 			// treat as special (bubble up)
-			*err = xerr
+			// *err = xerr
+			h.wrapErr(xerr, err)
 		default:
 			h.wrapErr(xerr, err)
 		}
 	case string:
-		*err = errors.New(xerr)
+		h.wrapErr(errors.New(xerr), err)
+		// *err = errors.New(xerr)
 	default:
 		// we don't expect this to happen (as this library always panics with an error)
-		h.wrapErr(fmt.Errorf("%v", v), err)
+		h.wrapErr(fmt.Errorf("%v", recovered), err)
+	}
+HANDLE_COPY:
+	if errCopy != nil {
+		*errCopy = *err
+	}
+	if panicAgain {
+		panic(*err)
 	}
 }
 
@@ -2958,17 +2998,13 @@ func (panicHdl) onerror(err error) {
 	}
 }
 
-func (panicHdl) errorStr(s string) {
-	panic(s)
-}
+func (panicHdl) error(err error) { panic(err) }
 
-func (panicHdl) errorStr2(s, s2 string) {
-	panic(s + s2)
-}
+func (panicHdl) errorStr(s string) { panic(s) }
 
-func (panicHdl) errorBytes(s string, p1 []byte) {
-	panic(s + stringView(p1))
-}
+func (panicHdl) errorStr2(s, s2 string) { panic(s + s2) }
+
+func (panicHdl) errorBytes(s string, p1 []byte) { panic(s + stringView(p1)) }
 
 func (v panicHdl) errorByte(prefix string, p1 byte) {
 	panic(stringView(append(panicHdlBytes(prefix), p1)))
@@ -2995,10 +3031,6 @@ func (v panicHdl) errorFloat(prefix string, p1 float64) {
 // 	// v.errorInt64(prefix, int64(p1))
 // }
 
-func panicHdlBytes(prefix string) []byte {
-	return append(make([]byte, len(prefix)+8), prefix...)
-}
-
 // MARKER
 // consider adding //go:noinline to errorf and maybe other methods
 
@@ -3017,6 +3049,10 @@ func (panicHdl) errorf(format string, params ...interface{}) {
 	// 	panic(errors.New(format))
 	// }
 	panic(fmt.Errorf(format, params...))
+}
+
+func panicHdlBytes(prefix string) []byte {
+	return append(make([]byte, len(prefix)+8), prefix...)
 }
 
 // ----------------------------------------------------
