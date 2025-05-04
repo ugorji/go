@@ -753,12 +753,7 @@ func (d *bincDecDriver[T]) DecodeStringAsBytes(in []byte) (bs2 []byte, scratchBu
 	switch d.vd {
 	case bincVdString, bincVdByteArray:
 		slen = d.decLen()
-		// bs2, scratchBuf = d.r.readx(uint(slen)), !d.d.bytes
-		if d.d.bytes {
-			bs2 = d.r.readx(uint(slen))
-		} else {
-			bs2, scratchBuf = d.r.readxb(slen, in)
-		}
+		bs2, scratchBuf = d.r.readxb(slen, in)
 	case bincVdSymbol:
 		// zerocopy doesn't apply for symbols,
 		// as the values must be stored in a table for later use.
@@ -830,9 +825,6 @@ func (d *bincDecDriver[T]) DecodeBytes(bs []byte) (out []byte, scratchBuf bool) 
 		halt.errorf("bytes - %s %x-%x/%s", msgBadDesc, d.vd, d.vs, bincdesc(d.vd, d.vs))
 	}
 	d.bdRead = false
-	if d.d.bytes {
-		return d.r.readx(uint(clen)), false
-	}
 	return d.r.readxb(clen, bs)
 }
 

@@ -479,9 +479,6 @@ func (d *simpleDecDriver[T]) DecodeBytes(bs []byte) (out []byte, scratchBuf bool
 
 	clen := d.decLen()
 	d.bdRead = false
-	if d.d.bytes {
-		return d.r.readx(uint(clen)), false
-	}
 	return d.r.readxb(clen, bs)
 }
 

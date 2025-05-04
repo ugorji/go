@@ -1450,7 +1450,6 @@ func (d *decoder[T]) kMap(f *decFnInfo, rv reflect.Value) {
 
 	ktypeIsString := ktypeId == stringTypId
 	ktypeIsIntf := ktypeId == intfTypId
-
 	hasLen := containerLen > 0
 
 	// kstrbs is used locally for the key bytes, so we can reduce allocation.
@@ -1461,28 +1460,12 @@ func (d *decoder[T]) kMap(f *decFnInfo, rv reflect.Value) {
 	// It is only valuable if we are sure that it is declared on the stack.
 	// var kstrarr [64]byte // most keys are less than 32 bytes, and even more less than 64
 	// var kstrbs = kstrarr[:0]
-	var kstrbs []byte
+	// var kstrbs []byte
 	var kstr2bs []byte
-	var s string
+	var kstr string
 
-	var callFnRvk bool
-	var scratchBuf bool
-
-	fnRvk2 := func() (s string) {
-		callFnRvk = false
-		// if len(kstr2bs) < 2 {
-		// 	return string(kstr2bs)
-		// }
-		// return d.mapKeyString(&callFnRvk, &kstrbs, &kstr2bs)
-
-		// maintain a [256]byte slice, for efficiently making strings with one byte
-		if len(kstr2bs) == 1 {
-			s = str4byte(kstr2bs[0])
-		} else if len(kstr2bs) != 0 {
-			s, callFnRvk = d.mapKeyString(&kstrbs, &kstr2bs, scratchBuf)
-		}
-		return
-	}
+	var mapKeyStringSharesBytesBuf bool
+	var usingBuf bool
 
 	// Use a possibly transient (map) value (and key), to reduce allocation
 
@@ -1501,7 +1484,8 @@ func (d *decoder[T]) kMap(f *decFnInfo, rv reflect.Value) {
 	}
 
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-		callFnRvk = false
+		mapKeyStringSharesBytesBuf = false
+		kstr = ""
 		if j == 0 {
 			// if vtypekind is a scalar and thus value will be decoded using TransientAddrK,
 			// then it is ok to use TransientAddr2K for the map key.
@@ -1537,8 +1521,13 @@ func (d *decoder[T]) kMap(f *decFnInfo, rv reflect.Value) {
 		if d.d.TryNil() {
 			rvSetZero(rvk)
 		} else if ktypeIsString {
-			kstr2bs, scratchBuf = d.d.DecodeStringAsBytes(nil)
-			rvSetString(rvk, fnRvk2())
+			kstr2bs, usingBuf = d.d.DecodeStringAsBytes(nil)
+			if len(kstr2bs) == 1 {
+				kstr = str4byte(kstr2bs[0])
+			} else if len(kstr2bs) != 0 {
+				kstr, mapKeyStringSharesBytesBuf = d.bytes2Str(kstr2bs, usingBuf)
+			}
+			rvSetString(rvk, kstr)
 		} else {
 			if kbuiltin {
 				if ktypePtr {
@@ -1556,7 +1545,12 @@ func (d *decoder[T]) kMap(f *decFnInfo, rv reflect.Value) {
 			if ktypeIsIntf {
 				if rvk2 := rvk.Elem(); rvk2.IsValid() && rvk2.Type() == uint8SliceTyp {
 					kstr2bs = rvGetBytes(rvk2)
-					rvSetIntf(rvk, rv4istr(fnRvk2()))
+					if len(kstr2bs) == 1 {
+						kstr = str4byte(kstr2bs[0])
+					} else if len(kstr2bs) != 0 {
+						kstr, mapKeyStringSharesBytesBuf = d.bytes2Str(kstr2bs, true)
+					}
+					rvSetIntf(rvk, rv4istr(kstr))
 				}
 				// NOTE: consider failing early if map/slice/func
 			}
@@ -1565,17 +1559,16 @@ func (d *decoder[T]) kMap(f *decFnInfo, rv reflect.Value) {
 		d.mapElemValue()
 
 		if d.d.TryNil() {
+			if mapKeyStringSharesBytesBuf {
+				if ktypeIsString {
+					rvSetString(rvk, d.string(kstr2bs))
+				} else { // ktypeIsIntf
+					rvSetIntf(rvk, rv4istr(d.string(kstr2bs)))
+				}
+			}
 			// since a map, we have to set zero value if needed
 			if !rvvz.IsValid() {
 				rvvz = rvZeroK(vtype, vtypeKind)
-			}
-			if callFnRvk {
-				s = d.string(kstr2bs)
-				if ktypeIsString {
-					rvSetString(rvk, s)
-				} else { // ktypeIsIntf
-					rvSetIntf(rvk, rv4istr(s))
-				}
 			}
 			mapSet(rv, rvk, rvvz, kfast, visindirect, visref)
 			continue
@@ -1633,6 +1626,13 @@ func (d *decoder[T]) kMap(f *decFnInfo, rv reflect.Value) {
 		}
 
 	DECODE_VALUE_NO_CHECK_NIL:
+		if doMapSet && mapKeyStringSharesBytesBuf {
+			if ktypeIsString {
+				rvSetString(rvk, d.string(kstr2bs))
+			} else { // ktypeIsIntf
+				rvSetIntf(rvk, rv4istr(d.string(kstr2bs)))
+			}
+		}
 		if vbuiltin {
 			if vtypePtr {
 				if rvIsNil(rvv) {
@@ -1646,14 +1646,6 @@ func (d *decoder[T]) kMap(f *decFnInfo, rv reflect.Value) {
 			d.decodeValueNoCheckNil(rvv, valFn)
 		}
 		if doMapSet {
-			if callFnRvk {
-				s = d.string(kstr2bs)
-				if ktypeIsString {
-					rvSetString(rvk, s)
-				} else { // ktypeIsIntf
-					rvSetIntf(rvk, rv4istr(s))
-				}
-			}
 			mapSet(rv, rvk, rvv, kfast, visindirect, visref)
 		}
 	}

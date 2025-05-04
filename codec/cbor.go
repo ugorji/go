@@ -631,27 +631,7 @@ func (d *cborDecDriver[T]) DecodeBytes(bs []byte) (out []byte, scratchBuf bool) 
 	clen := d.decLen()
 	d.bdRead = false
 
-	if d.d.bytes {
-		return d.r.readx(uint(clen)), false
-	}
 	return d.r.readxb(clen, bs)
-
-	// return d.r.readx(uint(clen)), !d.d.bytes
-
-	// if d.h.ZeroCopy {
-	// 	return d.r.readx(uint(clen)), !d.d.bytes
-	// }
-	// return d.r.readxb(clen, bs)
-
-	// if d.d.bytes && d.h.ZeroCopy {
-	// 	return d.r.readx(uint(clen)), false
-	// }
-	// if bs == nil {
-	// 	scratchBuf = true
-	// 	bs = d.d.b[:]
-	// }
-	// out, _ = d.r.readxb(clen, bs)
-	// return
 }
 
 func (d *cborDecDriver[T]) DecodeStringAsBytes(in []byte) (out []byte, scratchBuf bool) {

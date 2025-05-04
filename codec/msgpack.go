@@ -852,9 +852,6 @@ func (d *msgpackDecDriver[T]) DecodeBytes(bs []byte) (out []byte, scratchBuf boo
 	}
 
 	d.bdRead = false
-	if d.d.bytes {
-		return d.r.readx(uint(clen)), false
-	}
 	return d.r.readxb(clen, bs)
 }
 

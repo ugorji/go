@@ -1280,14 +1280,8 @@ func (d *decoderBase) stringZC(v []byte, scratchBuf bool) (s string) {
 	return
 }
 
-func (d *decoderBase) mapKeyString(kstrbs, kstr2bs *[]byte, scratchBuf bool) (s string, changed bool) {
-	if scratchBuf || !(d.bytes && d.zeroCopy) {
-		changed = true
-		*kstrbs = append((*kstrbs)[:0], (*kstr2bs)...)
-		*kstr2bs = *kstrbs
-	}
-	s = stringView(*kstr2bs)
-	return
+func (d *decoderBase) bytes2Str(in []byte, usingBuf bool) (s string, mutable bool) {
+	return stringView(in), usingBuf || !(d.bytes && d.zeroCopy)
 }
 
 // func (d *decoder[T]) jsondriver() *jsonDecDriver {

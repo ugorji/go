@@ -737,9 +737,8 @@ func (d *decoderBase) stringZC(v []byte, _ bool) (s string) {
 	return d.string(v)
 }
 
-func (d *decoderBase) mapKeyString(kstrbs, kstr2bs *[]byte, _ bool) (string, bool) {
-	// *kstr2bs was not changed
-	return d.string(*kstr2bs), false
+func (d *decoderBase) bytes2Str(in []byte, _ bool) (s string, sharingBytes bool) {
+	return d.string(in), false
 }
 
 // ---------- structFieldInfo optimized ---------------
