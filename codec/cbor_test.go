@@ -364,10 +364,11 @@ func TestCborSkipTags(t *testing.T) {
 
 	fnEncode := func() {
 		w.b = w.b[:0]
-		addTagFn8To16()
-		// write v (Tcbortags, with 3 fields = map with 3 entries)
-		w.writen1(2 + cborBaseMap) // 3 fields = 3 entries
+		// addTagFn8To16() // without: "aAdc"
+		// write v (Tcbortags, with 2 fields = map with 2 entries)
+		w.writen1(2 + cborBaseMap) // 2 fields = 2 entries
 		// write v.A
+		addTagFn8To16() // MARKER 2025 // without: "aAdc"
 		var s = "A"
 		w.writen1(byte(len(s)) + cborBaseString)
 		w.writestr(s)
@@ -405,9 +406,12 @@ func TestCborSkipTags(t *testing.T) {
 	}
 
 	var h = testCborH // &CborHandle{}
-	defer func(a, b bool) { h.SkipUnexpectedTags, h.Canonical = a, b }(h.SkipUnexpectedTags, h.Canonical)
+	defer func(a, b, c bool) {
+		h.SkipUnexpectedTags, h.Canonical, h.ZeroCopy = a, b, c
+	}(h.SkipUnexpectedTags, h.Canonical, h.ZeroCopy)
 	h.SkipUnexpectedTags = true
 	h.Canonical = true
+	h.ZeroCopy = false // so we can reuse the w.b slice without worrying about sharedBytes
 
 	var gold []byte
 	NewEncoderBytes(&gold, h).MustEncode(v)
@@ -428,9 +432,9 @@ func TestCborSkipTags(t *testing.T) {
 	fnEncode()
 	// xdebug2f("manual: has-tags: %v", w.b)
 	NewDecoderBytes(w.b, h).MustDecode(&v3)
-	// // MARKER 2025 (fails in unsafe mode - uncomment out to fix fully)
-	// testDeepEqualErr(v, v2, t, "cbor-skip-tags--has-tags")
 	testDeepEqualErr(v, v3, t, "cbor-skip-tags--has-tags")
+	// include this test below (against v2) to ensure that new writes to w.b does not affect v2
+	testDeepEqualErr(v, v2, t, "cbor-skip-tags--has-tags")
 
 	// Github 300 - tests naked path
 	{
