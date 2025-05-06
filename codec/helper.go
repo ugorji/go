@@ -730,6 +730,15 @@ type isCodecEmptyer interface {
 	IsCodecEmpty() bool
 }
 
+type outOfBoundsError struct {
+	capacity  uint
+	requested uint
+}
+
+func (x *outOfBoundsError) Error() string {
+	return sprintf("out of bounds with capacity = %d, requested %d", x.capacity, x.requested)
+}
+
 type codecError struct {
 	err    error
 	name   string
@@ -2662,6 +2671,10 @@ func sprintf(format string, v ...interface{}) string {
 	return fmt.Sprintf(format, v...)
 }
 
+func snip(v []byte) []byte {
+	return v[:min(96, len(v))]
+}
+
 // These constants are used within debugf.
 // If the first parameter to debugf is one of these, it determines
 // the ANSI color used within the ANSI terminal.
@@ -2738,6 +2751,8 @@ func panicValToErr(h errDecorator, recovered interface{}, err, errCopy *error, p
 	}
 	switch xerr := recovered.(type) {
 	case nil:
+	case *outOfBoundsError:
+		h.wrapErr(xerr, err)
 	case runtime.Error:
 		switch d := h.(type) {
 		case decoderI:
@@ -3089,7 +3104,7 @@ func (mustHdl) Float(s float64, err error) float64 {
 // -------------------
 
 func freelistCapacity(length int) (capacity int) {
-	for capacity = 8; capacity <= length; capacity *= 2 {
+	for capacity = 8; capacity < length; capacity *= 2 {
 	}
 	return
 }
