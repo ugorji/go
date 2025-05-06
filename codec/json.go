@@ -743,7 +743,7 @@ func (d *jsonDecDriver[T]) advance() {
 	}
 }
 
-func (d *jsonDecDriver[T]) nextValueBytes(v []byte) []byte {
+func (d *jsonDecDriver[T]) nextValueBytes() []byte {
 	consumeString := func() {
 	TOP:
 		_, c := d.r.jsonReadAsisChars()
@@ -754,8 +754,7 @@ func (d *jsonDecDriver[T]) nextValueBytes(v []byte) []byte {
 	}
 
 	d.advance() // ignore leading whitespace
-	v = append(v, d.tok)
-	d.r.startRecording(v)
+	d.r.startRecording()
 
 	// cursor = d.d.rb.c - 1 // cursor starts just before non-whitespace token
 	switch d.tok {
@@ -869,7 +868,7 @@ func (d *jsonDecDriver[T]) ContainerType() (vt valueType) {
 func (d *jsonDecDriver[T]) decNumBytes() (bs []byte) {
 	d.advance()
 	if d.tok == '"' {
-		bs = d.r.readUntil('"')
+		bs = d.r.jsonReadUntilDblQuote()
 	} else if d.tok == 'n' {
 		d.checkLit3([3]byte{'u', 'l', 'l'}, d.r.readn3())
 	} else {
@@ -1071,7 +1070,7 @@ func (d *jsonDecDriver[T]) ensureReadingString() {
 
 func (d *jsonDecDriver[T]) readUnescapedString() (bs []byte) {
 	// d.ensureReadingString()
-	bs = d.r.readUntil('"')
+	bs = d.r.jsonReadUntilDblQuote()
 	d.tok = 0
 	return
 }

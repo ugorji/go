@@ -964,12 +964,11 @@ func (d *bincDecDriver[T]) DecodeNaked() {
 	}
 }
 
-func (d *bincDecDriver[T]) nextValueBytes(v0 []byte) (v []byte) {
+func (d *bincDecDriver[T]) nextValueBytes() (v []byte) {
 	if !d.bdRead {
 		d.readNextBd()
 	}
-	v0 = append(v0, d.bd)
-	d.r.startRecording(v0)
+	d.r.startRecording()
 	d.nextValueBytesBdReadR()
 	v = d.r.stopRecording()
 	d.bdRead = false
@@ -1037,23 +1036,23 @@ func (d *bincDecDriver[T]) nextValueBytesBdReadR() {
 		}
 	case bincVdString, bincVdByteArray:
 		clen = fnLen(d.vs)
-		d.r.readx(clen)
+		d.r.skip(clen)
 	case bincVdSymbol:
 		if d.vs&0x8 == 0 {
 			d.r.readn1()
 		} else {
-			d.r.readx(2)
+			d.r.skip(2)
 		}
 		if d.vs&0x4 != 0 {
 			clen = fnLen(d.vs & 0x3)
-			d.r.readx(clen)
+			d.r.skip(clen)
 		}
 	case bincVdTimestamp:
-		d.r.readx(uint(d.vs))
+		d.r.skip(uint(d.vs))
 	case bincVdCustomExt:
 		clen = fnLen(d.vs)
 		d.r.readn1() // tag
-		d.r.readx(clen)
+		d.r.skip(clen)
 	case bincVdArray:
 		clen = fnLen(d.vs)
 		for i := uint(0); i < clen; i++ {

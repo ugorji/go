@@ -610,12 +610,11 @@ func (d *simpleDecDriver[T]) DecodeNaked() {
 	}
 }
 
-func (d *simpleDecDriver[T]) nextValueBytes(v0 []byte) (v []byte) {
+func (d *simpleDecDriver[T]) nextValueBytes() (v []byte) {
 	if !d.bdRead {
 		d.readNextBd()
 	}
-	v0 = append(v0, d.bd)
-	d.r.startRecording(v0)
+	d.r.startRecording()
 	d.nextValueBytesBdReadR()
 	v = d.r.stopRecording()
 	d.bdRead = false
@@ -642,14 +641,14 @@ func (d *simpleDecDriver[T]) nextValueBytesBdReadR() {
 	case simpleVdPosInt, simpleVdNegInt:
 		d.r.readn1()
 	case simpleVdPosInt + 1, simpleVdNegInt + 1:
-		d.r.readx(2)
+		d.r.skip(2)
 	case simpleVdPosInt + 2, simpleVdNegInt + 2, simpleVdFloat32:
-		d.r.readx(4)
+		d.r.skip(4)
 	case simpleVdPosInt + 3, simpleVdNegInt + 3, simpleVdFloat64:
-		d.r.readx(8)
+		d.r.skip(8)
 	case simpleVdTime:
 		c = d.r.readn1()
-		d.r.readx(uint(c))
+		d.r.skip(uint(c))
 
 	default:
 		switch c & 7 { // c % 8 {
@@ -700,7 +699,7 @@ func (d *simpleDecDriver[T]) nextValueBytesBdReadR() {
 				d.nextValueBytesBdReadR()
 			}
 		} else {
-			d.r.readx(length)
+			d.r.skip(length)
 		}
 	}
 	return

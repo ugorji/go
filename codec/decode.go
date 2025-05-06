@@ -204,15 +204,9 @@ type decDriverI interface {
 	// atEndOfDecode()
 
 	// nextValueBytes will return the bytes representing the next value in the stream.
-	//
-	// if start is nil, then treat it as a request to discard the next set of bytes,
-	// and the return response does not matter.
-	// Typically, this means that the returned []byte is nil/empty/undefined.
-	//
-	// Optimize for decoding from a []byte, where the nextValueBytes will just be a sub-slice
-	// of the input slice. Callers that need to use this to not be a view into the input bytes
-	// should handle it appropriately.
-	nextValueBytes(start []byte) []byte
+	// It generally will include the last byte read, as that is a part of the next value
+	// in the stream.
+	nextValueBytes() []byte
 
 	// descBd will describe the token descriptor that signifies what type was decoded
 	descBd() string
@@ -574,19 +568,7 @@ func (d *decoder[T]) jsonUnmarshal(_ *decFnInfo, rv reflect.Value) {
 
 func (d *decoder[T]) jsonUnmarshalV(tm jsonUnmarshaler) {
 	// grab the bytes to be read, as UnmarshalJSON needs the full JSON so as to unmarshal it itself.
-	var bs0 = zeroByteSlice
-	if !d.bytes {
-		bs0 = d.blist.get(256)
-	}
-	bs := d.d.nextValueBytes(bs0)
-	fnerr := tm.UnmarshalJSON(bs)
-	if !d.bytes {
-		d.blist.put(bs)
-		if !byteSliceSameData(bs0, bs) {
-			d.blist.put(bs0)
-		}
-	}
-	halt.onerror(fnerr)
+	halt.onerror(tm.UnmarshalJSON(d.d.nextValueBytes()))
 }
 
 func (d *decoder[T]) kErr(_ *decFnInfo, rv reflect.Value) {
@@ -1667,7 +1649,7 @@ type decoderI interface {
 	wrapErr(v error, err *error)
 	swallow()
 
-	nextValueBytes(start []byte) []byte // wrapper method, for use in tests
+	nextValueBytes() []byte // wrapper method, for use in tests
 	// getDecDriver() decDriverI
 
 	decode(v interface{})
@@ -1884,11 +1866,11 @@ func (d *decoder[T]) Release() {
 }
 
 func (d *decoder[T]) swallow() {
-	d.d.nextValueBytes(nil)
+	d.d.nextValueBytes()
 }
 
-func (d *decoder[T]) nextValueBytes(start []byte) []byte {
-	return d.d.nextValueBytes(start)
+func (d *decoder[T]) nextValueBytes() []byte {
+	return d.d.nextValueBytes()
 }
 
 // func (d *decoder[T]) swallowErr() (err error) {
@@ -2193,7 +2175,7 @@ func (d *decoder[T]) decodeBytesInto(in []byte) (v []byte) {
 func (d *decoder[T]) rawBytes() (v []byte) {
 	// ensure that this is not a view into the bytes
 	// i.e. if necessary, make new copy always.
-	v = d.d.nextValueBytes(zeroByteSlice)
+	v = d.d.nextValueBytes()
 	if d.bytes && !d.h.ZeroCopy {
 		vv := make([]byte, len(v))
 		copy(vv, v) // using copy here triggers make+copy optimization eliding memclr

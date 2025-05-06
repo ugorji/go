@@ -528,12 +528,11 @@ func (d *msgpackDecDriver[T]) DecodeNaked() {
 	}
 }
 
-func (d *msgpackDecDriver[T]) nextValueBytes(v0 []byte) (v []byte) {
+func (d *msgpackDecDriver[T]) nextValueBytes() (v []byte) {
 	if !d.bdRead {
 		d.readNextBd()
 	}
-	v0 = append(v0, d.bd)
-	d.r.startRecording(v0)
+	d.r.startRecording()
 	d.nextValueBytesBdReadR()
 	v = d.r.stopRecording()
 	d.bdRead = false
@@ -558,51 +557,51 @@ func (d *msgpackDecDriver[T]) nextValueBytesBdReadR() {
 	case mpUint8, mpInt8:
 		d.r.readn1()
 	case mpUint16, mpInt16:
-		d.r.readx(2)
+		d.r.skip(2)
 	case mpFloat, mpUint32, mpInt32:
-		d.r.readx(4)
+		d.r.skip(4)
 	case mpDouble, mpUint64, mpInt64:
-		d.r.readx(8)
+		d.r.skip(8)
 	case mpStr8, mpBin8:
 		clen = uint(d.r.readn1())
-		d.r.readx(clen)
+		d.r.skip(clen)
 	case mpStr16, mpBin16:
 		x := d.r.readn2()
 		clen = uint(bigen.Uint16(x))
-		d.r.readx(clen)
+		d.r.skip(clen)
 	case mpStr32, mpBin32:
 		x := d.r.readn4()
 		clen = uint(bigen.Uint32(x))
-		d.r.readx(clen)
+		d.r.skip(clen)
 	case mpFixExt1:
 		d.r.readn1() // tag
 		d.r.readn1()
 	case mpFixExt2:
 		d.r.readn1() // tag
-		d.r.readx(2)
+		d.r.skip(2)
 	case mpFixExt4:
 		d.r.readn1() // tag
-		d.r.readx(4)
+		d.r.skip(4)
 	case mpFixExt8:
 		d.r.readn1() // tag
-		d.r.readx(8)
+		d.r.skip(8)
 	case mpFixExt16:
 		d.r.readn1() // tag
-		d.r.readx(16)
+		d.r.skip(16)
 	case mpExt8:
 		clen = uint(d.r.readn1())
 		d.r.readn1() // tag
-		d.r.readx(clen)
+		d.r.skip(clen)
 	case mpExt16:
 		x := d.r.readn2()
 		clen = uint(bigen.Uint16(x))
 		d.r.readn1() // tag
-		d.r.readx(clen)
+		d.r.skip(clen)
 	case mpExt32:
 		x := d.r.readn4()
 		clen = uint(bigen.Uint32(x))
 		d.r.readn1() // tag
-		d.r.readx(clen)
+		d.r.skip(clen)
 	case mpArray16:
 		x := d.r.readn2()
 		clen = uint(bigen.Uint16(x))
@@ -641,7 +640,7 @@ func (d *msgpackDecDriver[T]) nextValueBytesBdReadR() {
 		case bd >= mpNegFixNumMin && bd <= mpNegFixNumMax: // pass
 		case bd >= mpFixStrMin && bd <= mpFixStrMax:
 			clen = uint(mpFixStrMin ^ bd)
-			d.r.readx(clen)
+			d.r.skip(clen)
 		case bd >= mpFixArrayMin && bd <= mpFixArrayMax:
 			clen = uint(mpFixArrayMin ^ bd)
 			for i := uint(0); i < clen; i++ {

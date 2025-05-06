@@ -799,12 +799,11 @@ func (d *cborDecDriver[T]) uintBytes() (v []byte, ui uint64) {
 	return
 }
 
-func (d *cborDecDriver[T]) nextValueBytes(v0 []byte) (v []byte) {
+func (d *cborDecDriver[T]) nextValueBytes() (v []byte) {
 	if !d.bdRead {
 		d.readNextBd()
 	}
-	v0 = append(v0, d.bd)
-	d.r.startRecording(v0)
+	d.r.startRecording()
 	d.nextValueBytesBdReadR()
 	v = d.r.stopRecording()
 	d.bdRead = false
@@ -835,11 +834,11 @@ func (d *cborDecDriver[T]) nextValueBytesBdReadR() {
 					break
 				}
 				_, ui = d.uintBytes()
-				d.r.readx(uint(ui))
+				d.r.skip(uint(ui))
 			}
 		} else {
 			_, ui = d.uintBytes()
-			d.r.readx(uint(ui))
+			d.r.skip(uint(ui))
 		}
 	case cborMajorArray:
 		if d.bd == cborBdIndefiniteArray {
@@ -885,11 +884,11 @@ func (d *cborDecDriver[T]) nextValueBytesBdReadR() {
 		switch d.bd {
 		case cborBdNil, cborBdUndefined, cborBdFalse, cborBdTrue: // pass
 		case cborBdFloat16:
-			d.r.readx(2)
+			d.r.skip(2)
 		case cborBdFloat32:
-			d.r.readx(4)
+			d.r.skip(4)
 		case cborBdFloat64:
-			d.r.readx(8)
+			d.r.skip(8)
 		default:
 			halt.errorf("nextValueBytes: Unrecognized d.bd: 0x%x", d.bd)
 		}
