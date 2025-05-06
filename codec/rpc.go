@@ -4,9 +4,9 @@
 package codec
 
 import (
-	"bufio"
 	"errors"
 	"io"
+	"net"
 	"net/rpc"
 	"sync/atomic"
 )
@@ -29,18 +29,22 @@ type RPCOptions struct {
 	// RPCNoBuffer configures whether we attempt to buffer reads and writes during RPC calls.
 	//
 	// Set RPCNoBuffer=true to turn buffering off.
+	//
 	// Buffering can still be done if buffered connections are passed in, or
 	// buffering is configured on the handle.
+	//
+	// Deprecated: Buffering should be configured at the Handle or by using a buffer Reader.
+	// Setting this has no effect anymore (2025-05-06)
 	RPCNoBuffer bool
 }
 
 // rpcCodec defines the struct members and common methods.
 type rpcCodec struct {
-	c io.Closer
-	r io.Reader
-	w io.Writer
-	f ioFlusher
-
+	c   io.Closer
+	r   io.Reader
+	w   io.Writer
+	f   ioFlusher
+	nc  net.Conn
 	dec *Decoder
 	enc *Encoder
 	h   Handle
@@ -49,37 +53,17 @@ type rpcCodec struct {
 }
 
 func newRPCCodec(conn io.ReadWriteCloser, h Handle) *rpcCodec {
-	return newRPCCodec2(conn, conn, conn, h)
-}
-
-func newRPCCodec2(r io.Reader, w io.Writer, c io.Closer, h Handle) *rpcCodec {
-	bh := h.getBasicHandle()
-	// if the writer can flush, ensure we leverage it, else
-	// we may hang waiting on read if write isn't flushed.
-	// var f ioFlusher
-	f, ok := w.(ioFlusher)
-	if !bh.RPCNoBuffer {
-		if bh.WriterBufferSize <= 0 {
-			if !ok { // a flusher means there's already a buffer
-				bw := bufio.NewWriter(w)
-				f, w = bw, bw
-			}
-		}
-		if bh.ReaderBufferSize <= 0 {
-			if _, ok = w.(ioBuffered); !ok {
-				r = bufio.NewReader(r)
-			}
-		}
-	}
-
+	nc, _ := conn.(net.Conn)
+	f, _ := conn.(ioFlusher)
 	rc := &rpcCodec{
-		c:   c,
-		w:   w,
-		r:   r,
-		f:   f,
 		h:   h,
-		enc: NewEncoder(w, h),
-		dec: NewDecoder(r, h),
+		c:   conn,
+		w:   conn,
+		r:   conn,
+		f:   f,
+		nc:  nc,
+		enc: NewEncoder(conn, h),
+		dec: NewDecoder(conn, h),
 	}
 	rc.cls.Store(new(clsErr))
 	return rc
@@ -120,7 +104,13 @@ func (c *rpcCodec) write(obj ...interface{}) (err error) {
 func (c *rpcCodec) read(obj interface{}) (err error) {
 	err = c.ready()
 	if err == nil {
-		//If nil is passed in, we should read and discard
+		// Setting ReadDeadline should not be necessary,
+		// especially since it only works for net.Conn (not generic ioReadCloser).
+		// if c.nc != nil {
+		// 	c.nc.SetReadDeadline(time.Now().Add(1 * time.Second))
+		// }
+
+		// Note: If nil is passed in, we should read and discard
 		if obj == nil {
 			// return c.dec.Decode(&obj)
 			err = panicToErr(c.dec, func() { c.dec.swallow() })
