@@ -512,10 +512,24 @@ func (d *decoderBase) fauxUnionReadRawBytes(dr decDriverI, asString, rawToString
 // typically reused across many objects.
 //
 // MARKER 2025 change this to detach2Str later.
+// func (d *decoderBase) string(v []byte, state dBytesAttachState) (s string) {
+// 	// given that string([]byte) checks for, and optimizes for len 0 and len 1,
+// 	// just pass that along
+
+// 	if state >= dBytesAttachViewZerocopy { // !scratchBuf && d.bytes && d.zeroCopy
+// 		s = stringView(v)
+// 	} else if len(v) <= 1 || d.is == nil || d.c != containerMapKey || len(v) > internMaxStrLen {
+// 		s = string(v)
+// 	} else {
+// 		s = d.is.string(v)
+// 	}
+// 	return
+// }
+
 func (d *decoderBase) string(v []byte, state dBytesAttachState) (s string) {
-	if len(v) == 0 {
-	} else if len(v) == 1 {
-		s = str4byte(v[0])
+	// note: string([]byte) checks - and optimizes - for len 0 and len 1
+	if len(v) <= 1 {
+		s = string(v)
 	} else if state >= dBytesAttachViewZerocopy { // !scratchBuf && d.bytes && d.zeroCopy
 		s = stringView(v)
 	} else if d.is == nil || d.c != containerMapKey || len(v) > internMaxStrLen {
@@ -1568,11 +1582,12 @@ func (d *decoder[T]) kMap(f *decFnInfo, rv reflect.Value) {
 			rvSetZero(rvk)
 		} else if ktypeIsString {
 			kstr2bs, att = d.d.DecodeStringAsBytes()
-			if len(kstr2bs) == 1 {
-				kstr = str4byte(kstr2bs[0])
-			} else if len(kstr2bs) != 0 {
-				kstr, mapKeyStringSharesBytesBuf = d.bytes2Str(kstr2bs, att)
-			}
+			// if len(kstr2bs) == 1 {
+			// 	kstr = str4byte(kstr2bs[0])
+			// } else if len(kstr2bs) != 0 {
+			// 	kstr, mapKeyStringSharesBytesBuf = d.bytes2Str(kstr2bs, att)
+			// }
+			kstr, mapKeyStringSharesBytesBuf = d.bytes2Str(kstr2bs, att)
 			rvSetString(rvk, kstr)
 		} else {
 			if kbuiltin {
@@ -1591,11 +1606,12 @@ func (d *decoder[T]) kMap(f *decFnInfo, rv reflect.Value) {
 			if ktypeIsIntf {
 				if rvk2 := rvk.Elem(); rvk2.IsValid() && rvk2.Type() == uint8SliceTyp {
 					kstr2bs = rvGetBytes(rvk2)
-					if len(kstr2bs) == 1 {
-						kstr = str4byte(kstr2bs[0])
-					} else if len(kstr2bs) != 0 {
-						kstr, mapKeyStringSharesBytesBuf = d.bytes2Str(kstr2bs, dBytesAttachView)
-					}
+					// if len(kstr2bs) == 1 {
+					// 	kstr = str4byte(kstr2bs[0])
+					// } else if len(kstr2bs) != 0 {
+					// 	kstr, mapKeyStringSharesBytesBuf = d.bytes2Str(kstr2bs, dBytesAttachView)
+					// }
+					kstr, mapKeyStringSharesBytesBuf = d.bytes2Str(kstr2bs, dBytesAttachView)
 					rvSetIntf(rvk, rv4istr(kstr))
 				}
 				// NOTE: consider failing early if map/slice/func

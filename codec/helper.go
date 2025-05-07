@@ -349,7 +349,7 @@ var (
 
 	// string containing all values of a uint8 in sequence.
 	// We maintain a [256]byte slice, for efficiently making strings with one byte.
-	str256 string
+	// str256 string
 
 	// handleNewFns []handleNewFn
 
@@ -486,11 +486,11 @@ func init() {
 		}
 	}
 
-	var bstr256 [256]byte
-	for i := range len(bstr256) {
-		bstr256[i] = byte(i)
-	}
-	str256 = string(bstr256[:])
+	// var bstr256 [256]byte
+	// for i := range len(bstr256) {
+	// 	bstr256[i] = byte(i)
+	// }
+	// str256 = string(bstr256[:])
 }
 
 func searchRtids(s []uintptr, v uintptr) (i uint, ok bool) {

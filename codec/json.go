@@ -1323,7 +1323,8 @@ func (h *JsonHandle) isJson() bool { return true }
 // Name returns the name of the handle: json
 func (h *JsonHandle) Name() string { return "json" }
 
-func (h *JsonHandle) desc(bd byte) string { return str4byte(bd) }
+// func (h *JsonHandle) desc(bd byte) string { return str4byte(bd) }
+func (h *JsonHandle) desc(bd byte) string { return string(bd) }
 
 func (h *JsonHandle) typical() bool {
 	return h.Indent == 0 && !h.MapKeyAsString && h.IntegerAsString != 'A' && h.IntegerAsString != 'L'

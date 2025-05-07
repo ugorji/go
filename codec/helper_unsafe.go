@@ -192,9 +192,9 @@ func (encPerType) AddressableRO(v reflect.Value) reflect.Value {
 	return rvAddressableReadonly(v)
 }
 
-func str4byte(b byte) string {
-	return unsafe.String((*byte)(unsafe.Add(unsafe.Pointer(unsafe.StringData(str256)), b)), 1)
-}
+// func str4byte(b byte) string {
+// 	return unsafe.String((*byte)(unsafe.Add(unsafe.Pointer(unsafe.StringData(str256)), b)), 1)
+// }
 
 // byteAt returns the byte given an index which is guaranteed
 // to be within the bounds of the slice i.e. we defensively
