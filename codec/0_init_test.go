@@ -105,7 +105,7 @@ var (
 
 	testNumRepeatString int
 
-	testRpcBufsize       int
+	testRpcBufsize       int // Deprecated: no-op
 	testMapStringKeyOnly bool
 
 	testBenchmarkNoConfig bool

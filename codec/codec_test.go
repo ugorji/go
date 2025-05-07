@@ -52,7 +52,13 @@ func init() {
 	testPostInitFns = append(testPostInitFns, testInit)
 }
 
-const testRecoverPanicToErr = !debugging
+const (
+	testRecoverPanicToErr = !debugging
+	// testRpcBufsize is now ignored, so we shouldn't wrap ReadWriteCloser from the net.Conn.
+	// Furthermore, newRpcCodec looks at the passed conn to determine whether we
+	// set a read deadline or not.
+	testWrapRpcReadWriteCloser = true // MARKER 2025 - set to false
+)
 
 // tests which check for errors will fail if testRecoverPanicToErr=false (debugging=true).
 // Consequently, skip them.
@@ -914,6 +920,9 @@ func testDeepEqualErr(v1, v2 interface{}, t *testing.T, name string) {
 }
 
 func testReadWriteCloser(c io.ReadWriteCloser) io.ReadWriteCloser {
+	if !testWrapRpcReadWriteCloser {
+		return c
+	}
 	if testRpcBufsize <= 0 && rand.Int63()%2 == 0 {
 		return c
 	}
@@ -2266,7 +2275,7 @@ func doTestLargeContainerLen(t *testing.T, h Handle) {
 	testDeepEqualErr(m, m2, t, "-slices")
 
 	d := testSharedCodecDecoder(bs, h)
-	bs2 := d.nextValueBytes([]byte{})
+	bs2 := d.nextValueBytes()
 	testDeepEqualErr(bs, bs2, t, "nextvaluebytes-slices")
 	// if len(bs2) != 0 || len(bs2) != len(bs) { }
 	testReleaseBytes(bs)
@@ -2283,7 +2292,7 @@ func doTestLargeContainerLen(t *testing.T, h Handle) {
 		testDeepEqualErr(mm, mm2, t, "-map")
 
 		d = testSharedCodecDecoder(bs, h)
-		bs2 = d.nextValueBytes([]byte{})
+		bs2 = d.nextValueBytes()
 		testDeepEqualErr(bs, bs2, t, "nextvaluebytes-map")
 		testReleaseBytes(bs)
 	}
@@ -2351,7 +2360,7 @@ func doTestLargeContainerLen(t *testing.T, h Handle) {
 		testDeepEqualErr(m1, m2, t, "no-symbols-string")
 
 		d = testSharedCodecDecoder(out, h)
-		bs2 = d.nextValueBytes([]byte{})
+		bs2 = d.nextValueBytes()
 		testDeepEqualErr(out, bs2, t, "nextvaluebytes-no-symbols-string")
 
 		if okbinc {
@@ -2366,7 +2375,7 @@ func doTestLargeContainerLen(t *testing.T, h Handle) {
 			testDeepEqualErr(m1, m2, t, "symbols-string")
 
 			d = testSharedCodecDecoder(out, h)
-			bs2 = d.nextValueBytes([]byte{})
+			bs2 = d.nextValueBytes()
 			testDeepEqualErr(out, bs2, t, "nextvaluebytes-symbols-string")
 			testFI.set(h, "AsSymbols", uint8(2)) // hbinc.AsSymbols = 2
 		}
@@ -2380,7 +2389,7 @@ func doTestLargeContainerLen(t *testing.T, h Handle) {
 	testDeepEqualErr(xl, xl2, t, "-large-extension-bytes")
 
 	d = testSharedCodecDecoder(bs, h)
-	bs2 = d.nextValueBytes([]byte{})
+	bs2 = d.nextValueBytes()
 	testDeepEqualErr(bs, bs2, t, "nextvaluebytes-large-extension-bytes")
 
 	xl = testUintToBytes(0) // so it's WriteExt returns nil
@@ -3516,11 +3525,13 @@ func doTestNextValueBytes(t *testing.T, h Handle) {
 	}
 	// out = append(out, []byte("----")...)
 
-	var valueBytes = make([][]byte, len(inputs)*2)
+	var valueBytes = make([][]byte, len(inputs))
+	var valueBytes2 = make([][]byte, len(inputs))
 
 	d := testSharedCodecDecoder(out, h)
-	for i := 0; i < len(inputs)*2; i++ {
-		valueBytes[i] = d.nextValueBytes([]byte{})
+	for i := 0; i < len(inputs); i++ {
+		valueBytes[i] = testUncontendedBytes(d.nextValueBytes())
+		valueBytes2[i] = testUncontendedBytes(d.nextValueBytes())
 	}
 	// if testUseIoEncDec >= 0 {
 	// 	bh.ReaderBufferSize = oldReadBufferSize
@@ -3534,10 +3545,10 @@ func doTestNextValueBytes(t *testing.T, h Handle) {
 	for i := 0; i < len(inputs); i++ {
 		// result = reflect.New(reflect.TypeOf(inputs[i])).Elem().Interface()
 		result = reflect.Zero(reflect.TypeOf(inputs[i])).Interface()
-		testUnmarshalErr(&result, valueBytes[i*2], h, t, "nextvaluebytes")
+		testUnmarshalErr(&result, valueBytes[i], h, t, "nextvaluebytes")
 		testDeepEqualErr(inputs[i], result, t, "nextvaluebytes-1")
 		result = nil
-		testUnmarshalErr(&result, valueBytes[(i*2)+1], h, t, "nextvaluebytes")
+		testUnmarshalErr(&result, valueBytes2[i], h, t, "nextvaluebytes")
 		testDeepEqualErr(nil, result, t, "nextvaluebytes-2")
 	}
 }

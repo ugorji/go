@@ -182,3 +182,12 @@ func testSharedCodecDecode(bs []byte, ts interface{}, h Handle, useMust bool) (e
 	}
 	return
 }
+
+func testUncontendedBytes(v []byte) []byte {
+	if testUseIoEncDec >= 0 { // useIO
+		v2 := make([]byte, len(v))
+		copy(v2, v)
+		v = v2
+	}
+	return v
+}
