@@ -487,6 +487,10 @@ type decoderBase struct {
 	stid uintptr
 }
 
+func (d *decoderBase) maxInitLen() uint {
+	return uint(max(1024, d.h.MaxInitLen))
+}
+
 func (d *decoderBase) naked() *fauxUnion {
 	return &d.n
 }
@@ -1126,11 +1130,12 @@ func (d *decoder[T]) kSlice(f *decFnInfo, rv reflect.Value) {
 
 	rvlen := rvLenSlice(rv)
 	rvcap := rvCapSlice(rv)
+	maxInitLen := d.maxInitLen()
 	hasLen := containerLenS > 0
 	if hasLen {
 		if containerLenS > rvcap {
 			oldRvlenGtZero := rvlen > 0
-			rvlen1 := decInferLen(containerLenS, d.h.MaxInitLen, int(ti.elemsize))
+			rvlen1 := int(decInferLen(containerLenS, maxInitLen, uint(ti.elemsize)))
 			if rvlen1 == rvlen {
 			} else if rvlen1 <= rvcap {
 				if rvCanset {
@@ -1178,7 +1183,7 @@ func (d *decoder[T]) kSlice(f *decFnInfo, rv reflect.Value) {
 		if j == 0 {
 			if rvIsNil(rv) { // means hasLen = false
 				if rvCanset {
-					rvlen = decInferLen(containerLenS, d.h.MaxInitLen, int(ti.elemsize))
+					rvlen = int(decInferLen(containerLenS, maxInitLen, uint(ti.elemsize)))
 					rv, rvCanset = rvMakeSlice(rv, f.ti, rvlen, rvlen)
 					rvcap = rvlen
 					rvChanged = !rvCanset
@@ -1401,12 +1406,13 @@ func (d *decoder[T]) kChan(f *decFnInfo, rv reflect.Value) {
 
 	var rvlen int // = rv.Len()
 	hasLen := containerLenS > 0
+	maxInitLen := d.maxInitLen()
 
 	for j := 0; d.containerNext(j, containerLenS, hasLen); j++ {
 		if j == 0 {
 			if rvIsNil(rv) {
 				if hasLen {
-					rvlen = decInferLen(containerLenS, d.h.MaxInitLen, int(ti.elemsize))
+					rvlen = int(decInferLen(containerLenS, maxInitLen, uint(ti.elemsize)))
 				} else {
 					rvlen = decDefChanCap
 				}
@@ -1446,7 +1452,7 @@ func (d *decoder[T]) kMap(f *decFnInfo, rv reflect.Value) {
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	ti := f.ti
 	if rvIsNil(rv) {
-		rvlen := decInferLen(containerLen, d.h.MaxInitLen, int(ti.keysize+ti.elemsize))
+		rvlen := int(decInferLen(containerLen, d.maxInitLen(), uint(ti.keysize+ti.elemsize)))
 		rvSetDirect(rv, makeMapReflect(ti.rt, rvlen))
 	}
 
@@ -2582,13 +2588,13 @@ func isDecodeable(rv reflect.Value) (canDecode bool, reason decNotDecodeableReas
 //   - maxlen: max length to be returned.
 //     if <= 0, it is unset, and we infer it based on the unit size
 //   - unit: number of bytes for each element of the collection
-func decInferLen(clen, maxlen, unit int) int {
+func decInferLen(clen int, maxlen, unit uint) uint {
 	// anecdotal testing showed increase in allocation with map length of 16.
 	// We saw same typical alloc from 0-8, then a 20% increase at 16.
 	// Thus, we set it to 8.
 	const (
 		minLenIfUnset = 8
-		maxMem        = 256 * 1024 // 256Kb Memory
+		maxMem        = 1024 * 1024 // 1 MB Memory
 	)
 
 	// handle when maxlen is not set i.e. <= 0
@@ -2604,22 +2610,19 @@ func decInferLen(clen, maxlen, unit int) int {
 	}
 	if clen < 0 {
 		// if unspecified, return 64 for bytes, ... 8 for uint64, ... and everything else
-		clen = 64 / unit
-		if clen > minLenIfUnset {
-			return clen
-		}
-		return minLenIfUnset
+		return max(64/unit, minLenIfUnset)
 	}
-	if unit <= 0 {
-		return clen
+	if unit == 0 {
+		return uint(clen)
 	}
-	if maxlen <= 0 {
+	if maxlen == 0 {
 		maxlen = maxMem / unit
 	}
-	if clen < maxlen {
-		return clen
-	}
-	return maxlen
+	return min(uint(clen), maxlen)
+	// if uint(clen) < maxlen {
+	// 	return clen
+	// }
+	// return maxlen
 }
 
 type Decoder struct {
