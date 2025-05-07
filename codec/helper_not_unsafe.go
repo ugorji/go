@@ -733,13 +733,17 @@ func mapAddrLoopvarRV(t reflect.Type, k reflect.Kind) (r reflect.Value) {
 
 // ---------- ENCODER optimized ---------------
 
-func (d *decoderBase) stringZC(v []byte, _ bool) (s string) {
-	return d.string(v)
+// func (d *decoderBase) stringZC(v []byte, _ bool) (s string) {
+// 	return d.string(v)
+// }
+
+func (d *decoderBase) bytes2Str(in []byte, att dBytesAttachState) (s string, mutable bool) {
+	return d.string(in, att), false
 }
 
-func (d *decoderBase) bytes2Str(in []byte, _ bool) (s string, sharingBytes bool) {
-	return d.string(in), false
-}
+// func (d *decoderBase) detach2Str(in []byte, usingBuf bool) string {
+// 	return d.string(in)
+// }
 
 // ---------- structFieldInfo optimized ---------------
 

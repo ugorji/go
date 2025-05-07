@@ -745,15 +745,16 @@ func (d *bincDecDriver[T]) decLenNumber() (v uint64) {
 }
 
 // func (d *bincDecDriver[T]) decStringBytes(bs []byte, zerocopy bool) (bs2 []byte) {
-func (d *bincDecDriver[T]) DecodeStringAsBytes(in []byte) (bs2 []byte, scratchBuf bool) {
+func (d *bincDecDriver[T]) DecodeStringAsBytes() (bs []byte, state dBytesAttachState) {
 	if d.advanceNil() {
 		return
 	}
+	var cond bool
 	var slen = -1
 	switch d.vd {
 	case bincVdString, bincVdByteArray:
 		slen = d.decLen()
-		bs2, scratchBuf = d.r.readxb(slen, in)
+		bs, cond = d.r.readxb(slen)
 	case bincVdSymbol:
 		// zerocopy doesn't apply for symbols,
 		// as the values must be stored in a table for later use.
@@ -769,7 +770,7 @@ func (d *bincDecDriver[T]) DecodeStringAsBytes(in []byte) (bs2 []byte, scratchBu
 		}
 
 		if vs&0x4 == 0 {
-			bs2 = d.s[symbol]
+			bs = d.s[symbol]
 		} else {
 			switch vs & 0x3 {
 			case 0:
@@ -783,49 +784,50 @@ func (d *bincDecDriver[T]) DecodeStringAsBytes(in []byte) (bs2 []byte, scratchBu
 			}
 			// As we are using symbols, do not store any part of
 			// the parameter bs in the map, as it might be a shared buffer.
-			bs2, scratchBuf = d.r.readxb(slen, nil)
-			d.s[symbol] = bs2
+			bs, cond = d.r.readxb(slen)
+			bs = d.d.detach2Bytes(bs, nil, d.d.attachState(cond))
+			d.s[symbol] = bs
 		}
 	default:
 		halt.errorf("string/bytes - %s %x-%x/%s", msgBadDesc, d.vd, d.vs, bincdesc(d.vd, d.vs))
 	}
 
-	if d.h.ValidateUnicode && !utf8.Valid(bs2) {
-		halt.errorf("DecodeStringAsBytes: invalid UTF-8: %s", bs2)
+	if d.h.ValidateUnicode && !utf8.Valid(bs) {
+		halt.errorf("DecodeStringAsBytes: invalid UTF-8: %s", bs)
 	}
 
 	d.bdRead = false
 	return
 }
 
-func (d *bincDecDriver[T]) DecodeBytes(bs []byte) (out []byte, scratchBuf bool) {
+func (d *bincDecDriver[T]) DecodeBytes() (bs []byte, state dBytesAttachState) {
 	if d.advanceNil() {
 		return
 	}
+	var cond bool
 	if d.vd == bincVdArray {
-		if bs == nil {
-			bs = d.d.b[:]
-			scratchBuf = true
-		}
 		slen := d.ReadArrayStart()
-		bs, _ = usableByteSlice(bs, slen)
+		bs, cond = usableByteSlice(d.d.buf, slen)
 		for i := 0; i < slen; i++ {
 			bs[i] = uint8(chkOvf.UintV(d.DecodeUint64(), 8))
 		}
 		for i := len(bs); i < slen; i++ {
 			bs = append(bs, uint8(chkOvf.UintV(d.DecodeUint64(), 8)))
 		}
-		out = bs
+		if cond {
+			d.d.buf = bs
+		}
+		state = dBytesAttachBuffer
 		return
 	}
-	var clen int
-	if d.vd == bincVdString || d.vd == bincVdByteArray {
-		clen = d.decLen()
-	} else {
+	if !(d.vd == bincVdString || d.vd == bincVdByteArray) {
 		halt.errorf("bytes - %s %x-%x/%s", msgBadDesc, d.vd, d.vs, bincdesc(d.vd, d.vs))
 	}
+	clen := d.decLen()
 	d.bdRead = false
-	return d.r.readxb(clen, bs)
+	bs, cond = d.r.readxb(clen)
+	state = d.d.attachState(cond)
+	return
 }
 
 func (d *bincDecDriver[T]) DecodeExt(rv interface{}, basetype reflect.Type, xtag uint64, ext Ext) {
@@ -841,15 +843,15 @@ func (d *bincDecDriver[T]) DecodeExt(rv interface{}, basetype reflect.Type, xtag
 }
 
 func (d *bincDecDriver[T]) DecodeRawExt(re *RawExt) {
-	xbs, realxtag, zerocopy, ok := d.decodeExtV(false, 0)
+	xbs, realxtag, state, ok := d.decodeExtV(false, 0)
 	if !ok {
 		return
 	}
 	re.Tag = uint64(realxtag)
-	re.setData(xbs, zerocopy)
+	re.setData(xbs, state >= dBytesAttachViewZerocopy)
 }
 
-func (d *bincDecDriver[T]) decodeExtV(verifyTag bool, xtagIn uint64) (xbs []byte, xtag byte, zerocopy, ok bool) {
+func (d *bincDecDriver[T]) decodeExtV(verifyTag bool, xtagIn uint64) (xbs []byte, xtag byte, bstate dBytesAttachState, ok bool) {
 	if xtagIn > 0xff {
 		halt.errorf("ext: tag must be <= 0xff; got: %v", xtagIn)
 	}
@@ -863,10 +865,11 @@ func (d *bincDecDriver[T]) decodeExtV(verifyTag bool, xtagIn uint64) (xbs []byte
 		if verifyTag && xtag != tag {
 			halt.errorf("wrong extension tag - got %b, expecting: %v", xtag, tag)
 		}
-		xbs = d.r.readx(uint(l))
-		zerocopy = d.d.bytes
+		xbs, ok = d.r.readxb(l)
+		bstate = d.d.attachState(ok)
+		// zerocopy = d.d.bytes
 	} else if d.vd == bincVdByteArray {
-		xbs, _ = d.DecodeBytes(nil)
+		xbs, bstate = d.DecodeBytes()
 	} else {
 		halt.errorf("ext expects extensions or byte array - %s %x-%x/%s", msgBadDesc, d.vd, d.vs, bincdesc(d.vd, d.vs))
 	}
@@ -929,12 +932,12 @@ func (d *bincDecDriver[T]) DecodeNaked() {
 		n.f = d.decFloatVal()
 	case bincVdString:
 		n.v = valueTypeString
-		n.s = d.d.stringZC(d.DecodeStringAsBytes(zeroByteSlice))
+		n.s = d.d.string(d.DecodeStringAsBytes())
 	case bincVdByteArray:
 		d.d.fauxUnionReadRawBytes(d, false, d.h.RawToString) //, d.h.ZeroCopy)
 	case bincVdSymbol:
 		n.v = valueTypeSymbol
-		n.s = d.d.stringZC(d.DecodeStringAsBytes(zeroByteSlice))
+		n.s = d.d.string(d.DecodeStringAsBytes())
 	case bincVdTimestamp:
 		n.v = valueTypeTime
 		tt, err := bincDecodeTime(d.r.readx(uint(d.vs)))

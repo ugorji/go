@@ -685,6 +685,7 @@ type fauxUnion struct {
 	b bool
 
 	// state
+	a dBytesAttachState
 	v valueType
 }
 
@@ -2650,7 +2651,7 @@ func implIntf(rt, iTyp reflect.Type) (base bool, indir bool) {
 	return
 }
 
-func bytesOk(bs []byte, b bool) []byte {
+func bytesOk(bs []byte, _ dBytesAttachState) []byte {
 	return bs
 }
 
@@ -2795,7 +2796,8 @@ func usableByteSlice(bs []byte, slen int) (out []byte, changed bool) {
 	const maxCap = 1024 * 1024 * 64 // 64MB
 	const skipMaxCap = false        // allow to test
 	if slen <= 0 {
-		return zeroByteSlice, true
+		// return zeroByteSlice, true
+		return bs[:0], false
 	}
 	if slen <= cap(bs) {
 		return bs[:slen], false

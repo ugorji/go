@@ -1257,32 +1257,39 @@ func makeMapReflect(typ reflect.Type, size int) (rv reflect.Value) {
 // 	return d.string(v)
 // }
 
-func (d *decoderBase) stringZC(v []byte, scratchBuf bool) (s string) {
-	// This method is called a lot. Inlining helps with performance.
-	//
-	// MARKER: TUNED BELOW TO force inlining
-	// - inlined d.string(...)
-	// - remove if len(v) == 0 { check
-	// - used double indexing to eliminate inline cost of the addition (v[0]:v[0]+1)
+// func (d *decoderBase) stringZC(v []byte, scratchBuf bool) (s string) {
+// 	// This method is called a lot. Inlining helps with performance.
+// 	//
+// 	// MARKER: TUNED BELOW TO force inlining
+// 	// - inlined d.string(...)
+// 	// - remove if len(v) == 0 { check
+// 	// - used double indexing to eliminate inline cost of the addition (v[0]:v[0]+1)
 
-	// if len(v) == 0 {
-	// } else if len(v) == 1 {
-	if len(v) == 1 {
-		// s = str4byte(v[0]) // str256[v[0]:][:1] // str256[v[0] : v[0]+1]
-		s = unsafe.String((*byte)(unsafe.Add(unsafe.Pointer(unsafe.StringData(str256)), v[0])), 1)
-	} else if !scratchBuf && d.bytes && d.zeroCopy {
-		s = stringView(v)
-	} else if d.is == nil || d.c != containerMapKey || len(v) > internMaxStrLen {
-		s = string(v)
-	} else {
-		s = d.is.string(v)
-	}
-	return
+// 	// if len(v) == 0 {
+// 	// } else if len(v) == 1 {
+// 	if len(v) == 1 {
+// 		// s = str4byte(v[0]) // str256[v[0]:][:1] // str256[v[0] : v[0]+1]
+// 		s = unsafe.String((*byte)(unsafe.Add(unsafe.Pointer(unsafe.StringData(str256)), v[0])), 1)
+// 	} else if !scratchBuf && d.bytes && d.zeroCopy {
+// 		s = stringView(v)
+// 	} else if d.is == nil || d.c != containerMapKey || len(v) > internMaxStrLen {
+// 		s = string(v)
+// 	} else {
+// 		s = d.is.string(v)
+// 	}
+// 	return
+// }
+
+func (d *decoderBase) bytes2Str(in []byte, state dBytesAttachState) (s string, mutable bool) {
+	return stringView(in), state <= dBytesAttachBuffer
 }
 
-func (d *decoderBase) bytes2Str(in []byte, usingBuf bool) (s string, mutable bool) {
-	return stringView(in), usingBuf || !(d.bytes && d.zeroCopy)
-}
+// func (d *decoderBase) detach2Str(in []byte, usingBuf bool) string {
+// 	if d.isAttachedBytes(usingBuf) {
+// 		return d.string(in)
+// 	}
+// 	return stringView(in)
+// }
 
 // func (d *decoder[T]) jsondriver() *jsonDecDriver {
 // 	return (*jsonDecDriver)((*unsafeIntf)(unsafe.Pointer(&d.d)).ptr)

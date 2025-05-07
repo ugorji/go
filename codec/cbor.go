@@ -577,7 +577,7 @@ func (d *cborDecDriver[T]) ReadArrayStart() (length int) {
 	return d.decLen()
 }
 
-func (d *cborDecDriver[T]) DecodeBytes(bs []byte) (out []byte, scratchBuf bool) {
+func (d *cborDecDriver[T]) DecodeBytes() (bs []byte, state dBytesAttachState) {
 	if d.advanceNil() {
 		return
 	}
@@ -590,52 +590,47 @@ func (d *cborDecDriver[T]) DecodeBytes(bs []byte) (out []byte, scratchBuf bool) 
 	// some bytes in there are not part of the output.
 	if d.bd == cborBdIndefiniteBytes || d.bd == cborBdIndefiniteString {
 		d.bdRead = false
-		if bs == nil {
-			bs = d.d.b[:]
-			scratchBuf = true
-		}
-		out = d.decAppendIndefiniteBytes(bs[:0], d.bd>>5)
+		// MARKER 2025 - wonder why d.d.buf fails
+		// bs = d.decAppendIndefiniteBytes(d.d.buf[:0], d.bd>>5)
+		bs = d.decAppendIndefiniteBytes(nil, d.bd>>5)
+		d.d.buf = bs
+		state = dBytesAttachBuffer
 		return
 	}
 	if d.bd == cborBdIndefiniteArray {
 		d.bdRead = false
-		if bs == nil {
-			bs = d.d.b[:0]
-			scratchBuf = true
-		} else {
-			bs = bs[:0]
-		}
+		bs = d.d.buf[:0]
 		for !d.CheckBreak() {
 			bs = append(bs, uint8(chkOvf.UintV(d.DecodeUint64(), 8)))
 		}
-		out = bs
+		d.d.buf = bs
+		state = dBytesAttachBuffer
 		return
 	}
+	var cond bool
 	if d.bd>>5 == cborMajorArray {
 		d.bdRead = false
-		if bs == nil {
-			bs = d.d.b[:]
-			scratchBuf = true
-		}
 		slen := d.decLen()
-		bs, _ = usableByteSlice(bs, slen)
+		bs, cond = usableByteSlice(d.d.buf, slen)
 		for i := 0; i < len(bs); i++ {
 			bs[i] = uint8(chkOvf.UintV(d.DecodeUint64(), 8))
 		}
 		for i := len(bs); i < slen; i++ {
 			bs = append(bs, uint8(chkOvf.UintV(d.DecodeUint64(), 8)))
 		}
-		out = bs
+		d.d.buf = bs
+		state = dBytesAttachBuffer
 		return
 	}
 	clen := d.decLen()
 	d.bdRead = false
-
-	return d.r.readxb(clen, bs)
+	bs, cond = d.r.readxb(clen)
+	state = d.d.attachState(cond)
+	return
 }
 
-func (d *cborDecDriver[T]) DecodeStringAsBytes(in []byte) (out []byte, scratchBuf bool) {
-	out, scratchBuf = d.DecodeBytes(in)
+func (d *cborDecDriver[T]) DecodeStringAsBytes() (out []byte, state dBytesAttachState) {
+	out, state = d.DecodeBytes()
 	if d.h.ValidateUnicode && !utf8.Valid(out) {
 		halt.errorf("DecodeStringAsBytes: invalid UTF-8: %s", out)
 	}
@@ -658,7 +653,7 @@ func (d *cborDecDriver[T]) decodeTime(xtag uint64) (t time.Time) {
 	switch xtag {
 	case 0:
 		var err error
-		t, err = time.Parse(time.RFC3339, stringView(bytesOk(d.DecodeStringAsBytes(nil))))
+		t, err = time.Parse(time.RFC3339, stringView(bytesOk(d.DecodeStringAsBytes())))
 		halt.onerror(err)
 	case 1:
 		f1, f2 := math.Modf(d.DecodeFloat64())
@@ -729,7 +724,7 @@ func (d *cborDecDriver[T]) DecodeNaked() {
 		d.d.fauxUnionReadRawBytes(d, false, d.h.RawToString) //, d.h.ZeroCopy)
 	case cborMajorString:
 		n.v = valueTypeString
-		n.s = d.d.stringZC(d.DecodeStringAsBytes(zeroByteSlice))
+		n.s = d.d.string(d.DecodeStringAsBytes())
 	case cborMajorArray:
 		n.v = valueTypeArray
 		decodeFurther = true

@@ -975,74 +975,67 @@ func (d *jsonDecDriver[T]) decBytesFromArray(bs []byte) []byte {
 	return bs
 }
 
-func (d *jsonDecDriver[T]) DecodeBytes(bs []byte) (out []byte, scratchBuf bool) {
+func (d *jsonDecDriver[T]) DecodeBytes() (bs []byte, state dBytesAttachState) {
 	d.advance()
+	state = dBytesDetach
 	if d.tok == 'n' {
 		d.checkLit3([3]byte{'u', 'l', 'l'}, d.r.readn3())
 		return
 	}
 	// if decoding into raw bytes, and the RawBytesExt is configured, use it to decode.
 	if d.rawext {
-		out = bs
-		d.dec.interfaceExtConvertAndDecode(&out, d.h.RawBytesExt)
+		d.dec.interfaceExtConvertAndDecode(&d.buf, d.h.RawBytesExt)
+		bs = d.buf
+		state = dBytesAttachBuffer
 		return
 	}
 	// check if an "array" of uint8's (see ContainerType for how to infer if an array)
 	if d.tok == '[' {
 		// bsOut, _ = fastpathTV.DecSliceUint8V(bs, true, d.d)
-		if bs == nil {
-			out = d.decBytesFromArray(d.buf[:0])
-			d.buf = out
-			// bs = d.d.b[:]
-			scratchBuf = true
-		} else {
-			out = d.decBytesFromArray(bs)
-			// // MARKER 2025 - below may not be necessary
-			// // especially if scratchBuf means that caller copies this over
-			// if cap(out) > cap(bs) && cap(out) > cap(d.buf) {
-			// 	d.buf = out
-			// 	scratchBuf = true
-			// }
-		}
+		bs = d.decBytesFromArray(d.buf[:0])
+		d.buf = bs
+		state = dBytesAttachBuffer
 		return
 	}
 
 	// base64 encodes []byte{} as "", and we encode nil []byte as null.
 	// Consequently, base64 should decode null as a nil []byte, and "" as an empty []byte{}.
 
+	state = dBytesAttachBuffer
 	d.ensureReadingString()
 	bs1 := d.readUnescapedString()
 	slen := base64.StdEncoding.DecodedLen(len(bs1))
 	if slen == 0 {
-		out = zeroByteSlice
-	} else if slen <= cap(bs) {
-		out = bs[:slen]
-	} else if bs == nil {
-		scratchBuf = true
-		out = d.d.blist.check(d.buf, slen)[:slen]
-		// out = out[:slen]
-		d.buf = out
+		bs = zeroByteSlice
+		state = dBytesDetach
+	} else if slen <= cap(d.buf) {
+		bs = d.buf[:slen]
 	} else {
-		out = make([]byte, slen)
+		d.buf = d.d.blist.putGet(d.buf, slen)[:slen]
+		bs = d.buf
 	}
-	slen2, err := base64.StdEncoding.Decode(out, bs1)
+	slen2, err := base64.StdEncoding.Decode(bs, bs1)
 	if err != nil {
 		halt.errorf("error decoding base64 binary '%s': %v", any(bs1), err)
 	}
 	if slen != slen2 {
-		out = out[:slen2]
+		bs = bs[:slen2]
 	}
 	return
 }
 
-func (d *jsonDecDriver[T]) DecodeStringAsBytes(bs []byte) (out []byte, scratchBuf bool) {
+func (d *jsonDecDriver[T]) DecodeStringAsBytes() (bs []byte, state dBytesAttachState) {
 	d.advance()
 
+	var cond bool
 	// common case - hoist outside the switch statement
 	if d.tok == '"' {
-		return d.dblQuoteStringAsBytes()
+		bs, cond = d.dblQuoteStringAsBytes()
+		state = d.d.attachState(cond)
+		return
 	}
 
+	state = dBytesDetach
 	// handle non-string scalar: null, true, false or a number
 	switch d.tok {
 	case 'n':
@@ -1050,14 +1043,15 @@ func (d *jsonDecDriver[T]) DecodeStringAsBytes(bs []byte) (out []byte, scratchBu
 		// out = nil // []byte{}
 	case 'f':
 		d.checkLit4([4]byte{'a', 'l', 's', 'e'}, d.r.readn4())
-		out = jsonLitb[jsonLitF : jsonLitF+5]
+		bs = jsonLitb[jsonLitF : jsonLitF+5]
 	case 't':
 		d.checkLit3([3]byte{'r', 'u', 'e'}, d.r.readn3())
-		out = jsonLitb[jsonLitT : jsonLitT+4]
+		bs = jsonLitb[jsonLitT : jsonLitT+4]
 	default:
 		// try to parse a valid number
 		d.tok = 0
-		out = d.r.jsonReadNum()
+		bs = d.r.jsonReadNum()
+		state = d.d.attachState(!d.d.bytes)
 	}
 	return
 }
@@ -1201,7 +1195,8 @@ func (d *jsonDecDriver[T]) DecodeNaked() {
 		z.v = valueTypeArray // don't consume. kInterfaceNaked will call ReadArrayStart
 	case '"':
 		// if a string, and MapKeyAsString, then try to decode it as a bool or number first
-		bs, _ = d.dblQuoteStringAsBytes()
+		bs, z.b = d.dblQuoteStringAsBytes()
+		att := d.d.attachState(z.b)
 		if jsonNakedBoolNullInQuotedStr &&
 			d.h.MapKeyAsString && len(bs) > 0 && d.d.c == containerMapKey {
 			switch string(bs) {
@@ -1217,12 +1212,12 @@ func (d *jsonDecDriver[T]) DecodeNaked() {
 				// check if a number: float, int or uint
 				if err := jsonNakedNum(z, bs, d.h.PreferFloat, d.h.SignedInteger); err != nil {
 					z.v = valueTypeString
-					z.s = d.d.stringZC(bs, true)
+					z.s = d.d.string(bs, att)
 				}
 			}
 		} else {
 			z.v = valueTypeString
-			z.s = d.d.stringZC(bs, true)
+			z.s = d.d.string(bs, att)
 		}
 	default: // number
 		bs = d.r.jsonReadNum()

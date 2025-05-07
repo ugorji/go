@@ -451,35 +451,37 @@ func (d *simpleDecDriver[T]) decLen() int {
 	return -1
 }
 
-func (d *simpleDecDriver[T]) DecodeStringAsBytes(bs []byte) (s []byte, scratchBuf bool) {
-	return d.DecodeBytes(bs)
+func (d *simpleDecDriver[T]) DecodeStringAsBytes() ([]byte, dBytesAttachState) {
+	return d.DecodeBytes()
 }
 
-func (d *simpleDecDriver[T]) DecodeBytes(bs []byte) (out []byte, scratchBuf bool) {
+func (d *simpleDecDriver[T]) DecodeBytes() (bs []byte, state dBytesAttachState) {
 	if d.advanceNil() {
 		return
 	}
+	var cond bool
 	// check if an "array" of uint8's (see ContainerType for how to infer if an array)
 	if d.bd >= simpleVdArray && d.bd <= simpleVdMap+4 {
-		if bs == nil {
-			scratchBuf = true
-			bs = d.d.b[:]
-		}
 		slen := d.ReadArrayStart()
-		bs, _ = usableByteSlice(bs, slen)
+		bs, cond = usableByteSlice(d.d.buf, slen)
 		for i := 0; i < len(bs); i++ {
 			bs[i] = uint8(chkOvf.UintV(d.DecodeUint64(), 8))
 		}
 		for i := len(bs); i < slen; i++ {
 			bs = append(bs, uint8(chkOvf.UintV(d.DecodeUint64(), 8)))
 		}
-		out = bs
+		if cond {
+			d.d.buf = bs
+		}
+		state = dBytesAttachBuffer
 		return
 	}
 
 	clen := d.decLen()
 	d.bdRead = false
-	return d.r.readxb(clen, bs)
+	bs, cond = d.r.readxb(clen)
+	state = d.d.attachState(cond)
+	return
 }
 
 func (d *simpleDecDriver[T]) DecodeTime() (t time.Time) {
@@ -509,15 +511,15 @@ func (d *simpleDecDriver[T]) DecodeExt(rv interface{}, basetype reflect.Type, xt
 }
 
 func (d *simpleDecDriver[T]) DecodeRawExt(re *RawExt) {
-	xbs, realxtag, zerocopy, ok := d.decodeExtV(false, 0)
+	xbs, realxtag, state, ok := d.decodeExtV(false, 0)
 	if !ok {
 		return
 	}
 	re.Tag = uint64(realxtag)
-	re.setData(xbs, zerocopy)
+	re.setData(xbs, state >= dBytesAttachViewZerocopy)
 }
 
-func (d *simpleDecDriver[T]) decodeExtV(verifyTag bool, xtagIn uint64) (xbs []byte, xtag byte, zerocopy, ok bool) {
+func (d *simpleDecDriver[T]) decodeExtV(verifyTag bool, xtagIn uint64) (xbs []byte, xtag byte, bstate dBytesAttachState, ok bool) {
 	if xtagIn > 0xff {
 		halt.errorf("ext: tag must be <= 0xff; got: %v", xtagIn)
 	}
@@ -532,11 +534,11 @@ func (d *simpleDecDriver[T]) decodeExtV(verifyTag bool, xtagIn uint64) (xbs []by
 		if verifyTag && xtag != tag {
 			halt.errorf("wrong extension tag. Got %b. Expecting: %v", xtag, tag)
 		}
-		xbs = d.r.readx(uint(l))
-		zerocopy = d.d.bytes
+		xbs, ok = d.r.readxb(l)
+		bstate = d.d.attachState(ok)
 	case simpleVdByteArray, simpleVdByteArray + 1,
 		simpleVdByteArray + 2, simpleVdByteArray + 3, simpleVdByteArray + 4:
-		xbs, _ = d.DecodeBytes(nil)
+		xbs, bstate = d.DecodeBytes()
 	default:
 		halt.errorf("ext - %s - expecting extensions/bytearray, got: 0x%x", msgBadDesc, d.bd)
 	}
@@ -585,7 +587,7 @@ func (d *simpleDecDriver[T]) DecodeNaked() {
 	case simpleVdString, simpleVdString + 1,
 		simpleVdString + 2, simpleVdString + 3, simpleVdString + 4:
 		n.v = valueTypeString
-		n.s = d.d.stringZC(d.DecodeStringAsBytes(zeroByteSlice))
+		n.s = d.d.string(d.DecodeStringAsBytes())
 	case simpleVdByteArray, simpleVdByteArray + 1,
 		simpleVdByteArray + 2, simpleVdByteArray + 3, simpleVdByteArray + 4:
 		d.d.fauxUnionReadRawBytes(d, false, d.h.RawToString) //, d.h.ZeroCopy)

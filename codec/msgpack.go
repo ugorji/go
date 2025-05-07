@@ -816,11 +816,12 @@ func (d *msgpackDecDriver[T]) DecodeBool() (b bool) {
 	return
 }
 
-func (d *msgpackDecDriver[T]) DecodeBytes(bs []byte) (out []byte, scratchBuf bool) {
+func (d *msgpackDecDriver[T]) DecodeBytes() (bs []byte, state dBytesAttachState) {
 	if d.advanceNil() {
 		return
 	}
 
+	var cond bool
 	bd := d.bd
 	var clen int
 	if bd == mpBin8 || bd == mpBin16 || bd == mpBin32 {
@@ -830,34 +831,33 @@ func (d *msgpackDecDriver[T]) DecodeBytes(bs []byte) (out []byte, scratchBuf boo
 		clen = d.readContainerLen(msgpackContainerStr) // string/raw
 	} else if bd == mpArray16 || bd == mpArray32 ||
 		(bd >= mpFixArrayMin && bd <= mpFixArrayMax) {
-		// check if an "array" of uint8's
-		if bs == nil {
-			bs = d.d.b[:]
-			scratchBuf = true
-		}
-		// bsOut, _ = fastpathTV.DecSliceUint8V(bs, true, d.d)
 		slen := d.ReadArrayStart()
-		bs, _ = usableByteSlice(bs, slen)
+		bs, cond = usableByteSlice(d.d.buf, slen)
 		for i := 0; i < len(bs); i++ {
 			bs[i] = uint8(chkOvf.UintV(d.DecodeUint64(), 8))
 		}
 		for i := len(bs); i < slen; i++ {
 			bs = append(bs, uint8(chkOvf.UintV(d.DecodeUint64(), 8)))
 		}
-		out = bs
+		if cond {
+			d.d.buf = bs
+		}
+		state = dBytesAttachBuffer
 		return
 	} else {
 		halt.errorf("invalid byte descriptor for decoding bytes, got: 0x%x", d.bd)
 	}
 
 	d.bdRead = false
-	return d.r.readxb(clen, bs)
+	bs, cond = d.r.readxb(clen)
+	state = d.d.attachState(cond)
+	return
 }
 
-func (d *msgpackDecDriver[T]) DecodeStringAsBytes(bs []byte) (s []byte, scratchBuf bool) {
-	s, scratchBuf = d.DecodeBytes(bs)
-	if d.h.ValidateUnicode && !utf8.Valid(s) {
-		halt.errorf("DecodeStringAsBytes: invalid UTF-8: %s", s)
+func (d *msgpackDecDriver[T]) DecodeStringAsBytes() (out []byte, state dBytesAttachState) {
+	out, state = d.DecodeBytes()
+	if d.h.ValidateUnicode && !utf8.Valid(out) {
+		halt.errorf("DecodeStringAsBytes: invalid UTF-8: %s", out)
 	}
 	return
 }
@@ -1021,15 +1021,15 @@ func (d *msgpackDecDriver[T]) DecodeExt(rv interface{}, basetype reflect.Type, x
 }
 
 func (d *msgpackDecDriver[T]) DecodeRawExt(re *RawExt) {
-	xbs, realxtag, zerocopy, ok := d.decodeExtV(false, 0)
+	xbs, realxtag, state, ok := d.decodeExtV(false, 0)
 	if !ok {
 		return
 	}
 	re.Tag = uint64(realxtag)
-	re.setData(xbs, zerocopy)
+	re.setData(xbs, state >= dBytesAttachViewZerocopy)
 }
 
-func (d *msgpackDecDriver[T]) decodeExtV(verifyTag bool, xtagIn uint64) (xbs []byte, xtag byte, zerocopy, ok bool) {
+func (d *msgpackDecDriver[T]) decodeExtV(verifyTag bool, xtagIn uint64) (xbs []byte, xtag byte, bstate dBytesAttachState, ok bool) {
 	if xtagIn > 0xff {
 		halt.errorf("ext: tag must be <= 0xff; got: %v", xtagIn)
 	}
@@ -1039,18 +1039,19 @@ func (d *msgpackDecDriver[T]) decodeExtV(verifyTag bool, xtagIn uint64) (xbs []b
 	tag := uint8(xtagIn)
 	xbd := d.bd
 	if xbd == mpBin8 || xbd == mpBin16 || xbd == mpBin32 {
-		xbs, _ = d.DecodeBytes(nil)
+		xbs, bstate = d.DecodeBytes()
 	} else if xbd == mpStr8 || xbd == mpStr16 || xbd == mpStr32 ||
 		(xbd >= mpFixStrMin && xbd <= mpFixStrMax) {
-		xbs, _ = d.DecodeStringAsBytes(nil)
+		xbs, bstate = d.DecodeStringAsBytes()
 	} else {
 		clen := d.readExtLen()
 		xtag = d.r.readn1()
 		if verifyTag && xtag != tag {
 			halt.errorf("wrong extension tag - got %b, expecting %v", xtag, tag)
 		}
-		xbs = d.r.readx(uint(clen))
-		zerocopy = d.d.bytes
+		xbs, ok = d.r.readxb(clen)
+		bstate = d.d.attachState(ok)
+		// zerocopy = d.d.bytes
 	}
 	d.bdRead = false
 	ok = true

@@ -15,10 +15,6 @@ import (
 	"time"
 )
 
-const msgBadDesc = "unrecognized descriptor byte"
-
-var decBuiltinRtids []uintptr
-
 func init() {
 	for _, v := range []interface{}{
 		(*string)(nil),
@@ -48,6 +44,26 @@ func init() {
 	}
 	slices.Sort(decBuiltinRtids)
 }
+
+const msgBadDesc = "unrecognized descriptor byte"
+
+var decBuiltinRtids []uintptr
+
+// decDriver calls (DecodeBytes and DecodeStringAsBytes) return a state
+// of the view they return, allowing consumers to handle appropriately.
+//
+// sequencing of this is intentional:
+//   - mutable if <= dBytesAttachBuffer  (buf | view | invalid)
+//   - noCopy if >= dBytesAttachViewZerocopy
+type dBytesAttachState uint8
+
+const (
+	dBytesAttachInvalid      dBytesAttachState = iota
+	dBytesAttachView                           // (bytes && !zerocopy && !buf)
+	dBytesAttachBuffer                         // (buf)
+	dBytesAttachViewZerocopy                   // (bytes && zerocopy && !buf)
+	dBytesDetach                               // (!bytes && !buf)
+)
 
 const (
 	decDefMaxDepth         = 1024                // maximum depth
@@ -157,24 +173,11 @@ type decDriverI interface {
 	// Note: This can also decode symbols, if supported.
 	//
 	// Users should consume it right away and not store it for later use.
-	DecodeStringAsBytes(in []byte) (v []byte, scratchBuf bool)
+	DecodeStringAsBytes() (v []byte, state dBytesAttachState)
 
 	// DecodeBytes returns the bytes representing a binary value.
 	// It will return a view into scratch buffer or input []byte (if applicable).
-	//
-	// All implementations must honor the contract below:
-	//    if ZeroCopy/bytes/possible, return a view into input []byte we are decoding from
-	//    else if in == nil,          return a view into buffer (or input byte)
-	//    else                        append decoded value to in[:0] and return that
-	//                                (this can be simulated by passing []byte{} as in parameter)
-	//
-	// Implementations must also update Decoder.decByteState on each call to
-	// DecodeBytes or DecodeStringAsBytes. Some callers may check that and work appropriately.
-	//
-	// Note: DecodeBytes may decode past the length of the passed byte slice, up to the cap.
-	// Consequently, it is ok to pass a zero-len slice to DecodeBytes, as the returned
-	// byte slice will have the appropriate length.
-	DecodeBytes(in []byte) (out []byte, scratchBuf bool)
+	DecodeBytes() (out []byte, state dBytesAttachState)
 	// DecodeBytes(bs []byte, isstring, zerocopy bool) (bsOut []byte)
 
 	// DecodeExt will decode into an extension.
@@ -432,6 +435,8 @@ type decoderBase struct {
 
 	rtidFn, rtidFnNoExt *atomicRtidFnSlice
 
+	buf []byte
+
 	// used for interning strings
 	is internerMap
 
@@ -487,26 +492,32 @@ func (d *decoderBase) naked() *fauxUnion {
 }
 
 func (d *decoderBase) fauxUnionReadRawBytes(dr decDriverI, asString, rawToString bool) { //, handleZeroCopy bool) {
+	// fauxUnion is only used within DecodeNaked calls; consequently, we should try to intern.
+	d.n.l, d.n.a = dr.DecodeBytes()
 	if asString || rawToString {
 		d.n.v = valueTypeString
-		// fauxUnion is only used within DecodeNaked calls; consequently, we should try to intern.
-		// reuse asString instead of declaring another bool
-		d.n.l, asString = dr.DecodeBytes(nil)
-		d.n.s = d.stringZC(d.n.l, asString)
+		d.n.s = d.string(d.n.l, d.n.a)
 	} else {
 		d.n.v = valueTypeBytes
-		d.n.l, _ = dr.DecodeBytes(zeroByteSlice)
 	}
 }
 
-// Possibly get an interned version of a string, iff InternString=true and decoding a map key.
+// Return a fixed (detached) string representation of a []byte.
 //
-// This should mostly be used for map keys, where the key type is string.
-// This is because keys of a map/struct are typically reused across many objects.
-func (d *decoderBase) string(v []byte) (s string) {
+// Possibly get an interned version of a string,
+// iff InternString=true and decoding a map key.
+//
+// This should mostly be used for map keys, struct field names, etc
+// where the key type is string. This is because keys of a map/struct are
+// typically reused across many objects.
+//
+// MARKER 2025 change this to detach2Str later.
+func (d *decoderBase) string(v []byte, state dBytesAttachState) (s string) {
 	if len(v) == 0 {
 	} else if len(v) == 1 {
 		s = str4byte(v[0])
+	} else if state >= dBytesAttachViewZerocopy { // !scratchBuf && d.bytes && d.zeroCopy
+		s = stringView(v)
 	} else if d.is == nil || d.c != containerMapKey || len(v) > internMaxStrLen {
 		s = string(v)
 	} else {
@@ -514,6 +525,59 @@ func (d *decoderBase) string(v []byte) (s string) {
 	}
 	return
 }
+
+func (d *decoderBase) detach2Bytes(in, out []byte, state dBytesAttachState) []byte {
+	if in == nil || state >= dBytesAttachViewZerocopy {
+		return in
+	}
+	if cap(out) >= len(in) {
+		out = out[:len(in)]
+	} else {
+		out = make([]byte, len(in))
+	}
+	copy(out, in)
+	return out
+}
+
+func (d *decoderBase) attachState(usingBufFromReader bool) (r dBytesAttachState) {
+	if usingBufFromReader {
+		r = dBytesAttachBuffer
+	} else if !d.bytes {
+		r = dBytesDetach
+	} else if d.zeroCopy {
+		r = dBytesAttachViewZerocopy
+	} else {
+		r = dBytesAttachView
+	}
+	return
+}
+
+func (d *decoderBase) isAttachedReaderBytes(usingBuf bool) bool {
+	return usingBuf || !(d.bytes && d.zeroCopy)
+}
+
+// func (d *decoderBase) stringZC(v []byte, state dBytesAttachState) (s string) {
+// 	// This method is called a lot. Inlining helps with performance.
+// 	//
+// 	// MARKER: TUNED BELOW TO force inlining
+// 	// - inlined d.string(...)
+// 	// - remove if len(v) == 0 { check
+// 	// - used double indexing to eliminate inline cost of the addition (v[0]:v[0]+1)
+
+// 	// if len(v) == 0 {
+// 	// } else if len(v) == 1 {
+// 	if len(v) == 1 {
+// 		s = str4byte(v[0]) // str256[v[0]:][:1] // str256[v[0] : v[0]+1]
+// 		// s = unsafe.String((*byte)(unsafe.Add(unsafe.Pointer(unsafe.StringData(str256)), v[0])), 1)
+// 	} else if state == dBytesAttachViewZerocopy { // !scratchBuf && d.bytes && d.zeroCopy
+// 		s = stringView(v)
+// 	} else if d.is == nil || d.c != containerMapKey || len(v) > internMaxStrLen {
+// 		s = string(v)
+// 	} else {
+// 		s = d.is.string(v)
+// 	}
+// 	return
+// }
 
 // func (d *decoderBase) string(v []byte) (s string) {
 // 	if d.is == nil || d.c != containerMapKey || len(v) < 2 || len(v) > internMaxStrLen {
@@ -551,14 +615,14 @@ func (d *decoder[T]) selferUnmarshal(_ *decFnInfo, rv reflect.Value) {
 
 func (d *decoder[T]) binaryUnmarshal(_ *decFnInfo, rv reflect.Value) {
 	bm := rv2i(rv).(encoding.BinaryUnmarshaler)
-	xbs, _ := d.d.DecodeBytes(nil)
+	xbs, _ := d.d.DecodeBytes()
 	fnerr := bm.UnmarshalBinary(xbs)
 	halt.onerror(fnerr)
 }
 
 func (d *decoder[T]) textUnmarshal(_ *decFnInfo, rv reflect.Value) {
 	tm := rv2i(rv).(encoding.TextUnmarshaler)
-	fnerr := tm.UnmarshalText(bytesOk(d.d.DecodeStringAsBytes(nil)))
+	fnerr := tm.UnmarshalText(bytesOk(d.d.DecodeStringAsBytes()))
 	halt.onerror(fnerr)
 }
 
@@ -581,7 +645,7 @@ func (d *decoder[T]) raw(_ *decFnInfo, rv reflect.Value) {
 }
 
 func (d *decoder[T]) kString(_ *decFnInfo, rv reflect.Value) {
-	rvSetString(rv, d.stringZC(d.d.DecodeStringAsBytes(zeroByteSlice)))
+	rvSetString(rv, d.string(d.d.DecodeStringAsBytes()))
 }
 
 func (d *decoder[T]) kBool(_ *decFnInfo, rv reflect.Value) {
@@ -866,7 +930,7 @@ func (d *decoder[T]) kStructSimple(f *decFnInfo, rv reflect.Value) {
 		hasLen := containerLen >= 0
 		for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
 			d.mapElemKey()
-			rvkencname, _ := d.d.DecodeStringAsBytes(nil)
+			rvkencname, _ := d.d.DecodeStringAsBytes()
 			d.mapElemValue()
 			if si := ti.siForEncName(rvkencname); si != nil {
 				d.kStructField(si, rv)
@@ -928,7 +992,7 @@ func (d *decoder[T]) kStruct(f *decFnInfo, rv reflect.Value) {
 			d.mapElemKey()
 			// use if-else since <8 branches and we need good branch prediction for string
 			if tkt == valueTypeString {
-				rvkencname, _ = d.d.DecodeStringAsBytes(nil)
+				rvkencname, _ = d.d.DecodeStringAsBytes()
 			} else if tkt == valueTypeInt {
 				rvkencname = strconv.AppendInt(d.b[:0], d.d.DecodeInt64(), 10)
 			} else if tkt == valueTypeUint {
@@ -1282,7 +1346,7 @@ func (d *decoder[T]) kChan(f *decFnInfo, rv reflect.Value) {
 		if !(ti.rtid == uint8SliceTypId || ti.elemkind == uint8(reflect.Uint8)) {
 			halt.errorf("bytes/string in stream must decode into slice/array of bytes, not %v", ti.rt)
 		}
-		bs2, _ := d.d.DecodeBytes(nil)
+		bs2, _ := d.d.DecodeBytes()
 		irv := rv2i(rv)
 		ch, ok := irv.(chan<- byte)
 		if !ok {
@@ -1447,7 +1511,7 @@ func (d *decoder[T]) kMap(f *decFnInfo, rv reflect.Value) {
 	var kstr string
 
 	var mapKeyStringSharesBytesBuf bool
-	var usingBuf bool
+	var att dBytesAttachState
 
 	// Use a possibly transient (map) value (and key), to reduce allocation
 
@@ -1503,11 +1567,11 @@ func (d *decoder[T]) kMap(f *decFnInfo, rv reflect.Value) {
 		if d.d.TryNil() {
 			rvSetZero(rvk)
 		} else if ktypeIsString {
-			kstr2bs, usingBuf = d.d.DecodeStringAsBytes(nil)
+			kstr2bs, att = d.d.DecodeStringAsBytes()
 			if len(kstr2bs) == 1 {
 				kstr = str4byte(kstr2bs[0])
 			} else if len(kstr2bs) != 0 {
-				kstr, mapKeyStringSharesBytesBuf = d.bytes2Str(kstr2bs, usingBuf)
+				kstr, mapKeyStringSharesBytesBuf = d.bytes2Str(kstr2bs, att)
 			}
 			rvSetString(rvk, kstr)
 		} else {
@@ -1530,7 +1594,7 @@ func (d *decoder[T]) kMap(f *decFnInfo, rv reflect.Value) {
 					if len(kstr2bs) == 1 {
 						kstr = str4byte(kstr2bs[0])
 					} else if len(kstr2bs) != 0 {
-						kstr, mapKeyStringSharesBytesBuf = d.bytes2Str(kstr2bs, true)
+						kstr, mapKeyStringSharesBytesBuf = d.bytes2Str(kstr2bs, dBytesAttachView)
 					}
 					rvSetIntf(rvk, rv4istr(kstr))
 				}
@@ -1543,9 +1607,9 @@ func (d *decoder[T]) kMap(f *decFnInfo, rv reflect.Value) {
 		if d.d.TryNil() {
 			if mapKeyStringSharesBytesBuf {
 				if ktypeIsString {
-					rvSetString(rvk, d.string(kstr2bs))
+					rvSetString(rvk, d.string(kstr2bs, att))
 				} else { // ktypeIsIntf
-					rvSetIntf(rvk, rv4istr(d.string(kstr2bs)))
+					rvSetIntf(rvk, rv4istr(d.string(kstr2bs, att)))
 				}
 			}
 			// since a map, we have to set zero value if needed
@@ -1610,9 +1674,9 @@ func (d *decoder[T]) kMap(f *decFnInfo, rv reflect.Value) {
 	DECODE_VALUE_NO_CHECK_NIL:
 		if doMapSet && mapKeyStringSharesBytesBuf {
 			if ktypeIsString {
-				rvSetString(rvk, d.string(kstr2bs))
+				rvSetString(rvk, d.string(kstr2bs, att))
 			} else { // ktypeIsIntf
-				rvSetIntf(rvk, rv4istr(d.string(kstr2bs)))
+				rvSetIntf(rvk, rv4istr(d.string(kstr2bs, att)))
 			}
 		}
 		if vbuiltin {
@@ -1998,7 +2062,7 @@ func (d *decoder[T]) decode(iv interface{}) {
 		}
 		d.decodeValue(v, nil)
 	case *string:
-		*v = d.stringZC(d.d.DecodeStringAsBytes(nil))
+		*v = d.string(d.d.DecodeStringAsBytes())
 	case *bool:
 		*v = d.d.DecodeBool()
 	case *int:
@@ -2165,11 +2229,8 @@ func (d *decoderBase) depthDecr() {
 // It ensures that `in` is not a nil byte, before calling decDriver.DecodeBytes,
 // as decDriver.DecodeBytes treats a nil as a hint to use its internal scratch buffer.
 func (d *decoder[T]) decodeBytesInto(in []byte) (v []byte) {
-	if in == nil {
-		in = zeroByteSlice
-	}
-	v, _ = d.d.DecodeBytes(in)
-	return
+	v, att := d.d.DecodeBytes()
+	return d.detach2Bytes(v, in, att)
 }
 
 func (d *decoder[T]) rawBytes() (v []byte) {
