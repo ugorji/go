@@ -446,19 +446,19 @@ type decoderBase struct {
 
 	blist bytesFreeList
 
-	mtr bool // is maptype a known type?
-	str bool // is slicetype a known type?
+	mtr  bool // is maptype a known type?
+	str  bool // is slicetype a known type?
+	jsms bool // is json handle, and MapKeyAsString
 
 	// be   bool // is binary encoding
 	// js   bool // is json handle
 	// cbor bool // is cbor handle
 	// cbreak bool // is a check breaker
 
-	jsms bool // is json handle, and MapKeyAsString
-
 	bytes bool // uses a bytes reader
+	bufio bool // uses a ioDecReader with buffer size > 0
 
-	zeroCopy bool
+	// zeroCopy bool
 
 	// ---- cpu cache line boundary?
 	// ---- writable fields during execution --- *try* to keep in sep cache line
@@ -503,6 +503,12 @@ func (d *decoderBase) fauxUnionReadRawBytes(dr decDriverI, asString, rawToString
 		d.n.s = d.string(d.n.l, d.n.a)
 	} else {
 		d.n.v = valueTypeBytes
+		// MARKER 2025 - I think we should we handle the raw bytes here?
+		// d.n.l = d.detach2Bytes(d.n.l, nil, d.n.a)
+
+		// out := make([]byte, len(d.n.l))
+		// copy(out, d.n.l)
+		// d.n.l = out
 	}
 }
 
@@ -531,6 +537,7 @@ func (d *decoderBase) fauxUnionReadRawBytes(dr decDriverI, asString, rawToString
 // }
 
 func (d *decoderBase) string(v []byte, state dBytesAttachState) (s string) {
+	// defer func() { debugf("d.string: (%d) %s", hlWHITE, len(s), s) }()
 	// note: string([]byte) checks - and optimizes - for len 0 and len 1
 	if len(v) <= 1 {
 		s = string(v)
@@ -562,7 +569,7 @@ func (d *decoderBase) attachState(usingBufFromReader bool) (r dBytesAttachState)
 		r = dBytesAttachBuffer
 	} else if !d.bytes {
 		r = dBytesDetach
-	} else if d.zeroCopy {
+	} else if d.h.ZeroCopy {
 		r = dBytesAttachViewZerocopy
 	} else {
 		r = dBytesAttachView
@@ -570,9 +577,9 @@ func (d *decoderBase) attachState(usingBufFromReader bool) (r dBytesAttachState)
 	return
 }
 
-func (d *decoderBase) isAttachedReaderBytes(usingBuf bool) bool {
-	return usingBuf || !(d.bytes && d.zeroCopy)
-}
+// func (d *decoderBase) isAttachedReaderBytes(usingBuf bool) bool {
+// 	return usingBuf || !(d.bytes && d.zeroCopy)
+// }
 
 // func (d *decoderBase) stringZC(v []byte, state dBytesAttachState) (s string) {
 // 	// This method is called a lot. Inlining helps with performance.
@@ -1626,6 +1633,23 @@ func (d *decoder[T]) kMap(f *decFnInfo, rv reflect.Value) {
 
 		d.mapElemValue()
 
+		// TryNil will try to read from the stream and check if a nil marker.
+		//
+		// When using ioDecReader (specifically in bufio mode), this TryNil call could
+		// override part of the buffer used for the string key
+		//
+		// To mitigate this, we do a special check for ioDecReader in bufio mode.
+		//
+		// MARKER 2025
+		if mapKeyStringSharesBytesBuf && d.bufio {
+			if ktypeIsString {
+				rvSetString(rvk, d.string(kstr2bs, att))
+			} else { // ktypeIsIntf
+				rvSetIntf(rvk, rv4istr(d.string(kstr2bs, att)))
+			}
+			mapKeyStringSharesBytesBuf = false
+		}
+
 		if d.d.TryNil() {
 			if mapKeyStringSharesBytesBuf {
 				if ktypeIsString {
@@ -1757,7 +1781,7 @@ func (d *decoder[T]) init(h Handle) {
 	callMake(&d.d)
 	d.hh = h
 	d.h = h.getBasicHandle()
-	d.zeroCopy = d.h.ZeroCopy
+	// d.zeroCopy = d.h.ZeroCopy
 	// d.be = h.isBinary()
 	d.err = errDecoderNotInitialized
 
@@ -1774,6 +1798,7 @@ func (d *decoder[T]) init(h Handle) {
 		d.rtidFn = &d.h.rtidFnsDecBytes
 		d.rtidFnNoExt = &d.h.rtidFnsDecNoExtBytes
 	} else {
+		d.bufio = d.h.ReaderBufferSize > 0
 		d.rtidFn = &d.h.rtidFnsDecIO
 		d.rtidFnNoExt = &d.h.rtidFnsDecNoExtIO
 	}
@@ -2588,10 +2613,12 @@ func isDecodeable(rv reflect.Value) (canDecode bool, reason decNotDecodeableReas
 //   - maxlen: max length to be returned.
 //     if <= 0, it is unset, and we infer it based on the unit size
 //   - unit: number of bytes for each element of the collection
-func decInferLen(clen int, maxlen, unit uint) uint {
+func decInferLen(clen int, maxlen, unit uint) (n uint) {
 	// anecdotal testing showed increase in allocation with map length of 16.
 	// We saw same typical alloc from 0-8, then a 20% increase at 16.
 	// Thus, we set it to 8.
+
+	// defer func() { debugf("decInferLen: clen/maxlen/unit=n: %d/%d/%d=%d", hlRED, clen, maxlen, unit, n) }()
 	const (
 		minLenIfUnset = 8
 		maxMem        = 1024 * 1024 // 1 MB Memory
@@ -2668,7 +2695,6 @@ func (helperDecDriver[T]) newDecoderBytes(in []byte, h Handle) *decoder[T] {
 
 func (helperDecDriver[T]) newDecoderIO(in io.Reader, h Handle) *decoder[T] {
 	var c1 decoder[T]
-	c1.bytes = false
 	c1.init(h)
 	c1.Reset(in)
 	return &c1

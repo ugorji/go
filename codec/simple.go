@@ -479,7 +479,7 @@ func (d *simpleDecDriver[T]) DecodeBytes() (bs []byte, state dBytesAttachState) 
 
 	clen := d.decLen()
 	d.bdRead = false
-	bs, cond = d.r.readxb(clen)
+	bs, cond = d.r.readxb(uint(clen))
 	state = d.d.attachState(cond)
 	return
 }
@@ -534,7 +534,7 @@ func (d *simpleDecDriver[T]) decodeExtV(verifyTag bool, xtagIn uint64) (xbs []by
 		if verifyTag && xtag != tag {
 			halt.errorf("wrong extension tag. Got %b. Expecting: %v", xtag, tag)
 		}
-		xbs, ok = d.r.readxb(l)
+		xbs, ok = d.r.readxb(uint(l))
 		bstate = d.d.attachState(ok)
 	case simpleVdByteArray, simpleVdByteArray + 1,
 		simpleVdByteArray + 2, simpleVdByteArray + 3, simpleVdByteArray + 4:
@@ -595,7 +595,12 @@ func (d *simpleDecDriver[T]) DecodeNaked() {
 		n.v = valueTypeExt
 		l := d.decLen()
 		n.u = uint64(d.r.readn1())
+		// MARKER 2025 - is it necessary to detach this (for extensions?)
 		n.l = d.r.readx(uint(l))
+		// var useBuf bool
+		// n.l, useBuf = d.r.readxb(uint(l))
+		// n.a = d.d.attachState(useBuf)
+		// n.l = d.d.detach2Bytes(n.l, nil, n.a)
 	case simpleVdArray, simpleVdArray + 1, simpleVdArray + 2,
 		simpleVdArray + 3, simpleVdArray + 4:
 		n.v = valueTypeArray

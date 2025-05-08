@@ -849,7 +849,7 @@ func (d *msgpackDecDriver[T]) DecodeBytes() (bs []byte, state dBytesAttachState)
 	}
 
 	d.bdRead = false
-	bs, cond = d.r.readxb(clen)
+	bs, cond = d.r.readxb(uint(clen))
 	state = d.d.attachState(cond)
 	return
 }
@@ -1049,7 +1049,7 @@ func (d *msgpackDecDriver[T]) decodeExtV(verifyTag bool, xtagIn uint64) (xbs []b
 		if verifyTag && xtag != tag {
 			halt.errorf("wrong extension tag - got %b, expecting %v", xtag, tag)
 		}
-		xbs, ok = d.r.readxb(clen)
+		xbs, ok = d.r.readxb(uint(clen))
 		bstate = d.d.attachState(ok)
 		// zerocopy = d.d.bytes
 	}

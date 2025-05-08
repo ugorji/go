@@ -966,7 +966,6 @@ type basicHandleRuntimeState struct {
 	// once initialized, it cannot be changed, as the function for encoding/decoding time.Time
 	// will have been cached and the TimeNotBuiltin value will not be consulted thereafter.
 	timeBuiltin bool
-	zeroCopy    bool
 	// _ bool // padding
 }
 
@@ -1080,7 +1079,6 @@ func (x *BasicHandle) basicInit() {
 		halt.onerror(errSliceTypeNotSliceKind)
 	}
 	x.timeBuiltin = !x.TimeNotBuiltin
-	x.zeroCopy = x.ZeroCopy
 }
 
 func (x *BasicHandle) init() {}

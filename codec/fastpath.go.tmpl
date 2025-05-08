@@ -358,7 +358,7 @@ func (helperDecDriver[T]) fastpathDecodeTypeSwitch(iv interface{}, d *decoder[T]
 			*v = nil
 		} else {
 			if *v == nil {
-				*v = make(map[{{ .MapKey }}]{{ .Elem }}, decInferLen(containerLen, d.h.MaxInitLen, {{ .Size }}))
+				*v = make(map[{{ .MapKey }}]{{ .Elem }}, decInferLen(containerLen, d.maxInitLen(), {{ .Size }}))
 			}
 			ft.{{ .MethodNamePfx "Dec" false }}L(*v, containerLen, d)
 		}
@@ -447,7 +447,7 @@ func (fastpathDT[T]) {{ .MethodNamePfx "Dec" false }}Y(v []{{ .Elem }}, d *decod
 	var xlen int 
 	if hasLen {
 		if containerLenS > cap(v) {
-			xlen = decInferLen(containerLenS, d.h.MaxInitLen, {{ .Size }})
+			xlen = int(decInferLen(containerLenS, d.maxInitLen(), {{ .Size }}))
 			if xlen <= cap(v) {
 				v = v[:uint(xlen)]
 			} else {
@@ -462,7 +462,7 @@ func (fastpathDT[T]) {{ .MethodNamePfx "Dec" false }}Y(v []{{ .Elem }}, d *decod
 	var j int
     for j = 0; d.containerNext(j, containerLenS, hasLen); j++ {
 		if j == 0 && len(v) == 0 { // means hasLen == false
-			xlen = decInferLen(containerLenS, d.h.MaxInitLen, {{ .Size }}) {{/* xlen = decDefSliceCap */}}
+			xlen = int(decInferLen(containerLenS, d.maxInitLen(), {{ .Size }})) {{/* xlen = decDefSliceCap */}}
 			v = make([]{{ .Elem }}, uint(xlen))
 			changed = true
 		}
@@ -546,7 +546,7 @@ func (d *decoder[T]) {{ .MethodNamePfx "fastpathDec" false }}R(f *decFnInfo, rv 
 	if rv.Kind() == reflect.Ptr {
 		vp, _ := rv2i(rv).(*map[{{ .MapKey }}]{{ .Elem }})
 		if *vp == nil {
-			*vp = make(map[{{ .MapKey }}]{{ .Elem }}, decInferLen(containerLen, d.h.MaxInitLen, {{ .Size }}))
+			*vp = make(map[{{ .MapKey }}]{{ .Elem }}, decInferLen(containerLen, d.maxInitLen(), {{ .Size }}))
 		}
 		if containerLen != 0 {
 			ft.{{ .MethodNamePfx "Dec" false }}L(*vp, containerLen, d)
@@ -563,7 +563,7 @@ func (f fastpathDT[T]) {{ .MethodNamePfx "Dec" false }}X(vp *map[{{ .MapKey }}]{
 		return
 	}
 	if *vp == nil {
-		*vp = make(map[{{ .MapKey }}]{{ .Elem }}, decInferLen(containerLen, d.h.MaxInitLen, {{ .Size }}))
+		*vp = make(map[{{ .MapKey }}]{{ .Elem }}, decInferLen(containerLen, d.maxInitLen(), {{ .Size }}))
 	}
 	if containerLen != 0 {
 		f.{{ .MethodNamePfx "Dec" false }}L(*vp, containerLen, d)

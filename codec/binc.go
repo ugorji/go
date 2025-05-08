@@ -754,7 +754,7 @@ func (d *bincDecDriver[T]) DecodeStringAsBytes() (bs []byte, state dBytesAttachS
 	switch d.vd {
 	case bincVdString, bincVdByteArray:
 		slen = d.decLen()
-		bs, cond = d.r.readxb(slen)
+		bs, cond = d.r.readxb(uint(slen))
 	case bincVdSymbol:
 		// zerocopy doesn't apply for symbols,
 		// as the values must be stored in a table for later use.
@@ -784,7 +784,7 @@ func (d *bincDecDriver[T]) DecodeStringAsBytes() (bs []byte, state dBytesAttachS
 			}
 			// As we are using symbols, do not store any part of
 			// the parameter bs in the map, as it might be a shared buffer.
-			bs, cond = d.r.readxb(slen)
+			bs, cond = d.r.readxb(uint(slen))
 			bs = d.d.detach2Bytes(bs, nil, d.d.attachState(cond))
 			d.s[symbol] = bs
 		}
@@ -825,7 +825,7 @@ func (d *bincDecDriver[T]) DecodeBytes() (bs []byte, state dBytesAttachState) {
 	}
 	clen := d.decLen()
 	d.bdRead = false
-	bs, cond = d.r.readxb(clen)
+	bs, cond = d.r.readxb(uint(clen))
 	state = d.d.attachState(cond)
 	return
 }
@@ -865,7 +865,7 @@ func (d *bincDecDriver[T]) decodeExtV(verifyTag bool, xtagIn uint64) (xbs []byte
 		if verifyTag && xtag != tag {
 			halt.errorf("wrong extension tag - got %b, expecting: %v", xtag, tag)
 		}
-		xbs, ok = d.r.readxb(l)
+		xbs, ok = d.r.readxb(uint(l))
 		bstate = d.d.attachState(ok)
 		// zerocopy = d.d.bytes
 	} else if d.vd == bincVdByteArray {

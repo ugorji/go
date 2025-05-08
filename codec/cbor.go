@@ -624,7 +624,7 @@ func (d *cborDecDriver[T]) DecodeBytes() (bs []byte, state dBytesAttachState) {
 	}
 	clen := d.decLen()
 	d.bdRead = false
-	bs, cond = d.r.readxb(clen)
+	bs, cond = d.r.readxb(uint(clen))
 	state = d.d.attachState(cond)
 	return
 }
