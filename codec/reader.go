@@ -16,9 +16,13 @@ import (
 // - Failures in doTestLargeContainerLen (all binary formats), and CborMammoth.
 // - reproduce by setting this to false
 // - seems something needs fixing in the tests or in the logic
-const marker2025IoDecReaderReadxbCopyBytes = false // true
+const marker2025IoDecReaderReadxbCopyBytes = false
 
 const marker2025IoDecReaderSkipUsingReadxb = false
+
+const marker2025IoDecReaderReadxbUsingHammer = false
+
+const marker2025IoDecReaderReadxbNoBufioNoDBuf = false
 
 // decReader abstracts the reading source, allowing implementations that can
 // read from an io.Reader or directly off a byte slice with zero-copying.
@@ -54,11 +58,12 @@ type decReaderI interface {
 	// skip any whitespace characters, and return the first non-matching byte
 	skipWhitespace() (token byte)
 
-	// jsonReadNum will include last read byte as first element of slice,
-	// and continue including numeric characters from the input stream
-	// until it sees a non-numeric char or EOF.
-	// If it sees a non-numeric character after the number, it will 'unread' that byte.
-	jsonReadNum() []byte
+	// jsonReadNum will read a sequence of numeric characters, checking from the last
+	// read byte. It will return a sequence of numeric characters (v),
+	// and the next token character (tok - returned separately),
+	//
+	// if an EOF is found before the next token is seen, it returns a token value of 0.
+	jsonReadNum() (v []byte, token byte)
 
 	// jsonReadAsisChars recognizes 2 terminal characters (" or \).
 	// jsonReadAsisChars will read json plain characters until it reaches a terminal char,
@@ -95,19 +100,7 @@ type decReaderI interface {
 	stopRecording() []byte
 }
 
-// ------------------------------------------------
-
-// rLastByteState goes from
-// - rLastByteInvalid --(u can store after read)--> rLastByteRead
-// - rLastByteRead    --(unread)-->        rLastByteUnread
-// - rLastByteUnread  --(read)-->  rLastByteRead
-type rLastByteState uint8
-
-const (
-	rLastByteInvalid rLastByteState = iota
-	rLastByteRead
-	rLastByteUnread
-)
+// // ------------------------------------------------
 
 const maxConsecutiveEmptyReads = 2 // MARKER 2025 (change to 64)
 
@@ -139,10 +132,9 @@ type ioDecReader struct {
 	done      bool // did we reach EOF and are we done?
 
 	// valid when: bufio=false
-	b  [1]byte        // tiny buffer for reading single byte (if z.br == nil)
-	ls rLastByteState // last byte state
-	l  byte           // last byte read
-	br io.ByteReader  // main reader used for ReadByte
+	b  [1]byte       // tiny buffer for reading single byte (if z.br == nil)
+	l  byte          // last byte read
+	br io.ByteReader // main reader used for ReadByte
 
 	// valid when: bufio=true
 	wc  uint // read cursor
@@ -252,12 +244,13 @@ func (z *ioDecReader) readOne() (b byte, err error) {
 
 // fillbuf reads a new chunk into the buffer.
 func (z *ioDecReader) fillbuf(bufsize uint) (numShift, numRead uint) {
-	// debugf("fillbuf: starting (%d): rc/wc/len: %d/%d/%d", hlBLUE, bufsize, z.rc, z.wc, len(z.buf))
+	// debugf("fillbuf: starting (%d): recc/rc/wc/len: %d/%d/%d/%d", hlBLUE, bufsize, z.recc, z.rc, z.wc, len(z.buf))
 	// debugf("ioDecReader.fillbuf 0: recording: %v, recc: %d, rc: %d, wc: %d, err: %v",
 	// 	hlGREEN, z.recording, z.recc, z.rc, z.wc, z.err)
 	// defer func() {
-	// 	debugf("ioDecReader.fillbuf 1: recording: %v, rc: %d, wc: %d, err: %v, len(buf): %d, cap(buf): %d",
-	// 		hlGREEN, z.recording, z.rc, z.wc, z.err, len(z.buf), cap(z.buf))
+	// 	debugf("fillbuf: recording/recc/rc/wc/len/cap: %v %d/%d/%d %d/%d", hlBLUE, z.recording, z.recc, z.rc, z.wc, len(z.buf), cap(z.buf))
+	// 	// debugf("ioDecReader.fillbuf 1: recording: %v, rc: %d, wc: %d, err: %v, len(buf): %d, cap(buf): %d",
+	// 	// 	hlGREEN, z.recording, z.rc, z.wc, z.err, len(z.buf), cap(z.buf))
 	// 	debugf("\tbuf: %s", hlGREEN, z.buf[z.rc:min(z.rc+256, z.wc)])
 	// }()
 
@@ -340,7 +333,7 @@ func (z *ioDecReader) readb(bs []byte) {
 		return
 	}
 	var err error
-	bs0 := bs
+	// bs0 := bs
 	// defer func() { debugf("io.DecReader.readb: bs: %s, returning with err: %v", hlRED, bs0, err) }()
 	var n int
 	if z.bufio {
@@ -362,23 +355,15 @@ func (z *ioDecReader) readb(bs []byte) {
 	// -------- NOT BUFIO ------
 
 	var nn uint
-	// bs0 := bs
-	if z.ls == rLastByteUnread {
-		z.ls = rLastByteInvalid
-		bs[0] = z.l
-		bs = bs[1:]
-		nn++
-	}
-
+	bs0 := bs
 READER:
 	n, err = z.r.Read(bs)
 	if n > 0 {
-		z.ls = rLastByteRead
 		z.l = bs[n-1]
+		nn += uint(n)
+		// debugf("io.DecReader.readb: read %d bytes out of %d requested, with err: %v", hlRED, n, len(bs), err)
+		bs = bs[n:]
 	}
-	nn += uint(n)
-	// debugf("io.DecReader.readb: read %d bytes out of %d requested, with err: %v", hlRED, n, len(bs), err)
-	bs = bs[n:]
 	if len(bs) != 0 && err == nil {
 		goto READER
 	}
@@ -423,19 +408,13 @@ func (z *ioDecReader) readn1() (b uint8) {
 
 	var err error
 	// bufsize = 0, so no buffering except if recording
-	if z.ls == rLastByteUnread {
-		b = z.l
-		z.ls = rLastByteInvalid
+	if z.rbr {
+		b, err = z.br.ReadByte()
 	} else {
-		if z.rbr {
-			b, err = z.br.ReadByte()
-		} else {
-			b, err = z.readOne()
-		}
-		halt.onerror(err)
-		z.l = b
-		z.ls = rLastByteRead
+		b, err = z.readOne()
 	}
+	halt.onerror(err)
+	z.l = b
 	z.n++
 	if z.recording {
 		z.buf = append(z.buf, b)
@@ -482,19 +461,61 @@ func (z *ioDecReader) readxb(n uint) (out []byte, useBuf bool) {
 	// 	return
 	// }
 
-	useBuf = true
-	var len2 uint
-	for len2 < n {
-		len3 := decInferLen(int(n-len2), z.maxInitLen, 1)
-		bs3 := out
-		newlen := len2 + len3
-		out = z.blist.putGet(out, int(newlen))
-		out = out[:newlen]
-		// out = make([]byte, len2+len3)
-		copy(out, bs3)
-		z.readb(out[len2:])
-		len2 = newlen
+	// MARKER 2025 - this works
+	if marker2025IoDecReaderReadxbUsingHammer {
+		useBuf = true
+		var len2 uint
+		for len2 < n {
+			len3 := decInferLen(int(n-len2), z.maxInitLen, 1)
+			bs3 := out
+			newlen := len2 + len3
+			out = z.blist.putGet(out, int(newlen))
+			out = out[:newlen]
+			// out = make([]byte, len2+len3)
+			copy(out, bs3)
+			z.readb(out[len2:])
+			len2 = newlen
+		}
+		// debugf("readxb.not-bufio (%v/%v): n/z.n %d/%d: %s ->%v", hlGREEN, len(out), cap(out), n, z.n, snip(out), snip(out))
+		return
 	}
+
+	if marker2025IoDecReaderReadxbNoBufioNoDBuf {
+		useBuf = false
+	} else {
+		useBuf = true
+		out = z.buf
+	}
+	r0 := uint(len(out))
+	r := r0
+	nn := int(n)
+	var n2 uint
+	// debugf("readxb.not-bufio before: n/nn/n2/len/cap %d/%d/%d/%d/%d", hlGREEN, n, nn, n2, len(out), cap(out))
+	for nn > 0 {
+		n2 = r + decInferLen(int(nn), z.maxInitLen, 1)
+		// debugf("readxb.not-bufio loop: r/n2/nn/len/cap %d/%d/%d/%d/%d", hlGREEN, r, n2, nn, len(out), cap(out))
+		if cap(out) < int(n2) {
+			out2 := z.blist.putGet(out, int(n2))[:n2] // make([]byte, len2+len3)
+			copy(out2, out)
+			out = out2
+		} else {
+			out = out[:n2]
+		}
+		n3, err := z.r.Read(out[r:n2])
+		if n3 > 0 {
+			z.l = out[r+uint(n3)-1]
+			nn -= n3
+			r = r + uint(n3)
+		}
+		// debugf("readxb.not-bufio loop: n/nn/n2/len/cap %d/%d/%d/%d/%d", hlGREEN, n, nn, n2, len(out), cap(out))
+		halt.onerror(err)
+	}
+	if !marker2025IoDecReaderReadxbNoBufioNoDBuf {
+		z.buf = out[:r0+n]
+	}
+	out = out[r0 : r0+n]
+	z.n += n
+	// debugf("readxb.not-bufio (%v/%v): n/z.n/nn %d/%d/%d: %s ->%v", hlGREEN, len(out), cap(out), n, z.n, nn, snip(out), snip(out))
 	return
 }
 
@@ -531,63 +552,95 @@ func (z *ioDecReader) skip(n uint) {
 
 	// -------- NOT BUFIO ------
 
-	if z.ls == rLastByteUnread {
-		z.ls = rLastByteInvalid
-		z.n++
-		n--
-	}
-	var r, n2 uint
-	var n3 int
 	var out []byte
 	if z.recording {
 		out = z.buf
 	} else {
 		out = z.blist.get(int(decInferLen(int(n), z.maxInitLen, 1)))
 	}
-	var err error
-	for n > 0 {
-		halt.onerror(err)
+
+	var r, n2 uint
+	nn := int(n)
+	for nn > 0 {
+		n2 = uint(nn)
 		if z.recording {
 			r = uint(len(out))
-			len3 := decInferLen(int(n), z.maxInitLen, 1)
-			n2 = r + len3
+			n2 = r + decInferLen(int(nn), z.maxInitLen, 1)
 			if cap(out) < int(n2) {
-				out2 := z.blist.putGet(out, int(n2))[:n2]
-				// out = make([]byte, len2+len3)
+				out2 := z.blist.putGet(out, int(n2))[:n2] // make([]byte, len2+len3)
 				copy(out2, out)
 				out = out2
 			} else {
 				out = out[:n2]
 			}
 		}
-		n3, err = z.r.Read(out[r:])
-		n2 = uint(n3)
-		if n2 > 0 {
-			z.ls = rLastByteRead
-			z.l = out[r+n2-1]
+		n3, err := z.r.Read(out[r:n2])
+		if n3 > 0 {
+			z.l = out[r+uint(n3)-1]
+			z.n += uint(n3)
+			nn -= n3
 		}
-		z.wc += n2
-		z.rc += n2
-		z.n += n2
-		n -= n2
+		// debugf("readxb.not-bufio loop: n/nn/n2/rc/wc/cap %d/%d/%d/%d/%d/%d",
+		// 	hlGREEN, n, nn, n2, z.rc, z.wc, cap(out))
+		halt.onerror(err)
 	}
+	// debugf("readxb.not-bufio (cap: %v): wc/rc/n/rc+n/z.n/nn %d/%d/%d/%d/%d/%d",
+	// 	hlGREEN, cap(out), z.wc, z.rc, n, z.rc+n, z.n, nn)
 	if z.recording {
 		z.buf = out
 	}
+	return
+
+	// var r, n2 uint
+	// var n3 int
+	// var out []byte
+	// if z.recording {
+	// 	out = z.buf
+	// } else {
+	// 	out = z.blist.get(int(decInferLen(int(n), z.maxInitLen, 1)))
+	// }
+	// var err error
+	// for n > 0 {
+	// 	halt.onerror(err)
+	// 	if z.recording {
+	// 		r = uint(len(out))
+	// 		n2 = r + decInferLen(int(n), z.maxInitLen, 1)
+	// 		if cap(out) < int(n2) {
+	// 			out2 := z.blist.putGet(out, int(n2))[:n2]
+	// 			// out = make([]byte, len2+len3)
+	// 			copy(out2, out)
+	// 			out = out2
+	// 		} else {
+	// 			out = out[:n2]
+	// 		}
+	// 	}
+	// 	n3, err = z.r.Read(out[r:])
+	// 	n2 = uint(n3)
+	// 	if n2 > 0 {
+	// 		z.l = out[r+n2-1]
+	// 	}
+	// 	z.wc += n2
+	// 	z.rc += n2
+	// 	z.n += n2
+	// 	n -= n2
+	// }
+	// if z.recording {
+	// 	z.buf = out
+	// }
 }
 
 // ---- JSON SPECIFIC HELPERS HERE ----
 
-func (z *ioDecReader) jsonReadNum() (bs []byte) {
+func (z *ioDecReader) jsonReadNum() (bs []byte, token byte) {
 	// defer func() { debugf("jsonReadNum: %s", hlBLUE, bs) }()
 	// unread current byte (or just use it as its cached)
-	var start, pos uint
+	var start, pos, end uint
 	// defer func() {
-	// 	debugf("jsonReadNum: returning %d/%d [%d:%d] bs(%d): %s", hlYELLOW, z.rc, z.wc, start, pos, len(bs), bs)
+	// 	debugf("jsonReadNum: returning rc/wc %d/%d start:pos [%d:%d] bs(%d): %s", hlYELLOW, z.rc, z.wc, start, pos, len(bs), bs)
 	// }()
 	if z.bufio {
 		// debug.PrintStack()
-		// debugf("jsonReadNum: start: %d/%d", hlGREEN, z.rc, z.wc)
+		// debugf("jsonReadNum: start: rc/wc/len(buf) %d/%d/%d", hlGREEN, z.rc, z.wc, len(z.buf))
 		// read and fill into buf, then take substring
 		start = z.rc - 1 // include last byte read
 		pos = start
@@ -595,34 +648,33 @@ func (z *ioDecReader) jsonReadNum() (bs []byte) {
 		if pos == z.wc {
 			// debugf("jsonReadNum: pos: %d, z.err: (%T) %v", hlGREEN, pos, z.err, z.err)
 			if z.done {
+				end = pos
 				goto END
 			}
 			numshift, numread := z.fillbuf(0)
 			start -= numshift
 			pos -= numshift
 			if numread == 0 {
+				end = pos
 				goto END
 			}
 		}
-		if isNumberChar(z.buf[pos]) {
-			pos++
+		token = z.buf[pos]
+		pos++
+		if isNumberChar(token) {
 			goto BUFIO
 		}
+		end = pos - 1
 	END:
 		z.n += (pos - z.rc)
 		z.rc = pos
-		return z.buf[start:pos]
+		return z.buf[start:end], token
 	}
 
-	// ls == Unread iff jsonReadNum was just called, which is impossible.
-	// consequently, the last byte here is always valid
+	// if not recording, add the last read byte into buf
 	if !z.recording {
 		z.buf = append(z.buf, z.l)
 	}
-	// if !z.recording && z.ls == rLastByteRead {
-	// 	z.ls = rLastByteInvalid // MARKER 2025 should this be included?
-	// 	z.buf = append(z.buf, z.l)
-	// }
 	start = uint(len(z.buf) - 1) // incl last byte in z.buf
 	var b byte
 	var err error
@@ -634,20 +686,17 @@ READER:
 		b, err = z.readOne()
 	}
 	if err == io.EOF {
-		return z.buf[start:]
+		return z.buf[start:], 0
 	}
 	// debugf("ioDecReader.jsonReadNum: error: %v", hlRED, err)
 	halt.onerror(err)
 	z.l = b
-	z.ls = rLastByteRead
 	z.n++
 	z.buf = append(z.buf, b)
 	if isNumberChar(b) {
 		goto READER
 	}
-	z.ls = rLastByteUnread
-	z.n--
-	return z.buf[start : len(z.buf)-1]
+	return z.buf[start : len(z.buf)-1], b
 }
 
 func (z *ioDecReader) skipWhitespace() (tok byte) {
@@ -666,8 +715,8 @@ func (z *ioDecReader) skipWhitespace() (tok byte) {
 			}
 		}
 		tok = z.buf[pos]
+		pos++
 		if isWhitespaceChar(tok) {
-			pos++
 			goto BUFIO
 		}
 		z.n += (pos - z.rc)
@@ -684,14 +733,13 @@ READER:
 	}
 	halt.onerror(err)
 	z.n++
+	z.l = tok
 	if z.recording {
 		z.buf = append(z.buf, tok)
 	}
 	if isWhitespaceChar(tok) {
 		goto READER
 	}
-	z.ls = rLastByteRead
-	z.l = tok
 	return tok
 }
 
@@ -716,12 +764,12 @@ func (z *ioDecReader) readUntil(stop1, stop2 byte) (bs []byte, tok byte) {
 			}
 		}
 		tok = z.buf[pos]
+		pos++
 		if tok == stop1 || tok == stop2 {
 			z.n += (pos - z.rc)
 			z.rc = pos
-			return z.buf[start:pos], tok
+			return z.buf[start : pos-1], tok
 		}
-		pos++
 		goto BUFIO
 	}
 
@@ -736,10 +784,9 @@ READER:
 	halt.onerror(err)
 	// debugf("readUntil: tok: %c", hlWHITE, tok)
 	z.n++
+	z.l = tok
 	z.buf = append(z.buf, tok)
 	if tok == stop1 || tok == stop2 {
-		z.ls = rLastByteRead
-		z.l = tok
 		return z.buf[start : len(z.buf)-1], tok
 	}
 	goto READER
@@ -762,7 +809,7 @@ func (z *ioDecReader) startRecording() {
 	// always include last byte read
 	if z.bufio {
 		z.recc = z.rc - 1
-	} else if z.ls == rLastByteRead {
+	} else {
 		z.buf = append(z.buf[:0], z.l)
 	}
 	// debugf("startRecording called at recc: %d, rc: %d", hlGREEN, z.recc, z.rc)
@@ -911,21 +958,44 @@ func (z *bytesDecReader) readn8() (bs [8]byte) {
 	return
 }
 
-func (z *bytesDecReader) jsonReadNum() []byte {
-	z.c-- // unread
-	i := z.c
+func (z *bytesDecReader) jsonReadNum() (bs []byte, token byte) {
+	start := z.c - 1 // include last byte
+	i := start
 LOOP:
 	// gracefully handle end of slice, as end of stream is meaningful here
-	if i < uint(len(z.b)) && isNumberChar(z.b[i]) {
-		i++
-		goto LOOP
+	if i < uint(len(z.b)) {
+		if isNumberChar(z.b[i]) {
+			i++
+			goto LOOP
+		}
+		token = z.b[i]
 	}
-	z.c, i = i, z.c
+	z.c = i + 1
+	bs = z.b[start:i]
+	// debugf("jsonReadNum: returning tok: %c AND bs: [%s]", hlRED, token, bs)
+	// debug.PrintStack()
 	// MARKER 2025 - re-validate this below
 	// MARKER: 20230103: byteSliceOf here prevents inlining of jsonReadNum
 	// return byteSliceOf(z.b, i, z.c)
-	return z.b[i:z.c]
+	return
 }
+
+// func (z *bytesDecReader) jsonReadNum() (bs []byte, token byte) {
+// 	z.c-- // unread
+// 	i := z.c
+// LOOP:
+// 	// gracefully handle end of slice, as end of stream is meaningful here
+// 	if i < uint(len(z.b)) && isNumberChar(z.b[i]) {
+// 		i++
+// 		goto LOOP
+// 	}
+// 	if i == uint(len(z.b))
+// 	z.c, i = i, z.c
+// 	// MARKER 2025 - re-validate this below
+// 	// MARKER: 20230103: byteSliceOf here prevents inlining of jsonReadNum
+// 	// return byteSliceOf(z.b, i, z.c)
+// 	return z.b[i:z.c]
+// }
 
 func (z *bytesDecReader) jsonReadAsisChars() (bs []byte, token byte) {
 	i := z.c

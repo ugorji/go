@@ -708,17 +708,17 @@ func (d *jsonDecDriver[T]) readDelimError(xc uint8) {
 // and passing slice also might cause allocation of the bs array on the heap.
 
 func (d *jsonDecDriver[T]) checkLit3(got, expect [3]byte) {
-	d.tok = 0
 	if jsonValidateSymbols && got != expect {
 		jsonCheckLitErr3(got, expect)
 	}
+	d.tok = 0
 }
 
 func (d *jsonDecDriver[T]) checkLit4(got, expect [4]byte) {
-	d.tok = 0
 	if jsonValidateSymbols && got != expect {
 		jsonCheckLitErr4(got, expect)
 	}
+	d.tok = 0
 }
 
 // MARKER: checkLitErr methods to prevent the got/expect parameters from escaping
@@ -738,7 +738,9 @@ func (d *jsonDecDriver[T]) skipWhitespace() {
 }
 
 func (d *jsonDecDriver[T]) advance() {
-	if d.tok == 0 {
+	// if d.tok == 0 { // MARKER 2025
+	// handles jsonReadNum returning possibly non-printable value as tok
+	if d.tok < 33 {
 		d.skipWhitespace()
 	}
 }
@@ -759,7 +761,7 @@ func (d *jsonDecDriver[T]) nextValueBytes() []byte {
 	// cursor = d.d.rb.c - 1 // cursor starts just before non-whitespace token
 	switch d.tok {
 	default:
-		d.r.jsonReadNum()
+		_, d.tok = d.r.jsonReadNum()
 	case 'n':
 		d.checkLit3([3]byte{'u', 'l', 'l'}, d.r.readn3())
 	case 'f':
@@ -768,6 +770,7 @@ func (d *jsonDecDriver[T]) nextValueBytes() []byte {
 		d.checkLit3([3]byte{'r', 'u', 'e'}, d.r.readn3())
 	case '"':
 		consumeString()
+		d.tok = 0
 	case '{', '[':
 		var elem struct{}
 		var stack []struct{}
@@ -785,16 +788,15 @@ func (d *jsonDecDriver[T]) nextValueBytes() []byte {
 				stack = stack[:len(stack)-1]
 			}
 		}
+		d.tok = 0
 	}
-	d.tok = 0
-
 	return d.r.stopRecording()
 }
 
 func (d *jsonDecDriver[T]) TryNil() bool {
 	d.advance()
-	// we shouldn't try to see if quoted "null" was here, right?
-	// only the plain string: `null` denotes a nil (ie not quotes)
+	// we don't try to see if quoted "null" was here.
+	// only the plain string: null denotes a nil (ie not quotes)
 	if d.tok == 'n' {
 		d.checkLit3([3]byte{'u', 'l', 'l'}, d.r.readn3())
 		return true
@@ -869,12 +871,12 @@ func (d *jsonDecDriver[T]) decNumBytes() (bs []byte) {
 	d.advance()
 	if d.tok == '"' {
 		bs = d.r.jsonReadUntilDblQuote()
+		d.tok = 0
 	} else if d.tok == 'n' {
 		d.checkLit3([3]byte{'u', 'l', 'l'}, d.r.readn3())
 	} else {
-		bs = d.r.jsonReadNum()
+		bs, d.tok = d.r.jsonReadNum()
 	}
-	d.tok = 0
 	return
 }
 
@@ -882,7 +884,7 @@ func (d *jsonDecDriver[T]) DecodeUint64() (u uint64) {
 	b := d.decNumBytes()
 	u, neg, ok := parseInteger_bytes(b)
 	if neg {
-		halt.errorStr("negative number cannot be decoded as uint64")
+		halt.errorf("negative number cannot be decoded as uint64: %s", any(b))
 	}
 	if !ok {
 		halt.onerror(strconvParseErr(b, "ParseUint"))
@@ -962,14 +964,14 @@ func (d *jsonDecDriver[T]) decBytesFromArray(bs []byte) []byte {
 	}
 	d.tok = 0
 	bs = append(bs, uint8(d.DecodeUint64()))
-	d.tok = d.r.skipWhitespace() // skip(&whitespaceCharBitset)
+	d.advance()
 	for d.tok != ']' {
 		if d.tok != ',' {
 			halt.errorByte("read array element - expect char ',' but got char: ", d.tok)
 		}
 		d.tok = 0
 		bs = append(bs, uint8(chkOvf.UintV(d.DecodeUint64(), 8)))
-		d.tok = d.r.skipWhitespace() // skip(&whitespaceCharBitset)
+		d.advance()
 	}
 	d.tok = 0
 	return bs
@@ -982,11 +984,12 @@ func (d *jsonDecDriver[T]) DecodeBytes() (bs []byte, state dBytesAttachState) {
 		d.checkLit3([3]byte{'u', 'l', 'l'}, d.r.readn3())
 		return
 	}
+	state = dBytesAttachBuffer
 	// if decoding into raw bytes, and the RawBytesExt is configured, use it to decode.
 	if d.rawext {
+		d.buf = d.buf[:0]
 		d.dec.interfaceExtConvertAndDecode(&d.buf, d.h.RawBytesExt)
 		bs = d.buf
-		state = dBytesAttachBuffer
 		return
 	}
 	// check if an "array" of uint8's (see ContainerType for how to infer if an array)
@@ -994,14 +997,12 @@ func (d *jsonDecDriver[T]) DecodeBytes() (bs []byte, state dBytesAttachState) {
 		// bsOut, _ = fastpathTV.DecSliceUint8V(bs, true, d.d)
 		bs = d.decBytesFromArray(d.buf[:0])
 		d.buf = bs
-		state = dBytesAttachBuffer
 		return
 	}
 
 	// base64 encodes []byte{} as "", and we encode nil []byte as null.
 	// Consequently, base64 should decode null as a nil []byte, and "" as an empty []byte{}.
 
-	state = dBytesAttachBuffer
 	d.ensureReadingString()
 	bs1 := d.readUnescapedString()
 	slen := base64.StdEncoding.DecodedLen(len(bs1))
@@ -1049,8 +1050,7 @@ func (d *jsonDecDriver[T]) DecodeStringAsBytes() (bs []byte, state dBytesAttachS
 		bs = jsonLitb[jsonLitT : jsonLitT+4]
 	default:
 		// try to parse a valid number
-		d.tok = 0
-		bs = d.r.jsonReadNum()
+		bs, d.tok = d.r.jsonReadNum()
 		state = d.d.attachState(!d.d.bytes)
 	}
 	return
@@ -1074,7 +1074,7 @@ func (d *jsonDecDriver[T]) dblQuoteStringAsBytes() (buf []byte, usingBuf bool) {
 
 	bs, c := d.r.jsonReadAsisChars()
 	if c == '"' {
-		return bs, false
+		return bs, !d.d.bytes
 	}
 
 	checkUtf8 := d.h.ValidateUnicode
@@ -1220,8 +1220,7 @@ func (d *jsonDecDriver[T]) DecodeNaked() {
 			z.s = d.d.string(bs, att)
 		}
 	default: // number
-		bs = d.r.jsonReadNum()
-		d.tok = 0
+		bs, d.tok = d.r.jsonReadNum()
 		if len(bs) == 0 {
 			halt.errorStr("decode number from empty string")
 		}

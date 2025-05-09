@@ -65,6 +65,22 @@ const (
 	dBytesDetach                               // (!bytes && !buf)
 )
 
+func (x dBytesAttachState) String() string {
+	switch x {
+	case dBytesAttachInvalid:
+		return "invalid"
+	case dBytesAttachView:
+		return "view"
+	case dBytesAttachBuffer:
+		return "buffer"
+	case dBytesAttachViewZerocopy:
+		return "view-zerocopy"
+	case dBytesDetach:
+		return "detach"
+	}
+	return "unknown"
+}
+
 const (
 	decDefMaxDepth         = 1024                // maximum depth
 	decDefChanCap          = 64                  // should be large, as cap cannot be expanded
@@ -955,7 +971,16 @@ func (d *decoder[T]) kStructSimple(f *decFnInfo, rv reflect.Value) {
 		hasLen := containerLen >= 0
 		for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
 			d.mapElemKey()
-			rvkencname, _ := d.d.DecodeStringAsBytes()
+			rvkencname, att := d.d.DecodeStringAsBytes()
+			// In JSON, mapElemValue reads a colon and spaces, which could
+			// mess with the buffer.
+			//
+			// MARKER 2025
+			// debugf("kStructSimple: key, state: %s, %s", hlBLUE, rvkencname, att)
+			if d.bufio && d.h.jsonHandle {
+				// att = dBytesAttachView // MARKER 2025 - hack for this to work
+				rvkencname = d.detach2Bytes(rvkencname, nil, att)
+			}
 			d.mapElemValue()
 			if si := ti.siForEncName(rvkencname); si != nil {
 				d.kStructField(si, rv)
@@ -1012,12 +1037,19 @@ func (d *decoder[T]) kStruct(f *decFnInfo, rv reflect.Value) {
 			name2 = make([]byte, 0, 16)
 		}
 		var rvkencname []byte
+		var att dBytesAttachState
 		tkt := ti.keyType
 		for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
 			d.mapElemKey()
 			// use if-else since <8 branches and we need good branch prediction for string
 			if tkt == valueTypeString {
-				rvkencname, _ = d.d.DecodeStringAsBytes()
+				rvkencname, att = d.d.DecodeStringAsBytes()
+				// In JSON, mapElemValue reads a colon and spaces, which could
+				// mess with the buffer.
+				if d.bufio && d.h.jsonHandle {
+					// att = dBytesAttachView // MARKER 2025 - hack for this to work
+					rvkencname = d.detach2Bytes(rvkencname, nil, att)
+				}
 			} else if tkt == valueTypeInt {
 				rvkencname = strconv.AppendInt(d.b[:0], d.d.DecodeInt64(), 10)
 			} else if tkt == valueTypeUint {
@@ -1631,8 +1663,6 @@ func (d *decoder[T]) kMap(f *decFnInfo, rv reflect.Value) {
 			}
 		}
 
-		d.mapElemValue()
-
 		// TryNil will try to read from the stream and check if a nil marker.
 		//
 		// When using ioDecReader (specifically in bufio mode), this TryNil call could
@@ -1649,6 +1679,8 @@ func (d *decoder[T]) kMap(f *decFnInfo, rv reflect.Value) {
 			}
 			mapKeyStringSharesBytesBuf = false
 		}
+
+		d.mapElemValue()
 
 		if d.d.TryNil() {
 			if mapKeyStringSharesBytesBuf {
