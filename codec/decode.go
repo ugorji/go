@@ -82,9 +82,9 @@ func (x dBytesAttachState) String() string {
 }
 
 const (
-	decDefMaxDepth         = 1024                // maximum depth
-	decDefChanCap          = 64                  // should be large, as cap cannot be expanded
-	decScratchByteArrayLen = (8 + 2 + 2 + 1) * 8 // around cacheLineSize ie ~64, depending on Decoder size
+	decDefMaxDepth         = 1024        // maximum depth
+	decDefChanCap          = 64          // should be large, as cap cannot be expanded
+	decScratchByteArrayLen = (4 + 3) * 8 // around cacheLineSize ie ~64, depending on Decoder size
 
 	// MARKER: massage decScratchByteArrayLen to ensure xxxDecDriver structs fit within cacheLine*N
 
@@ -495,6 +495,10 @@ type decoderBase struct {
 	// b is an always-available scratch buffer used by Decoder and decDrivers.
 	// By being always-available, it can be used for one-off things without
 	// having to get from freelist, use, and return back to freelist.
+	//
+	// Use it for a narrow set of things e.g.
+	//   - binc uses it for parsing numbers, represented at 8 or less bytes
+	//   - uses as potential buffer for struct field names
 	b [decScratchByteArrayLen]byte
 
 	hh Handle
@@ -972,14 +976,18 @@ func (d *decoder[T]) kStructSimple(f *decFnInfo, rv reflect.Value) {
 		for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
 			d.mapElemKey()
 			rvkencname, att := d.d.DecodeStringAsBytes()
-			// In JSON, mapElemValue reads a colon and spaces, which could
-			// mess with the buffer.
+			// In JSON, mapElemValue reads a colon and spaces.
+			// In bufio mode of ioDecReader, fillbuf could overwrite the read buffer
+			// which readXXX() calls return sub-slices from.
 			//
-			// MARKER 2025
+			// Consequently, we detach the bytes in this special case.
+			//
+			// Note: ioDecReader (non-bufio) and bytesDecReader do not have
+			// this issue (as no fillbuf exists where bytes might be returned from).
+
 			// debugf("kStructSimple: key, state: %s, %s", hlBLUE, rvkencname, att)
 			if d.bufio && d.h.jsonHandle {
-				// att = dBytesAttachView // MARKER 2025 - hack for this to work
-				rvkencname = d.detach2Bytes(rvkencname, nil, att)
+				rvkencname = d.detach2Bytes(rvkencname, d.b[:], att)
 			}
 			d.mapElemValue()
 			if si := ti.siForEncName(rvkencname); si != nil {
@@ -1044,11 +1052,9 @@ func (d *decoder[T]) kStruct(f *decFnInfo, rv reflect.Value) {
 			// use if-else since <8 branches and we need good branch prediction for string
 			if tkt == valueTypeString {
 				rvkencname, att = d.d.DecodeStringAsBytes()
-				// In JSON, mapElemValue reads a colon and spaces, which could
-				// mess with the buffer.
+				// In JSON, mapElemValue reads a colon and spaces, which could overwrite read buffer.
 				if d.bufio && d.h.jsonHandle {
-					// att = dBytesAttachView // MARKER 2025 - hack for this to work
-					rvkencname = d.detach2Bytes(rvkencname, nil, att)
+					rvkencname = d.detach2Bytes(rvkencname, d.b[:], att)
 				}
 			} else if tkt == valueTypeInt {
 				rvkencname = strconv.AppendInt(d.b[:0], d.d.DecodeInt64(), 10)
