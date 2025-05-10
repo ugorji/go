@@ -195,8 +195,9 @@ func TestCborGoldens(t *testing.T) {
 		t.FailNow()
 	}
 	jh := testJsonH // new(JsonHandle)
-	defer func(v reflect.Type) { jh.MapType = v }(jh.MapType)
+	defer func(v reflect.Type, b bool) { jh.MapType, jh.SignedInteger = v, b }(jh.MapType, jh.SignedInteger)
 	jh.MapType = testMapStrIntfTyp
+	jh.SignedInteger = false
 
 	// d := NewDecoder(f, jh)
 	// d := NewDecoder(bufio.NewReader(f), jh)
@@ -406,12 +407,15 @@ func TestCborSkipTags(t *testing.T) {
 	}
 
 	var h = testCborH // &CborHandle{}
-	defer func(a, b, c bool) {
+	defer func(a, b, c, d, e bool) {
 		h.SkipUnexpectedTags, h.Canonical, h.ZeroCopy = a, b, c
-	}(h.SkipUnexpectedTags, h.Canonical, h.ZeroCopy)
+		h.SignedInteger, h.StructToArray = d, e
+	}(h.SkipUnexpectedTags, h.Canonical, h.ZeroCopy, h.SignedInteger, h.StructToArray)
 	h.SkipUnexpectedTags = true
 	h.Canonical = true
 	h.ZeroCopy = false // so we can reuse the w.b slice without worrying about sharedBytes
+	h.SignedInteger = false
+	h.StructToArray = false
 
 	var gold []byte
 	NewEncoderBytes(&gold, h).MustEncode(v)

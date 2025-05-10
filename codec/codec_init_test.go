@@ -6,6 +6,7 @@ package codec
 import (
 	"bytes"
 	"io"
+	"slices"
 	// using codec.XXX directly
 	// . "github.com/ugorji/go/codec"
 )
@@ -62,7 +63,10 @@ var (
 func init() {
 	// doTestInit()
 	testPreInitFns = append(testPreInitFns, doTestInit)
-	testReInitFns = append(testReInitFns, doTestInit)
+	// doTestInit MUST be the first function executed during a reinit
+	testReInitFns = slices.Insert(testReInitFns, 0, doTestInit)
+	// testReInitFns = slices.Insert(testReInitFns, 0, doTestReinit)
+	// testReInitFns = append(testReInitFns, doTestInit)
 }
 
 func doTestInit() {
@@ -83,6 +87,18 @@ func doTestInit() {
 
 	testHEDs = nil
 }
+
+// func doTestReinit() {
+// 	// doTestInit()
+// 	// MARKER 2025 - instead, just reset them all
+// 	for _, h := range testHandles {
+// 		bh := testBasicHandle(h)
+// 		bh.basicHandleRuntimeState = basicHandleRuntimeState{}
+// 		atomic.StoreUint32(&bh.inited, 0)
+// 		initHandle(h)
+// 	}
+// 	testHEDs = nil
+// }
 
 func testHEDGet(h Handle) (d *testHED) {
 	for i := range testHEDs {

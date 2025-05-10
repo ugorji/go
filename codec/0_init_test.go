@@ -158,7 +158,7 @@ func testUpdateOptionsFromFlags() {
 func testUpdateHandleOptions() {
 	for _, v := range testHandles {
 		bh := testBasicHandle(v)
-		// bh.clearInited() // so it is reinitialized next time around // MARKER 2025
+		bh.clearInited() // so it is reinitialized next time around // MARKER 2025
 		// pre-fill them first
 		bh.EncodeOptions = testEncodeOptions
 		bh.DecodeOptions = testDecodeOptions

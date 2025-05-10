@@ -101,6 +101,7 @@ func testGroupResetFlags() {
 	testUseIoWrapper = false
 	testNumRepeatString = 8
 	testDepth = 0
+
 	testDecodeOptions = DecodeOptions{}
 	testEncodeOptions = EncodeOptions{}
 	testUpdateOptionsFromFlags()
@@ -388,10 +389,9 @@ func TestCodecSuite(t *testing.T) {
 
 	testGroupResetFlags()
 
-	testReinit() // so flag.Parse() is called first, and never called again
+	testReinit()
 
 	fnRun("optionsFalse", testCodecGroup)
-
 	testUseIoEncDec = 0
 	testUseReset = true
 	testUseParallel = true
