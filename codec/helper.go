@@ -219,9 +219,13 @@ const (
 	//
 	// Note: RPC tests depend on getting the error from an Encode/Decode call.
 	// Consequently, they will always fail if debugging = true.
+	//
+	// It is generally set to false
 	debugging = false
-	// if debugLogging is false, debugf calls will be a No-op
-	debugLogging = false // false // MARKER 2025
+	// if debugLogging is false, debugf calls will be a No-op.
+	//
+	// It is generally set to false
+	debugLogging = false
 
 	// containerLenUnknown is length returned from Read(Map|Array)Len
 	// when a format doesn't know apiori.
