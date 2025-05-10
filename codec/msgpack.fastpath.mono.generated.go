@@ -2895,7 +2895,7 @@ func (fastpathDTMsgpackBytes) DecSliceIntfY(v []interface{}, d *decoderMsgpackBy
 	var xlen int
 	if hasLen {
 		if containerLenS > cap(v) {
-			xlen = decInferLen(containerLenS, d.h.MaxInitLen, 16)
+			xlen = int(decInferLen(containerLenS, d.maxInitLen(), 16))
 			if xlen <= cap(v) {
 				v = v[:uint(xlen)]
 			} else {
@@ -2910,7 +2910,7 @@ func (fastpathDTMsgpackBytes) DecSliceIntfY(v []interface{}, d *decoderMsgpackBy
 	var j int
 	for j = 0; d.containerNext(j, containerLenS, hasLen); j++ {
 		if j == 0 && len(v) == 0 {
-			xlen = decInferLen(containerLenS, d.h.MaxInitLen, 16)
+			xlen = int(decInferLen(containerLenS, d.maxInitLen(), 16))
 			v = make([]interface{}, uint(xlen))
 			changed = true
 		}
@@ -2995,7 +2995,7 @@ func (fastpathDTMsgpackBytes) DecSliceStringY(v []string, d *decoderMsgpackBytes
 	var xlen int
 	if hasLen {
 		if containerLenS > cap(v) {
-			xlen = decInferLen(containerLenS, d.h.MaxInitLen, 16)
+			xlen = int(decInferLen(containerLenS, d.maxInitLen(), 16))
 			if xlen <= cap(v) {
 				v = v[:uint(xlen)]
 			} else {
@@ -3010,7 +3010,7 @@ func (fastpathDTMsgpackBytes) DecSliceStringY(v []string, d *decoderMsgpackBytes
 	var j int
 	for j = 0; d.containerNext(j, containerLenS, hasLen); j++ {
 		if j == 0 && len(v) == 0 {
-			xlen = decInferLen(containerLenS, d.h.MaxInitLen, 16)
+			xlen = int(decInferLen(containerLenS, d.maxInitLen(), 16))
 			v = make([]string, uint(xlen))
 			changed = true
 		}
@@ -3019,7 +3019,7 @@ func (fastpathDTMsgpackBytes) DecSliceStringY(v []string, d *decoderMsgpackBytes
 			changed = true
 		}
 		slh.ElemContainerState(j)
-		v[uint(j)] = d.stringZC(d.d.DecodeStringAsBytes(nil))
+		v[uint(j)] = d.string(d.d.DecodeStringAsBytes())
 	}
 	if j < len(v) {
 		v = v[:uint(j)]
@@ -3047,7 +3047,7 @@ func (fastpathDTMsgpackBytes) DecSliceStringN(v []string, d *decoderMsgpackBytes
 			return
 		}
 		slh.ElemContainerState(j)
-		v[uint(j)] = d.stringZC(d.d.DecodeStringAsBytes(nil))
+		v[uint(j)] = d.string(d.d.DecodeStringAsBytes())
 	}
 	slh.End()
 }
@@ -3095,7 +3095,7 @@ func (fastpathDTMsgpackBytes) DecSliceBytesY(v [][]byte, d *decoderMsgpackBytes)
 	var xlen int
 	if hasLen {
 		if containerLenS > cap(v) {
-			xlen = decInferLen(containerLenS, d.h.MaxInitLen, 24)
+			xlen = int(decInferLen(containerLenS, d.maxInitLen(), 24))
 			if xlen <= cap(v) {
 				v = v[:uint(xlen)]
 			} else {
@@ -3110,7 +3110,7 @@ func (fastpathDTMsgpackBytes) DecSliceBytesY(v [][]byte, d *decoderMsgpackBytes)
 	var j int
 	for j = 0; d.containerNext(j, containerLenS, hasLen); j++ {
 		if j == 0 && len(v) == 0 {
-			xlen = decInferLen(containerLenS, d.h.MaxInitLen, 24)
+			xlen = int(decInferLen(containerLenS, d.maxInitLen(), 24))
 			v = make([][]byte, uint(xlen))
 			changed = true
 		}
@@ -3119,7 +3119,7 @@ func (fastpathDTMsgpackBytes) DecSliceBytesY(v [][]byte, d *decoderMsgpackBytes)
 			changed = true
 		}
 		slh.ElemContainerState(j)
-		v[uint(j)] = bytesOk(d.d.DecodeBytes(zeroByteSlice))
+		v[uint(j)] = d.decodeBytesInto(v[uint(j)])
 	}
 	if j < len(v) {
 		v = v[:uint(j)]
@@ -3147,7 +3147,7 @@ func (fastpathDTMsgpackBytes) DecSliceBytesN(v [][]byte, d *decoderMsgpackBytes)
 			return
 		}
 		slh.ElemContainerState(j)
-		v[uint(j)] = bytesOk(d.d.DecodeBytes(zeroByteSlice))
+		v[uint(j)] = d.decodeBytesInto(v[uint(j)])
 	}
 	slh.End()
 }
@@ -3195,7 +3195,7 @@ func (fastpathDTMsgpackBytes) DecSliceFloat32Y(v []float32, d *decoderMsgpackByt
 	var xlen int
 	if hasLen {
 		if containerLenS > cap(v) {
-			xlen = decInferLen(containerLenS, d.h.MaxInitLen, 4)
+			xlen = int(decInferLen(containerLenS, d.maxInitLen(), 4))
 			if xlen <= cap(v) {
 				v = v[:uint(xlen)]
 			} else {
@@ -3210,7 +3210,7 @@ func (fastpathDTMsgpackBytes) DecSliceFloat32Y(v []float32, d *decoderMsgpackByt
 	var j int
 	for j = 0; d.containerNext(j, containerLenS, hasLen); j++ {
 		if j == 0 && len(v) == 0 {
-			xlen = decInferLen(containerLenS, d.h.MaxInitLen, 4)
+			xlen = int(decInferLen(containerLenS, d.maxInitLen(), 4))
 			v = make([]float32, uint(xlen))
 			changed = true
 		}
@@ -3295,7 +3295,7 @@ func (fastpathDTMsgpackBytes) DecSliceFloat64Y(v []float64, d *decoderMsgpackByt
 	var xlen int
 	if hasLen {
 		if containerLenS > cap(v) {
-			xlen = decInferLen(containerLenS, d.h.MaxInitLen, 8)
+			xlen = int(decInferLen(containerLenS, d.maxInitLen(), 8))
 			if xlen <= cap(v) {
 				v = v[:uint(xlen)]
 			} else {
@@ -3310,7 +3310,7 @@ func (fastpathDTMsgpackBytes) DecSliceFloat64Y(v []float64, d *decoderMsgpackByt
 	var j int
 	for j = 0; d.containerNext(j, containerLenS, hasLen); j++ {
 		if j == 0 && len(v) == 0 {
-			xlen = decInferLen(containerLenS, d.h.MaxInitLen, 8)
+			xlen = int(decInferLen(containerLenS, d.maxInitLen(), 8))
 			v = make([]float64, uint(xlen))
 			changed = true
 		}
@@ -3403,7 +3403,7 @@ func (fastpathDTMsgpackBytes) DecSliceUint8Y(v []uint8, d *decoderMsgpackBytes) 
 	var xlen int
 	if hasLen {
 		if containerLenS > cap(v) {
-			xlen = decInferLen(containerLenS, d.h.MaxInitLen, 1)
+			xlen = int(decInferLen(containerLenS, d.maxInitLen(), 1))
 			if xlen <= cap(v) {
 				v = v[:uint(xlen)]
 			} else {
@@ -3418,7 +3418,7 @@ func (fastpathDTMsgpackBytes) DecSliceUint8Y(v []uint8, d *decoderMsgpackBytes) 
 	var j int
 	for j = 0; d.containerNext(j, containerLenS, hasLen); j++ {
 		if j == 0 && len(v) == 0 {
-			xlen = decInferLen(containerLenS, d.h.MaxInitLen, 1)
+			xlen = int(decInferLen(containerLenS, d.maxInitLen(), 1))
 			v = make([]uint8, uint(xlen))
 			changed = true
 		}
@@ -3513,7 +3513,7 @@ func (fastpathDTMsgpackBytes) DecSliceUint64Y(v []uint64, d *decoderMsgpackBytes
 	var xlen int
 	if hasLen {
 		if containerLenS > cap(v) {
-			xlen = decInferLen(containerLenS, d.h.MaxInitLen, 8)
+			xlen = int(decInferLen(containerLenS, d.maxInitLen(), 8))
 			if xlen <= cap(v) {
 				v = v[:uint(xlen)]
 			} else {
@@ -3528,7 +3528,7 @@ func (fastpathDTMsgpackBytes) DecSliceUint64Y(v []uint64, d *decoderMsgpackBytes
 	var j int
 	for j = 0; d.containerNext(j, containerLenS, hasLen); j++ {
 		if j == 0 && len(v) == 0 {
-			xlen = decInferLen(containerLenS, d.h.MaxInitLen, 8)
+			xlen = int(decInferLen(containerLenS, d.maxInitLen(), 8))
 			v = make([]uint64, uint(xlen))
 			changed = true
 		}
@@ -3613,7 +3613,7 @@ func (fastpathDTMsgpackBytes) DecSliceIntY(v []int, d *decoderMsgpackBytes) (v2 
 	var xlen int
 	if hasLen {
 		if containerLenS > cap(v) {
-			xlen = decInferLen(containerLenS, d.h.MaxInitLen, 8)
+			xlen = int(decInferLen(containerLenS, d.maxInitLen(), 8))
 			if xlen <= cap(v) {
 				v = v[:uint(xlen)]
 			} else {
@@ -3628,7 +3628,7 @@ func (fastpathDTMsgpackBytes) DecSliceIntY(v []int, d *decoderMsgpackBytes) (v2 
 	var j int
 	for j = 0; d.containerNext(j, containerLenS, hasLen); j++ {
 		if j == 0 && len(v) == 0 {
-			xlen = decInferLen(containerLenS, d.h.MaxInitLen, 8)
+			xlen = int(decInferLen(containerLenS, d.maxInitLen(), 8))
 			v = make([]int, uint(xlen))
 			changed = true
 		}
@@ -3713,7 +3713,7 @@ func (fastpathDTMsgpackBytes) DecSliceInt32Y(v []int32, d *decoderMsgpackBytes) 
 	var xlen int
 	if hasLen {
 		if containerLenS > cap(v) {
-			xlen = decInferLen(containerLenS, d.h.MaxInitLen, 4)
+			xlen = int(decInferLen(containerLenS, d.maxInitLen(), 4))
 			if xlen <= cap(v) {
 				v = v[:uint(xlen)]
 			} else {
@@ -3728,7 +3728,7 @@ func (fastpathDTMsgpackBytes) DecSliceInt32Y(v []int32, d *decoderMsgpackBytes) 
 	var j int
 	for j = 0; d.containerNext(j, containerLenS, hasLen); j++ {
 		if j == 0 && len(v) == 0 {
-			xlen = decInferLen(containerLenS, d.h.MaxInitLen, 4)
+			xlen = int(decInferLen(containerLenS, d.maxInitLen(), 4))
 			v = make([]int32, uint(xlen))
 			changed = true
 		}
@@ -3813,7 +3813,7 @@ func (fastpathDTMsgpackBytes) DecSliceInt64Y(v []int64, d *decoderMsgpackBytes) 
 	var xlen int
 	if hasLen {
 		if containerLenS > cap(v) {
-			xlen = decInferLen(containerLenS, d.h.MaxInitLen, 8)
+			xlen = int(decInferLen(containerLenS, d.maxInitLen(), 8))
 			if xlen <= cap(v) {
 				v = v[:uint(xlen)]
 			} else {
@@ -3828,7 +3828,7 @@ func (fastpathDTMsgpackBytes) DecSliceInt64Y(v []int64, d *decoderMsgpackBytes) 
 	var j int
 	for j = 0; d.containerNext(j, containerLenS, hasLen); j++ {
 		if j == 0 && len(v) == 0 {
-			xlen = decInferLen(containerLenS, d.h.MaxInitLen, 8)
+			xlen = int(decInferLen(containerLenS, d.maxInitLen(), 8))
 			v = make([]int64, uint(xlen))
 			changed = true
 		}
@@ -3913,7 +3913,7 @@ func (fastpathDTMsgpackBytes) DecSliceBoolY(v []bool, d *decoderMsgpackBytes) (v
 	var xlen int
 	if hasLen {
 		if containerLenS > cap(v) {
-			xlen = decInferLen(containerLenS, d.h.MaxInitLen, 1)
+			xlen = int(decInferLen(containerLenS, d.maxInitLen(), 1))
 			if xlen <= cap(v) {
 				v = v[:uint(xlen)]
 			} else {
@@ -3928,7 +3928,7 @@ func (fastpathDTMsgpackBytes) DecSliceBoolY(v []bool, d *decoderMsgpackBytes) (v
 	var j int
 	for j = 0; d.containerNext(j, containerLenS, hasLen); j++ {
 		if j == 0 && len(v) == 0 {
-			xlen = decInferLen(containerLenS, d.h.MaxInitLen, 1)
+			xlen = int(decInferLen(containerLenS, d.maxInitLen(), 1))
 			v = make([]bool, uint(xlen))
 			changed = true
 		}
@@ -3975,7 +3975,7 @@ func (d *decoderMsgpackBytes) fastpathDecMapStringIntfR(f *decFnInfo, rv reflect
 	if rv.Kind() == reflect.Ptr {
 		vp, _ := rv2i(rv).(*map[string]interface{})
 		if *vp == nil {
-			*vp = make(map[string]interface{}, decInferLen(containerLen, d.h.MaxInitLen, 32))
+			*vp = make(map[string]interface{}, decInferLen(containerLen, d.maxInitLen(), 32))
 		}
 		if containerLen != 0 {
 			ft.DecMapStringIntfL(*vp, containerLen, d)
@@ -3992,7 +3992,7 @@ func (f fastpathDTMsgpackBytes) DecMapStringIntfX(vp *map[string]interface{}, d 
 		return
 	}
 	if *vp == nil {
-		*vp = make(map[string]interface{}, decInferLen(containerLen, d.h.MaxInitLen, 32))
+		*vp = make(map[string]interface{}, decInferLen(containerLen, d.maxInitLen(), 32))
 	}
 	if containerLen != 0 {
 		f.DecMapStringIntfL(*vp, containerLen, d)
@@ -4010,7 +4010,7 @@ func (fastpathDTMsgpackBytes) DecMapStringIntfL(v map[string]interface{}, contai
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
 		d.mapElemKey()
-		mk = d.stringZC(d.d.DecodeStringAsBytes(nil))
+		mk = d.string(d.d.DecodeStringAsBytes())
 		d.mapElemValue()
 		if mapGet {
 			mv = v[mk]
@@ -4027,7 +4027,7 @@ func (d *decoderMsgpackBytes) fastpathDecMapStringStringR(f *decFnInfo, rv refle
 	if rv.Kind() == reflect.Ptr {
 		vp, _ := rv2i(rv).(*map[string]string)
 		if *vp == nil {
-			*vp = make(map[string]string, decInferLen(containerLen, d.h.MaxInitLen, 32))
+			*vp = make(map[string]string, decInferLen(containerLen, d.maxInitLen(), 32))
 		}
 		if containerLen != 0 {
 			ft.DecMapStringStringL(*vp, containerLen, d)
@@ -4044,7 +4044,7 @@ func (f fastpathDTMsgpackBytes) DecMapStringStringX(vp *map[string]string, d *de
 		return
 	}
 	if *vp == nil {
-		*vp = make(map[string]string, decInferLen(containerLen, d.h.MaxInitLen, 32))
+		*vp = make(map[string]string, decInferLen(containerLen, d.maxInitLen(), 32))
 	}
 	if containerLen != 0 {
 		f.DecMapStringStringL(*vp, containerLen, d)
@@ -4061,9 +4061,9 @@ func (fastpathDTMsgpackBytes) DecMapStringStringL(v map[string]string, container
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
 		d.mapElemKey()
-		mk = d.stringZC(d.d.DecodeStringAsBytes(nil))
+		mk = d.string(d.d.DecodeStringAsBytes())
 		d.mapElemValue()
-		mv = d.stringZC(d.d.DecodeStringAsBytes(nil))
+		mv = d.string(d.d.DecodeStringAsBytes())
 		v[mk] = mv
 	}
 }
@@ -4073,7 +4073,7 @@ func (d *decoderMsgpackBytes) fastpathDecMapStringBytesR(f *decFnInfo, rv reflec
 	if rv.Kind() == reflect.Ptr {
 		vp, _ := rv2i(rv).(*map[string][]byte)
 		if *vp == nil {
-			*vp = make(map[string][]byte, decInferLen(containerLen, d.h.MaxInitLen, 40))
+			*vp = make(map[string][]byte, decInferLen(containerLen, d.maxInitLen(), 40))
 		}
 		if containerLen != 0 {
 			ft.DecMapStringBytesL(*vp, containerLen, d)
@@ -4090,7 +4090,7 @@ func (f fastpathDTMsgpackBytes) DecMapStringBytesX(vp *map[string][]byte, d *dec
 		return
 	}
 	if *vp == nil {
-		*vp = make(map[string][]byte, decInferLen(containerLen, d.h.MaxInitLen, 40))
+		*vp = make(map[string][]byte, decInferLen(containerLen, d.maxInitLen(), 40))
 	}
 	if containerLen != 0 {
 		f.DecMapStringBytesL(*vp, containerLen, d)
@@ -4108,7 +4108,7 @@ func (fastpathDTMsgpackBytes) DecMapStringBytesL(v map[string][]byte, containerL
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
 		d.mapElemKey()
-		mk = d.stringZC(d.d.DecodeStringAsBytes(nil))
+		mk = d.string(d.d.DecodeStringAsBytes())
 		d.mapElemValue()
 		if mapGet {
 			mv = v[mk]
@@ -4125,7 +4125,7 @@ func (d *decoderMsgpackBytes) fastpathDecMapStringUint8R(f *decFnInfo, rv reflec
 	if rv.Kind() == reflect.Ptr {
 		vp, _ := rv2i(rv).(*map[string]uint8)
 		if *vp == nil {
-			*vp = make(map[string]uint8, decInferLen(containerLen, d.h.MaxInitLen, 17))
+			*vp = make(map[string]uint8, decInferLen(containerLen, d.maxInitLen(), 17))
 		}
 		if containerLen != 0 {
 			ft.DecMapStringUint8L(*vp, containerLen, d)
@@ -4142,7 +4142,7 @@ func (f fastpathDTMsgpackBytes) DecMapStringUint8X(vp *map[string]uint8, d *deco
 		return
 	}
 	if *vp == nil {
-		*vp = make(map[string]uint8, decInferLen(containerLen, d.h.MaxInitLen, 17))
+		*vp = make(map[string]uint8, decInferLen(containerLen, d.maxInitLen(), 17))
 	}
 	if containerLen != 0 {
 		f.DecMapStringUint8L(*vp, containerLen, d)
@@ -4159,7 +4159,7 @@ func (fastpathDTMsgpackBytes) DecMapStringUint8L(v map[string]uint8, containerLe
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
 		d.mapElemKey()
-		mk = d.stringZC(d.d.DecodeStringAsBytes(nil))
+		mk = d.string(d.d.DecodeStringAsBytes())
 		d.mapElemValue()
 		mv = uint8(chkOvf.UintV(d.d.DecodeUint64(), 8))
 		v[mk] = mv
@@ -4171,7 +4171,7 @@ func (d *decoderMsgpackBytes) fastpathDecMapStringUint64R(f *decFnInfo, rv refle
 	if rv.Kind() == reflect.Ptr {
 		vp, _ := rv2i(rv).(*map[string]uint64)
 		if *vp == nil {
-			*vp = make(map[string]uint64, decInferLen(containerLen, d.h.MaxInitLen, 24))
+			*vp = make(map[string]uint64, decInferLen(containerLen, d.maxInitLen(), 24))
 		}
 		if containerLen != 0 {
 			ft.DecMapStringUint64L(*vp, containerLen, d)
@@ -4188,7 +4188,7 @@ func (f fastpathDTMsgpackBytes) DecMapStringUint64X(vp *map[string]uint64, d *de
 		return
 	}
 	if *vp == nil {
-		*vp = make(map[string]uint64, decInferLen(containerLen, d.h.MaxInitLen, 24))
+		*vp = make(map[string]uint64, decInferLen(containerLen, d.maxInitLen(), 24))
 	}
 	if containerLen != 0 {
 		f.DecMapStringUint64L(*vp, containerLen, d)
@@ -4205,7 +4205,7 @@ func (fastpathDTMsgpackBytes) DecMapStringUint64L(v map[string]uint64, container
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
 		d.mapElemKey()
-		mk = d.stringZC(d.d.DecodeStringAsBytes(nil))
+		mk = d.string(d.d.DecodeStringAsBytes())
 		d.mapElemValue()
 		mv = d.d.DecodeUint64()
 		v[mk] = mv
@@ -4217,7 +4217,7 @@ func (d *decoderMsgpackBytes) fastpathDecMapStringIntR(f *decFnInfo, rv reflect.
 	if rv.Kind() == reflect.Ptr {
 		vp, _ := rv2i(rv).(*map[string]int)
 		if *vp == nil {
-			*vp = make(map[string]int, decInferLen(containerLen, d.h.MaxInitLen, 24))
+			*vp = make(map[string]int, decInferLen(containerLen, d.maxInitLen(), 24))
 		}
 		if containerLen != 0 {
 			ft.DecMapStringIntL(*vp, containerLen, d)
@@ -4234,7 +4234,7 @@ func (f fastpathDTMsgpackBytes) DecMapStringIntX(vp *map[string]int, d *decoderM
 		return
 	}
 	if *vp == nil {
-		*vp = make(map[string]int, decInferLen(containerLen, d.h.MaxInitLen, 24))
+		*vp = make(map[string]int, decInferLen(containerLen, d.maxInitLen(), 24))
 	}
 	if containerLen != 0 {
 		f.DecMapStringIntL(*vp, containerLen, d)
@@ -4251,7 +4251,7 @@ func (fastpathDTMsgpackBytes) DecMapStringIntL(v map[string]int, containerLen in
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
 		d.mapElemKey()
-		mk = d.stringZC(d.d.DecodeStringAsBytes(nil))
+		mk = d.string(d.d.DecodeStringAsBytes())
 		d.mapElemValue()
 		mv = int(chkOvf.IntV(d.d.DecodeInt64(), intBitsize))
 		v[mk] = mv
@@ -4263,7 +4263,7 @@ func (d *decoderMsgpackBytes) fastpathDecMapStringInt32R(f *decFnInfo, rv reflec
 	if rv.Kind() == reflect.Ptr {
 		vp, _ := rv2i(rv).(*map[string]int32)
 		if *vp == nil {
-			*vp = make(map[string]int32, decInferLen(containerLen, d.h.MaxInitLen, 20))
+			*vp = make(map[string]int32, decInferLen(containerLen, d.maxInitLen(), 20))
 		}
 		if containerLen != 0 {
 			ft.DecMapStringInt32L(*vp, containerLen, d)
@@ -4280,7 +4280,7 @@ func (f fastpathDTMsgpackBytes) DecMapStringInt32X(vp *map[string]int32, d *deco
 		return
 	}
 	if *vp == nil {
-		*vp = make(map[string]int32, decInferLen(containerLen, d.h.MaxInitLen, 20))
+		*vp = make(map[string]int32, decInferLen(containerLen, d.maxInitLen(), 20))
 	}
 	if containerLen != 0 {
 		f.DecMapStringInt32L(*vp, containerLen, d)
@@ -4297,7 +4297,7 @@ func (fastpathDTMsgpackBytes) DecMapStringInt32L(v map[string]int32, containerLe
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
 		d.mapElemKey()
-		mk = d.stringZC(d.d.DecodeStringAsBytes(nil))
+		mk = d.string(d.d.DecodeStringAsBytes())
 		d.mapElemValue()
 		mv = int32(chkOvf.IntV(d.d.DecodeInt64(), 32))
 		v[mk] = mv
@@ -4309,7 +4309,7 @@ func (d *decoderMsgpackBytes) fastpathDecMapStringFloat64R(f *decFnInfo, rv refl
 	if rv.Kind() == reflect.Ptr {
 		vp, _ := rv2i(rv).(*map[string]float64)
 		if *vp == nil {
-			*vp = make(map[string]float64, decInferLen(containerLen, d.h.MaxInitLen, 24))
+			*vp = make(map[string]float64, decInferLen(containerLen, d.maxInitLen(), 24))
 		}
 		if containerLen != 0 {
 			ft.DecMapStringFloat64L(*vp, containerLen, d)
@@ -4326,7 +4326,7 @@ func (f fastpathDTMsgpackBytes) DecMapStringFloat64X(vp *map[string]float64, d *
 		return
 	}
 	if *vp == nil {
-		*vp = make(map[string]float64, decInferLen(containerLen, d.h.MaxInitLen, 24))
+		*vp = make(map[string]float64, decInferLen(containerLen, d.maxInitLen(), 24))
 	}
 	if containerLen != 0 {
 		f.DecMapStringFloat64L(*vp, containerLen, d)
@@ -4343,7 +4343,7 @@ func (fastpathDTMsgpackBytes) DecMapStringFloat64L(v map[string]float64, contain
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
 		d.mapElemKey()
-		mk = d.stringZC(d.d.DecodeStringAsBytes(nil))
+		mk = d.string(d.d.DecodeStringAsBytes())
 		d.mapElemValue()
 		mv = d.d.DecodeFloat64()
 		v[mk] = mv
@@ -4355,7 +4355,7 @@ func (d *decoderMsgpackBytes) fastpathDecMapStringBoolR(f *decFnInfo, rv reflect
 	if rv.Kind() == reflect.Ptr {
 		vp, _ := rv2i(rv).(*map[string]bool)
 		if *vp == nil {
-			*vp = make(map[string]bool, decInferLen(containerLen, d.h.MaxInitLen, 17))
+			*vp = make(map[string]bool, decInferLen(containerLen, d.maxInitLen(), 17))
 		}
 		if containerLen != 0 {
 			ft.DecMapStringBoolL(*vp, containerLen, d)
@@ -4372,7 +4372,7 @@ func (f fastpathDTMsgpackBytes) DecMapStringBoolX(vp *map[string]bool, d *decode
 		return
 	}
 	if *vp == nil {
-		*vp = make(map[string]bool, decInferLen(containerLen, d.h.MaxInitLen, 17))
+		*vp = make(map[string]bool, decInferLen(containerLen, d.maxInitLen(), 17))
 	}
 	if containerLen != 0 {
 		f.DecMapStringBoolL(*vp, containerLen, d)
@@ -4389,7 +4389,7 @@ func (fastpathDTMsgpackBytes) DecMapStringBoolL(v map[string]bool, containerLen 
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
 		d.mapElemKey()
-		mk = d.stringZC(d.d.DecodeStringAsBytes(nil))
+		mk = d.string(d.d.DecodeStringAsBytes())
 		d.mapElemValue()
 		mv = d.d.DecodeBool()
 		v[mk] = mv
@@ -4401,7 +4401,7 @@ func (d *decoderMsgpackBytes) fastpathDecMapUint8IntfR(f *decFnInfo, rv reflect.
 	if rv.Kind() == reflect.Ptr {
 		vp, _ := rv2i(rv).(*map[uint8]interface{})
 		if *vp == nil {
-			*vp = make(map[uint8]interface{}, decInferLen(containerLen, d.h.MaxInitLen, 17))
+			*vp = make(map[uint8]interface{}, decInferLen(containerLen, d.maxInitLen(), 17))
 		}
 		if containerLen != 0 {
 			ft.DecMapUint8IntfL(*vp, containerLen, d)
@@ -4418,7 +4418,7 @@ func (f fastpathDTMsgpackBytes) DecMapUint8IntfX(vp *map[uint8]interface{}, d *d
 		return
 	}
 	if *vp == nil {
-		*vp = make(map[uint8]interface{}, decInferLen(containerLen, d.h.MaxInitLen, 17))
+		*vp = make(map[uint8]interface{}, decInferLen(containerLen, d.maxInitLen(), 17))
 	}
 	if containerLen != 0 {
 		f.DecMapUint8IntfL(*vp, containerLen, d)
@@ -4453,7 +4453,7 @@ func (d *decoderMsgpackBytes) fastpathDecMapUint8StringR(f *decFnInfo, rv reflec
 	if rv.Kind() == reflect.Ptr {
 		vp, _ := rv2i(rv).(*map[uint8]string)
 		if *vp == nil {
-			*vp = make(map[uint8]string, decInferLen(containerLen, d.h.MaxInitLen, 17))
+			*vp = make(map[uint8]string, decInferLen(containerLen, d.maxInitLen(), 17))
 		}
 		if containerLen != 0 {
 			ft.DecMapUint8StringL(*vp, containerLen, d)
@@ -4470,7 +4470,7 @@ func (f fastpathDTMsgpackBytes) DecMapUint8StringX(vp *map[uint8]string, d *deco
 		return
 	}
 	if *vp == nil {
-		*vp = make(map[uint8]string, decInferLen(containerLen, d.h.MaxInitLen, 17))
+		*vp = make(map[uint8]string, decInferLen(containerLen, d.maxInitLen(), 17))
 	}
 	if containerLen != 0 {
 		f.DecMapUint8StringL(*vp, containerLen, d)
@@ -4489,7 +4489,7 @@ func (fastpathDTMsgpackBytes) DecMapUint8StringL(v map[uint8]string, containerLe
 		d.mapElemKey()
 		mk = uint8(chkOvf.UintV(d.d.DecodeUint64(), 8))
 		d.mapElemValue()
-		mv = d.stringZC(d.d.DecodeStringAsBytes(nil))
+		mv = d.string(d.d.DecodeStringAsBytes())
 		v[mk] = mv
 	}
 }
@@ -4499,7 +4499,7 @@ func (d *decoderMsgpackBytes) fastpathDecMapUint8BytesR(f *decFnInfo, rv reflect
 	if rv.Kind() == reflect.Ptr {
 		vp, _ := rv2i(rv).(*map[uint8][]byte)
 		if *vp == nil {
-			*vp = make(map[uint8][]byte, decInferLen(containerLen, d.h.MaxInitLen, 25))
+			*vp = make(map[uint8][]byte, decInferLen(containerLen, d.maxInitLen(), 25))
 		}
 		if containerLen != 0 {
 			ft.DecMapUint8BytesL(*vp, containerLen, d)
@@ -4516,7 +4516,7 @@ func (f fastpathDTMsgpackBytes) DecMapUint8BytesX(vp *map[uint8][]byte, d *decod
 		return
 	}
 	if *vp == nil {
-		*vp = make(map[uint8][]byte, decInferLen(containerLen, d.h.MaxInitLen, 25))
+		*vp = make(map[uint8][]byte, decInferLen(containerLen, d.maxInitLen(), 25))
 	}
 	if containerLen != 0 {
 		f.DecMapUint8BytesL(*vp, containerLen, d)
@@ -4551,7 +4551,7 @@ func (d *decoderMsgpackBytes) fastpathDecMapUint8Uint8R(f *decFnInfo, rv reflect
 	if rv.Kind() == reflect.Ptr {
 		vp, _ := rv2i(rv).(*map[uint8]uint8)
 		if *vp == nil {
-			*vp = make(map[uint8]uint8, decInferLen(containerLen, d.h.MaxInitLen, 2))
+			*vp = make(map[uint8]uint8, decInferLen(containerLen, d.maxInitLen(), 2))
 		}
 		if containerLen != 0 {
 			ft.DecMapUint8Uint8L(*vp, containerLen, d)
@@ -4568,7 +4568,7 @@ func (f fastpathDTMsgpackBytes) DecMapUint8Uint8X(vp *map[uint8]uint8, d *decode
 		return
 	}
 	if *vp == nil {
-		*vp = make(map[uint8]uint8, decInferLen(containerLen, d.h.MaxInitLen, 2))
+		*vp = make(map[uint8]uint8, decInferLen(containerLen, d.maxInitLen(), 2))
 	}
 	if containerLen != 0 {
 		f.DecMapUint8Uint8L(*vp, containerLen, d)
@@ -4597,7 +4597,7 @@ func (d *decoderMsgpackBytes) fastpathDecMapUint8Uint64R(f *decFnInfo, rv reflec
 	if rv.Kind() == reflect.Ptr {
 		vp, _ := rv2i(rv).(*map[uint8]uint64)
 		if *vp == nil {
-			*vp = make(map[uint8]uint64, decInferLen(containerLen, d.h.MaxInitLen, 9))
+			*vp = make(map[uint8]uint64, decInferLen(containerLen, d.maxInitLen(), 9))
 		}
 		if containerLen != 0 {
 			ft.DecMapUint8Uint64L(*vp, containerLen, d)
@@ -4614,7 +4614,7 @@ func (f fastpathDTMsgpackBytes) DecMapUint8Uint64X(vp *map[uint8]uint64, d *deco
 		return
 	}
 	if *vp == nil {
-		*vp = make(map[uint8]uint64, decInferLen(containerLen, d.h.MaxInitLen, 9))
+		*vp = make(map[uint8]uint64, decInferLen(containerLen, d.maxInitLen(), 9))
 	}
 	if containerLen != 0 {
 		f.DecMapUint8Uint64L(*vp, containerLen, d)
@@ -4643,7 +4643,7 @@ func (d *decoderMsgpackBytes) fastpathDecMapUint8IntR(f *decFnInfo, rv reflect.V
 	if rv.Kind() == reflect.Ptr {
 		vp, _ := rv2i(rv).(*map[uint8]int)
 		if *vp == nil {
-			*vp = make(map[uint8]int, decInferLen(containerLen, d.h.MaxInitLen, 9))
+			*vp = make(map[uint8]int, decInferLen(containerLen, d.maxInitLen(), 9))
 		}
 		if containerLen != 0 {
 			ft.DecMapUint8IntL(*vp, containerLen, d)
@@ -4660,7 +4660,7 @@ func (f fastpathDTMsgpackBytes) DecMapUint8IntX(vp *map[uint8]int, d *decoderMsg
 		return
 	}
 	if *vp == nil {
-		*vp = make(map[uint8]int, decInferLen(containerLen, d.h.MaxInitLen, 9))
+		*vp = make(map[uint8]int, decInferLen(containerLen, d.maxInitLen(), 9))
 	}
 	if containerLen != 0 {
 		f.DecMapUint8IntL(*vp, containerLen, d)
@@ -4689,7 +4689,7 @@ func (d *decoderMsgpackBytes) fastpathDecMapUint8Int32R(f *decFnInfo, rv reflect
 	if rv.Kind() == reflect.Ptr {
 		vp, _ := rv2i(rv).(*map[uint8]int32)
 		if *vp == nil {
-			*vp = make(map[uint8]int32, decInferLen(containerLen, d.h.MaxInitLen, 5))
+			*vp = make(map[uint8]int32, decInferLen(containerLen, d.maxInitLen(), 5))
 		}
 		if containerLen != 0 {
 			ft.DecMapUint8Int32L(*vp, containerLen, d)
@@ -4706,7 +4706,7 @@ func (f fastpathDTMsgpackBytes) DecMapUint8Int32X(vp *map[uint8]int32, d *decode
 		return
 	}
 	if *vp == nil {
-		*vp = make(map[uint8]int32, decInferLen(containerLen, d.h.MaxInitLen, 5))
+		*vp = make(map[uint8]int32, decInferLen(containerLen, d.maxInitLen(), 5))
 	}
 	if containerLen != 0 {
 		f.DecMapUint8Int32L(*vp, containerLen, d)
@@ -4735,7 +4735,7 @@ func (d *decoderMsgpackBytes) fastpathDecMapUint8Float64R(f *decFnInfo, rv refle
 	if rv.Kind() == reflect.Ptr {
 		vp, _ := rv2i(rv).(*map[uint8]float64)
 		if *vp == nil {
-			*vp = make(map[uint8]float64, decInferLen(containerLen, d.h.MaxInitLen, 9))
+			*vp = make(map[uint8]float64, decInferLen(containerLen, d.maxInitLen(), 9))
 		}
 		if containerLen != 0 {
 			ft.DecMapUint8Float64L(*vp, containerLen, d)
@@ -4752,7 +4752,7 @@ func (f fastpathDTMsgpackBytes) DecMapUint8Float64X(vp *map[uint8]float64, d *de
 		return
 	}
 	if *vp == nil {
-		*vp = make(map[uint8]float64, decInferLen(containerLen, d.h.MaxInitLen, 9))
+		*vp = make(map[uint8]float64, decInferLen(containerLen, d.maxInitLen(), 9))
 	}
 	if containerLen != 0 {
 		f.DecMapUint8Float64L(*vp, containerLen, d)
@@ -4781,7 +4781,7 @@ func (d *decoderMsgpackBytes) fastpathDecMapUint8BoolR(f *decFnInfo, rv reflect.
 	if rv.Kind() == reflect.Ptr {
 		vp, _ := rv2i(rv).(*map[uint8]bool)
 		if *vp == nil {
-			*vp = make(map[uint8]bool, decInferLen(containerLen, d.h.MaxInitLen, 2))
+			*vp = make(map[uint8]bool, decInferLen(containerLen, d.maxInitLen(), 2))
 		}
 		if containerLen != 0 {
 			ft.DecMapUint8BoolL(*vp, containerLen, d)
@@ -4798,7 +4798,7 @@ func (f fastpathDTMsgpackBytes) DecMapUint8BoolX(vp *map[uint8]bool, d *decoderM
 		return
 	}
 	if *vp == nil {
-		*vp = make(map[uint8]bool, decInferLen(containerLen, d.h.MaxInitLen, 2))
+		*vp = make(map[uint8]bool, decInferLen(containerLen, d.maxInitLen(), 2))
 	}
 	if containerLen != 0 {
 		f.DecMapUint8BoolL(*vp, containerLen, d)
@@ -4827,7 +4827,7 @@ func (d *decoderMsgpackBytes) fastpathDecMapUint64IntfR(f *decFnInfo, rv reflect
 	if rv.Kind() == reflect.Ptr {
 		vp, _ := rv2i(rv).(*map[uint64]interface{})
 		if *vp == nil {
-			*vp = make(map[uint64]interface{}, decInferLen(containerLen, d.h.MaxInitLen, 24))
+			*vp = make(map[uint64]interface{}, decInferLen(containerLen, d.maxInitLen(), 24))
 		}
 		if containerLen != 0 {
 			ft.DecMapUint64IntfL(*vp, containerLen, d)
@@ -4844,7 +4844,7 @@ func (f fastpathDTMsgpackBytes) DecMapUint64IntfX(vp *map[uint64]interface{}, d 
 		return
 	}
 	if *vp == nil {
-		*vp = make(map[uint64]interface{}, decInferLen(containerLen, d.h.MaxInitLen, 24))
+		*vp = make(map[uint64]interface{}, decInferLen(containerLen, d.maxInitLen(), 24))
 	}
 	if containerLen != 0 {
 		f.DecMapUint64IntfL(*vp, containerLen, d)
@@ -4879,7 +4879,7 @@ func (d *decoderMsgpackBytes) fastpathDecMapUint64StringR(f *decFnInfo, rv refle
 	if rv.Kind() == reflect.Ptr {
 		vp, _ := rv2i(rv).(*map[uint64]string)
 		if *vp == nil {
-			*vp = make(map[uint64]string, decInferLen(containerLen, d.h.MaxInitLen, 24))
+			*vp = make(map[uint64]string, decInferLen(containerLen, d.maxInitLen(), 24))
 		}
 		if containerLen != 0 {
 			ft.DecMapUint64StringL(*vp, containerLen, d)
@@ -4896,7 +4896,7 @@ func (f fastpathDTMsgpackBytes) DecMapUint64StringX(vp *map[uint64]string, d *de
 		return
 	}
 	if *vp == nil {
-		*vp = make(map[uint64]string, decInferLen(containerLen, d.h.MaxInitLen, 24))
+		*vp = make(map[uint64]string, decInferLen(containerLen, d.maxInitLen(), 24))
 	}
 	if containerLen != 0 {
 		f.DecMapUint64StringL(*vp, containerLen, d)
@@ -4915,7 +4915,7 @@ func (fastpathDTMsgpackBytes) DecMapUint64StringL(v map[uint64]string, container
 		d.mapElemKey()
 		mk = d.d.DecodeUint64()
 		d.mapElemValue()
-		mv = d.stringZC(d.d.DecodeStringAsBytes(nil))
+		mv = d.string(d.d.DecodeStringAsBytes())
 		v[mk] = mv
 	}
 }
@@ -4925,7 +4925,7 @@ func (d *decoderMsgpackBytes) fastpathDecMapUint64BytesR(f *decFnInfo, rv reflec
 	if rv.Kind() == reflect.Ptr {
 		vp, _ := rv2i(rv).(*map[uint64][]byte)
 		if *vp == nil {
-			*vp = make(map[uint64][]byte, decInferLen(containerLen, d.h.MaxInitLen, 32))
+			*vp = make(map[uint64][]byte, decInferLen(containerLen, d.maxInitLen(), 32))
 		}
 		if containerLen != 0 {
 			ft.DecMapUint64BytesL(*vp, containerLen, d)
@@ -4942,7 +4942,7 @@ func (f fastpathDTMsgpackBytes) DecMapUint64BytesX(vp *map[uint64][]byte, d *dec
 		return
 	}
 	if *vp == nil {
-		*vp = make(map[uint64][]byte, decInferLen(containerLen, d.h.MaxInitLen, 32))
+		*vp = make(map[uint64][]byte, decInferLen(containerLen, d.maxInitLen(), 32))
 	}
 	if containerLen != 0 {
 		f.DecMapUint64BytesL(*vp, containerLen, d)
@@ -4977,7 +4977,7 @@ func (d *decoderMsgpackBytes) fastpathDecMapUint64Uint8R(f *decFnInfo, rv reflec
 	if rv.Kind() == reflect.Ptr {
 		vp, _ := rv2i(rv).(*map[uint64]uint8)
 		if *vp == nil {
-			*vp = make(map[uint64]uint8, decInferLen(containerLen, d.h.MaxInitLen, 9))
+			*vp = make(map[uint64]uint8, decInferLen(containerLen, d.maxInitLen(), 9))
 		}
 		if containerLen != 0 {
 			ft.DecMapUint64Uint8L(*vp, containerLen, d)
@@ -4994,7 +4994,7 @@ func (f fastpathDTMsgpackBytes) DecMapUint64Uint8X(vp *map[uint64]uint8, d *deco
 		return
 	}
 	if *vp == nil {
-		*vp = make(map[uint64]uint8, decInferLen(containerLen, d.h.MaxInitLen, 9))
+		*vp = make(map[uint64]uint8, decInferLen(containerLen, d.maxInitLen(), 9))
 	}
 	if containerLen != 0 {
 		f.DecMapUint64Uint8L(*vp, containerLen, d)
@@ -5023,7 +5023,7 @@ func (d *decoderMsgpackBytes) fastpathDecMapUint64Uint64R(f *decFnInfo, rv refle
 	if rv.Kind() == reflect.Ptr {
 		vp, _ := rv2i(rv).(*map[uint64]uint64)
 		if *vp == nil {
-			*vp = make(map[uint64]uint64, decInferLen(containerLen, d.h.MaxInitLen, 16))
+			*vp = make(map[uint64]uint64, decInferLen(containerLen, d.maxInitLen(), 16))
 		}
 		if containerLen != 0 {
 			ft.DecMapUint64Uint64L(*vp, containerLen, d)
@@ -5040,7 +5040,7 @@ func (f fastpathDTMsgpackBytes) DecMapUint64Uint64X(vp *map[uint64]uint64, d *de
 		return
 	}
 	if *vp == nil {
-		*vp = make(map[uint64]uint64, decInferLen(containerLen, d.h.MaxInitLen, 16))
+		*vp = make(map[uint64]uint64, decInferLen(containerLen, d.maxInitLen(), 16))
 	}
 	if containerLen != 0 {
 		f.DecMapUint64Uint64L(*vp, containerLen, d)
@@ -5069,7 +5069,7 @@ func (d *decoderMsgpackBytes) fastpathDecMapUint64IntR(f *decFnInfo, rv reflect.
 	if rv.Kind() == reflect.Ptr {
 		vp, _ := rv2i(rv).(*map[uint64]int)
 		if *vp == nil {
-			*vp = make(map[uint64]int, decInferLen(containerLen, d.h.MaxInitLen, 16))
+			*vp = make(map[uint64]int, decInferLen(containerLen, d.maxInitLen(), 16))
 		}
 		if containerLen != 0 {
 			ft.DecMapUint64IntL(*vp, containerLen, d)
@@ -5086,7 +5086,7 @@ func (f fastpathDTMsgpackBytes) DecMapUint64IntX(vp *map[uint64]int, d *decoderM
 		return
 	}
 	if *vp == nil {
-		*vp = make(map[uint64]int, decInferLen(containerLen, d.h.MaxInitLen, 16))
+		*vp = make(map[uint64]int, decInferLen(containerLen, d.maxInitLen(), 16))
 	}
 	if containerLen != 0 {
 		f.DecMapUint64IntL(*vp, containerLen, d)
@@ -5115,7 +5115,7 @@ func (d *decoderMsgpackBytes) fastpathDecMapUint64Int32R(f *decFnInfo, rv reflec
 	if rv.Kind() == reflect.Ptr {
 		vp, _ := rv2i(rv).(*map[uint64]int32)
 		if *vp == nil {
-			*vp = make(map[uint64]int32, decInferLen(containerLen, d.h.MaxInitLen, 12))
+			*vp = make(map[uint64]int32, decInferLen(containerLen, d.maxInitLen(), 12))
 		}
 		if containerLen != 0 {
 			ft.DecMapUint64Int32L(*vp, containerLen, d)
@@ -5132,7 +5132,7 @@ func (f fastpathDTMsgpackBytes) DecMapUint64Int32X(vp *map[uint64]int32, d *deco
 		return
 	}
 	if *vp == nil {
-		*vp = make(map[uint64]int32, decInferLen(containerLen, d.h.MaxInitLen, 12))
+		*vp = make(map[uint64]int32, decInferLen(containerLen, d.maxInitLen(), 12))
 	}
 	if containerLen != 0 {
 		f.DecMapUint64Int32L(*vp, containerLen, d)
@@ -5161,7 +5161,7 @@ func (d *decoderMsgpackBytes) fastpathDecMapUint64Float64R(f *decFnInfo, rv refl
 	if rv.Kind() == reflect.Ptr {
 		vp, _ := rv2i(rv).(*map[uint64]float64)
 		if *vp == nil {
-			*vp = make(map[uint64]float64, decInferLen(containerLen, d.h.MaxInitLen, 16))
+			*vp = make(map[uint64]float64, decInferLen(containerLen, d.maxInitLen(), 16))
 		}
 		if containerLen != 0 {
 			ft.DecMapUint64Float64L(*vp, containerLen, d)
@@ -5178,7 +5178,7 @@ func (f fastpathDTMsgpackBytes) DecMapUint64Float64X(vp *map[uint64]float64, d *
 		return
 	}
 	if *vp == nil {
-		*vp = make(map[uint64]float64, decInferLen(containerLen, d.h.MaxInitLen, 16))
+		*vp = make(map[uint64]float64, decInferLen(containerLen, d.maxInitLen(), 16))
 	}
 	if containerLen != 0 {
 		f.DecMapUint64Float64L(*vp, containerLen, d)
@@ -5207,7 +5207,7 @@ func (d *decoderMsgpackBytes) fastpathDecMapUint64BoolR(f *decFnInfo, rv reflect
 	if rv.Kind() == reflect.Ptr {
 		vp, _ := rv2i(rv).(*map[uint64]bool)
 		if *vp == nil {
-			*vp = make(map[uint64]bool, decInferLen(containerLen, d.h.MaxInitLen, 9))
+			*vp = make(map[uint64]bool, decInferLen(containerLen, d.maxInitLen(), 9))
 		}
 		if containerLen != 0 {
 			ft.DecMapUint64BoolL(*vp, containerLen, d)
@@ -5224,7 +5224,7 @@ func (f fastpathDTMsgpackBytes) DecMapUint64BoolX(vp *map[uint64]bool, d *decode
 		return
 	}
 	if *vp == nil {
-		*vp = make(map[uint64]bool, decInferLen(containerLen, d.h.MaxInitLen, 9))
+		*vp = make(map[uint64]bool, decInferLen(containerLen, d.maxInitLen(), 9))
 	}
 	if containerLen != 0 {
 		f.DecMapUint64BoolL(*vp, containerLen, d)
@@ -5253,7 +5253,7 @@ func (d *decoderMsgpackBytes) fastpathDecMapIntIntfR(f *decFnInfo, rv reflect.Va
 	if rv.Kind() == reflect.Ptr {
 		vp, _ := rv2i(rv).(*map[int]interface{})
 		if *vp == nil {
-			*vp = make(map[int]interface{}, decInferLen(containerLen, d.h.MaxInitLen, 24))
+			*vp = make(map[int]interface{}, decInferLen(containerLen, d.maxInitLen(), 24))
 		}
 		if containerLen != 0 {
 			ft.DecMapIntIntfL(*vp, containerLen, d)
@@ -5270,7 +5270,7 @@ func (f fastpathDTMsgpackBytes) DecMapIntIntfX(vp *map[int]interface{}, d *decod
 		return
 	}
 	if *vp == nil {
-		*vp = make(map[int]interface{}, decInferLen(containerLen, d.h.MaxInitLen, 24))
+		*vp = make(map[int]interface{}, decInferLen(containerLen, d.maxInitLen(), 24))
 	}
 	if containerLen != 0 {
 		f.DecMapIntIntfL(*vp, containerLen, d)
@@ -5305,7 +5305,7 @@ func (d *decoderMsgpackBytes) fastpathDecMapIntStringR(f *decFnInfo, rv reflect.
 	if rv.Kind() == reflect.Ptr {
 		vp, _ := rv2i(rv).(*map[int]string)
 		if *vp == nil {
-			*vp = make(map[int]string, decInferLen(containerLen, d.h.MaxInitLen, 24))
+			*vp = make(map[int]string, decInferLen(containerLen, d.maxInitLen(), 24))
 		}
 		if containerLen != 0 {
 			ft.DecMapIntStringL(*vp, containerLen, d)
@@ -5322,7 +5322,7 @@ func (f fastpathDTMsgpackBytes) DecMapIntStringX(vp *map[int]string, d *decoderM
 		return
 	}
 	if *vp == nil {
-		*vp = make(map[int]string, decInferLen(containerLen, d.h.MaxInitLen, 24))
+		*vp = make(map[int]string, decInferLen(containerLen, d.maxInitLen(), 24))
 	}
 	if containerLen != 0 {
 		f.DecMapIntStringL(*vp, containerLen, d)
@@ -5341,7 +5341,7 @@ func (fastpathDTMsgpackBytes) DecMapIntStringL(v map[int]string, containerLen in
 		d.mapElemKey()
 		mk = int(chkOvf.IntV(d.d.DecodeInt64(), intBitsize))
 		d.mapElemValue()
-		mv = d.stringZC(d.d.DecodeStringAsBytes(nil))
+		mv = d.string(d.d.DecodeStringAsBytes())
 		v[mk] = mv
 	}
 }
@@ -5351,7 +5351,7 @@ func (d *decoderMsgpackBytes) fastpathDecMapIntBytesR(f *decFnInfo, rv reflect.V
 	if rv.Kind() == reflect.Ptr {
 		vp, _ := rv2i(rv).(*map[int][]byte)
 		if *vp == nil {
-			*vp = make(map[int][]byte, decInferLen(containerLen, d.h.MaxInitLen, 32))
+			*vp = make(map[int][]byte, decInferLen(containerLen, d.maxInitLen(), 32))
 		}
 		if containerLen != 0 {
 			ft.DecMapIntBytesL(*vp, containerLen, d)
@@ -5368,7 +5368,7 @@ func (f fastpathDTMsgpackBytes) DecMapIntBytesX(vp *map[int][]byte, d *decoderMs
 		return
 	}
 	if *vp == nil {
-		*vp = make(map[int][]byte, decInferLen(containerLen, d.h.MaxInitLen, 32))
+		*vp = make(map[int][]byte, decInferLen(containerLen, d.maxInitLen(), 32))
 	}
 	if containerLen != 0 {
 		f.DecMapIntBytesL(*vp, containerLen, d)
@@ -5403,7 +5403,7 @@ func (d *decoderMsgpackBytes) fastpathDecMapIntUint8R(f *decFnInfo, rv reflect.V
 	if rv.Kind() == reflect.Ptr {
 		vp, _ := rv2i(rv).(*map[int]uint8)
 		if *vp == nil {
-			*vp = make(map[int]uint8, decInferLen(containerLen, d.h.MaxInitLen, 9))
+			*vp = make(map[int]uint8, decInferLen(containerLen, d.maxInitLen(), 9))
 		}
 		if containerLen != 0 {
 			ft.DecMapIntUint8L(*vp, containerLen, d)
@@ -5420,7 +5420,7 @@ func (f fastpathDTMsgpackBytes) DecMapIntUint8X(vp *map[int]uint8, d *decoderMsg
 		return
 	}
 	if *vp == nil {
-		*vp = make(map[int]uint8, decInferLen(containerLen, d.h.MaxInitLen, 9))
+		*vp = make(map[int]uint8, decInferLen(containerLen, d.maxInitLen(), 9))
 	}
 	if containerLen != 0 {
 		f.DecMapIntUint8L(*vp, containerLen, d)
@@ -5449,7 +5449,7 @@ func (d *decoderMsgpackBytes) fastpathDecMapIntUint64R(f *decFnInfo, rv reflect.
 	if rv.Kind() == reflect.Ptr {
 		vp, _ := rv2i(rv).(*map[int]uint64)
 		if *vp == nil {
-			*vp = make(map[int]uint64, decInferLen(containerLen, d.h.MaxInitLen, 16))
+			*vp = make(map[int]uint64, decInferLen(containerLen, d.maxInitLen(), 16))
 		}
 		if containerLen != 0 {
 			ft.DecMapIntUint64L(*vp, containerLen, d)
@@ -5466,7 +5466,7 @@ func (f fastpathDTMsgpackBytes) DecMapIntUint64X(vp *map[int]uint64, d *decoderM
 		return
 	}
 	if *vp == nil {
-		*vp = make(map[int]uint64, decInferLen(containerLen, d.h.MaxInitLen, 16))
+		*vp = make(map[int]uint64, decInferLen(containerLen, d.maxInitLen(), 16))
 	}
 	if containerLen != 0 {
 		f.DecMapIntUint64L(*vp, containerLen, d)
@@ -5495,7 +5495,7 @@ func (d *decoderMsgpackBytes) fastpathDecMapIntIntR(f *decFnInfo, rv reflect.Val
 	if rv.Kind() == reflect.Ptr {
 		vp, _ := rv2i(rv).(*map[int]int)
 		if *vp == nil {
-			*vp = make(map[int]int, decInferLen(containerLen, d.h.MaxInitLen, 16))
+			*vp = make(map[int]int, decInferLen(containerLen, d.maxInitLen(), 16))
 		}
 		if containerLen != 0 {
 			ft.DecMapIntIntL(*vp, containerLen, d)
@@ -5512,7 +5512,7 @@ func (f fastpathDTMsgpackBytes) DecMapIntIntX(vp *map[int]int, d *decoderMsgpack
 		return
 	}
 	if *vp == nil {
-		*vp = make(map[int]int, decInferLen(containerLen, d.h.MaxInitLen, 16))
+		*vp = make(map[int]int, decInferLen(containerLen, d.maxInitLen(), 16))
 	}
 	if containerLen != 0 {
 		f.DecMapIntIntL(*vp, containerLen, d)
@@ -5541,7 +5541,7 @@ func (d *decoderMsgpackBytes) fastpathDecMapIntInt32R(f *decFnInfo, rv reflect.V
 	if rv.Kind() == reflect.Ptr {
 		vp, _ := rv2i(rv).(*map[int]int32)
 		if *vp == nil {
-			*vp = make(map[int]int32, decInferLen(containerLen, d.h.MaxInitLen, 12))
+			*vp = make(map[int]int32, decInferLen(containerLen, d.maxInitLen(), 12))
 		}
 		if containerLen != 0 {
 			ft.DecMapIntInt32L(*vp, containerLen, d)
@@ -5558,7 +5558,7 @@ func (f fastpathDTMsgpackBytes) DecMapIntInt32X(vp *map[int]int32, d *decoderMsg
 		return
 	}
 	if *vp == nil {
-		*vp = make(map[int]int32, decInferLen(containerLen, d.h.MaxInitLen, 12))
+		*vp = make(map[int]int32, decInferLen(containerLen, d.maxInitLen(), 12))
 	}
 	if containerLen != 0 {
 		f.DecMapIntInt32L(*vp, containerLen, d)
@@ -5587,7 +5587,7 @@ func (d *decoderMsgpackBytes) fastpathDecMapIntFloat64R(f *decFnInfo, rv reflect
 	if rv.Kind() == reflect.Ptr {
 		vp, _ := rv2i(rv).(*map[int]float64)
 		if *vp == nil {
-			*vp = make(map[int]float64, decInferLen(containerLen, d.h.MaxInitLen, 16))
+			*vp = make(map[int]float64, decInferLen(containerLen, d.maxInitLen(), 16))
 		}
 		if containerLen != 0 {
 			ft.DecMapIntFloat64L(*vp, containerLen, d)
@@ -5604,7 +5604,7 @@ func (f fastpathDTMsgpackBytes) DecMapIntFloat64X(vp *map[int]float64, d *decode
 		return
 	}
 	if *vp == nil {
-		*vp = make(map[int]float64, decInferLen(containerLen, d.h.MaxInitLen, 16))
+		*vp = make(map[int]float64, decInferLen(containerLen, d.maxInitLen(), 16))
 	}
 	if containerLen != 0 {
 		f.DecMapIntFloat64L(*vp, containerLen, d)
@@ -5633,7 +5633,7 @@ func (d *decoderMsgpackBytes) fastpathDecMapIntBoolR(f *decFnInfo, rv reflect.Va
 	if rv.Kind() == reflect.Ptr {
 		vp, _ := rv2i(rv).(*map[int]bool)
 		if *vp == nil {
-			*vp = make(map[int]bool, decInferLen(containerLen, d.h.MaxInitLen, 9))
+			*vp = make(map[int]bool, decInferLen(containerLen, d.maxInitLen(), 9))
 		}
 		if containerLen != 0 {
 			ft.DecMapIntBoolL(*vp, containerLen, d)
@@ -5650,7 +5650,7 @@ func (f fastpathDTMsgpackBytes) DecMapIntBoolX(vp *map[int]bool, d *decoderMsgpa
 		return
 	}
 	if *vp == nil {
-		*vp = make(map[int]bool, decInferLen(containerLen, d.h.MaxInitLen, 9))
+		*vp = make(map[int]bool, decInferLen(containerLen, d.maxInitLen(), 9))
 	}
 	if containerLen != 0 {
 		f.DecMapIntBoolL(*vp, containerLen, d)
@@ -5679,7 +5679,7 @@ func (d *decoderMsgpackBytes) fastpathDecMapInt32IntfR(f *decFnInfo, rv reflect.
 	if rv.Kind() == reflect.Ptr {
 		vp, _ := rv2i(rv).(*map[int32]interface{})
 		if *vp == nil {
-			*vp = make(map[int32]interface{}, decInferLen(containerLen, d.h.MaxInitLen, 20))
+			*vp = make(map[int32]interface{}, decInferLen(containerLen, d.maxInitLen(), 20))
 		}
 		if containerLen != 0 {
 			ft.DecMapInt32IntfL(*vp, containerLen, d)
@@ -5696,7 +5696,7 @@ func (f fastpathDTMsgpackBytes) DecMapInt32IntfX(vp *map[int32]interface{}, d *d
 		return
 	}
 	if *vp == nil {
-		*vp = make(map[int32]interface{}, decInferLen(containerLen, d.h.MaxInitLen, 20))
+		*vp = make(map[int32]interface{}, decInferLen(containerLen, d.maxInitLen(), 20))
 	}
 	if containerLen != 0 {
 		f.DecMapInt32IntfL(*vp, containerLen, d)
@@ -5731,7 +5731,7 @@ func (d *decoderMsgpackBytes) fastpathDecMapInt32StringR(f *decFnInfo, rv reflec
 	if rv.Kind() == reflect.Ptr {
 		vp, _ := rv2i(rv).(*map[int32]string)
 		if *vp == nil {
-			*vp = make(map[int32]string, decInferLen(containerLen, d.h.MaxInitLen, 20))
+			*vp = make(map[int32]string, decInferLen(containerLen, d.maxInitLen(), 20))
 		}
 		if containerLen != 0 {
 			ft.DecMapInt32StringL(*vp, containerLen, d)
@@ -5748,7 +5748,7 @@ func (f fastpathDTMsgpackBytes) DecMapInt32StringX(vp *map[int32]string, d *deco
 		return
 	}
 	if *vp == nil {
-		*vp = make(map[int32]string, decInferLen(containerLen, d.h.MaxInitLen, 20))
+		*vp = make(map[int32]string, decInferLen(containerLen, d.maxInitLen(), 20))
 	}
 	if containerLen != 0 {
 		f.DecMapInt32StringL(*vp, containerLen, d)
@@ -5767,7 +5767,7 @@ func (fastpathDTMsgpackBytes) DecMapInt32StringL(v map[int32]string, containerLe
 		d.mapElemKey()
 		mk = int32(chkOvf.IntV(d.d.DecodeInt64(), 32))
 		d.mapElemValue()
-		mv = d.stringZC(d.d.DecodeStringAsBytes(nil))
+		mv = d.string(d.d.DecodeStringAsBytes())
 		v[mk] = mv
 	}
 }
@@ -5777,7 +5777,7 @@ func (d *decoderMsgpackBytes) fastpathDecMapInt32BytesR(f *decFnInfo, rv reflect
 	if rv.Kind() == reflect.Ptr {
 		vp, _ := rv2i(rv).(*map[int32][]byte)
 		if *vp == nil {
-			*vp = make(map[int32][]byte, decInferLen(containerLen, d.h.MaxInitLen, 28))
+			*vp = make(map[int32][]byte, decInferLen(containerLen, d.maxInitLen(), 28))
 		}
 		if containerLen != 0 {
 			ft.DecMapInt32BytesL(*vp, containerLen, d)
@@ -5794,7 +5794,7 @@ func (f fastpathDTMsgpackBytes) DecMapInt32BytesX(vp *map[int32][]byte, d *decod
 		return
 	}
 	if *vp == nil {
-		*vp = make(map[int32][]byte, decInferLen(containerLen, d.h.MaxInitLen, 28))
+		*vp = make(map[int32][]byte, decInferLen(containerLen, d.maxInitLen(), 28))
 	}
 	if containerLen != 0 {
 		f.DecMapInt32BytesL(*vp, containerLen, d)
@@ -5829,7 +5829,7 @@ func (d *decoderMsgpackBytes) fastpathDecMapInt32Uint8R(f *decFnInfo, rv reflect
 	if rv.Kind() == reflect.Ptr {
 		vp, _ := rv2i(rv).(*map[int32]uint8)
 		if *vp == nil {
-			*vp = make(map[int32]uint8, decInferLen(containerLen, d.h.MaxInitLen, 5))
+			*vp = make(map[int32]uint8, decInferLen(containerLen, d.maxInitLen(), 5))
 		}
 		if containerLen != 0 {
 			ft.DecMapInt32Uint8L(*vp, containerLen, d)
@@ -5846,7 +5846,7 @@ func (f fastpathDTMsgpackBytes) DecMapInt32Uint8X(vp *map[int32]uint8, d *decode
 		return
 	}
 	if *vp == nil {
-		*vp = make(map[int32]uint8, decInferLen(containerLen, d.h.MaxInitLen, 5))
+		*vp = make(map[int32]uint8, decInferLen(containerLen, d.maxInitLen(), 5))
 	}
 	if containerLen != 0 {
 		f.DecMapInt32Uint8L(*vp, containerLen, d)
@@ -5875,7 +5875,7 @@ func (d *decoderMsgpackBytes) fastpathDecMapInt32Uint64R(f *decFnInfo, rv reflec
 	if rv.Kind() == reflect.Ptr {
 		vp, _ := rv2i(rv).(*map[int32]uint64)
 		if *vp == nil {
-			*vp = make(map[int32]uint64, decInferLen(containerLen, d.h.MaxInitLen, 12))
+			*vp = make(map[int32]uint64, decInferLen(containerLen, d.maxInitLen(), 12))
 		}
 		if containerLen != 0 {
 			ft.DecMapInt32Uint64L(*vp, containerLen, d)
@@ -5892,7 +5892,7 @@ func (f fastpathDTMsgpackBytes) DecMapInt32Uint64X(vp *map[int32]uint64, d *deco
 		return
 	}
 	if *vp == nil {
-		*vp = make(map[int32]uint64, decInferLen(containerLen, d.h.MaxInitLen, 12))
+		*vp = make(map[int32]uint64, decInferLen(containerLen, d.maxInitLen(), 12))
 	}
 	if containerLen != 0 {
 		f.DecMapInt32Uint64L(*vp, containerLen, d)
@@ -5921,7 +5921,7 @@ func (d *decoderMsgpackBytes) fastpathDecMapInt32IntR(f *decFnInfo, rv reflect.V
 	if rv.Kind() == reflect.Ptr {
 		vp, _ := rv2i(rv).(*map[int32]int)
 		if *vp == nil {
-			*vp = make(map[int32]int, decInferLen(containerLen, d.h.MaxInitLen, 12))
+			*vp = make(map[int32]int, decInferLen(containerLen, d.maxInitLen(), 12))
 		}
 		if containerLen != 0 {
 			ft.DecMapInt32IntL(*vp, containerLen, d)
@@ -5938,7 +5938,7 @@ func (f fastpathDTMsgpackBytes) DecMapInt32IntX(vp *map[int32]int, d *decoderMsg
 		return
 	}
 	if *vp == nil {
-		*vp = make(map[int32]int, decInferLen(containerLen, d.h.MaxInitLen, 12))
+		*vp = make(map[int32]int, decInferLen(containerLen, d.maxInitLen(), 12))
 	}
 	if containerLen != 0 {
 		f.DecMapInt32IntL(*vp, containerLen, d)
@@ -5967,7 +5967,7 @@ func (d *decoderMsgpackBytes) fastpathDecMapInt32Int32R(f *decFnInfo, rv reflect
 	if rv.Kind() == reflect.Ptr {
 		vp, _ := rv2i(rv).(*map[int32]int32)
 		if *vp == nil {
-			*vp = make(map[int32]int32, decInferLen(containerLen, d.h.MaxInitLen, 8))
+			*vp = make(map[int32]int32, decInferLen(containerLen, d.maxInitLen(), 8))
 		}
 		if containerLen != 0 {
 			ft.DecMapInt32Int32L(*vp, containerLen, d)
@@ -5984,7 +5984,7 @@ func (f fastpathDTMsgpackBytes) DecMapInt32Int32X(vp *map[int32]int32, d *decode
 		return
 	}
 	if *vp == nil {
-		*vp = make(map[int32]int32, decInferLen(containerLen, d.h.MaxInitLen, 8))
+		*vp = make(map[int32]int32, decInferLen(containerLen, d.maxInitLen(), 8))
 	}
 	if containerLen != 0 {
 		f.DecMapInt32Int32L(*vp, containerLen, d)
@@ -6013,7 +6013,7 @@ func (d *decoderMsgpackBytes) fastpathDecMapInt32Float64R(f *decFnInfo, rv refle
 	if rv.Kind() == reflect.Ptr {
 		vp, _ := rv2i(rv).(*map[int32]float64)
 		if *vp == nil {
-			*vp = make(map[int32]float64, decInferLen(containerLen, d.h.MaxInitLen, 12))
+			*vp = make(map[int32]float64, decInferLen(containerLen, d.maxInitLen(), 12))
 		}
 		if containerLen != 0 {
 			ft.DecMapInt32Float64L(*vp, containerLen, d)
@@ -6030,7 +6030,7 @@ func (f fastpathDTMsgpackBytes) DecMapInt32Float64X(vp *map[int32]float64, d *de
 		return
 	}
 	if *vp == nil {
-		*vp = make(map[int32]float64, decInferLen(containerLen, d.h.MaxInitLen, 12))
+		*vp = make(map[int32]float64, decInferLen(containerLen, d.maxInitLen(), 12))
 	}
 	if containerLen != 0 {
 		f.DecMapInt32Float64L(*vp, containerLen, d)
@@ -6059,7 +6059,7 @@ func (d *decoderMsgpackBytes) fastpathDecMapInt32BoolR(f *decFnInfo, rv reflect.
 	if rv.Kind() == reflect.Ptr {
 		vp, _ := rv2i(rv).(*map[int32]bool)
 		if *vp == nil {
-			*vp = make(map[int32]bool, decInferLen(containerLen, d.h.MaxInitLen, 5))
+			*vp = make(map[int32]bool, decInferLen(containerLen, d.maxInitLen(), 5))
 		}
 		if containerLen != 0 {
 			ft.DecMapInt32BoolL(*vp, containerLen, d)
@@ -6076,7 +6076,7 @@ func (f fastpathDTMsgpackBytes) DecMapInt32BoolX(vp *map[int32]bool, d *decoderM
 		return
 	}
 	if *vp == nil {
-		*vp = make(map[int32]bool, decInferLen(containerLen, d.h.MaxInitLen, 5))
+		*vp = make(map[int32]bool, decInferLen(containerLen, d.maxInitLen(), 5))
 	}
 	if containerLen != 0 {
 		f.DecMapInt32BoolL(*vp, containerLen, d)
@@ -8983,7 +8983,7 @@ func (fastpathDTMsgpackIO) DecSliceIntfY(v []interface{}, d *decoderMsgpackIO) (
 	var xlen int
 	if hasLen {
 		if containerLenS > cap(v) {
-			xlen = decInferLen(containerLenS, d.h.MaxInitLen, 16)
+			xlen = int(decInferLen(containerLenS, d.maxInitLen(), 16))
 			if xlen <= cap(v) {
 				v = v[:uint(xlen)]
 			} else {
@@ -8998,7 +8998,7 @@ func (fastpathDTMsgpackIO) DecSliceIntfY(v []interface{}, d *decoderMsgpackIO) (
 	var j int
 	for j = 0; d.containerNext(j, containerLenS, hasLen); j++ {
 		if j == 0 && len(v) == 0 {
-			xlen = decInferLen(containerLenS, d.h.MaxInitLen, 16)
+			xlen = int(decInferLen(containerLenS, d.maxInitLen(), 16))
 			v = make([]interface{}, uint(xlen))
 			changed = true
 		}
@@ -9083,7 +9083,7 @@ func (fastpathDTMsgpackIO) DecSliceStringY(v []string, d *decoderMsgpackIO) (v2 
 	var xlen int
 	if hasLen {
 		if containerLenS > cap(v) {
-			xlen = decInferLen(containerLenS, d.h.MaxInitLen, 16)
+			xlen = int(decInferLen(containerLenS, d.maxInitLen(), 16))
 			if xlen <= cap(v) {
 				v = v[:uint(xlen)]
 			} else {
@@ -9098,7 +9098,7 @@ func (fastpathDTMsgpackIO) DecSliceStringY(v []string, d *decoderMsgpackIO) (v2 
 	var j int
 	for j = 0; d.containerNext(j, containerLenS, hasLen); j++ {
 		if j == 0 && len(v) == 0 {
-			xlen = decInferLen(containerLenS, d.h.MaxInitLen, 16)
+			xlen = int(decInferLen(containerLenS, d.maxInitLen(), 16))
 			v = make([]string, uint(xlen))
 			changed = true
 		}
@@ -9107,7 +9107,7 @@ func (fastpathDTMsgpackIO) DecSliceStringY(v []string, d *decoderMsgpackIO) (v2 
 			changed = true
 		}
 		slh.ElemContainerState(j)
-		v[uint(j)] = d.stringZC(d.d.DecodeStringAsBytes(nil))
+		v[uint(j)] = d.string(d.d.DecodeStringAsBytes())
 	}
 	if j < len(v) {
 		v = v[:uint(j)]
@@ -9135,7 +9135,7 @@ func (fastpathDTMsgpackIO) DecSliceStringN(v []string, d *decoderMsgpackIO) {
 			return
 		}
 		slh.ElemContainerState(j)
-		v[uint(j)] = d.stringZC(d.d.DecodeStringAsBytes(nil))
+		v[uint(j)] = d.string(d.d.DecodeStringAsBytes())
 	}
 	slh.End()
 }
@@ -9183,7 +9183,7 @@ func (fastpathDTMsgpackIO) DecSliceBytesY(v [][]byte, d *decoderMsgpackIO) (v2 [
 	var xlen int
 	if hasLen {
 		if containerLenS > cap(v) {
-			xlen = decInferLen(containerLenS, d.h.MaxInitLen, 24)
+			xlen = int(decInferLen(containerLenS, d.maxInitLen(), 24))
 			if xlen <= cap(v) {
 				v = v[:uint(xlen)]
 			} else {
@@ -9198,7 +9198,7 @@ func (fastpathDTMsgpackIO) DecSliceBytesY(v [][]byte, d *decoderMsgpackIO) (v2 [
 	var j int
 	for j = 0; d.containerNext(j, containerLenS, hasLen); j++ {
 		if j == 0 && len(v) == 0 {
-			xlen = decInferLen(containerLenS, d.h.MaxInitLen, 24)
+			xlen = int(decInferLen(containerLenS, d.maxInitLen(), 24))
 			v = make([][]byte, uint(xlen))
 			changed = true
 		}
@@ -9207,7 +9207,7 @@ func (fastpathDTMsgpackIO) DecSliceBytesY(v [][]byte, d *decoderMsgpackIO) (v2 [
 			changed = true
 		}
 		slh.ElemContainerState(j)
-		v[uint(j)] = bytesOk(d.d.DecodeBytes(zeroByteSlice))
+		v[uint(j)] = d.decodeBytesInto(v[uint(j)])
 	}
 	if j < len(v) {
 		v = v[:uint(j)]
@@ -9235,7 +9235,7 @@ func (fastpathDTMsgpackIO) DecSliceBytesN(v [][]byte, d *decoderMsgpackIO) {
 			return
 		}
 		slh.ElemContainerState(j)
-		v[uint(j)] = bytesOk(d.d.DecodeBytes(zeroByteSlice))
+		v[uint(j)] = d.decodeBytesInto(v[uint(j)])
 	}
 	slh.End()
 }
@@ -9283,7 +9283,7 @@ func (fastpathDTMsgpackIO) DecSliceFloat32Y(v []float32, d *decoderMsgpackIO) (v
 	var xlen int
 	if hasLen {
 		if containerLenS > cap(v) {
-			xlen = decInferLen(containerLenS, d.h.MaxInitLen, 4)
+			xlen = int(decInferLen(containerLenS, d.maxInitLen(), 4))
 			if xlen <= cap(v) {
 				v = v[:uint(xlen)]
 			} else {
@@ -9298,7 +9298,7 @@ func (fastpathDTMsgpackIO) DecSliceFloat32Y(v []float32, d *decoderMsgpackIO) (v
 	var j int
 	for j = 0; d.containerNext(j, containerLenS, hasLen); j++ {
 		if j == 0 && len(v) == 0 {
-			xlen = decInferLen(containerLenS, d.h.MaxInitLen, 4)
+			xlen = int(decInferLen(containerLenS, d.maxInitLen(), 4))
 			v = make([]float32, uint(xlen))
 			changed = true
 		}
@@ -9383,7 +9383,7 @@ func (fastpathDTMsgpackIO) DecSliceFloat64Y(v []float64, d *decoderMsgpackIO) (v
 	var xlen int
 	if hasLen {
 		if containerLenS > cap(v) {
-			xlen = decInferLen(containerLenS, d.h.MaxInitLen, 8)
+			xlen = int(decInferLen(containerLenS, d.maxInitLen(), 8))
 			if xlen <= cap(v) {
 				v = v[:uint(xlen)]
 			} else {
@@ -9398,7 +9398,7 @@ func (fastpathDTMsgpackIO) DecSliceFloat64Y(v []float64, d *decoderMsgpackIO) (v
 	var j int
 	for j = 0; d.containerNext(j, containerLenS, hasLen); j++ {
 		if j == 0 && len(v) == 0 {
-			xlen = decInferLen(containerLenS, d.h.MaxInitLen, 8)
+			xlen = int(decInferLen(containerLenS, d.maxInitLen(), 8))
 			v = make([]float64, uint(xlen))
 			changed = true
 		}
@@ -9491,7 +9491,7 @@ func (fastpathDTMsgpackIO) DecSliceUint8Y(v []uint8, d *decoderMsgpackIO) (v2 []
 	var xlen int
 	if hasLen {
 		if containerLenS > cap(v) {
-			xlen = decInferLen(containerLenS, d.h.MaxInitLen, 1)
+			xlen = int(decInferLen(containerLenS, d.maxInitLen(), 1))
 			if xlen <= cap(v) {
 				v = v[:uint(xlen)]
 			} else {
@@ -9506,7 +9506,7 @@ func (fastpathDTMsgpackIO) DecSliceUint8Y(v []uint8, d *decoderMsgpackIO) (v2 []
 	var j int
 	for j = 0; d.containerNext(j, containerLenS, hasLen); j++ {
 		if j == 0 && len(v) == 0 {
-			xlen = decInferLen(containerLenS, d.h.MaxInitLen, 1)
+			xlen = int(decInferLen(containerLenS, d.maxInitLen(), 1))
 			v = make([]uint8, uint(xlen))
 			changed = true
 		}
@@ -9601,7 +9601,7 @@ func (fastpathDTMsgpackIO) DecSliceUint64Y(v []uint64, d *decoderMsgpackIO) (v2 
 	var xlen int
 	if hasLen {
 		if containerLenS > cap(v) {
-			xlen = decInferLen(containerLenS, d.h.MaxInitLen, 8)
+			xlen = int(decInferLen(containerLenS, d.maxInitLen(), 8))
 			if xlen <= cap(v) {
 				v = v[:uint(xlen)]
 			} else {
@@ -9616,7 +9616,7 @@ func (fastpathDTMsgpackIO) DecSliceUint64Y(v []uint64, d *decoderMsgpackIO) (v2 
 	var j int
 	for j = 0; d.containerNext(j, containerLenS, hasLen); j++ {
 		if j == 0 && len(v) == 0 {
-			xlen = decInferLen(containerLenS, d.h.MaxInitLen, 8)
+			xlen = int(decInferLen(containerLenS, d.maxInitLen(), 8))
 			v = make([]uint64, uint(xlen))
 			changed = true
 		}
@@ -9701,7 +9701,7 @@ func (fastpathDTMsgpackIO) DecSliceIntY(v []int, d *decoderMsgpackIO) (v2 []int,
 	var xlen int
 	if hasLen {
 		if containerLenS > cap(v) {
-			xlen = decInferLen(containerLenS, d.h.MaxInitLen, 8)
+			xlen = int(decInferLen(containerLenS, d.maxInitLen(), 8))
 			if xlen <= cap(v) {
 				v = v[:uint(xlen)]
 			} else {
@@ -9716,7 +9716,7 @@ func (fastpathDTMsgpackIO) DecSliceIntY(v []int, d *decoderMsgpackIO) (v2 []int,
 	var j int
 	for j = 0; d.containerNext(j, containerLenS, hasLen); j++ {
 		if j == 0 && len(v) == 0 {
-			xlen = decInferLen(containerLenS, d.h.MaxInitLen, 8)
+			xlen = int(decInferLen(containerLenS, d.maxInitLen(), 8))
 			v = make([]int, uint(xlen))
 			changed = true
 		}
@@ -9801,7 +9801,7 @@ func (fastpathDTMsgpackIO) DecSliceInt32Y(v []int32, d *decoderMsgpackIO) (v2 []
 	var xlen int
 	if hasLen {
 		if containerLenS > cap(v) {
-			xlen = decInferLen(containerLenS, d.h.MaxInitLen, 4)
+			xlen = int(decInferLen(containerLenS, d.maxInitLen(), 4))
 			if xlen <= cap(v) {
 				v = v[:uint(xlen)]
 			} else {
@@ -9816,7 +9816,7 @@ func (fastpathDTMsgpackIO) DecSliceInt32Y(v []int32, d *decoderMsgpackIO) (v2 []
 	var j int
 	for j = 0; d.containerNext(j, containerLenS, hasLen); j++ {
 		if j == 0 && len(v) == 0 {
-			xlen = decInferLen(containerLenS, d.h.MaxInitLen, 4)
+			xlen = int(decInferLen(containerLenS, d.maxInitLen(), 4))
 			v = make([]int32, uint(xlen))
 			changed = true
 		}
@@ -9901,7 +9901,7 @@ func (fastpathDTMsgpackIO) DecSliceInt64Y(v []int64, d *decoderMsgpackIO) (v2 []
 	var xlen int
 	if hasLen {
 		if containerLenS > cap(v) {
-			xlen = decInferLen(containerLenS, d.h.MaxInitLen, 8)
+			xlen = int(decInferLen(containerLenS, d.maxInitLen(), 8))
 			if xlen <= cap(v) {
 				v = v[:uint(xlen)]
 			} else {
@@ -9916,7 +9916,7 @@ func (fastpathDTMsgpackIO) DecSliceInt64Y(v []int64, d *decoderMsgpackIO) (v2 []
 	var j int
 	for j = 0; d.containerNext(j, containerLenS, hasLen); j++ {
 		if j == 0 && len(v) == 0 {
-			xlen = decInferLen(containerLenS, d.h.MaxInitLen, 8)
+			xlen = int(decInferLen(containerLenS, d.maxInitLen(), 8))
 			v = make([]int64, uint(xlen))
 			changed = true
 		}
@@ -10001,7 +10001,7 @@ func (fastpathDTMsgpackIO) DecSliceBoolY(v []bool, d *decoderMsgpackIO) (v2 []bo
 	var xlen int
 	if hasLen {
 		if containerLenS > cap(v) {
-			xlen = decInferLen(containerLenS, d.h.MaxInitLen, 1)
+			xlen = int(decInferLen(containerLenS, d.maxInitLen(), 1))
 			if xlen <= cap(v) {
 				v = v[:uint(xlen)]
 			} else {
@@ -10016,7 +10016,7 @@ func (fastpathDTMsgpackIO) DecSliceBoolY(v []bool, d *decoderMsgpackIO) (v2 []bo
 	var j int
 	for j = 0; d.containerNext(j, containerLenS, hasLen); j++ {
 		if j == 0 && len(v) == 0 {
-			xlen = decInferLen(containerLenS, d.h.MaxInitLen, 1)
+			xlen = int(decInferLen(containerLenS, d.maxInitLen(), 1))
 			v = make([]bool, uint(xlen))
 			changed = true
 		}
@@ -10063,7 +10063,7 @@ func (d *decoderMsgpackIO) fastpathDecMapStringIntfR(f *decFnInfo, rv reflect.Va
 	if rv.Kind() == reflect.Ptr {
 		vp, _ := rv2i(rv).(*map[string]interface{})
 		if *vp == nil {
-			*vp = make(map[string]interface{}, decInferLen(containerLen, d.h.MaxInitLen, 32))
+			*vp = make(map[string]interface{}, decInferLen(containerLen, d.maxInitLen(), 32))
 		}
 		if containerLen != 0 {
 			ft.DecMapStringIntfL(*vp, containerLen, d)
@@ -10080,7 +10080,7 @@ func (f fastpathDTMsgpackIO) DecMapStringIntfX(vp *map[string]interface{}, d *de
 		return
 	}
 	if *vp == nil {
-		*vp = make(map[string]interface{}, decInferLen(containerLen, d.h.MaxInitLen, 32))
+		*vp = make(map[string]interface{}, decInferLen(containerLen, d.maxInitLen(), 32))
 	}
 	if containerLen != 0 {
 		f.DecMapStringIntfL(*vp, containerLen, d)
@@ -10098,7 +10098,7 @@ func (fastpathDTMsgpackIO) DecMapStringIntfL(v map[string]interface{}, container
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
 		d.mapElemKey()
-		mk = d.stringZC(d.d.DecodeStringAsBytes(nil))
+		mk = d.string(d.d.DecodeStringAsBytes())
 		d.mapElemValue()
 		if mapGet {
 			mv = v[mk]
@@ -10115,7 +10115,7 @@ func (d *decoderMsgpackIO) fastpathDecMapStringStringR(f *decFnInfo, rv reflect.
 	if rv.Kind() == reflect.Ptr {
 		vp, _ := rv2i(rv).(*map[string]string)
 		if *vp == nil {
-			*vp = make(map[string]string, decInferLen(containerLen, d.h.MaxInitLen, 32))
+			*vp = make(map[string]string, decInferLen(containerLen, d.maxInitLen(), 32))
 		}
 		if containerLen != 0 {
 			ft.DecMapStringStringL(*vp, containerLen, d)
@@ -10132,7 +10132,7 @@ func (f fastpathDTMsgpackIO) DecMapStringStringX(vp *map[string]string, d *decod
 		return
 	}
 	if *vp == nil {
-		*vp = make(map[string]string, decInferLen(containerLen, d.h.MaxInitLen, 32))
+		*vp = make(map[string]string, decInferLen(containerLen, d.maxInitLen(), 32))
 	}
 	if containerLen != 0 {
 		f.DecMapStringStringL(*vp, containerLen, d)
@@ -10149,9 +10149,9 @@ func (fastpathDTMsgpackIO) DecMapStringStringL(v map[string]string, containerLen
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
 		d.mapElemKey()
-		mk = d.stringZC(d.d.DecodeStringAsBytes(nil))
+		mk = d.string(d.d.DecodeStringAsBytes())
 		d.mapElemValue()
-		mv = d.stringZC(d.d.DecodeStringAsBytes(nil))
+		mv = d.string(d.d.DecodeStringAsBytes())
 		v[mk] = mv
 	}
 }
@@ -10161,7 +10161,7 @@ func (d *decoderMsgpackIO) fastpathDecMapStringBytesR(f *decFnInfo, rv reflect.V
 	if rv.Kind() == reflect.Ptr {
 		vp, _ := rv2i(rv).(*map[string][]byte)
 		if *vp == nil {
-			*vp = make(map[string][]byte, decInferLen(containerLen, d.h.MaxInitLen, 40))
+			*vp = make(map[string][]byte, decInferLen(containerLen, d.maxInitLen(), 40))
 		}
 		if containerLen != 0 {
 			ft.DecMapStringBytesL(*vp, containerLen, d)
@@ -10178,7 +10178,7 @@ func (f fastpathDTMsgpackIO) DecMapStringBytesX(vp *map[string][]byte, d *decode
 		return
 	}
 	if *vp == nil {
-		*vp = make(map[string][]byte, decInferLen(containerLen, d.h.MaxInitLen, 40))
+		*vp = make(map[string][]byte, decInferLen(containerLen, d.maxInitLen(), 40))
 	}
 	if containerLen != 0 {
 		f.DecMapStringBytesL(*vp, containerLen, d)
@@ -10196,7 +10196,7 @@ func (fastpathDTMsgpackIO) DecMapStringBytesL(v map[string][]byte, containerLen 
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
 		d.mapElemKey()
-		mk = d.stringZC(d.d.DecodeStringAsBytes(nil))
+		mk = d.string(d.d.DecodeStringAsBytes())
 		d.mapElemValue()
 		if mapGet {
 			mv = v[mk]
@@ -10213,7 +10213,7 @@ func (d *decoderMsgpackIO) fastpathDecMapStringUint8R(f *decFnInfo, rv reflect.V
 	if rv.Kind() == reflect.Ptr {
 		vp, _ := rv2i(rv).(*map[string]uint8)
 		if *vp == nil {
-			*vp = make(map[string]uint8, decInferLen(containerLen, d.h.MaxInitLen, 17))
+			*vp = make(map[string]uint8, decInferLen(containerLen, d.maxInitLen(), 17))
 		}
 		if containerLen != 0 {
 			ft.DecMapStringUint8L(*vp, containerLen, d)
@@ -10230,7 +10230,7 @@ func (f fastpathDTMsgpackIO) DecMapStringUint8X(vp *map[string]uint8, d *decoder
 		return
 	}
 	if *vp == nil {
-		*vp = make(map[string]uint8, decInferLen(containerLen, d.h.MaxInitLen, 17))
+		*vp = make(map[string]uint8, decInferLen(containerLen, d.maxInitLen(), 17))
 	}
 	if containerLen != 0 {
 		f.DecMapStringUint8L(*vp, containerLen, d)
@@ -10247,7 +10247,7 @@ func (fastpathDTMsgpackIO) DecMapStringUint8L(v map[string]uint8, containerLen i
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
 		d.mapElemKey()
-		mk = d.stringZC(d.d.DecodeStringAsBytes(nil))
+		mk = d.string(d.d.DecodeStringAsBytes())
 		d.mapElemValue()
 		mv = uint8(chkOvf.UintV(d.d.DecodeUint64(), 8))
 		v[mk] = mv
@@ -10259,7 +10259,7 @@ func (d *decoderMsgpackIO) fastpathDecMapStringUint64R(f *decFnInfo, rv reflect.
 	if rv.Kind() == reflect.Ptr {
 		vp, _ := rv2i(rv).(*map[string]uint64)
 		if *vp == nil {
-			*vp = make(map[string]uint64, decInferLen(containerLen, d.h.MaxInitLen, 24))
+			*vp = make(map[string]uint64, decInferLen(containerLen, d.maxInitLen(), 24))
 		}
 		if containerLen != 0 {
 			ft.DecMapStringUint64L(*vp, containerLen, d)
@@ -10276,7 +10276,7 @@ func (f fastpathDTMsgpackIO) DecMapStringUint64X(vp *map[string]uint64, d *decod
 		return
 	}
 	if *vp == nil {
-		*vp = make(map[string]uint64, decInferLen(containerLen, d.h.MaxInitLen, 24))
+		*vp = make(map[string]uint64, decInferLen(containerLen, d.maxInitLen(), 24))
 	}
 	if containerLen != 0 {
 		f.DecMapStringUint64L(*vp, containerLen, d)
@@ -10293,7 +10293,7 @@ func (fastpathDTMsgpackIO) DecMapStringUint64L(v map[string]uint64, containerLen
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
 		d.mapElemKey()
-		mk = d.stringZC(d.d.DecodeStringAsBytes(nil))
+		mk = d.string(d.d.DecodeStringAsBytes())
 		d.mapElemValue()
 		mv = d.d.DecodeUint64()
 		v[mk] = mv
@@ -10305,7 +10305,7 @@ func (d *decoderMsgpackIO) fastpathDecMapStringIntR(f *decFnInfo, rv reflect.Val
 	if rv.Kind() == reflect.Ptr {
 		vp, _ := rv2i(rv).(*map[string]int)
 		if *vp == nil {
-			*vp = make(map[string]int, decInferLen(containerLen, d.h.MaxInitLen, 24))
+			*vp = make(map[string]int, decInferLen(containerLen, d.maxInitLen(), 24))
 		}
 		if containerLen != 0 {
 			ft.DecMapStringIntL(*vp, containerLen, d)
@@ -10322,7 +10322,7 @@ func (f fastpathDTMsgpackIO) DecMapStringIntX(vp *map[string]int, d *decoderMsgp
 		return
 	}
 	if *vp == nil {
-		*vp = make(map[string]int, decInferLen(containerLen, d.h.MaxInitLen, 24))
+		*vp = make(map[string]int, decInferLen(containerLen, d.maxInitLen(), 24))
 	}
 	if containerLen != 0 {
 		f.DecMapStringIntL(*vp, containerLen, d)
@@ -10339,7 +10339,7 @@ func (fastpathDTMsgpackIO) DecMapStringIntL(v map[string]int, containerLen int, 
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
 		d.mapElemKey()
-		mk = d.stringZC(d.d.DecodeStringAsBytes(nil))
+		mk = d.string(d.d.DecodeStringAsBytes())
 		d.mapElemValue()
 		mv = int(chkOvf.IntV(d.d.DecodeInt64(), intBitsize))
 		v[mk] = mv
@@ -10351,7 +10351,7 @@ func (d *decoderMsgpackIO) fastpathDecMapStringInt32R(f *decFnInfo, rv reflect.V
 	if rv.Kind() == reflect.Ptr {
 		vp, _ := rv2i(rv).(*map[string]int32)
 		if *vp == nil {
-			*vp = make(map[string]int32, decInferLen(containerLen, d.h.MaxInitLen, 20))
+			*vp = make(map[string]int32, decInferLen(containerLen, d.maxInitLen(), 20))
 		}
 		if containerLen != 0 {
 			ft.DecMapStringInt32L(*vp, containerLen, d)
@@ -10368,7 +10368,7 @@ func (f fastpathDTMsgpackIO) DecMapStringInt32X(vp *map[string]int32, d *decoder
 		return
 	}
 	if *vp == nil {
-		*vp = make(map[string]int32, decInferLen(containerLen, d.h.MaxInitLen, 20))
+		*vp = make(map[string]int32, decInferLen(containerLen, d.maxInitLen(), 20))
 	}
 	if containerLen != 0 {
 		f.DecMapStringInt32L(*vp, containerLen, d)
@@ -10385,7 +10385,7 @@ func (fastpathDTMsgpackIO) DecMapStringInt32L(v map[string]int32, containerLen i
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
 		d.mapElemKey()
-		mk = d.stringZC(d.d.DecodeStringAsBytes(nil))
+		mk = d.string(d.d.DecodeStringAsBytes())
 		d.mapElemValue()
 		mv = int32(chkOvf.IntV(d.d.DecodeInt64(), 32))
 		v[mk] = mv
@@ -10397,7 +10397,7 @@ func (d *decoderMsgpackIO) fastpathDecMapStringFloat64R(f *decFnInfo, rv reflect
 	if rv.Kind() == reflect.Ptr {
 		vp, _ := rv2i(rv).(*map[string]float64)
 		if *vp == nil {
-			*vp = make(map[string]float64, decInferLen(containerLen, d.h.MaxInitLen, 24))
+			*vp = make(map[string]float64, decInferLen(containerLen, d.maxInitLen(), 24))
 		}
 		if containerLen != 0 {
 			ft.DecMapStringFloat64L(*vp, containerLen, d)
@@ -10414,7 +10414,7 @@ func (f fastpathDTMsgpackIO) DecMapStringFloat64X(vp *map[string]float64, d *dec
 		return
 	}
 	if *vp == nil {
-		*vp = make(map[string]float64, decInferLen(containerLen, d.h.MaxInitLen, 24))
+		*vp = make(map[string]float64, decInferLen(containerLen, d.maxInitLen(), 24))
 	}
 	if containerLen != 0 {
 		f.DecMapStringFloat64L(*vp, containerLen, d)
@@ -10431,7 +10431,7 @@ func (fastpathDTMsgpackIO) DecMapStringFloat64L(v map[string]float64, containerL
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
 		d.mapElemKey()
-		mk = d.stringZC(d.d.DecodeStringAsBytes(nil))
+		mk = d.string(d.d.DecodeStringAsBytes())
 		d.mapElemValue()
 		mv = d.d.DecodeFloat64()
 		v[mk] = mv
@@ -10443,7 +10443,7 @@ func (d *decoderMsgpackIO) fastpathDecMapStringBoolR(f *decFnInfo, rv reflect.Va
 	if rv.Kind() == reflect.Ptr {
 		vp, _ := rv2i(rv).(*map[string]bool)
 		if *vp == nil {
-			*vp = make(map[string]bool, decInferLen(containerLen, d.h.MaxInitLen, 17))
+			*vp = make(map[string]bool, decInferLen(containerLen, d.maxInitLen(), 17))
 		}
 		if containerLen != 0 {
 			ft.DecMapStringBoolL(*vp, containerLen, d)
@@ -10460,7 +10460,7 @@ func (f fastpathDTMsgpackIO) DecMapStringBoolX(vp *map[string]bool, d *decoderMs
 		return
 	}
 	if *vp == nil {
-		*vp = make(map[string]bool, decInferLen(containerLen, d.h.MaxInitLen, 17))
+		*vp = make(map[string]bool, decInferLen(containerLen, d.maxInitLen(), 17))
 	}
 	if containerLen != 0 {
 		f.DecMapStringBoolL(*vp, containerLen, d)
@@ -10477,7 +10477,7 @@ func (fastpathDTMsgpackIO) DecMapStringBoolL(v map[string]bool, containerLen int
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
 		d.mapElemKey()
-		mk = d.stringZC(d.d.DecodeStringAsBytes(nil))
+		mk = d.string(d.d.DecodeStringAsBytes())
 		d.mapElemValue()
 		mv = d.d.DecodeBool()
 		v[mk] = mv
@@ -10489,7 +10489,7 @@ func (d *decoderMsgpackIO) fastpathDecMapUint8IntfR(f *decFnInfo, rv reflect.Val
 	if rv.Kind() == reflect.Ptr {
 		vp, _ := rv2i(rv).(*map[uint8]interface{})
 		if *vp == nil {
-			*vp = make(map[uint8]interface{}, decInferLen(containerLen, d.h.MaxInitLen, 17))
+			*vp = make(map[uint8]interface{}, decInferLen(containerLen, d.maxInitLen(), 17))
 		}
 		if containerLen != 0 {
 			ft.DecMapUint8IntfL(*vp, containerLen, d)
@@ -10506,7 +10506,7 @@ func (f fastpathDTMsgpackIO) DecMapUint8IntfX(vp *map[uint8]interface{}, d *deco
 		return
 	}
 	if *vp == nil {
-		*vp = make(map[uint8]interface{}, decInferLen(containerLen, d.h.MaxInitLen, 17))
+		*vp = make(map[uint8]interface{}, decInferLen(containerLen, d.maxInitLen(), 17))
 	}
 	if containerLen != 0 {
 		f.DecMapUint8IntfL(*vp, containerLen, d)
@@ -10541,7 +10541,7 @@ func (d *decoderMsgpackIO) fastpathDecMapUint8StringR(f *decFnInfo, rv reflect.V
 	if rv.Kind() == reflect.Ptr {
 		vp, _ := rv2i(rv).(*map[uint8]string)
 		if *vp == nil {
-			*vp = make(map[uint8]string, decInferLen(containerLen, d.h.MaxInitLen, 17))
+			*vp = make(map[uint8]string, decInferLen(containerLen, d.maxInitLen(), 17))
 		}
 		if containerLen != 0 {
 			ft.DecMapUint8StringL(*vp, containerLen, d)
@@ -10558,7 +10558,7 @@ func (f fastpathDTMsgpackIO) DecMapUint8StringX(vp *map[uint8]string, d *decoder
 		return
 	}
 	if *vp == nil {
-		*vp = make(map[uint8]string, decInferLen(containerLen, d.h.MaxInitLen, 17))
+		*vp = make(map[uint8]string, decInferLen(containerLen, d.maxInitLen(), 17))
 	}
 	if containerLen != 0 {
 		f.DecMapUint8StringL(*vp, containerLen, d)
@@ -10577,7 +10577,7 @@ func (fastpathDTMsgpackIO) DecMapUint8StringL(v map[uint8]string, containerLen i
 		d.mapElemKey()
 		mk = uint8(chkOvf.UintV(d.d.DecodeUint64(), 8))
 		d.mapElemValue()
-		mv = d.stringZC(d.d.DecodeStringAsBytes(nil))
+		mv = d.string(d.d.DecodeStringAsBytes())
 		v[mk] = mv
 	}
 }
@@ -10587,7 +10587,7 @@ func (d *decoderMsgpackIO) fastpathDecMapUint8BytesR(f *decFnInfo, rv reflect.Va
 	if rv.Kind() == reflect.Ptr {
 		vp, _ := rv2i(rv).(*map[uint8][]byte)
 		if *vp == nil {
-			*vp = make(map[uint8][]byte, decInferLen(containerLen, d.h.MaxInitLen, 25))
+			*vp = make(map[uint8][]byte, decInferLen(containerLen, d.maxInitLen(), 25))
 		}
 		if containerLen != 0 {
 			ft.DecMapUint8BytesL(*vp, containerLen, d)
@@ -10604,7 +10604,7 @@ func (f fastpathDTMsgpackIO) DecMapUint8BytesX(vp *map[uint8][]byte, d *decoderM
 		return
 	}
 	if *vp == nil {
-		*vp = make(map[uint8][]byte, decInferLen(containerLen, d.h.MaxInitLen, 25))
+		*vp = make(map[uint8][]byte, decInferLen(containerLen, d.maxInitLen(), 25))
 	}
 	if containerLen != 0 {
 		f.DecMapUint8BytesL(*vp, containerLen, d)
@@ -10639,7 +10639,7 @@ func (d *decoderMsgpackIO) fastpathDecMapUint8Uint8R(f *decFnInfo, rv reflect.Va
 	if rv.Kind() == reflect.Ptr {
 		vp, _ := rv2i(rv).(*map[uint8]uint8)
 		if *vp == nil {
-			*vp = make(map[uint8]uint8, decInferLen(containerLen, d.h.MaxInitLen, 2))
+			*vp = make(map[uint8]uint8, decInferLen(containerLen, d.maxInitLen(), 2))
 		}
 		if containerLen != 0 {
 			ft.DecMapUint8Uint8L(*vp, containerLen, d)
@@ -10656,7 +10656,7 @@ func (f fastpathDTMsgpackIO) DecMapUint8Uint8X(vp *map[uint8]uint8, d *decoderMs
 		return
 	}
 	if *vp == nil {
-		*vp = make(map[uint8]uint8, decInferLen(containerLen, d.h.MaxInitLen, 2))
+		*vp = make(map[uint8]uint8, decInferLen(containerLen, d.maxInitLen(), 2))
 	}
 	if containerLen != 0 {
 		f.DecMapUint8Uint8L(*vp, containerLen, d)
@@ -10685,7 +10685,7 @@ func (d *decoderMsgpackIO) fastpathDecMapUint8Uint64R(f *decFnInfo, rv reflect.V
 	if rv.Kind() == reflect.Ptr {
 		vp, _ := rv2i(rv).(*map[uint8]uint64)
 		if *vp == nil {
-			*vp = make(map[uint8]uint64, decInferLen(containerLen, d.h.MaxInitLen, 9))
+			*vp = make(map[uint8]uint64, decInferLen(containerLen, d.maxInitLen(), 9))
 		}
 		if containerLen != 0 {
 			ft.DecMapUint8Uint64L(*vp, containerLen, d)
@@ -10702,7 +10702,7 @@ func (f fastpathDTMsgpackIO) DecMapUint8Uint64X(vp *map[uint8]uint64, d *decoder
 		return
 	}
 	if *vp == nil {
-		*vp = make(map[uint8]uint64, decInferLen(containerLen, d.h.MaxInitLen, 9))
+		*vp = make(map[uint8]uint64, decInferLen(containerLen, d.maxInitLen(), 9))
 	}
 	if containerLen != 0 {
 		f.DecMapUint8Uint64L(*vp, containerLen, d)
@@ -10731,7 +10731,7 @@ func (d *decoderMsgpackIO) fastpathDecMapUint8IntR(f *decFnInfo, rv reflect.Valu
 	if rv.Kind() == reflect.Ptr {
 		vp, _ := rv2i(rv).(*map[uint8]int)
 		if *vp == nil {
-			*vp = make(map[uint8]int, decInferLen(containerLen, d.h.MaxInitLen, 9))
+			*vp = make(map[uint8]int, decInferLen(containerLen, d.maxInitLen(), 9))
 		}
 		if containerLen != 0 {
 			ft.DecMapUint8IntL(*vp, containerLen, d)
@@ -10748,7 +10748,7 @@ func (f fastpathDTMsgpackIO) DecMapUint8IntX(vp *map[uint8]int, d *decoderMsgpac
 		return
 	}
 	if *vp == nil {
-		*vp = make(map[uint8]int, decInferLen(containerLen, d.h.MaxInitLen, 9))
+		*vp = make(map[uint8]int, decInferLen(containerLen, d.maxInitLen(), 9))
 	}
 	if containerLen != 0 {
 		f.DecMapUint8IntL(*vp, containerLen, d)
@@ -10777,7 +10777,7 @@ func (d *decoderMsgpackIO) fastpathDecMapUint8Int32R(f *decFnInfo, rv reflect.Va
 	if rv.Kind() == reflect.Ptr {
 		vp, _ := rv2i(rv).(*map[uint8]int32)
 		if *vp == nil {
-			*vp = make(map[uint8]int32, decInferLen(containerLen, d.h.MaxInitLen, 5))
+			*vp = make(map[uint8]int32, decInferLen(containerLen, d.maxInitLen(), 5))
 		}
 		if containerLen != 0 {
 			ft.DecMapUint8Int32L(*vp, containerLen, d)
@@ -10794,7 +10794,7 @@ func (f fastpathDTMsgpackIO) DecMapUint8Int32X(vp *map[uint8]int32, d *decoderMs
 		return
 	}
 	if *vp == nil {
-		*vp = make(map[uint8]int32, decInferLen(containerLen, d.h.MaxInitLen, 5))
+		*vp = make(map[uint8]int32, decInferLen(containerLen, d.maxInitLen(), 5))
 	}
 	if containerLen != 0 {
 		f.DecMapUint8Int32L(*vp, containerLen, d)
@@ -10823,7 +10823,7 @@ func (d *decoderMsgpackIO) fastpathDecMapUint8Float64R(f *decFnInfo, rv reflect.
 	if rv.Kind() == reflect.Ptr {
 		vp, _ := rv2i(rv).(*map[uint8]float64)
 		if *vp == nil {
-			*vp = make(map[uint8]float64, decInferLen(containerLen, d.h.MaxInitLen, 9))
+			*vp = make(map[uint8]float64, decInferLen(containerLen, d.maxInitLen(), 9))
 		}
 		if containerLen != 0 {
 			ft.DecMapUint8Float64L(*vp, containerLen, d)
@@ -10840,7 +10840,7 @@ func (f fastpathDTMsgpackIO) DecMapUint8Float64X(vp *map[uint8]float64, d *decod
 		return
 	}
 	if *vp == nil {
-		*vp = make(map[uint8]float64, decInferLen(containerLen, d.h.MaxInitLen, 9))
+		*vp = make(map[uint8]float64, decInferLen(containerLen, d.maxInitLen(), 9))
 	}
 	if containerLen != 0 {
 		f.DecMapUint8Float64L(*vp, containerLen, d)
@@ -10869,7 +10869,7 @@ func (d *decoderMsgpackIO) fastpathDecMapUint8BoolR(f *decFnInfo, rv reflect.Val
 	if rv.Kind() == reflect.Ptr {
 		vp, _ := rv2i(rv).(*map[uint8]bool)
 		if *vp == nil {
-			*vp = make(map[uint8]bool, decInferLen(containerLen, d.h.MaxInitLen, 2))
+			*vp = make(map[uint8]bool, decInferLen(containerLen, d.maxInitLen(), 2))
 		}
 		if containerLen != 0 {
 			ft.DecMapUint8BoolL(*vp, containerLen, d)
@@ -10886,7 +10886,7 @@ func (f fastpathDTMsgpackIO) DecMapUint8BoolX(vp *map[uint8]bool, d *decoderMsgp
 		return
 	}
 	if *vp == nil {
-		*vp = make(map[uint8]bool, decInferLen(containerLen, d.h.MaxInitLen, 2))
+		*vp = make(map[uint8]bool, decInferLen(containerLen, d.maxInitLen(), 2))
 	}
 	if containerLen != 0 {
 		f.DecMapUint8BoolL(*vp, containerLen, d)
@@ -10915,7 +10915,7 @@ func (d *decoderMsgpackIO) fastpathDecMapUint64IntfR(f *decFnInfo, rv reflect.Va
 	if rv.Kind() == reflect.Ptr {
 		vp, _ := rv2i(rv).(*map[uint64]interface{})
 		if *vp == nil {
-			*vp = make(map[uint64]interface{}, decInferLen(containerLen, d.h.MaxInitLen, 24))
+			*vp = make(map[uint64]interface{}, decInferLen(containerLen, d.maxInitLen(), 24))
 		}
 		if containerLen != 0 {
 			ft.DecMapUint64IntfL(*vp, containerLen, d)
@@ -10932,7 +10932,7 @@ func (f fastpathDTMsgpackIO) DecMapUint64IntfX(vp *map[uint64]interface{}, d *de
 		return
 	}
 	if *vp == nil {
-		*vp = make(map[uint64]interface{}, decInferLen(containerLen, d.h.MaxInitLen, 24))
+		*vp = make(map[uint64]interface{}, decInferLen(containerLen, d.maxInitLen(), 24))
 	}
 	if containerLen != 0 {
 		f.DecMapUint64IntfL(*vp, containerLen, d)
@@ -10967,7 +10967,7 @@ func (d *decoderMsgpackIO) fastpathDecMapUint64StringR(f *decFnInfo, rv reflect.
 	if rv.Kind() == reflect.Ptr {
 		vp, _ := rv2i(rv).(*map[uint64]string)
 		if *vp == nil {
-			*vp = make(map[uint64]string, decInferLen(containerLen, d.h.MaxInitLen, 24))
+			*vp = make(map[uint64]string, decInferLen(containerLen, d.maxInitLen(), 24))
 		}
 		if containerLen != 0 {
 			ft.DecMapUint64StringL(*vp, containerLen, d)
@@ -10984,7 +10984,7 @@ func (f fastpathDTMsgpackIO) DecMapUint64StringX(vp *map[uint64]string, d *decod
 		return
 	}
 	if *vp == nil {
-		*vp = make(map[uint64]string, decInferLen(containerLen, d.h.MaxInitLen, 24))
+		*vp = make(map[uint64]string, decInferLen(containerLen, d.maxInitLen(), 24))
 	}
 	if containerLen != 0 {
 		f.DecMapUint64StringL(*vp, containerLen, d)
@@ -11003,7 +11003,7 @@ func (fastpathDTMsgpackIO) DecMapUint64StringL(v map[uint64]string, containerLen
 		d.mapElemKey()
 		mk = d.d.DecodeUint64()
 		d.mapElemValue()
-		mv = d.stringZC(d.d.DecodeStringAsBytes(nil))
+		mv = d.string(d.d.DecodeStringAsBytes())
 		v[mk] = mv
 	}
 }
@@ -11013,7 +11013,7 @@ func (d *decoderMsgpackIO) fastpathDecMapUint64BytesR(f *decFnInfo, rv reflect.V
 	if rv.Kind() == reflect.Ptr {
 		vp, _ := rv2i(rv).(*map[uint64][]byte)
 		if *vp == nil {
-			*vp = make(map[uint64][]byte, decInferLen(containerLen, d.h.MaxInitLen, 32))
+			*vp = make(map[uint64][]byte, decInferLen(containerLen, d.maxInitLen(), 32))
 		}
 		if containerLen != 0 {
 			ft.DecMapUint64BytesL(*vp, containerLen, d)
@@ -11030,7 +11030,7 @@ func (f fastpathDTMsgpackIO) DecMapUint64BytesX(vp *map[uint64][]byte, d *decode
 		return
 	}
 	if *vp == nil {
-		*vp = make(map[uint64][]byte, decInferLen(containerLen, d.h.MaxInitLen, 32))
+		*vp = make(map[uint64][]byte, decInferLen(containerLen, d.maxInitLen(), 32))
 	}
 	if containerLen != 0 {
 		f.DecMapUint64BytesL(*vp, containerLen, d)
@@ -11065,7 +11065,7 @@ func (d *decoderMsgpackIO) fastpathDecMapUint64Uint8R(f *decFnInfo, rv reflect.V
 	if rv.Kind() == reflect.Ptr {
 		vp, _ := rv2i(rv).(*map[uint64]uint8)
 		if *vp == nil {
-			*vp = make(map[uint64]uint8, decInferLen(containerLen, d.h.MaxInitLen, 9))
+			*vp = make(map[uint64]uint8, decInferLen(containerLen, d.maxInitLen(), 9))
 		}
 		if containerLen != 0 {
 			ft.DecMapUint64Uint8L(*vp, containerLen, d)
@@ -11082,7 +11082,7 @@ func (f fastpathDTMsgpackIO) DecMapUint64Uint8X(vp *map[uint64]uint8, d *decoder
 		return
 	}
 	if *vp == nil {
-		*vp = make(map[uint64]uint8, decInferLen(containerLen, d.h.MaxInitLen, 9))
+		*vp = make(map[uint64]uint8, decInferLen(containerLen, d.maxInitLen(), 9))
 	}
 	if containerLen != 0 {
 		f.DecMapUint64Uint8L(*vp, containerLen, d)
@@ -11111,7 +11111,7 @@ func (d *decoderMsgpackIO) fastpathDecMapUint64Uint64R(f *decFnInfo, rv reflect.
 	if rv.Kind() == reflect.Ptr {
 		vp, _ := rv2i(rv).(*map[uint64]uint64)
 		if *vp == nil {
-			*vp = make(map[uint64]uint64, decInferLen(containerLen, d.h.MaxInitLen, 16))
+			*vp = make(map[uint64]uint64, decInferLen(containerLen, d.maxInitLen(), 16))
 		}
 		if containerLen != 0 {
 			ft.DecMapUint64Uint64L(*vp, containerLen, d)
@@ -11128,7 +11128,7 @@ func (f fastpathDTMsgpackIO) DecMapUint64Uint64X(vp *map[uint64]uint64, d *decod
 		return
 	}
 	if *vp == nil {
-		*vp = make(map[uint64]uint64, decInferLen(containerLen, d.h.MaxInitLen, 16))
+		*vp = make(map[uint64]uint64, decInferLen(containerLen, d.maxInitLen(), 16))
 	}
 	if containerLen != 0 {
 		f.DecMapUint64Uint64L(*vp, containerLen, d)
@@ -11157,7 +11157,7 @@ func (d *decoderMsgpackIO) fastpathDecMapUint64IntR(f *decFnInfo, rv reflect.Val
 	if rv.Kind() == reflect.Ptr {
 		vp, _ := rv2i(rv).(*map[uint64]int)
 		if *vp == nil {
-			*vp = make(map[uint64]int, decInferLen(containerLen, d.h.MaxInitLen, 16))
+			*vp = make(map[uint64]int, decInferLen(containerLen, d.maxInitLen(), 16))
 		}
 		if containerLen != 0 {
 			ft.DecMapUint64IntL(*vp, containerLen, d)
@@ -11174,7 +11174,7 @@ func (f fastpathDTMsgpackIO) DecMapUint64IntX(vp *map[uint64]int, d *decoderMsgp
 		return
 	}
 	if *vp == nil {
-		*vp = make(map[uint64]int, decInferLen(containerLen, d.h.MaxInitLen, 16))
+		*vp = make(map[uint64]int, decInferLen(containerLen, d.maxInitLen(), 16))
 	}
 	if containerLen != 0 {
 		f.DecMapUint64IntL(*vp, containerLen, d)
@@ -11203,7 +11203,7 @@ func (d *decoderMsgpackIO) fastpathDecMapUint64Int32R(f *decFnInfo, rv reflect.V
 	if rv.Kind() == reflect.Ptr {
 		vp, _ := rv2i(rv).(*map[uint64]int32)
 		if *vp == nil {
-			*vp = make(map[uint64]int32, decInferLen(containerLen, d.h.MaxInitLen, 12))
+			*vp = make(map[uint64]int32, decInferLen(containerLen, d.maxInitLen(), 12))
 		}
 		if containerLen != 0 {
 			ft.DecMapUint64Int32L(*vp, containerLen, d)
@@ -11220,7 +11220,7 @@ func (f fastpathDTMsgpackIO) DecMapUint64Int32X(vp *map[uint64]int32, d *decoder
 		return
 	}
 	if *vp == nil {
-		*vp = make(map[uint64]int32, decInferLen(containerLen, d.h.MaxInitLen, 12))
+		*vp = make(map[uint64]int32, decInferLen(containerLen, d.maxInitLen(), 12))
 	}
 	if containerLen != 0 {
 		f.DecMapUint64Int32L(*vp, containerLen, d)
@@ -11249,7 +11249,7 @@ func (d *decoderMsgpackIO) fastpathDecMapUint64Float64R(f *decFnInfo, rv reflect
 	if rv.Kind() == reflect.Ptr {
 		vp, _ := rv2i(rv).(*map[uint64]float64)
 		if *vp == nil {
-			*vp = make(map[uint64]float64, decInferLen(containerLen, d.h.MaxInitLen, 16))
+			*vp = make(map[uint64]float64, decInferLen(containerLen, d.maxInitLen(), 16))
 		}
 		if containerLen != 0 {
 			ft.DecMapUint64Float64L(*vp, containerLen, d)
@@ -11266,7 +11266,7 @@ func (f fastpathDTMsgpackIO) DecMapUint64Float64X(vp *map[uint64]float64, d *dec
 		return
 	}
 	if *vp == nil {
-		*vp = make(map[uint64]float64, decInferLen(containerLen, d.h.MaxInitLen, 16))
+		*vp = make(map[uint64]float64, decInferLen(containerLen, d.maxInitLen(), 16))
 	}
 	if containerLen != 0 {
 		f.DecMapUint64Float64L(*vp, containerLen, d)
@@ -11295,7 +11295,7 @@ func (d *decoderMsgpackIO) fastpathDecMapUint64BoolR(f *decFnInfo, rv reflect.Va
 	if rv.Kind() == reflect.Ptr {
 		vp, _ := rv2i(rv).(*map[uint64]bool)
 		if *vp == nil {
-			*vp = make(map[uint64]bool, decInferLen(containerLen, d.h.MaxInitLen, 9))
+			*vp = make(map[uint64]bool, decInferLen(containerLen, d.maxInitLen(), 9))
 		}
 		if containerLen != 0 {
 			ft.DecMapUint64BoolL(*vp, containerLen, d)
@@ -11312,7 +11312,7 @@ func (f fastpathDTMsgpackIO) DecMapUint64BoolX(vp *map[uint64]bool, d *decoderMs
 		return
 	}
 	if *vp == nil {
-		*vp = make(map[uint64]bool, decInferLen(containerLen, d.h.MaxInitLen, 9))
+		*vp = make(map[uint64]bool, decInferLen(containerLen, d.maxInitLen(), 9))
 	}
 	if containerLen != 0 {
 		f.DecMapUint64BoolL(*vp, containerLen, d)
@@ -11341,7 +11341,7 @@ func (d *decoderMsgpackIO) fastpathDecMapIntIntfR(f *decFnInfo, rv reflect.Value
 	if rv.Kind() == reflect.Ptr {
 		vp, _ := rv2i(rv).(*map[int]interface{})
 		if *vp == nil {
-			*vp = make(map[int]interface{}, decInferLen(containerLen, d.h.MaxInitLen, 24))
+			*vp = make(map[int]interface{}, decInferLen(containerLen, d.maxInitLen(), 24))
 		}
 		if containerLen != 0 {
 			ft.DecMapIntIntfL(*vp, containerLen, d)
@@ -11358,7 +11358,7 @@ func (f fastpathDTMsgpackIO) DecMapIntIntfX(vp *map[int]interface{}, d *decoderM
 		return
 	}
 	if *vp == nil {
-		*vp = make(map[int]interface{}, decInferLen(containerLen, d.h.MaxInitLen, 24))
+		*vp = make(map[int]interface{}, decInferLen(containerLen, d.maxInitLen(), 24))
 	}
 	if containerLen != 0 {
 		f.DecMapIntIntfL(*vp, containerLen, d)
@@ -11393,7 +11393,7 @@ func (d *decoderMsgpackIO) fastpathDecMapIntStringR(f *decFnInfo, rv reflect.Val
 	if rv.Kind() == reflect.Ptr {
 		vp, _ := rv2i(rv).(*map[int]string)
 		if *vp == nil {
-			*vp = make(map[int]string, decInferLen(containerLen, d.h.MaxInitLen, 24))
+			*vp = make(map[int]string, decInferLen(containerLen, d.maxInitLen(), 24))
 		}
 		if containerLen != 0 {
 			ft.DecMapIntStringL(*vp, containerLen, d)
@@ -11410,7 +11410,7 @@ func (f fastpathDTMsgpackIO) DecMapIntStringX(vp *map[int]string, d *decoderMsgp
 		return
 	}
 	if *vp == nil {
-		*vp = make(map[int]string, decInferLen(containerLen, d.h.MaxInitLen, 24))
+		*vp = make(map[int]string, decInferLen(containerLen, d.maxInitLen(), 24))
 	}
 	if containerLen != 0 {
 		f.DecMapIntStringL(*vp, containerLen, d)
@@ -11429,7 +11429,7 @@ func (fastpathDTMsgpackIO) DecMapIntStringL(v map[int]string, containerLen int, 
 		d.mapElemKey()
 		mk = int(chkOvf.IntV(d.d.DecodeInt64(), intBitsize))
 		d.mapElemValue()
-		mv = d.stringZC(d.d.DecodeStringAsBytes(nil))
+		mv = d.string(d.d.DecodeStringAsBytes())
 		v[mk] = mv
 	}
 }
@@ -11439,7 +11439,7 @@ func (d *decoderMsgpackIO) fastpathDecMapIntBytesR(f *decFnInfo, rv reflect.Valu
 	if rv.Kind() == reflect.Ptr {
 		vp, _ := rv2i(rv).(*map[int][]byte)
 		if *vp == nil {
-			*vp = make(map[int][]byte, decInferLen(containerLen, d.h.MaxInitLen, 32))
+			*vp = make(map[int][]byte, decInferLen(containerLen, d.maxInitLen(), 32))
 		}
 		if containerLen != 0 {
 			ft.DecMapIntBytesL(*vp, containerLen, d)
@@ -11456,7 +11456,7 @@ func (f fastpathDTMsgpackIO) DecMapIntBytesX(vp *map[int][]byte, d *decoderMsgpa
 		return
 	}
 	if *vp == nil {
-		*vp = make(map[int][]byte, decInferLen(containerLen, d.h.MaxInitLen, 32))
+		*vp = make(map[int][]byte, decInferLen(containerLen, d.maxInitLen(), 32))
 	}
 	if containerLen != 0 {
 		f.DecMapIntBytesL(*vp, containerLen, d)
@@ -11491,7 +11491,7 @@ func (d *decoderMsgpackIO) fastpathDecMapIntUint8R(f *decFnInfo, rv reflect.Valu
 	if rv.Kind() == reflect.Ptr {
 		vp, _ := rv2i(rv).(*map[int]uint8)
 		if *vp == nil {
-			*vp = make(map[int]uint8, decInferLen(containerLen, d.h.MaxInitLen, 9))
+			*vp = make(map[int]uint8, decInferLen(containerLen, d.maxInitLen(), 9))
 		}
 		if containerLen != 0 {
 			ft.DecMapIntUint8L(*vp, containerLen, d)
@@ -11508,7 +11508,7 @@ func (f fastpathDTMsgpackIO) DecMapIntUint8X(vp *map[int]uint8, d *decoderMsgpac
 		return
 	}
 	if *vp == nil {
-		*vp = make(map[int]uint8, decInferLen(containerLen, d.h.MaxInitLen, 9))
+		*vp = make(map[int]uint8, decInferLen(containerLen, d.maxInitLen(), 9))
 	}
 	if containerLen != 0 {
 		f.DecMapIntUint8L(*vp, containerLen, d)
@@ -11537,7 +11537,7 @@ func (d *decoderMsgpackIO) fastpathDecMapIntUint64R(f *decFnInfo, rv reflect.Val
 	if rv.Kind() == reflect.Ptr {
 		vp, _ := rv2i(rv).(*map[int]uint64)
 		if *vp == nil {
-			*vp = make(map[int]uint64, decInferLen(containerLen, d.h.MaxInitLen, 16))
+			*vp = make(map[int]uint64, decInferLen(containerLen, d.maxInitLen(), 16))
 		}
 		if containerLen != 0 {
 			ft.DecMapIntUint64L(*vp, containerLen, d)
@@ -11554,7 +11554,7 @@ func (f fastpathDTMsgpackIO) DecMapIntUint64X(vp *map[int]uint64, d *decoderMsgp
 		return
 	}
 	if *vp == nil {
-		*vp = make(map[int]uint64, decInferLen(containerLen, d.h.MaxInitLen, 16))
+		*vp = make(map[int]uint64, decInferLen(containerLen, d.maxInitLen(), 16))
 	}
 	if containerLen != 0 {
 		f.DecMapIntUint64L(*vp, containerLen, d)
@@ -11583,7 +11583,7 @@ func (d *decoderMsgpackIO) fastpathDecMapIntIntR(f *decFnInfo, rv reflect.Value)
 	if rv.Kind() == reflect.Ptr {
 		vp, _ := rv2i(rv).(*map[int]int)
 		if *vp == nil {
-			*vp = make(map[int]int, decInferLen(containerLen, d.h.MaxInitLen, 16))
+			*vp = make(map[int]int, decInferLen(containerLen, d.maxInitLen(), 16))
 		}
 		if containerLen != 0 {
 			ft.DecMapIntIntL(*vp, containerLen, d)
@@ -11600,7 +11600,7 @@ func (f fastpathDTMsgpackIO) DecMapIntIntX(vp *map[int]int, d *decoderMsgpackIO)
 		return
 	}
 	if *vp == nil {
-		*vp = make(map[int]int, decInferLen(containerLen, d.h.MaxInitLen, 16))
+		*vp = make(map[int]int, decInferLen(containerLen, d.maxInitLen(), 16))
 	}
 	if containerLen != 0 {
 		f.DecMapIntIntL(*vp, containerLen, d)
@@ -11629,7 +11629,7 @@ func (d *decoderMsgpackIO) fastpathDecMapIntInt32R(f *decFnInfo, rv reflect.Valu
 	if rv.Kind() == reflect.Ptr {
 		vp, _ := rv2i(rv).(*map[int]int32)
 		if *vp == nil {
-			*vp = make(map[int]int32, decInferLen(containerLen, d.h.MaxInitLen, 12))
+			*vp = make(map[int]int32, decInferLen(containerLen, d.maxInitLen(), 12))
 		}
 		if containerLen != 0 {
 			ft.DecMapIntInt32L(*vp, containerLen, d)
@@ -11646,7 +11646,7 @@ func (f fastpathDTMsgpackIO) DecMapIntInt32X(vp *map[int]int32, d *decoderMsgpac
 		return
 	}
 	if *vp == nil {
-		*vp = make(map[int]int32, decInferLen(containerLen, d.h.MaxInitLen, 12))
+		*vp = make(map[int]int32, decInferLen(containerLen, d.maxInitLen(), 12))
 	}
 	if containerLen != 0 {
 		f.DecMapIntInt32L(*vp, containerLen, d)
@@ -11675,7 +11675,7 @@ func (d *decoderMsgpackIO) fastpathDecMapIntFloat64R(f *decFnInfo, rv reflect.Va
 	if rv.Kind() == reflect.Ptr {
 		vp, _ := rv2i(rv).(*map[int]float64)
 		if *vp == nil {
-			*vp = make(map[int]float64, decInferLen(containerLen, d.h.MaxInitLen, 16))
+			*vp = make(map[int]float64, decInferLen(containerLen, d.maxInitLen(), 16))
 		}
 		if containerLen != 0 {
 			ft.DecMapIntFloat64L(*vp, containerLen, d)
@@ -11692,7 +11692,7 @@ func (f fastpathDTMsgpackIO) DecMapIntFloat64X(vp *map[int]float64, d *decoderMs
 		return
 	}
 	if *vp == nil {
-		*vp = make(map[int]float64, decInferLen(containerLen, d.h.MaxInitLen, 16))
+		*vp = make(map[int]float64, decInferLen(containerLen, d.maxInitLen(), 16))
 	}
 	if containerLen != 0 {
 		f.DecMapIntFloat64L(*vp, containerLen, d)
@@ -11721,7 +11721,7 @@ func (d *decoderMsgpackIO) fastpathDecMapIntBoolR(f *decFnInfo, rv reflect.Value
 	if rv.Kind() == reflect.Ptr {
 		vp, _ := rv2i(rv).(*map[int]bool)
 		if *vp == nil {
-			*vp = make(map[int]bool, decInferLen(containerLen, d.h.MaxInitLen, 9))
+			*vp = make(map[int]bool, decInferLen(containerLen, d.maxInitLen(), 9))
 		}
 		if containerLen != 0 {
 			ft.DecMapIntBoolL(*vp, containerLen, d)
@@ -11738,7 +11738,7 @@ func (f fastpathDTMsgpackIO) DecMapIntBoolX(vp *map[int]bool, d *decoderMsgpackI
 		return
 	}
 	if *vp == nil {
-		*vp = make(map[int]bool, decInferLen(containerLen, d.h.MaxInitLen, 9))
+		*vp = make(map[int]bool, decInferLen(containerLen, d.maxInitLen(), 9))
 	}
 	if containerLen != 0 {
 		f.DecMapIntBoolL(*vp, containerLen, d)
@@ -11767,7 +11767,7 @@ func (d *decoderMsgpackIO) fastpathDecMapInt32IntfR(f *decFnInfo, rv reflect.Val
 	if rv.Kind() == reflect.Ptr {
 		vp, _ := rv2i(rv).(*map[int32]interface{})
 		if *vp == nil {
-			*vp = make(map[int32]interface{}, decInferLen(containerLen, d.h.MaxInitLen, 20))
+			*vp = make(map[int32]interface{}, decInferLen(containerLen, d.maxInitLen(), 20))
 		}
 		if containerLen != 0 {
 			ft.DecMapInt32IntfL(*vp, containerLen, d)
@@ -11784,7 +11784,7 @@ func (f fastpathDTMsgpackIO) DecMapInt32IntfX(vp *map[int32]interface{}, d *deco
 		return
 	}
 	if *vp == nil {
-		*vp = make(map[int32]interface{}, decInferLen(containerLen, d.h.MaxInitLen, 20))
+		*vp = make(map[int32]interface{}, decInferLen(containerLen, d.maxInitLen(), 20))
 	}
 	if containerLen != 0 {
 		f.DecMapInt32IntfL(*vp, containerLen, d)
@@ -11819,7 +11819,7 @@ func (d *decoderMsgpackIO) fastpathDecMapInt32StringR(f *decFnInfo, rv reflect.V
 	if rv.Kind() == reflect.Ptr {
 		vp, _ := rv2i(rv).(*map[int32]string)
 		if *vp == nil {
-			*vp = make(map[int32]string, decInferLen(containerLen, d.h.MaxInitLen, 20))
+			*vp = make(map[int32]string, decInferLen(containerLen, d.maxInitLen(), 20))
 		}
 		if containerLen != 0 {
 			ft.DecMapInt32StringL(*vp, containerLen, d)
@@ -11836,7 +11836,7 @@ func (f fastpathDTMsgpackIO) DecMapInt32StringX(vp *map[int32]string, d *decoder
 		return
 	}
 	if *vp == nil {
-		*vp = make(map[int32]string, decInferLen(containerLen, d.h.MaxInitLen, 20))
+		*vp = make(map[int32]string, decInferLen(containerLen, d.maxInitLen(), 20))
 	}
 	if containerLen != 0 {
 		f.DecMapInt32StringL(*vp, containerLen, d)
@@ -11855,7 +11855,7 @@ func (fastpathDTMsgpackIO) DecMapInt32StringL(v map[int32]string, containerLen i
 		d.mapElemKey()
 		mk = int32(chkOvf.IntV(d.d.DecodeInt64(), 32))
 		d.mapElemValue()
-		mv = d.stringZC(d.d.DecodeStringAsBytes(nil))
+		mv = d.string(d.d.DecodeStringAsBytes())
 		v[mk] = mv
 	}
 }
@@ -11865,7 +11865,7 @@ func (d *decoderMsgpackIO) fastpathDecMapInt32BytesR(f *decFnInfo, rv reflect.Va
 	if rv.Kind() == reflect.Ptr {
 		vp, _ := rv2i(rv).(*map[int32][]byte)
 		if *vp == nil {
-			*vp = make(map[int32][]byte, decInferLen(containerLen, d.h.MaxInitLen, 28))
+			*vp = make(map[int32][]byte, decInferLen(containerLen, d.maxInitLen(), 28))
 		}
 		if containerLen != 0 {
 			ft.DecMapInt32BytesL(*vp, containerLen, d)
@@ -11882,7 +11882,7 @@ func (f fastpathDTMsgpackIO) DecMapInt32BytesX(vp *map[int32][]byte, d *decoderM
 		return
 	}
 	if *vp == nil {
-		*vp = make(map[int32][]byte, decInferLen(containerLen, d.h.MaxInitLen, 28))
+		*vp = make(map[int32][]byte, decInferLen(containerLen, d.maxInitLen(), 28))
 	}
 	if containerLen != 0 {
 		f.DecMapInt32BytesL(*vp, containerLen, d)
@@ -11917,7 +11917,7 @@ func (d *decoderMsgpackIO) fastpathDecMapInt32Uint8R(f *decFnInfo, rv reflect.Va
 	if rv.Kind() == reflect.Ptr {
 		vp, _ := rv2i(rv).(*map[int32]uint8)
 		if *vp == nil {
-			*vp = make(map[int32]uint8, decInferLen(containerLen, d.h.MaxInitLen, 5))
+			*vp = make(map[int32]uint8, decInferLen(containerLen, d.maxInitLen(), 5))
 		}
 		if containerLen != 0 {
 			ft.DecMapInt32Uint8L(*vp, containerLen, d)
@@ -11934,7 +11934,7 @@ func (f fastpathDTMsgpackIO) DecMapInt32Uint8X(vp *map[int32]uint8, d *decoderMs
 		return
 	}
 	if *vp == nil {
-		*vp = make(map[int32]uint8, decInferLen(containerLen, d.h.MaxInitLen, 5))
+		*vp = make(map[int32]uint8, decInferLen(containerLen, d.maxInitLen(), 5))
 	}
 	if containerLen != 0 {
 		f.DecMapInt32Uint8L(*vp, containerLen, d)
@@ -11963,7 +11963,7 @@ func (d *decoderMsgpackIO) fastpathDecMapInt32Uint64R(f *decFnInfo, rv reflect.V
 	if rv.Kind() == reflect.Ptr {
 		vp, _ := rv2i(rv).(*map[int32]uint64)
 		if *vp == nil {
-			*vp = make(map[int32]uint64, decInferLen(containerLen, d.h.MaxInitLen, 12))
+			*vp = make(map[int32]uint64, decInferLen(containerLen, d.maxInitLen(), 12))
 		}
 		if containerLen != 0 {
 			ft.DecMapInt32Uint64L(*vp, containerLen, d)
@@ -11980,7 +11980,7 @@ func (f fastpathDTMsgpackIO) DecMapInt32Uint64X(vp *map[int32]uint64, d *decoder
 		return
 	}
 	if *vp == nil {
-		*vp = make(map[int32]uint64, decInferLen(containerLen, d.h.MaxInitLen, 12))
+		*vp = make(map[int32]uint64, decInferLen(containerLen, d.maxInitLen(), 12))
 	}
 	if containerLen != 0 {
 		f.DecMapInt32Uint64L(*vp, containerLen, d)
@@ -12009,7 +12009,7 @@ func (d *decoderMsgpackIO) fastpathDecMapInt32IntR(f *decFnInfo, rv reflect.Valu
 	if rv.Kind() == reflect.Ptr {
 		vp, _ := rv2i(rv).(*map[int32]int)
 		if *vp == nil {
-			*vp = make(map[int32]int, decInferLen(containerLen, d.h.MaxInitLen, 12))
+			*vp = make(map[int32]int, decInferLen(containerLen, d.maxInitLen(), 12))
 		}
 		if containerLen != 0 {
 			ft.DecMapInt32IntL(*vp, containerLen, d)
@@ -12026,7 +12026,7 @@ func (f fastpathDTMsgpackIO) DecMapInt32IntX(vp *map[int32]int, d *decoderMsgpac
 		return
 	}
 	if *vp == nil {
-		*vp = make(map[int32]int, decInferLen(containerLen, d.h.MaxInitLen, 12))
+		*vp = make(map[int32]int, decInferLen(containerLen, d.maxInitLen(), 12))
 	}
 	if containerLen != 0 {
 		f.DecMapInt32IntL(*vp, containerLen, d)
@@ -12055,7 +12055,7 @@ func (d *decoderMsgpackIO) fastpathDecMapInt32Int32R(f *decFnInfo, rv reflect.Va
 	if rv.Kind() == reflect.Ptr {
 		vp, _ := rv2i(rv).(*map[int32]int32)
 		if *vp == nil {
-			*vp = make(map[int32]int32, decInferLen(containerLen, d.h.MaxInitLen, 8))
+			*vp = make(map[int32]int32, decInferLen(containerLen, d.maxInitLen(), 8))
 		}
 		if containerLen != 0 {
 			ft.DecMapInt32Int32L(*vp, containerLen, d)
@@ -12072,7 +12072,7 @@ func (f fastpathDTMsgpackIO) DecMapInt32Int32X(vp *map[int32]int32, d *decoderMs
 		return
 	}
 	if *vp == nil {
-		*vp = make(map[int32]int32, decInferLen(containerLen, d.h.MaxInitLen, 8))
+		*vp = make(map[int32]int32, decInferLen(containerLen, d.maxInitLen(), 8))
 	}
 	if containerLen != 0 {
 		f.DecMapInt32Int32L(*vp, containerLen, d)
@@ -12101,7 +12101,7 @@ func (d *decoderMsgpackIO) fastpathDecMapInt32Float64R(f *decFnInfo, rv reflect.
 	if rv.Kind() == reflect.Ptr {
 		vp, _ := rv2i(rv).(*map[int32]float64)
 		if *vp == nil {
-			*vp = make(map[int32]float64, decInferLen(containerLen, d.h.MaxInitLen, 12))
+			*vp = make(map[int32]float64, decInferLen(containerLen, d.maxInitLen(), 12))
 		}
 		if containerLen != 0 {
 			ft.DecMapInt32Float64L(*vp, containerLen, d)
@@ -12118,7 +12118,7 @@ func (f fastpathDTMsgpackIO) DecMapInt32Float64X(vp *map[int32]float64, d *decod
 		return
 	}
 	if *vp == nil {
-		*vp = make(map[int32]float64, decInferLen(containerLen, d.h.MaxInitLen, 12))
+		*vp = make(map[int32]float64, decInferLen(containerLen, d.maxInitLen(), 12))
 	}
 	if containerLen != 0 {
 		f.DecMapInt32Float64L(*vp, containerLen, d)
@@ -12147,7 +12147,7 @@ func (d *decoderMsgpackIO) fastpathDecMapInt32BoolR(f *decFnInfo, rv reflect.Val
 	if rv.Kind() == reflect.Ptr {
 		vp, _ := rv2i(rv).(*map[int32]bool)
 		if *vp == nil {
-			*vp = make(map[int32]bool, decInferLen(containerLen, d.h.MaxInitLen, 5))
+			*vp = make(map[int32]bool, decInferLen(containerLen, d.maxInitLen(), 5))
 		}
 		if containerLen != 0 {
 			ft.DecMapInt32BoolL(*vp, containerLen, d)
@@ -12164,7 +12164,7 @@ func (f fastpathDTMsgpackIO) DecMapInt32BoolX(vp *map[int32]bool, d *decoderMsgp
 		return
 	}
 	if *vp == nil {
-		*vp = make(map[int32]bool, decInferLen(containerLen, d.h.MaxInitLen, 5))
+		*vp = make(map[int32]bool, decInferLen(containerLen, d.maxInitLen(), 5))
 	}
 	if containerLen != 0 {
 		f.DecMapInt32BoolL(*vp, containerLen, d)

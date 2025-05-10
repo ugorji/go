@@ -887,7 +887,20 @@ func (e *encoderJsonBytes) reset() {
 	e.err = nil
 }
 
+func (e *encoderJsonBytes) Encode(v interface{}) (err error) {
+
+	defer panicValToErr(e, callRecoverSentinel, &e.err, &err, debugging)
+	e.mustEncode(v)
+	return
+}
+
 func (e *encoderJsonBytes) MustEncode(v interface{}) {
+	defer panicValToErr(e, callRecoverSentinel, &e.err, nil, true)
+	e.mustEncode(v)
+	return
+}
+
+func (e *encoderJsonBytes) mustEncode(v interface{}) {
 	halt.onerror(e.err)
 	if e.hh == nil {
 		halt.onerror(errNoFormatHandle)
@@ -900,22 +913,6 @@ func (e *encoderJsonBytes) MustEncode(v interface{}) {
 		e.e.atEndOfEncode()
 		e.e.writerEnd()
 	}
-}
-
-func (e *encoderJsonBytes) Encode(v interface{}) (err error) {
-
-	if !debugging {
-		defer func() {
-
-			if x := recover(); x != nil {
-				panicValToErr(e, x, &e.err)
-				err = e.err
-			}
-		}()
-	}
-
-	e.MustEncode(v)
-	return
 }
 
 func (e *encoderJsonBytes) encode(iv interface{}) {
@@ -1463,14 +1460,14 @@ func (d *decoderJsonBytes) selferUnmarshal(_ *decFnInfo, rv reflect.Value) {
 
 func (d *decoderJsonBytes) binaryUnmarshal(_ *decFnInfo, rv reflect.Value) {
 	bm := rv2i(rv).(encoding.BinaryUnmarshaler)
-	xbs, _ := d.d.DecodeBytes(nil)
+	xbs, _ := d.d.DecodeBytes()
 	fnerr := bm.UnmarshalBinary(xbs)
 	halt.onerror(fnerr)
 }
 
 func (d *decoderJsonBytes) textUnmarshal(_ *decFnInfo, rv reflect.Value) {
 	tm := rv2i(rv).(encoding.TextUnmarshaler)
-	fnerr := tm.UnmarshalText(bytesOk(d.d.DecodeStringAsBytes(nil)))
+	fnerr := tm.UnmarshalText(bytesOk(d.d.DecodeStringAsBytes()))
 	halt.onerror(fnerr)
 }
 
@@ -1480,19 +1477,7 @@ func (d *decoderJsonBytes) jsonUnmarshal(_ *decFnInfo, rv reflect.Value) {
 
 func (d *decoderJsonBytes) jsonUnmarshalV(tm jsonUnmarshaler) {
 
-	var bs0 = zeroByteSlice
-	if !d.bytes {
-		bs0 = d.blist.get(256)
-	}
-	bs := d.d.nextValueBytes(bs0)
-	fnerr := tm.UnmarshalJSON(bs)
-	if !d.bytes {
-		d.blist.put(bs)
-		if !byteSliceSameData(bs0, bs) {
-			d.blist.put(bs0)
-		}
-	}
-	halt.onerror(fnerr)
+	halt.onerror(tm.UnmarshalJSON(d.d.nextValueBytes()))
 }
 
 func (d *decoderJsonBytes) kErr(_ *decFnInfo, rv reflect.Value) {
@@ -1505,7 +1490,7 @@ func (d *decoderJsonBytes) raw(_ *decFnInfo, rv reflect.Value) {
 }
 
 func (d *decoderJsonBytes) kString(_ *decFnInfo, rv reflect.Value) {
-	rvSetString(rv, d.stringZC(d.d.DecodeStringAsBytes(zeroByteSlice)))
+	rvSetString(rv, d.string(d.d.DecodeStringAsBytes()))
 }
 
 func (d *decoderJsonBytes) kBool(_ *decFnInfo, rv reflect.Value) {
@@ -1763,7 +1748,11 @@ func (d *decoderJsonBytes) kStructSimple(f *decFnInfo, rv reflect.Value) {
 		hasLen := containerLen >= 0
 		for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
 			d.mapElemKey()
-			rvkencname, _ := d.d.DecodeStringAsBytes(nil)
+			rvkencname, att := d.d.DecodeStringAsBytes()
+
+			if d.bufio && d.h.jsonHandle {
+				rvkencname = d.detach2Bytes(rvkencname, d.b[:], att)
+			}
 			d.mapElemValue()
 			if si := ti.siForEncName(rvkencname); si != nil {
 				d.kStructField(si, rv)
@@ -1817,12 +1806,17 @@ func (d *decoderJsonBytes) kStruct(f *decFnInfo, rv reflect.Value) {
 			name2 = make([]byte, 0, 16)
 		}
 		var rvkencname []byte
+		var att dBytesAttachState
 		tkt := ti.keyType
 		for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
 			d.mapElemKey()
 
 			if tkt == valueTypeString {
-				rvkencname, _ = d.d.DecodeStringAsBytes(nil)
+				rvkencname, att = d.d.DecodeStringAsBytes()
+
+				if d.bufio && d.h.jsonHandle {
+					rvkencname = d.detach2Bytes(rvkencname, d.b[:], att)
+				}
 			} else if tkt == valueTypeInt {
 				rvkencname = strconv.AppendInt(d.b[:0], d.d.DecodeInt64(), 10)
 			} else if tkt == valueTypeUint {
@@ -1933,11 +1927,12 @@ func (d *decoderJsonBytes) kSlice(f *decFnInfo, rv reflect.Value) {
 
 	rvlen := rvLenSlice(rv)
 	rvcap := rvCapSlice(rv)
+	maxInitLen := d.maxInitLen()
 	hasLen := containerLenS > 0
 	if hasLen {
 		if containerLenS > rvcap {
 			oldRvlenGtZero := rvlen > 0
-			rvlen1 := decInferLen(containerLenS, d.h.MaxInitLen, int(ti.elemsize))
+			rvlen1 := int(decInferLen(containerLenS, maxInitLen, uint(ti.elemsize)))
 			if rvlen1 == rvlen {
 			} else if rvlen1 <= rvcap {
 				if rvCanset {
@@ -1980,7 +1975,7 @@ func (d *decoderJsonBytes) kSlice(f *decFnInfo, rv reflect.Value) {
 		if j == 0 {
 			if rvIsNil(rv) {
 				if rvCanset {
-					rvlen = decInferLen(containerLenS, d.h.MaxInitLen, int(ti.elemsize))
+					rvlen = int(decInferLen(containerLenS, maxInitLen, uint(ti.elemsize)))
 					rv, rvCanset = rvMakeSlice(rv, f.ti, rvlen, rvlen)
 					rvcap = rvlen
 					rvChanged = !rvCanset
@@ -2151,7 +2146,7 @@ func (d *decoderJsonBytes) kChan(f *decFnInfo, rv reflect.Value) {
 		if !(ti.rtid == uint8SliceTypId || ti.elemkind == uint8(reflect.Uint8)) {
 			halt.errorf("bytes/string in stream must decode into slice/array of bytes, not %v", ti.rt)
 		}
-		bs2, _ := d.d.DecodeBytes(nil)
+		bs2, _ := d.d.DecodeBytes()
 		irv := rv2i(rv)
 		ch, ok := irv.(chan<- byte)
 		if !ok {
@@ -2190,12 +2185,13 @@ func (d *decoderJsonBytes) kChan(f *decFnInfo, rv reflect.Value) {
 
 	var rvlen int
 	hasLen := containerLenS > 0
+	maxInitLen := d.maxInitLen()
 
 	for j := 0; d.containerNext(j, containerLenS, hasLen); j++ {
 		if j == 0 {
 			if rvIsNil(rv) {
 				if hasLen {
-					rvlen = decInferLen(containerLenS, d.h.MaxInitLen, int(ti.elemsize))
+					rvlen = int(decInferLen(containerLenS, maxInitLen, uint(ti.elemsize)))
 				} else {
 					rvlen = decDefChanCap
 				}
@@ -2235,7 +2231,7 @@ func (d *decoderJsonBytes) kMap(f *decFnInfo, rv reflect.Value) {
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	ti := f.ti
 	if rvIsNil(rv) {
-		rvlen := decInferLen(containerLen, d.h.MaxInitLen, int(ti.keysize+ti.elemsize))
+		rvlen := int(decInferLen(containerLen, d.maxInitLen(), uint(ti.keysize+ti.elemsize)))
 		rvSetDirect(rv, makeMapReflect(ti.rt, rvlen))
 	}
 
@@ -2291,26 +2287,13 @@ func (d *decoderJsonBytes) kMap(f *decFnInfo, rv reflect.Value) {
 
 	ktypeIsString := ktypeId == stringTypId
 	ktypeIsIntf := ktypeId == intfTypId
-
 	hasLen := containerLen > 0
 
-	var kstrbs []byte
 	var kstr2bs []byte
-	var s string
+	var kstr string
 
-	var callFnRvk bool
-	var scratchBuf bool
-
-	fnRvk2 := func() (s string) {
-		callFnRvk = false
-
-		if len(kstr2bs) == 1 {
-			s = str4byte(kstr2bs[0])
-		} else if len(kstr2bs) != 0 {
-			s, callFnRvk = d.mapKeyString(&kstrbs, &kstr2bs, scratchBuf)
-		}
-		return
-	}
+	var mapKeyStringSharesBytesBuf bool
+	var att dBytesAttachState
 
 	var vElem, kElem reflect.Type
 	kbuiltin := ti.tikey.flagDecBuiltin && ti.keykind != uint8(reflect.Slice)
@@ -2323,7 +2306,8 @@ func (d *decoderJsonBytes) kMap(f *decFnInfo, rv reflect.Value) {
 	}
 
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-		callFnRvk = false
+		mapKeyStringSharesBytesBuf = false
+		kstr = ""
 		if j == 0 {
 
 			if decUseTransient && vTransient && kTransient {
@@ -2358,8 +2342,10 @@ func (d *decoderJsonBytes) kMap(f *decFnInfo, rv reflect.Value) {
 		if d.d.TryNil() {
 			rvSetZero(rvk)
 		} else if ktypeIsString {
-			kstr2bs, scratchBuf = d.d.DecodeStringAsBytes(nil)
-			rvSetString(rvk, fnRvk2())
+			kstr2bs, att = d.d.DecodeStringAsBytes()
+
+			kstr, mapKeyStringSharesBytesBuf = d.bytes2Str(kstr2bs, att)
+			rvSetString(rvk, kstr)
 		} else {
 			if kbuiltin {
 				if ktypePtr {
@@ -2377,26 +2363,36 @@ func (d *decoderJsonBytes) kMap(f *decFnInfo, rv reflect.Value) {
 			if ktypeIsIntf {
 				if rvk2 := rvk.Elem(); rvk2.IsValid() && rvk2.Type() == uint8SliceTyp {
 					kstr2bs = rvGetBytes(rvk2)
-					rvSetIntf(rvk, rv4istr(fnRvk2()))
+
+					kstr, mapKeyStringSharesBytesBuf = d.bytes2Str(kstr2bs, dBytesAttachView)
+					rvSetIntf(rvk, rv4istr(kstr))
 				}
 
 			}
 		}
 
+		if mapKeyStringSharesBytesBuf && d.bufio {
+			if ktypeIsString {
+				rvSetString(rvk, d.string(kstr2bs, att))
+			} else {
+				rvSetIntf(rvk, rv4istr(d.string(kstr2bs, att)))
+			}
+			mapKeyStringSharesBytesBuf = false
+		}
+
 		d.mapElemValue()
 
 		if d.d.TryNil() {
+			if mapKeyStringSharesBytesBuf {
+				if ktypeIsString {
+					rvSetString(rvk, d.string(kstr2bs, att))
+				} else {
+					rvSetIntf(rvk, rv4istr(d.string(kstr2bs, att)))
+				}
+			}
 
 			if !rvvz.IsValid() {
 				rvvz = rvZeroK(vtype, vtypeKind)
-			}
-			if callFnRvk {
-				s = d.string(kstr2bs)
-				if ktypeIsString {
-					rvSetString(rvk, s)
-				} else {
-					rvSetIntf(rvk, rv4istr(s))
-				}
 			}
 			mapSet(rv, rvk, rvvz, kfast, visindirect, visref)
 			continue
@@ -2450,6 +2446,13 @@ func (d *decoderJsonBytes) kMap(f *decFnInfo, rv reflect.Value) {
 		}
 
 	DECODE_VALUE_NO_CHECK_NIL:
+		if doMapSet && mapKeyStringSharesBytesBuf {
+			if ktypeIsString {
+				rvSetString(rvk, d.string(kstr2bs, att))
+			} else {
+				rvSetIntf(rvk, rv4istr(d.string(kstr2bs, att)))
+			}
+		}
 		if vbuiltin {
 			if vtypePtr {
 				if rvIsNil(rvv) {
@@ -2463,14 +2466,6 @@ func (d *decoderJsonBytes) kMap(f *decFnInfo, rv reflect.Value) {
 			d.decodeValueNoCheckNil(rvv, valFn)
 		}
 		if doMapSet {
-			if callFnRvk {
-				s = d.string(kstr2bs)
-				if ktypeIsString {
-					rvSetString(rvk, s)
-				} else {
-					rvSetIntf(rvk, rv4istr(s))
-				}
-			}
 			mapSet(rv, rvk, rvv, kfast, visindirect, visref)
 		}
 	}
@@ -2483,7 +2478,6 @@ func (d *decoderJsonBytes) init(h Handle) {
 	callMake(&d.d)
 	d.hh = h
 	d.h = h.getBasicHandle()
-	d.zeroCopy = d.h.ZeroCopy
 
 	d.err = errDecoderNotInitialized
 
@@ -2497,6 +2491,7 @@ func (d *decoderJsonBytes) init(h Handle) {
 		d.rtidFn = &d.h.rtidFnsDecBytes
 		d.rtidFnNoExt = &d.h.rtidFnsDecNoExtBytes
 	} else {
+		d.bufio = d.h.ReaderBufferSize > 0
 		d.rtidFn = &d.h.rtidFnsDecIO
 		d.rtidFnNoExt = &d.h.rtidFnsDecNoExtIO
 	}
@@ -2562,20 +2557,18 @@ func (d *decoderJsonBytes) ResetString(s string) {
 
 func (d *decoderJsonBytes) Decode(v interface{}) (err error) {
 
-	if !debugging {
-		defer func() {
-			if x := recover(); x != nil {
-				panicValToErr(d, x, &d.err)
-				err = d.err
-			}
-		}()
-	}
-
-	d.MustDecode(v)
+	defer panicValToErr(d, callRecoverSentinel, &d.err, &err, debugging)
+	d.mustDecode(v)
 	return
 }
 
 func (d *decoderJsonBytes) MustDecode(v interface{}) {
+	defer panicValToErr(d, callRecoverSentinel, &d.err, nil, true)
+	d.mustDecode(v)
+	return
+}
+
+func (d *decoderJsonBytes) mustDecode(v interface{}) {
 	halt.onerror(d.err)
 	if d.hh == nil {
 		halt.onerror(errNoFormatHandle)
@@ -2590,11 +2583,11 @@ func (d *decoderJsonBytes) Release() {
 }
 
 func (d *decoderJsonBytes) swallow() {
-	d.d.nextValueBytes(nil)
+	d.d.nextValueBytes()
 }
 
-func (d *decoderJsonBytes) nextValueBytes(start []byte) []byte {
-	return d.d.nextValueBytes(start)
+func (d *decoderJsonBytes) nextValueBytes() []byte {
+	return d.d.nextValueBytes()
 }
 
 func (d *decoderJsonBytes) decode(iv interface{}) {
@@ -2611,7 +2604,7 @@ func (d *decoderJsonBytes) decode(iv interface{}) {
 		}
 		d.decodeValue(v, nil)
 	case *string:
-		*v = d.stringZC(d.d.DecodeStringAsBytes(nil))
+		*v = d.string(d.d.DecodeStringAsBytes())
 	case *bool:
 		*v = d.d.DecodeBool()
 	case *int:
@@ -2731,16 +2724,13 @@ func (d *decoderJsonBytes) structFieldNotFound(index int, rvkencname string) {
 }
 
 func (d *decoderJsonBytes) decodeBytesInto(in []byte) (v []byte) {
-	if in == nil {
-		in = zeroByteSlice
-	}
-	v, _ = d.d.DecodeBytes(in)
-	return
+	v, att := d.d.DecodeBytes()
+	return d.detach2Bytes(v, in, att)
 }
 
 func (d *decoderJsonBytes) rawBytes() (v []byte) {
 
-	v = d.d.nextValueBytes(zeroByteSlice)
+	v = d.d.nextValueBytes()
 	if d.bytes && !d.h.ZeroCopy {
 		vv := make([]byte, len(v))
 		copy(vv, v)
@@ -2873,7 +2863,6 @@ func (helperDecDriverJsonBytes) newDecoderBytes(in []byte, h Handle) *decoderJso
 
 func (helperDecDriverJsonBytes) newDecoderIO(in io.Reader, h Handle) *decoderJsonBytes {
 	var c1 decoderJsonBytes
-	c1.bytes = false
 	c1.init(h)
 	c1.Reset(in)
 	return &c1
@@ -3511,17 +3500,17 @@ func (d *jsonDecDriverBytes) readDelimError(xc uint8) {
 }
 
 func (d *jsonDecDriverBytes) checkLit3(got, expect [3]byte) {
-	d.tok = 0
 	if jsonValidateSymbols && got != expect {
 		jsonCheckLitErr3(got, expect)
 	}
+	d.tok = 0
 }
 
 func (d *jsonDecDriverBytes) checkLit4(got, expect [4]byte) {
-	d.tok = 0
 	if jsonValidateSymbols && got != expect {
 		jsonCheckLitErr4(got, expect)
 	}
+	d.tok = 0
 }
 
 func (d *jsonDecDriverBytes) skipWhitespace() {
@@ -3529,29 +3518,28 @@ func (d *jsonDecDriverBytes) skipWhitespace() {
 }
 
 func (d *jsonDecDriverBytes) advance() {
-	if d.tok == 0 {
+
+	if d.tok < 33 {
 		d.skipWhitespace()
 	}
 }
 
-func (d *jsonDecDriverBytes) nextValueBytes(v []byte) []byte {
+func (d *jsonDecDriverBytes) nextValueBytes() []byte {
 	consumeString := func() {
 	TOP:
-		bs := d.r.jsonReadAsisChars()
-		if bs[len(bs)-1] != '"' {
-
+		_, c := d.r.jsonReadAsisChars()
+		if c == '\\' {
 			d.r.readn1()
 			goto TOP
 		}
 	}
 
 	d.advance()
-	v = append(v, d.tok)
-	d.r.startRecording(v)
+	d.r.startRecording()
 
 	switch d.tok {
 	default:
-		d.r.jsonReadNum()
+		_, d.tok = d.r.jsonReadNum()
 	case 'n':
 		d.checkLit3([3]byte{'u', 'l', 'l'}, d.r.readn3())
 	case 'f':
@@ -3560,6 +3548,7 @@ func (d *jsonDecDriverBytes) nextValueBytes(v []byte) []byte {
 		d.checkLit3([3]byte{'r', 'u', 'e'}, d.r.readn3())
 	case '"':
 		consumeString()
+		d.tok = 0
 	case '{', '[':
 		var elem struct{}
 		var stack []struct{}
@@ -3577,9 +3566,8 @@ func (d *jsonDecDriverBytes) nextValueBytes(v []byte) []byte {
 				stack = stack[:len(stack)-1]
 			}
 		}
+		d.tok = 0
 	}
-	d.tok = 0
-
 	return d.r.stopRecording()
 }
 
@@ -3654,13 +3642,13 @@ func (d *jsonDecDriverBytes) ContainerType() (vt valueType) {
 func (d *jsonDecDriverBytes) decNumBytes() (bs []byte) {
 	d.advance()
 	if d.tok == '"' {
-		bs = d.r.readUntil('"')
+		bs = d.r.jsonReadUntilDblQuote()
+		d.tok = 0
 	} else if d.tok == 'n' {
 		d.checkLit3([3]byte{'u', 'l', 'l'}, d.r.readn3())
 	} else {
-		bs = d.r.jsonReadNum()
+		bs, d.tok = d.r.jsonReadNum()
 	}
-	d.tok = 0
 	return
 }
 
@@ -3668,7 +3656,7 @@ func (d *jsonDecDriverBytes) DecodeUint64() (u uint64) {
 	b := d.decNumBytes()
 	u, neg, ok := parseInteger_bytes(b)
 	if neg {
-		halt.errorStr("negative number cannot be decoded as uint64")
+		halt.errorf("negative number cannot be decoded as uint64: %s", any(b))
 	}
 	if !ok {
 		halt.onerror(strconvParseErr(b, "ParseUint"))
@@ -3748,39 +3736,39 @@ func (d *jsonDecDriverBytes) decBytesFromArray(bs []byte) []byte {
 	}
 	d.tok = 0
 	bs = append(bs, uint8(d.DecodeUint64()))
-	d.tok = d.r.skipWhitespace()
+	d.advance()
 	for d.tok != ']' {
 		if d.tok != ',' {
 			halt.errorByte("read array element - expect char ',' but got char: ", d.tok)
 		}
 		d.tok = 0
 		bs = append(bs, uint8(chkOvf.UintV(d.DecodeUint64(), 8)))
-		d.tok = d.r.skipWhitespace()
+		d.advance()
 	}
 	d.tok = 0
 	return bs
 }
 
-func (d *jsonDecDriverBytes) DecodeBytes(bs []byte) (out []byte, scratchBuf bool) {
+func (d *jsonDecDriverBytes) DecodeBytes() (bs []byte, state dBytesAttachState) {
 	d.advance()
+	state = dBytesDetach
 	if d.tok == 'n' {
 		d.checkLit3([3]byte{'u', 'l', 'l'}, d.r.readn3())
 		return
 	}
+	state = dBytesAttachBuffer
 
 	if d.rawext {
-		out = bs
-		d.dec.interfaceExtConvertAndDecode(&out, d.h.RawBytesExt)
+		d.buf = d.buf[:0]
+		d.dec.interfaceExtConvertAndDecode(&d.buf, d.h.RawBytesExt)
+		bs = d.buf
 		return
 	}
 
 	if d.tok == '[' {
 
-		if bs == nil {
-			bs = d.d.b[:]
-			scratchBuf = true
-		}
-		out = d.decBytesFromArray(bs)
+		bs = d.decBytesFromArray(d.buf[:0])
+		d.buf = bs
 		return
 	}
 
@@ -3788,33 +3776,36 @@ func (d *jsonDecDriverBytes) DecodeBytes(bs []byte) (out []byte, scratchBuf bool
 	bs1 := d.readUnescapedString()
 	slen := base64.StdEncoding.DecodedLen(len(bs1))
 	if slen == 0 {
-		out = zeroByteSlice
-	} else if slen <= cap(bs) {
-		out = bs[:slen]
-	} else if bs == nil {
-		scratchBuf = true
-		out = d.d.blist.check(*d.buf, slen)
-		out = out[:slen]
-		*d.buf = out
+		bs = zeroByteSlice
+		state = dBytesDetach
+	} else if slen <= cap(d.buf) {
+		bs = d.buf[:slen]
 	} else {
-		out = make([]byte, slen)
+		d.buf = d.d.blist.putGet(d.buf, slen)[:slen]
+		bs = d.buf
 	}
-	slen2, err := base64.StdEncoding.Decode(out, bs1)
+	slen2, err := base64.StdEncoding.Decode(bs, bs1)
 	if err != nil {
 		halt.errorf("error decoding base64 binary '%s': %v", any(bs1), err)
 	}
 	if slen != slen2 {
-		out = out[:slen2]
+		bs = bs[:slen2]
 	}
 	return
 }
 
-func (d *jsonDecDriverBytes) DecodeStringAsBytes(bs []byte) (out []byte, scratchBuf bool) {
+func (d *jsonDecDriverBytes) DecodeStringAsBytes() (bs []byte, state dBytesAttachState) {
 	d.advance()
 
+	var cond bool
+
 	if d.tok == '"' {
-		return d.dblQuoteStringAsBytes(), false
+		bs, cond = d.dblQuoteStringAsBytes()
+		state = d.d.attachState(cond)
+		return
 	}
+
+	state = dBytesDetach
 
 	switch d.tok {
 	case 'n':
@@ -3822,14 +3813,14 @@ func (d *jsonDecDriverBytes) DecodeStringAsBytes(bs []byte) (out []byte, scratch
 
 	case 'f':
 		d.checkLit4([4]byte{'a', 'l', 's', 'e'}, d.r.readn4())
-		out = jsonLitb[jsonLitF : jsonLitF+5]
+		bs = jsonLitb[jsonLitF : jsonLitF+5]
 	case 't':
 		d.checkLit3([3]byte{'r', 'u', 'e'}, d.r.readn3())
-		out = jsonLitb[jsonLitT : jsonLitT+4]
+		bs = jsonLitb[jsonLitT : jsonLitT+4]
 	default:
 
-		d.tok = 0
-		out = d.r.jsonReadNum()
+		bs, d.tok = d.r.jsonReadNum()
+		state = d.d.attachState(!d.d.bytes)
 	}
 	return
 }
@@ -3842,37 +3833,25 @@ func (d *jsonDecDriverBytes) ensureReadingString() {
 
 func (d *jsonDecDriverBytes) readUnescapedString() (bs []byte) {
 
-	bs = d.r.readUntil('"')
+	bs = d.r.jsonReadUntilDblQuote()
 	d.tok = 0
 	return
 }
 
-func (d *jsonDecDriverBytes) dblQuoteStringAsBytes() (buf []byte) {
-	checkUtf8 := d.h.ValidateUnicode
-
-	buf = (*d.buf)[:0]
+func (d *jsonDecDriverBytes) dblQuoteStringAsBytes() (buf []byte, usingBuf bool) {
 	d.tok = 0
 
-	var bs []byte
-	var c byte
-	var firstTime bool = true
+	bs, c := d.r.jsonReadAsisChars()
+	if c == '"' {
+		return bs, !d.d.bytes
+	}
+
+	checkUtf8 := d.h.ValidateUnicode
+	usingBuf = true
+
+	buf = append(d.buf[:0], bs...)
 
 	for {
-		bs = d.r.jsonReadAsisChars()
-		_ = bs[0]
-		if firstTime {
-			firstTime = false
-			if bs[len(bs)-1] == '"' {
-				return bs[:len(bs)-1]
-			}
-		}
-
-		buf = append(buf, bs[:len(bs)-1]...)
-		c = bs[len(bs)-1]
-
-		if c == '"' {
-			break
-		}
 
 		c = d.r.readn1()
 
@@ -3892,15 +3871,23 @@ func (d *jsonDecDriverBytes) dblQuoteStringAsBytes() (buf []byte) {
 		case 'u':
 			rr := d.appendStringAsBytesSlashU()
 			if checkUtf8 && rr == unicode.ReplacementChar {
+				d.buf = buf
 				halt.errorBytes("invalid UTF-8 character found after: ", buf)
 			}
 			buf = append(buf, d.bstr[:utf8.EncodeRune(d.bstr[:], rr)]...)
 		default:
-			*d.buf = buf
+			d.buf = buf
 			halt.errorByte("unsupported escaped value: ", c)
 		}
+
+		bs, c = d.r.jsonReadAsisChars()
+
+		buf = append(buf, bs...)
+		if c == '"' {
+			break
+		}
 	}
-	*d.buf = buf
+	d.buf = buf
 	return
 }
 
@@ -3949,7 +3936,8 @@ func (d *jsonDecDriverBytes) DecodeNaked() {
 		z.v = valueTypeArray
 	case '"':
 
-		bs = d.dblQuoteStringAsBytes()
+		bs, z.b = d.dblQuoteStringAsBytes()
+		att := d.d.attachState(z.b)
 		if jsonNakedBoolNullInQuotedStr &&
 			d.h.MapKeyAsString && len(bs) > 0 && d.d.c == containerMapKey {
 			switch string(bs) {
@@ -3964,16 +3952,15 @@ func (d *jsonDecDriverBytes) DecodeNaked() {
 
 				if err := jsonNakedNum(z, bs, d.h.PreferFloat, d.h.SignedInteger); err != nil {
 					z.v = valueTypeString
-					z.s = d.d.stringZC(bs, true)
+					z.s = d.d.string(bs, att)
 				}
 			}
 		} else {
 			z.v = valueTypeString
-			z.s = d.d.stringZC(bs, true)
+			z.s = d.d.string(bs, att)
 		}
 	default:
-		bs = d.r.jsonReadNum()
-		d.tok = 0
+		bs, d.tok = d.r.jsonReadNum()
 		if len(bs) == 0 {
 			halt.errorStr("decode number from empty string")
 		}
@@ -4000,7 +3987,7 @@ func (e *jsonEncDriverBytes) reset() {
 }
 
 func (d *jsonDecDriverBytes) reset() {
-	*d.buf = d.d.blist.check(*d.buf, 256)
+	d.buf = d.d.blist.check(d.buf, 256)
 	d.tok = 0
 
 	d.rawext = d.h.RawBytesExt != nil
@@ -4055,7 +4042,7 @@ func (d *jsonDecDriverBytes) resetInBytes(in []byte) {
 }
 
 func (d *jsonDecDriverBytes) resetInIO(r io.Reader) {
-	d.r.resetIO(r, d.h.ReaderBufferSize, &d.d.blist)
+	d.r.resetIO(r, d.h.ReaderBufferSize, d.h.MaxInitLen, &d.d.blist)
 }
 
 func (d *jsonDecDriverBytes) descBd() (s string) {
@@ -4071,7 +4058,7 @@ func (d *jsonEncDriverBytes) init2(enc encoderI) {
 func (d *jsonDecDriverBytes) init2(dec decoderI) {
 	d.dec = dec
 
-	d.buf = new([]byte)
+	d.buf = d.buf[:0]
 
 	d.d.jsms = d.h.MapKeyAsString
 }
@@ -4941,7 +4928,20 @@ func (e *encoderJsonIO) reset() {
 	e.err = nil
 }
 
+func (e *encoderJsonIO) Encode(v interface{}) (err error) {
+
+	defer panicValToErr(e, callRecoverSentinel, &e.err, &err, debugging)
+	e.mustEncode(v)
+	return
+}
+
 func (e *encoderJsonIO) MustEncode(v interface{}) {
+	defer panicValToErr(e, callRecoverSentinel, &e.err, nil, true)
+	e.mustEncode(v)
+	return
+}
+
+func (e *encoderJsonIO) mustEncode(v interface{}) {
 	halt.onerror(e.err)
 	if e.hh == nil {
 		halt.onerror(errNoFormatHandle)
@@ -4954,22 +4954,6 @@ func (e *encoderJsonIO) MustEncode(v interface{}) {
 		e.e.atEndOfEncode()
 		e.e.writerEnd()
 	}
-}
-
-func (e *encoderJsonIO) Encode(v interface{}) (err error) {
-
-	if !debugging {
-		defer func() {
-
-			if x := recover(); x != nil {
-				panicValToErr(e, x, &e.err)
-				err = e.err
-			}
-		}()
-	}
-
-	e.MustEncode(v)
-	return
 }
 
 func (e *encoderJsonIO) encode(iv interface{}) {
@@ -5517,14 +5501,14 @@ func (d *decoderJsonIO) selferUnmarshal(_ *decFnInfo, rv reflect.Value) {
 
 func (d *decoderJsonIO) binaryUnmarshal(_ *decFnInfo, rv reflect.Value) {
 	bm := rv2i(rv).(encoding.BinaryUnmarshaler)
-	xbs, _ := d.d.DecodeBytes(nil)
+	xbs, _ := d.d.DecodeBytes()
 	fnerr := bm.UnmarshalBinary(xbs)
 	halt.onerror(fnerr)
 }
 
 func (d *decoderJsonIO) textUnmarshal(_ *decFnInfo, rv reflect.Value) {
 	tm := rv2i(rv).(encoding.TextUnmarshaler)
-	fnerr := tm.UnmarshalText(bytesOk(d.d.DecodeStringAsBytes(nil)))
+	fnerr := tm.UnmarshalText(bytesOk(d.d.DecodeStringAsBytes()))
 	halt.onerror(fnerr)
 }
 
@@ -5534,19 +5518,7 @@ func (d *decoderJsonIO) jsonUnmarshal(_ *decFnInfo, rv reflect.Value) {
 
 func (d *decoderJsonIO) jsonUnmarshalV(tm jsonUnmarshaler) {
 
-	var bs0 = zeroByteSlice
-	if !d.bytes {
-		bs0 = d.blist.get(256)
-	}
-	bs := d.d.nextValueBytes(bs0)
-	fnerr := tm.UnmarshalJSON(bs)
-	if !d.bytes {
-		d.blist.put(bs)
-		if !byteSliceSameData(bs0, bs) {
-			d.blist.put(bs0)
-		}
-	}
-	halt.onerror(fnerr)
+	halt.onerror(tm.UnmarshalJSON(d.d.nextValueBytes()))
 }
 
 func (d *decoderJsonIO) kErr(_ *decFnInfo, rv reflect.Value) {
@@ -5559,7 +5531,7 @@ func (d *decoderJsonIO) raw(_ *decFnInfo, rv reflect.Value) {
 }
 
 func (d *decoderJsonIO) kString(_ *decFnInfo, rv reflect.Value) {
-	rvSetString(rv, d.stringZC(d.d.DecodeStringAsBytes(zeroByteSlice)))
+	rvSetString(rv, d.string(d.d.DecodeStringAsBytes()))
 }
 
 func (d *decoderJsonIO) kBool(_ *decFnInfo, rv reflect.Value) {
@@ -5817,7 +5789,11 @@ func (d *decoderJsonIO) kStructSimple(f *decFnInfo, rv reflect.Value) {
 		hasLen := containerLen >= 0
 		for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
 			d.mapElemKey()
-			rvkencname, _ := d.d.DecodeStringAsBytes(nil)
+			rvkencname, att := d.d.DecodeStringAsBytes()
+
+			if d.bufio && d.h.jsonHandle {
+				rvkencname = d.detach2Bytes(rvkencname, d.b[:], att)
+			}
 			d.mapElemValue()
 			if si := ti.siForEncName(rvkencname); si != nil {
 				d.kStructField(si, rv)
@@ -5871,12 +5847,17 @@ func (d *decoderJsonIO) kStruct(f *decFnInfo, rv reflect.Value) {
 			name2 = make([]byte, 0, 16)
 		}
 		var rvkencname []byte
+		var att dBytesAttachState
 		tkt := ti.keyType
 		for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
 			d.mapElemKey()
 
 			if tkt == valueTypeString {
-				rvkencname, _ = d.d.DecodeStringAsBytes(nil)
+				rvkencname, att = d.d.DecodeStringAsBytes()
+
+				if d.bufio && d.h.jsonHandle {
+					rvkencname = d.detach2Bytes(rvkencname, d.b[:], att)
+				}
 			} else if tkt == valueTypeInt {
 				rvkencname = strconv.AppendInt(d.b[:0], d.d.DecodeInt64(), 10)
 			} else if tkt == valueTypeUint {
@@ -5987,11 +5968,12 @@ func (d *decoderJsonIO) kSlice(f *decFnInfo, rv reflect.Value) {
 
 	rvlen := rvLenSlice(rv)
 	rvcap := rvCapSlice(rv)
+	maxInitLen := d.maxInitLen()
 	hasLen := containerLenS > 0
 	if hasLen {
 		if containerLenS > rvcap {
 			oldRvlenGtZero := rvlen > 0
-			rvlen1 := decInferLen(containerLenS, d.h.MaxInitLen, int(ti.elemsize))
+			rvlen1 := int(decInferLen(containerLenS, maxInitLen, uint(ti.elemsize)))
 			if rvlen1 == rvlen {
 			} else if rvlen1 <= rvcap {
 				if rvCanset {
@@ -6034,7 +6016,7 @@ func (d *decoderJsonIO) kSlice(f *decFnInfo, rv reflect.Value) {
 		if j == 0 {
 			if rvIsNil(rv) {
 				if rvCanset {
-					rvlen = decInferLen(containerLenS, d.h.MaxInitLen, int(ti.elemsize))
+					rvlen = int(decInferLen(containerLenS, maxInitLen, uint(ti.elemsize)))
 					rv, rvCanset = rvMakeSlice(rv, f.ti, rvlen, rvlen)
 					rvcap = rvlen
 					rvChanged = !rvCanset
@@ -6205,7 +6187,7 @@ func (d *decoderJsonIO) kChan(f *decFnInfo, rv reflect.Value) {
 		if !(ti.rtid == uint8SliceTypId || ti.elemkind == uint8(reflect.Uint8)) {
 			halt.errorf("bytes/string in stream must decode into slice/array of bytes, not %v", ti.rt)
 		}
-		bs2, _ := d.d.DecodeBytes(nil)
+		bs2, _ := d.d.DecodeBytes()
 		irv := rv2i(rv)
 		ch, ok := irv.(chan<- byte)
 		if !ok {
@@ -6244,12 +6226,13 @@ func (d *decoderJsonIO) kChan(f *decFnInfo, rv reflect.Value) {
 
 	var rvlen int
 	hasLen := containerLenS > 0
+	maxInitLen := d.maxInitLen()
 
 	for j := 0; d.containerNext(j, containerLenS, hasLen); j++ {
 		if j == 0 {
 			if rvIsNil(rv) {
 				if hasLen {
-					rvlen = decInferLen(containerLenS, d.h.MaxInitLen, int(ti.elemsize))
+					rvlen = int(decInferLen(containerLenS, maxInitLen, uint(ti.elemsize)))
 				} else {
 					rvlen = decDefChanCap
 				}
@@ -6289,7 +6272,7 @@ func (d *decoderJsonIO) kMap(f *decFnInfo, rv reflect.Value) {
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	ti := f.ti
 	if rvIsNil(rv) {
-		rvlen := decInferLen(containerLen, d.h.MaxInitLen, int(ti.keysize+ti.elemsize))
+		rvlen := int(decInferLen(containerLen, d.maxInitLen(), uint(ti.keysize+ti.elemsize)))
 		rvSetDirect(rv, makeMapReflect(ti.rt, rvlen))
 	}
 
@@ -6345,26 +6328,13 @@ func (d *decoderJsonIO) kMap(f *decFnInfo, rv reflect.Value) {
 
 	ktypeIsString := ktypeId == stringTypId
 	ktypeIsIntf := ktypeId == intfTypId
-
 	hasLen := containerLen > 0
 
-	var kstrbs []byte
 	var kstr2bs []byte
-	var s string
+	var kstr string
 
-	var callFnRvk bool
-	var scratchBuf bool
-
-	fnRvk2 := func() (s string) {
-		callFnRvk = false
-
-		if len(kstr2bs) == 1 {
-			s = str4byte(kstr2bs[0])
-		} else if len(kstr2bs) != 0 {
-			s, callFnRvk = d.mapKeyString(&kstrbs, &kstr2bs, scratchBuf)
-		}
-		return
-	}
+	var mapKeyStringSharesBytesBuf bool
+	var att dBytesAttachState
 
 	var vElem, kElem reflect.Type
 	kbuiltin := ti.tikey.flagDecBuiltin && ti.keykind != uint8(reflect.Slice)
@@ -6377,7 +6347,8 @@ func (d *decoderJsonIO) kMap(f *decFnInfo, rv reflect.Value) {
 	}
 
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-		callFnRvk = false
+		mapKeyStringSharesBytesBuf = false
+		kstr = ""
 		if j == 0 {
 
 			if decUseTransient && vTransient && kTransient {
@@ -6412,8 +6383,10 @@ func (d *decoderJsonIO) kMap(f *decFnInfo, rv reflect.Value) {
 		if d.d.TryNil() {
 			rvSetZero(rvk)
 		} else if ktypeIsString {
-			kstr2bs, scratchBuf = d.d.DecodeStringAsBytes(nil)
-			rvSetString(rvk, fnRvk2())
+			kstr2bs, att = d.d.DecodeStringAsBytes()
+
+			kstr, mapKeyStringSharesBytesBuf = d.bytes2Str(kstr2bs, att)
+			rvSetString(rvk, kstr)
 		} else {
 			if kbuiltin {
 				if ktypePtr {
@@ -6431,26 +6404,36 @@ func (d *decoderJsonIO) kMap(f *decFnInfo, rv reflect.Value) {
 			if ktypeIsIntf {
 				if rvk2 := rvk.Elem(); rvk2.IsValid() && rvk2.Type() == uint8SliceTyp {
 					kstr2bs = rvGetBytes(rvk2)
-					rvSetIntf(rvk, rv4istr(fnRvk2()))
+
+					kstr, mapKeyStringSharesBytesBuf = d.bytes2Str(kstr2bs, dBytesAttachView)
+					rvSetIntf(rvk, rv4istr(kstr))
 				}
 
 			}
 		}
 
+		if mapKeyStringSharesBytesBuf && d.bufio {
+			if ktypeIsString {
+				rvSetString(rvk, d.string(kstr2bs, att))
+			} else {
+				rvSetIntf(rvk, rv4istr(d.string(kstr2bs, att)))
+			}
+			mapKeyStringSharesBytesBuf = false
+		}
+
 		d.mapElemValue()
 
 		if d.d.TryNil() {
+			if mapKeyStringSharesBytesBuf {
+				if ktypeIsString {
+					rvSetString(rvk, d.string(kstr2bs, att))
+				} else {
+					rvSetIntf(rvk, rv4istr(d.string(kstr2bs, att)))
+				}
+			}
 
 			if !rvvz.IsValid() {
 				rvvz = rvZeroK(vtype, vtypeKind)
-			}
-			if callFnRvk {
-				s = d.string(kstr2bs)
-				if ktypeIsString {
-					rvSetString(rvk, s)
-				} else {
-					rvSetIntf(rvk, rv4istr(s))
-				}
 			}
 			mapSet(rv, rvk, rvvz, kfast, visindirect, visref)
 			continue
@@ -6504,6 +6487,13 @@ func (d *decoderJsonIO) kMap(f *decFnInfo, rv reflect.Value) {
 		}
 
 	DECODE_VALUE_NO_CHECK_NIL:
+		if doMapSet && mapKeyStringSharesBytesBuf {
+			if ktypeIsString {
+				rvSetString(rvk, d.string(kstr2bs, att))
+			} else {
+				rvSetIntf(rvk, rv4istr(d.string(kstr2bs, att)))
+			}
+		}
 		if vbuiltin {
 			if vtypePtr {
 				if rvIsNil(rvv) {
@@ -6517,14 +6507,6 @@ func (d *decoderJsonIO) kMap(f *decFnInfo, rv reflect.Value) {
 			d.decodeValueNoCheckNil(rvv, valFn)
 		}
 		if doMapSet {
-			if callFnRvk {
-				s = d.string(kstr2bs)
-				if ktypeIsString {
-					rvSetString(rvk, s)
-				} else {
-					rvSetIntf(rvk, rv4istr(s))
-				}
-			}
 			mapSet(rv, rvk, rvv, kfast, visindirect, visref)
 		}
 	}
@@ -6537,7 +6519,6 @@ func (d *decoderJsonIO) init(h Handle) {
 	callMake(&d.d)
 	d.hh = h
 	d.h = h.getBasicHandle()
-	d.zeroCopy = d.h.ZeroCopy
 
 	d.err = errDecoderNotInitialized
 
@@ -6551,6 +6532,7 @@ func (d *decoderJsonIO) init(h Handle) {
 		d.rtidFn = &d.h.rtidFnsDecBytes
 		d.rtidFnNoExt = &d.h.rtidFnsDecNoExtBytes
 	} else {
+		d.bufio = d.h.ReaderBufferSize > 0
 		d.rtidFn = &d.h.rtidFnsDecIO
 		d.rtidFnNoExt = &d.h.rtidFnsDecNoExtIO
 	}
@@ -6616,20 +6598,18 @@ func (d *decoderJsonIO) ResetString(s string) {
 
 func (d *decoderJsonIO) Decode(v interface{}) (err error) {
 
-	if !debugging {
-		defer func() {
-			if x := recover(); x != nil {
-				panicValToErr(d, x, &d.err)
-				err = d.err
-			}
-		}()
-	}
-
-	d.MustDecode(v)
+	defer panicValToErr(d, callRecoverSentinel, &d.err, &err, debugging)
+	d.mustDecode(v)
 	return
 }
 
 func (d *decoderJsonIO) MustDecode(v interface{}) {
+	defer panicValToErr(d, callRecoverSentinel, &d.err, nil, true)
+	d.mustDecode(v)
+	return
+}
+
+func (d *decoderJsonIO) mustDecode(v interface{}) {
 	halt.onerror(d.err)
 	if d.hh == nil {
 		halt.onerror(errNoFormatHandle)
@@ -6644,11 +6624,11 @@ func (d *decoderJsonIO) Release() {
 }
 
 func (d *decoderJsonIO) swallow() {
-	d.d.nextValueBytes(nil)
+	d.d.nextValueBytes()
 }
 
-func (d *decoderJsonIO) nextValueBytes(start []byte) []byte {
-	return d.d.nextValueBytes(start)
+func (d *decoderJsonIO) nextValueBytes() []byte {
+	return d.d.nextValueBytes()
 }
 
 func (d *decoderJsonIO) decode(iv interface{}) {
@@ -6665,7 +6645,7 @@ func (d *decoderJsonIO) decode(iv interface{}) {
 		}
 		d.decodeValue(v, nil)
 	case *string:
-		*v = d.stringZC(d.d.DecodeStringAsBytes(nil))
+		*v = d.string(d.d.DecodeStringAsBytes())
 	case *bool:
 		*v = d.d.DecodeBool()
 	case *int:
@@ -6785,16 +6765,13 @@ func (d *decoderJsonIO) structFieldNotFound(index int, rvkencname string) {
 }
 
 func (d *decoderJsonIO) decodeBytesInto(in []byte) (v []byte) {
-	if in == nil {
-		in = zeroByteSlice
-	}
-	v, _ = d.d.DecodeBytes(in)
-	return
+	v, att := d.d.DecodeBytes()
+	return d.detach2Bytes(v, in, att)
 }
 
 func (d *decoderJsonIO) rawBytes() (v []byte) {
 
-	v = d.d.nextValueBytes(zeroByteSlice)
+	v = d.d.nextValueBytes()
 	if d.bytes && !d.h.ZeroCopy {
 		vv := make([]byte, len(v))
 		copy(vv, v)
@@ -6927,7 +6904,6 @@ func (helperDecDriverJsonIO) newDecoderBytes(in []byte, h Handle) *decoderJsonIO
 
 func (helperDecDriverJsonIO) newDecoderIO(in io.Reader, h Handle) *decoderJsonIO {
 	var c1 decoderJsonIO
-	c1.bytes = false
 	c1.init(h)
 	c1.Reset(in)
 	return &c1
@@ -7565,17 +7541,17 @@ func (d *jsonDecDriverIO) readDelimError(xc uint8) {
 }
 
 func (d *jsonDecDriverIO) checkLit3(got, expect [3]byte) {
-	d.tok = 0
 	if jsonValidateSymbols && got != expect {
 		jsonCheckLitErr3(got, expect)
 	}
+	d.tok = 0
 }
 
 func (d *jsonDecDriverIO) checkLit4(got, expect [4]byte) {
-	d.tok = 0
 	if jsonValidateSymbols && got != expect {
 		jsonCheckLitErr4(got, expect)
 	}
+	d.tok = 0
 }
 
 func (d *jsonDecDriverIO) skipWhitespace() {
@@ -7583,29 +7559,28 @@ func (d *jsonDecDriverIO) skipWhitespace() {
 }
 
 func (d *jsonDecDriverIO) advance() {
-	if d.tok == 0 {
+
+	if d.tok < 33 {
 		d.skipWhitespace()
 	}
 }
 
-func (d *jsonDecDriverIO) nextValueBytes(v []byte) []byte {
+func (d *jsonDecDriverIO) nextValueBytes() []byte {
 	consumeString := func() {
 	TOP:
-		bs := d.r.jsonReadAsisChars()
-		if bs[len(bs)-1] != '"' {
-
+		_, c := d.r.jsonReadAsisChars()
+		if c == '\\' {
 			d.r.readn1()
 			goto TOP
 		}
 	}
 
 	d.advance()
-	v = append(v, d.tok)
-	d.r.startRecording(v)
+	d.r.startRecording()
 
 	switch d.tok {
 	default:
-		d.r.jsonReadNum()
+		_, d.tok = d.r.jsonReadNum()
 	case 'n':
 		d.checkLit3([3]byte{'u', 'l', 'l'}, d.r.readn3())
 	case 'f':
@@ -7614,6 +7589,7 @@ func (d *jsonDecDriverIO) nextValueBytes(v []byte) []byte {
 		d.checkLit3([3]byte{'r', 'u', 'e'}, d.r.readn3())
 	case '"':
 		consumeString()
+		d.tok = 0
 	case '{', '[':
 		var elem struct{}
 		var stack []struct{}
@@ -7631,9 +7607,8 @@ func (d *jsonDecDriverIO) nextValueBytes(v []byte) []byte {
 				stack = stack[:len(stack)-1]
 			}
 		}
+		d.tok = 0
 	}
-	d.tok = 0
-
 	return d.r.stopRecording()
 }
 
@@ -7708,13 +7683,13 @@ func (d *jsonDecDriverIO) ContainerType() (vt valueType) {
 func (d *jsonDecDriverIO) decNumBytes() (bs []byte) {
 	d.advance()
 	if d.tok == '"' {
-		bs = d.r.readUntil('"')
+		bs = d.r.jsonReadUntilDblQuote()
+		d.tok = 0
 	} else if d.tok == 'n' {
 		d.checkLit3([3]byte{'u', 'l', 'l'}, d.r.readn3())
 	} else {
-		bs = d.r.jsonReadNum()
+		bs, d.tok = d.r.jsonReadNum()
 	}
-	d.tok = 0
 	return
 }
 
@@ -7722,7 +7697,7 @@ func (d *jsonDecDriverIO) DecodeUint64() (u uint64) {
 	b := d.decNumBytes()
 	u, neg, ok := parseInteger_bytes(b)
 	if neg {
-		halt.errorStr("negative number cannot be decoded as uint64")
+		halt.errorf("negative number cannot be decoded as uint64: %s", any(b))
 	}
 	if !ok {
 		halt.onerror(strconvParseErr(b, "ParseUint"))
@@ -7802,39 +7777,39 @@ func (d *jsonDecDriverIO) decBytesFromArray(bs []byte) []byte {
 	}
 	d.tok = 0
 	bs = append(bs, uint8(d.DecodeUint64()))
-	d.tok = d.r.skipWhitespace()
+	d.advance()
 	for d.tok != ']' {
 		if d.tok != ',' {
 			halt.errorByte("read array element - expect char ',' but got char: ", d.tok)
 		}
 		d.tok = 0
 		bs = append(bs, uint8(chkOvf.UintV(d.DecodeUint64(), 8)))
-		d.tok = d.r.skipWhitespace()
+		d.advance()
 	}
 	d.tok = 0
 	return bs
 }
 
-func (d *jsonDecDriverIO) DecodeBytes(bs []byte) (out []byte, scratchBuf bool) {
+func (d *jsonDecDriverIO) DecodeBytes() (bs []byte, state dBytesAttachState) {
 	d.advance()
+	state = dBytesDetach
 	if d.tok == 'n' {
 		d.checkLit3([3]byte{'u', 'l', 'l'}, d.r.readn3())
 		return
 	}
+	state = dBytesAttachBuffer
 
 	if d.rawext {
-		out = bs
-		d.dec.interfaceExtConvertAndDecode(&out, d.h.RawBytesExt)
+		d.buf = d.buf[:0]
+		d.dec.interfaceExtConvertAndDecode(&d.buf, d.h.RawBytesExt)
+		bs = d.buf
 		return
 	}
 
 	if d.tok == '[' {
 
-		if bs == nil {
-			bs = d.d.b[:]
-			scratchBuf = true
-		}
-		out = d.decBytesFromArray(bs)
+		bs = d.decBytesFromArray(d.buf[:0])
+		d.buf = bs
 		return
 	}
 
@@ -7842,33 +7817,36 @@ func (d *jsonDecDriverIO) DecodeBytes(bs []byte) (out []byte, scratchBuf bool) {
 	bs1 := d.readUnescapedString()
 	slen := base64.StdEncoding.DecodedLen(len(bs1))
 	if slen == 0 {
-		out = zeroByteSlice
-	} else if slen <= cap(bs) {
-		out = bs[:slen]
-	} else if bs == nil {
-		scratchBuf = true
-		out = d.d.blist.check(*d.buf, slen)
-		out = out[:slen]
-		*d.buf = out
+		bs = zeroByteSlice
+		state = dBytesDetach
+	} else if slen <= cap(d.buf) {
+		bs = d.buf[:slen]
 	} else {
-		out = make([]byte, slen)
+		d.buf = d.d.blist.putGet(d.buf, slen)[:slen]
+		bs = d.buf
 	}
-	slen2, err := base64.StdEncoding.Decode(out, bs1)
+	slen2, err := base64.StdEncoding.Decode(bs, bs1)
 	if err != nil {
 		halt.errorf("error decoding base64 binary '%s': %v", any(bs1), err)
 	}
 	if slen != slen2 {
-		out = out[:slen2]
+		bs = bs[:slen2]
 	}
 	return
 }
 
-func (d *jsonDecDriverIO) DecodeStringAsBytes(bs []byte) (out []byte, scratchBuf bool) {
+func (d *jsonDecDriverIO) DecodeStringAsBytes() (bs []byte, state dBytesAttachState) {
 	d.advance()
 
+	var cond bool
+
 	if d.tok == '"' {
-		return d.dblQuoteStringAsBytes(), false
+		bs, cond = d.dblQuoteStringAsBytes()
+		state = d.d.attachState(cond)
+		return
 	}
+
+	state = dBytesDetach
 
 	switch d.tok {
 	case 'n':
@@ -7876,14 +7854,14 @@ func (d *jsonDecDriverIO) DecodeStringAsBytes(bs []byte) (out []byte, scratchBuf
 
 	case 'f':
 		d.checkLit4([4]byte{'a', 'l', 's', 'e'}, d.r.readn4())
-		out = jsonLitb[jsonLitF : jsonLitF+5]
+		bs = jsonLitb[jsonLitF : jsonLitF+5]
 	case 't':
 		d.checkLit3([3]byte{'r', 'u', 'e'}, d.r.readn3())
-		out = jsonLitb[jsonLitT : jsonLitT+4]
+		bs = jsonLitb[jsonLitT : jsonLitT+4]
 	default:
 
-		d.tok = 0
-		out = d.r.jsonReadNum()
+		bs, d.tok = d.r.jsonReadNum()
+		state = d.d.attachState(!d.d.bytes)
 	}
 	return
 }
@@ -7896,37 +7874,25 @@ func (d *jsonDecDriverIO) ensureReadingString() {
 
 func (d *jsonDecDriverIO) readUnescapedString() (bs []byte) {
 
-	bs = d.r.readUntil('"')
+	bs = d.r.jsonReadUntilDblQuote()
 	d.tok = 0
 	return
 }
 
-func (d *jsonDecDriverIO) dblQuoteStringAsBytes() (buf []byte) {
-	checkUtf8 := d.h.ValidateUnicode
-
-	buf = (*d.buf)[:0]
+func (d *jsonDecDriverIO) dblQuoteStringAsBytes() (buf []byte, usingBuf bool) {
 	d.tok = 0
 
-	var bs []byte
-	var c byte
-	var firstTime bool = true
+	bs, c := d.r.jsonReadAsisChars()
+	if c == '"' {
+		return bs, !d.d.bytes
+	}
+
+	checkUtf8 := d.h.ValidateUnicode
+	usingBuf = true
+
+	buf = append(d.buf[:0], bs...)
 
 	for {
-		bs = d.r.jsonReadAsisChars()
-		_ = bs[0]
-		if firstTime {
-			firstTime = false
-			if bs[len(bs)-1] == '"' {
-				return bs[:len(bs)-1]
-			}
-		}
-
-		buf = append(buf, bs[:len(bs)-1]...)
-		c = bs[len(bs)-1]
-
-		if c == '"' {
-			break
-		}
 
 		c = d.r.readn1()
 
@@ -7946,15 +7912,23 @@ func (d *jsonDecDriverIO) dblQuoteStringAsBytes() (buf []byte) {
 		case 'u':
 			rr := d.appendStringAsBytesSlashU()
 			if checkUtf8 && rr == unicode.ReplacementChar {
+				d.buf = buf
 				halt.errorBytes("invalid UTF-8 character found after: ", buf)
 			}
 			buf = append(buf, d.bstr[:utf8.EncodeRune(d.bstr[:], rr)]...)
 		default:
-			*d.buf = buf
+			d.buf = buf
 			halt.errorByte("unsupported escaped value: ", c)
 		}
+
+		bs, c = d.r.jsonReadAsisChars()
+
+		buf = append(buf, bs...)
+		if c == '"' {
+			break
+		}
 	}
-	*d.buf = buf
+	d.buf = buf
 	return
 }
 
@@ -8003,7 +7977,8 @@ func (d *jsonDecDriverIO) DecodeNaked() {
 		z.v = valueTypeArray
 	case '"':
 
-		bs = d.dblQuoteStringAsBytes()
+		bs, z.b = d.dblQuoteStringAsBytes()
+		att := d.d.attachState(z.b)
 		if jsonNakedBoolNullInQuotedStr &&
 			d.h.MapKeyAsString && len(bs) > 0 && d.d.c == containerMapKey {
 			switch string(bs) {
@@ -8018,16 +7993,15 @@ func (d *jsonDecDriverIO) DecodeNaked() {
 
 				if err := jsonNakedNum(z, bs, d.h.PreferFloat, d.h.SignedInteger); err != nil {
 					z.v = valueTypeString
-					z.s = d.d.stringZC(bs, true)
+					z.s = d.d.string(bs, att)
 				}
 			}
 		} else {
 			z.v = valueTypeString
-			z.s = d.d.stringZC(bs, true)
+			z.s = d.d.string(bs, att)
 		}
 	default:
-		bs = d.r.jsonReadNum()
-		d.tok = 0
+		bs, d.tok = d.r.jsonReadNum()
 		if len(bs) == 0 {
 			halt.errorStr("decode number from empty string")
 		}
@@ -8054,7 +8028,7 @@ func (e *jsonEncDriverIO) reset() {
 }
 
 func (d *jsonDecDriverIO) reset() {
-	*d.buf = d.d.blist.check(*d.buf, 256)
+	d.buf = d.d.blist.check(d.buf, 256)
 	d.tok = 0
 
 	d.rawext = d.h.RawBytesExt != nil
@@ -8109,7 +8083,7 @@ func (d *jsonDecDriverIO) resetInBytes(in []byte) {
 }
 
 func (d *jsonDecDriverIO) resetInIO(r io.Reader) {
-	d.r.resetIO(r, d.h.ReaderBufferSize, &d.d.blist)
+	d.r.resetIO(r, d.h.ReaderBufferSize, d.h.MaxInitLen, &d.d.blist)
 }
 
 func (d *jsonDecDriverIO) descBd() (s string) {
@@ -8125,7 +8099,7 @@ func (d *jsonEncDriverIO) init2(enc encoderI) {
 func (d *jsonDecDriverIO) init2(dec decoderI) {
 	d.dec = dec
 
-	d.buf = new([]byte)
+	d.buf = d.buf[:0]
 
 	d.d.jsms = d.h.MapKeyAsString
 }

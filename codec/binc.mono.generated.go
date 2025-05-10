@@ -875,7 +875,20 @@ func (e *encoderBincBytes) reset() {
 	e.err = nil
 }
 
+func (e *encoderBincBytes) Encode(v interface{}) (err error) {
+
+	defer panicValToErr(e, callRecoverSentinel, &e.err, &err, debugging)
+	e.mustEncode(v)
+	return
+}
+
 func (e *encoderBincBytes) MustEncode(v interface{}) {
+	defer panicValToErr(e, callRecoverSentinel, &e.err, nil, true)
+	e.mustEncode(v)
+	return
+}
+
+func (e *encoderBincBytes) mustEncode(v interface{}) {
 	halt.onerror(e.err)
 	if e.hh == nil {
 		halt.onerror(errNoFormatHandle)
@@ -888,22 +901,6 @@ func (e *encoderBincBytes) MustEncode(v interface{}) {
 		e.e.atEndOfEncode()
 		e.e.writerEnd()
 	}
-}
-
-func (e *encoderBincBytes) Encode(v interface{}) (err error) {
-
-	if !debugging {
-		defer func() {
-
-			if x := recover(); x != nil {
-				panicValToErr(e, x, &e.err)
-				err = e.err
-			}
-		}()
-	}
-
-	e.MustEncode(v)
-	return
 }
 
 func (e *encoderBincBytes) encode(iv interface{}) {
@@ -1451,14 +1448,14 @@ func (d *decoderBincBytes) selferUnmarshal(_ *decFnInfo, rv reflect.Value) {
 
 func (d *decoderBincBytes) binaryUnmarshal(_ *decFnInfo, rv reflect.Value) {
 	bm := rv2i(rv).(encoding.BinaryUnmarshaler)
-	xbs, _ := d.d.DecodeBytes(nil)
+	xbs, _ := d.d.DecodeBytes()
 	fnerr := bm.UnmarshalBinary(xbs)
 	halt.onerror(fnerr)
 }
 
 func (d *decoderBincBytes) textUnmarshal(_ *decFnInfo, rv reflect.Value) {
 	tm := rv2i(rv).(encoding.TextUnmarshaler)
-	fnerr := tm.UnmarshalText(bytesOk(d.d.DecodeStringAsBytes(nil)))
+	fnerr := tm.UnmarshalText(bytesOk(d.d.DecodeStringAsBytes()))
 	halt.onerror(fnerr)
 }
 
@@ -1468,19 +1465,7 @@ func (d *decoderBincBytes) jsonUnmarshal(_ *decFnInfo, rv reflect.Value) {
 
 func (d *decoderBincBytes) jsonUnmarshalV(tm jsonUnmarshaler) {
 
-	var bs0 = zeroByteSlice
-	if !d.bytes {
-		bs0 = d.blist.get(256)
-	}
-	bs := d.d.nextValueBytes(bs0)
-	fnerr := tm.UnmarshalJSON(bs)
-	if !d.bytes {
-		d.blist.put(bs)
-		if !byteSliceSameData(bs0, bs) {
-			d.blist.put(bs0)
-		}
-	}
-	halt.onerror(fnerr)
+	halt.onerror(tm.UnmarshalJSON(d.d.nextValueBytes()))
 }
 
 func (d *decoderBincBytes) kErr(_ *decFnInfo, rv reflect.Value) {
@@ -1493,7 +1478,7 @@ func (d *decoderBincBytes) raw(_ *decFnInfo, rv reflect.Value) {
 }
 
 func (d *decoderBincBytes) kString(_ *decFnInfo, rv reflect.Value) {
-	rvSetString(rv, d.stringZC(d.d.DecodeStringAsBytes(zeroByteSlice)))
+	rvSetString(rv, d.string(d.d.DecodeStringAsBytes()))
 }
 
 func (d *decoderBincBytes) kBool(_ *decFnInfo, rv reflect.Value) {
@@ -1751,7 +1736,11 @@ func (d *decoderBincBytes) kStructSimple(f *decFnInfo, rv reflect.Value) {
 		hasLen := containerLen >= 0
 		for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
 			d.mapElemKey()
-			rvkencname, _ := d.d.DecodeStringAsBytes(nil)
+			rvkencname, att := d.d.DecodeStringAsBytes()
+
+			if d.bufio && d.h.jsonHandle {
+				rvkencname = d.detach2Bytes(rvkencname, d.b[:], att)
+			}
 			d.mapElemValue()
 			if si := ti.siForEncName(rvkencname); si != nil {
 				d.kStructField(si, rv)
@@ -1805,12 +1794,17 @@ func (d *decoderBincBytes) kStruct(f *decFnInfo, rv reflect.Value) {
 			name2 = make([]byte, 0, 16)
 		}
 		var rvkencname []byte
+		var att dBytesAttachState
 		tkt := ti.keyType
 		for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
 			d.mapElemKey()
 
 			if tkt == valueTypeString {
-				rvkencname, _ = d.d.DecodeStringAsBytes(nil)
+				rvkencname, att = d.d.DecodeStringAsBytes()
+
+				if d.bufio && d.h.jsonHandle {
+					rvkencname = d.detach2Bytes(rvkencname, d.b[:], att)
+				}
 			} else if tkt == valueTypeInt {
 				rvkencname = strconv.AppendInt(d.b[:0], d.d.DecodeInt64(), 10)
 			} else if tkt == valueTypeUint {
@@ -1921,11 +1915,12 @@ func (d *decoderBincBytes) kSlice(f *decFnInfo, rv reflect.Value) {
 
 	rvlen := rvLenSlice(rv)
 	rvcap := rvCapSlice(rv)
+	maxInitLen := d.maxInitLen()
 	hasLen := containerLenS > 0
 	if hasLen {
 		if containerLenS > rvcap {
 			oldRvlenGtZero := rvlen > 0
-			rvlen1 := decInferLen(containerLenS, d.h.MaxInitLen, int(ti.elemsize))
+			rvlen1 := int(decInferLen(containerLenS, maxInitLen, uint(ti.elemsize)))
 			if rvlen1 == rvlen {
 			} else if rvlen1 <= rvcap {
 				if rvCanset {
@@ -1968,7 +1963,7 @@ func (d *decoderBincBytes) kSlice(f *decFnInfo, rv reflect.Value) {
 		if j == 0 {
 			if rvIsNil(rv) {
 				if rvCanset {
-					rvlen = decInferLen(containerLenS, d.h.MaxInitLen, int(ti.elemsize))
+					rvlen = int(decInferLen(containerLenS, maxInitLen, uint(ti.elemsize)))
 					rv, rvCanset = rvMakeSlice(rv, f.ti, rvlen, rvlen)
 					rvcap = rvlen
 					rvChanged = !rvCanset
@@ -2139,7 +2134,7 @@ func (d *decoderBincBytes) kChan(f *decFnInfo, rv reflect.Value) {
 		if !(ti.rtid == uint8SliceTypId || ti.elemkind == uint8(reflect.Uint8)) {
 			halt.errorf("bytes/string in stream must decode into slice/array of bytes, not %v", ti.rt)
 		}
-		bs2, _ := d.d.DecodeBytes(nil)
+		bs2, _ := d.d.DecodeBytes()
 		irv := rv2i(rv)
 		ch, ok := irv.(chan<- byte)
 		if !ok {
@@ -2178,12 +2173,13 @@ func (d *decoderBincBytes) kChan(f *decFnInfo, rv reflect.Value) {
 
 	var rvlen int
 	hasLen := containerLenS > 0
+	maxInitLen := d.maxInitLen()
 
 	for j := 0; d.containerNext(j, containerLenS, hasLen); j++ {
 		if j == 0 {
 			if rvIsNil(rv) {
 				if hasLen {
-					rvlen = decInferLen(containerLenS, d.h.MaxInitLen, int(ti.elemsize))
+					rvlen = int(decInferLen(containerLenS, maxInitLen, uint(ti.elemsize)))
 				} else {
 					rvlen = decDefChanCap
 				}
@@ -2223,7 +2219,7 @@ func (d *decoderBincBytes) kMap(f *decFnInfo, rv reflect.Value) {
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	ti := f.ti
 	if rvIsNil(rv) {
-		rvlen := decInferLen(containerLen, d.h.MaxInitLen, int(ti.keysize+ti.elemsize))
+		rvlen := int(decInferLen(containerLen, d.maxInitLen(), uint(ti.keysize+ti.elemsize)))
 		rvSetDirect(rv, makeMapReflect(ti.rt, rvlen))
 	}
 
@@ -2279,26 +2275,13 @@ func (d *decoderBincBytes) kMap(f *decFnInfo, rv reflect.Value) {
 
 	ktypeIsString := ktypeId == stringTypId
 	ktypeIsIntf := ktypeId == intfTypId
-
 	hasLen := containerLen > 0
 
-	var kstrbs []byte
 	var kstr2bs []byte
-	var s string
+	var kstr string
 
-	var callFnRvk bool
-	var scratchBuf bool
-
-	fnRvk2 := func() (s string) {
-		callFnRvk = false
-
-		if len(kstr2bs) == 1 {
-			s = str4byte(kstr2bs[0])
-		} else if len(kstr2bs) != 0 {
-			s, callFnRvk = d.mapKeyString(&kstrbs, &kstr2bs, scratchBuf)
-		}
-		return
-	}
+	var mapKeyStringSharesBytesBuf bool
+	var att dBytesAttachState
 
 	var vElem, kElem reflect.Type
 	kbuiltin := ti.tikey.flagDecBuiltin && ti.keykind != uint8(reflect.Slice)
@@ -2311,7 +2294,8 @@ func (d *decoderBincBytes) kMap(f *decFnInfo, rv reflect.Value) {
 	}
 
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-		callFnRvk = false
+		mapKeyStringSharesBytesBuf = false
+		kstr = ""
 		if j == 0 {
 
 			if decUseTransient && vTransient && kTransient {
@@ -2346,8 +2330,10 @@ func (d *decoderBincBytes) kMap(f *decFnInfo, rv reflect.Value) {
 		if d.d.TryNil() {
 			rvSetZero(rvk)
 		} else if ktypeIsString {
-			kstr2bs, scratchBuf = d.d.DecodeStringAsBytes(nil)
-			rvSetString(rvk, fnRvk2())
+			kstr2bs, att = d.d.DecodeStringAsBytes()
+
+			kstr, mapKeyStringSharesBytesBuf = d.bytes2Str(kstr2bs, att)
+			rvSetString(rvk, kstr)
 		} else {
 			if kbuiltin {
 				if ktypePtr {
@@ -2365,26 +2351,36 @@ func (d *decoderBincBytes) kMap(f *decFnInfo, rv reflect.Value) {
 			if ktypeIsIntf {
 				if rvk2 := rvk.Elem(); rvk2.IsValid() && rvk2.Type() == uint8SliceTyp {
 					kstr2bs = rvGetBytes(rvk2)
-					rvSetIntf(rvk, rv4istr(fnRvk2()))
+
+					kstr, mapKeyStringSharesBytesBuf = d.bytes2Str(kstr2bs, dBytesAttachView)
+					rvSetIntf(rvk, rv4istr(kstr))
 				}
 
 			}
 		}
 
+		if mapKeyStringSharesBytesBuf && d.bufio {
+			if ktypeIsString {
+				rvSetString(rvk, d.string(kstr2bs, att))
+			} else {
+				rvSetIntf(rvk, rv4istr(d.string(kstr2bs, att)))
+			}
+			mapKeyStringSharesBytesBuf = false
+		}
+
 		d.mapElemValue()
 
 		if d.d.TryNil() {
+			if mapKeyStringSharesBytesBuf {
+				if ktypeIsString {
+					rvSetString(rvk, d.string(kstr2bs, att))
+				} else {
+					rvSetIntf(rvk, rv4istr(d.string(kstr2bs, att)))
+				}
+			}
 
 			if !rvvz.IsValid() {
 				rvvz = rvZeroK(vtype, vtypeKind)
-			}
-			if callFnRvk {
-				s = d.string(kstr2bs)
-				if ktypeIsString {
-					rvSetString(rvk, s)
-				} else {
-					rvSetIntf(rvk, rv4istr(s))
-				}
 			}
 			mapSet(rv, rvk, rvvz, kfast, visindirect, visref)
 			continue
@@ -2438,6 +2434,13 @@ func (d *decoderBincBytes) kMap(f *decFnInfo, rv reflect.Value) {
 		}
 
 	DECODE_VALUE_NO_CHECK_NIL:
+		if doMapSet && mapKeyStringSharesBytesBuf {
+			if ktypeIsString {
+				rvSetString(rvk, d.string(kstr2bs, att))
+			} else {
+				rvSetIntf(rvk, rv4istr(d.string(kstr2bs, att)))
+			}
+		}
 		if vbuiltin {
 			if vtypePtr {
 				if rvIsNil(rvv) {
@@ -2451,14 +2454,6 @@ func (d *decoderBincBytes) kMap(f *decFnInfo, rv reflect.Value) {
 			d.decodeValueNoCheckNil(rvv, valFn)
 		}
 		if doMapSet {
-			if callFnRvk {
-				s = d.string(kstr2bs)
-				if ktypeIsString {
-					rvSetString(rvk, s)
-				} else {
-					rvSetIntf(rvk, rv4istr(s))
-				}
-			}
 			mapSet(rv, rvk, rvv, kfast, visindirect, visref)
 		}
 	}
@@ -2471,7 +2466,6 @@ func (d *decoderBincBytes) init(h Handle) {
 	callMake(&d.d)
 	d.hh = h
 	d.h = h.getBasicHandle()
-	d.zeroCopy = d.h.ZeroCopy
 
 	d.err = errDecoderNotInitialized
 
@@ -2485,6 +2479,7 @@ func (d *decoderBincBytes) init(h Handle) {
 		d.rtidFn = &d.h.rtidFnsDecBytes
 		d.rtidFnNoExt = &d.h.rtidFnsDecNoExtBytes
 	} else {
+		d.bufio = d.h.ReaderBufferSize > 0
 		d.rtidFn = &d.h.rtidFnsDecIO
 		d.rtidFnNoExt = &d.h.rtidFnsDecNoExtIO
 	}
@@ -2550,20 +2545,18 @@ func (d *decoderBincBytes) ResetString(s string) {
 
 func (d *decoderBincBytes) Decode(v interface{}) (err error) {
 
-	if !debugging {
-		defer func() {
-			if x := recover(); x != nil {
-				panicValToErr(d, x, &d.err)
-				err = d.err
-			}
-		}()
-	}
-
-	d.MustDecode(v)
+	defer panicValToErr(d, callRecoverSentinel, &d.err, &err, debugging)
+	d.mustDecode(v)
 	return
 }
 
 func (d *decoderBincBytes) MustDecode(v interface{}) {
+	defer panicValToErr(d, callRecoverSentinel, &d.err, nil, true)
+	d.mustDecode(v)
+	return
+}
+
+func (d *decoderBincBytes) mustDecode(v interface{}) {
 	halt.onerror(d.err)
 	if d.hh == nil {
 		halt.onerror(errNoFormatHandle)
@@ -2578,11 +2571,11 @@ func (d *decoderBincBytes) Release() {
 }
 
 func (d *decoderBincBytes) swallow() {
-	d.d.nextValueBytes(nil)
+	d.d.nextValueBytes()
 }
 
-func (d *decoderBincBytes) nextValueBytes(start []byte) []byte {
-	return d.d.nextValueBytes(start)
+func (d *decoderBincBytes) nextValueBytes() []byte {
+	return d.d.nextValueBytes()
 }
 
 func (d *decoderBincBytes) decode(iv interface{}) {
@@ -2599,7 +2592,7 @@ func (d *decoderBincBytes) decode(iv interface{}) {
 		}
 		d.decodeValue(v, nil)
 	case *string:
-		*v = d.stringZC(d.d.DecodeStringAsBytes(nil))
+		*v = d.string(d.d.DecodeStringAsBytes())
 	case *bool:
 		*v = d.d.DecodeBool()
 	case *int:
@@ -2719,16 +2712,13 @@ func (d *decoderBincBytes) structFieldNotFound(index int, rvkencname string) {
 }
 
 func (d *decoderBincBytes) decodeBytesInto(in []byte) (v []byte) {
-	if in == nil {
-		in = zeroByteSlice
-	}
-	v, _ = d.d.DecodeBytes(in)
-	return
+	v, att := d.d.DecodeBytes()
+	return d.detach2Bytes(v, in, att)
 }
 
 func (d *decoderBincBytes) rawBytes() (v []byte) {
 
-	v = d.d.nextValueBytes(zeroByteSlice)
+	v = d.d.nextValueBytes()
 	if d.bytes && !d.h.ZeroCopy {
 		vv := make([]byte, len(v))
 		copy(vv, v)
@@ -2861,7 +2851,6 @@ func (helperDecDriverBincBytes) newDecoderBytes(in []byte, h Handle) *decoderBin
 
 func (helperDecDriverBincBytes) newDecoderIO(in io.Reader, h Handle) *decoderBincBytes {
 	var c1 decoderBincBytes
-	c1.bytes = false
 	c1.init(h)
 	c1.Reset(in)
 	return &c1
@@ -3671,23 +3660,16 @@ func (d *bincDecDriverBytes) decLenNumber() (v uint64) {
 	return
 }
 
-func (d *bincDecDriverBytes) DecodeStringAsBytes(in []byte) (bs2 []byte, scratchBuf bool) {
+func (d *bincDecDriverBytes) DecodeStringAsBytes() (bs []byte, state dBytesAttachState) {
 	if d.advanceNil() {
 		return
 	}
+	var cond bool
 	var slen = -1
 	switch d.vd {
 	case bincVdString, bincVdByteArray:
 		slen = d.decLen()
-		if d.d.bytes {
-			bs2 = d.r.readx(uint(slen))
-		} else {
-			if in == nil {
-				in = d.d.b[:]
-				scratchBuf = true
-			}
-			bs2 = d.r.readxb(slen, d.h.MaxInitLen, in)
-		}
+		bs, cond = d.r.readxb(uint(slen))
 	case bincVdSymbol:
 
 		var symbol uint16
@@ -3702,7 +3684,7 @@ func (d *bincDecDriverBytes) DecodeStringAsBytes(in []byte) (bs2 []byte, scratch
 		}
 
 		if vs&0x4 == 0 {
-			bs2 = d.s[symbol]
+			bs = d.s[symbol]
 		} else {
 			switch vs & 0x3 {
 			case 0:
@@ -3715,57 +3697,49 @@ func (d *bincDecDriverBytes) DecodeStringAsBytes(in []byte) (bs2 []byte, scratch
 				slen = int(bigen.Uint64(d.r.readn8()))
 			}
 
-			bs2 = d.r.readxb(slen, d.h.MaxInitLen, nil)
-			scratchBuf = true
-			d.s[symbol] = bs2
+			bs, cond = d.r.readxb(uint(slen))
+			bs = d.d.detach2Bytes(bs, nil, d.d.attachState(cond))
+			d.s[symbol] = bs
 		}
 	default:
 		halt.errorf("string/bytes - %s %x-%x/%s", msgBadDesc, d.vd, d.vs, bincdesc(d.vd, d.vs))
 	}
 
-	if d.h.ValidateUnicode && !utf8.Valid(bs2) {
-		halt.errorf("DecodeStringAsBytes: invalid UTF-8: %s", bs2)
+	if d.h.ValidateUnicode && !utf8.Valid(bs) {
+		halt.errorf("DecodeStringAsBytes: invalid UTF-8: %s", bs)
 	}
 
 	d.bdRead = false
 	return
 }
 
-func (d *bincDecDriverBytes) DecodeBytes(bs []byte) (out []byte, scratchBuf bool) {
+func (d *bincDecDriverBytes) DecodeBytes() (bs []byte, state dBytesAttachState) {
 	if d.advanceNil() {
 		return
 	}
+	var cond bool
 	if d.vd == bincVdArray {
-		if bs == nil {
-			bs = d.d.b[:]
-			scratchBuf = true
-		}
 		slen := d.ReadArrayStart()
-		bs, _ = usableByteSlice(bs, slen)
+		bs, cond = usableByteSlice(d.d.buf, slen)
 		for i := 0; i < slen; i++ {
 			bs[i] = uint8(chkOvf.UintV(d.DecodeUint64(), 8))
 		}
 		for i := len(bs); i < slen; i++ {
 			bs = append(bs, uint8(chkOvf.UintV(d.DecodeUint64(), 8)))
 		}
-		out = bs
+		if cond {
+			d.d.buf = bs
+		}
+		state = dBytesAttachBuffer
 		return
 	}
-	var clen int
-	if d.vd == bincVdString || d.vd == bincVdByteArray {
-		clen = d.decLen()
-	} else {
+	if !(d.vd == bincVdString || d.vd == bincVdByteArray) {
 		halt.errorf("bytes - %s %x-%x/%s", msgBadDesc, d.vd, d.vs, bincdesc(d.vd, d.vs))
 	}
+	clen := d.decLen()
 	d.bdRead = false
-	if d.d.bytes && d.h.ZeroCopy {
-		return d.r.readx(uint(clen)), false
-	}
-	if bs == nil {
-		bs = d.d.b[:]
-		scratchBuf = true
-	}
-	out = d.r.readxb(clen, d.h.MaxInitLen, bs)
+	bs, cond = d.r.readxb(uint(clen))
+	state = d.d.attachState(cond)
 	return
 }
 
@@ -3782,15 +3756,15 @@ func (d *bincDecDriverBytes) DecodeExt(rv interface{}, basetype reflect.Type, xt
 }
 
 func (d *bincDecDriverBytes) DecodeRawExt(re *RawExt) {
-	xbs, realxtag, zerocopy, ok := d.decodeExtV(false, 0)
+	xbs, realxtag, state, ok := d.decodeExtV(false, 0)
 	if !ok {
 		return
 	}
 	re.Tag = uint64(realxtag)
-	re.setData(xbs, zerocopy)
+	re.setData(xbs, state >= dBytesAttachViewZerocopy)
 }
 
-func (d *bincDecDriverBytes) decodeExtV(verifyTag bool, xtagIn uint64) (xbs []byte, xtag byte, zerocopy, ok bool) {
+func (d *bincDecDriverBytes) decodeExtV(verifyTag bool, xtagIn uint64) (xbs []byte, xtag byte, bstate dBytesAttachState, ok bool) {
 	if xtagIn > 0xff {
 		halt.errorf("ext: tag must be <= 0xff; got: %v", xtagIn)
 	}
@@ -3804,14 +3778,11 @@ func (d *bincDecDriverBytes) decodeExtV(verifyTag bool, xtagIn uint64) (xbs []by
 		if verifyTag && xtag != tag {
 			halt.errorf("wrong extension tag - got %b, expecting: %v", xtag, tag)
 		}
-		if d.d.bytes {
-			xbs = d.r.readx(uint(l))
-			zerocopy = true
-		} else {
-			xbs = d.r.readxb(l, d.h.MaxInitLen, d.d.b[:])
-		}
+		xbs, ok = d.r.readxb(uint(l))
+		bstate = d.d.attachState(ok)
+
 	} else if d.vd == bincVdByteArray {
-		xbs, _ = d.DecodeBytes(nil)
+		xbs, bstate = d.DecodeBytes()
 	} else {
 		halt.errorf("ext expects extensions or byte array - %s %x-%x/%s", msgBadDesc, d.vd, d.vs, bincdesc(d.vd, d.vs))
 	}
@@ -3874,12 +3845,12 @@ func (d *bincDecDriverBytes) DecodeNaked() {
 		n.f = d.decFloatVal()
 	case bincVdString:
 		n.v = valueTypeString
-		n.s = d.d.stringZC(d.DecodeStringAsBytes(zeroByteSlice))
+		n.s = d.d.string(d.DecodeStringAsBytes())
 	case bincVdByteArray:
 		d.d.fauxUnionReadRawBytes(d, false, d.h.RawToString)
 	case bincVdSymbol:
 		n.v = valueTypeSymbol
-		n.s = d.d.stringZC(d.DecodeStringAsBytes(zeroByteSlice))
+		n.s = d.d.string(d.DecodeStringAsBytes())
 	case bincVdTimestamp:
 		n.v = valueTypeTime
 		tt, err := bincDecodeTime(d.r.readx(uint(d.vs)))
@@ -3889,11 +3860,7 @@ func (d *bincDecDriverBytes) DecodeNaked() {
 		n.v = valueTypeExt
 		l := d.decLen()
 		n.u = uint64(d.r.readn1())
-		if d.d.bytes {
-			n.l = d.r.readx(uint(l))
-		} else {
-			n.l = d.r.readxb(l, d.h.MaxInitLen, d.d.b[:])
-		}
+		n.l = d.r.readx(uint(l))
 	case bincVdArray:
 		n.v = valueTypeArray
 		decodeFurther = true
@@ -3913,12 +3880,11 @@ func (d *bincDecDriverBytes) DecodeNaked() {
 	}
 }
 
-func (d *bincDecDriverBytes) nextValueBytes(v0 []byte) (v []byte) {
+func (d *bincDecDriverBytes) nextValueBytes() (v []byte) {
 	if !d.bdRead {
 		d.readNextBd()
 	}
-	v0 = append(v0, d.bd)
-	d.r.startRecording(v0)
+	d.r.startRecording()
 	d.nextValueBytesBdReadR()
 	v = d.r.stopRecording()
 	d.bdRead = false
@@ -3978,23 +3944,23 @@ func (d *bincDecDriverBytes) nextValueBytesBdReadR() {
 		}
 	case bincVdString, bincVdByteArray:
 		clen = fnLen(d.vs)
-		d.r.readx(clen)
+		d.r.skip(clen)
 	case bincVdSymbol:
 		if d.vs&0x8 == 0 {
 			d.r.readn1()
 		} else {
-			d.r.readx(2)
+			d.r.skip(2)
 		}
 		if d.vs&0x4 != 0 {
 			clen = fnLen(d.vs & 0x3)
-			d.r.readx(clen)
+			d.r.skip(clen)
 		}
 	case bincVdTimestamp:
-		d.r.readx(uint(d.vs))
+		d.r.skip(uint(d.vs))
 	case bincVdCustomExt:
 		clen = fnLen(d.vs)
 		d.r.readn1()
-		d.r.readx(clen)
+		d.r.skip(clen)
 	case bincVdArray:
 		clen = fnLen(d.vs)
 		for i := uint(0); i < clen; i++ {
@@ -4064,7 +4030,7 @@ func (d *bincDecDriverBytes) resetInBytes(in []byte) {
 }
 
 func (d *bincDecDriverBytes) resetInIO(r io.Reader) {
-	d.r.resetIO(r, d.h.ReaderBufferSize, &d.d.blist)
+	d.r.resetIO(r, d.h.ReaderBufferSize, d.h.MaxInitLen, &d.d.blist)
 }
 
 func (d *bincDecDriverBytes) descBd() string {
@@ -4932,7 +4898,20 @@ func (e *encoderBincIO) reset() {
 	e.err = nil
 }
 
+func (e *encoderBincIO) Encode(v interface{}) (err error) {
+
+	defer panicValToErr(e, callRecoverSentinel, &e.err, &err, debugging)
+	e.mustEncode(v)
+	return
+}
+
 func (e *encoderBincIO) MustEncode(v interface{}) {
+	defer panicValToErr(e, callRecoverSentinel, &e.err, nil, true)
+	e.mustEncode(v)
+	return
+}
+
+func (e *encoderBincIO) mustEncode(v interface{}) {
 	halt.onerror(e.err)
 	if e.hh == nil {
 		halt.onerror(errNoFormatHandle)
@@ -4945,22 +4924,6 @@ func (e *encoderBincIO) MustEncode(v interface{}) {
 		e.e.atEndOfEncode()
 		e.e.writerEnd()
 	}
-}
-
-func (e *encoderBincIO) Encode(v interface{}) (err error) {
-
-	if !debugging {
-		defer func() {
-
-			if x := recover(); x != nil {
-				panicValToErr(e, x, &e.err)
-				err = e.err
-			}
-		}()
-	}
-
-	e.MustEncode(v)
-	return
 }
 
 func (e *encoderBincIO) encode(iv interface{}) {
@@ -5508,14 +5471,14 @@ func (d *decoderBincIO) selferUnmarshal(_ *decFnInfo, rv reflect.Value) {
 
 func (d *decoderBincIO) binaryUnmarshal(_ *decFnInfo, rv reflect.Value) {
 	bm := rv2i(rv).(encoding.BinaryUnmarshaler)
-	xbs, _ := d.d.DecodeBytes(nil)
+	xbs, _ := d.d.DecodeBytes()
 	fnerr := bm.UnmarshalBinary(xbs)
 	halt.onerror(fnerr)
 }
 
 func (d *decoderBincIO) textUnmarshal(_ *decFnInfo, rv reflect.Value) {
 	tm := rv2i(rv).(encoding.TextUnmarshaler)
-	fnerr := tm.UnmarshalText(bytesOk(d.d.DecodeStringAsBytes(nil)))
+	fnerr := tm.UnmarshalText(bytesOk(d.d.DecodeStringAsBytes()))
 	halt.onerror(fnerr)
 }
 
@@ -5525,19 +5488,7 @@ func (d *decoderBincIO) jsonUnmarshal(_ *decFnInfo, rv reflect.Value) {
 
 func (d *decoderBincIO) jsonUnmarshalV(tm jsonUnmarshaler) {
 
-	var bs0 = zeroByteSlice
-	if !d.bytes {
-		bs0 = d.blist.get(256)
-	}
-	bs := d.d.nextValueBytes(bs0)
-	fnerr := tm.UnmarshalJSON(bs)
-	if !d.bytes {
-		d.blist.put(bs)
-		if !byteSliceSameData(bs0, bs) {
-			d.blist.put(bs0)
-		}
-	}
-	halt.onerror(fnerr)
+	halt.onerror(tm.UnmarshalJSON(d.d.nextValueBytes()))
 }
 
 func (d *decoderBincIO) kErr(_ *decFnInfo, rv reflect.Value) {
@@ -5550,7 +5501,7 @@ func (d *decoderBincIO) raw(_ *decFnInfo, rv reflect.Value) {
 }
 
 func (d *decoderBincIO) kString(_ *decFnInfo, rv reflect.Value) {
-	rvSetString(rv, d.stringZC(d.d.DecodeStringAsBytes(zeroByteSlice)))
+	rvSetString(rv, d.string(d.d.DecodeStringAsBytes()))
 }
 
 func (d *decoderBincIO) kBool(_ *decFnInfo, rv reflect.Value) {
@@ -5808,7 +5759,11 @@ func (d *decoderBincIO) kStructSimple(f *decFnInfo, rv reflect.Value) {
 		hasLen := containerLen >= 0
 		for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
 			d.mapElemKey()
-			rvkencname, _ := d.d.DecodeStringAsBytes(nil)
+			rvkencname, att := d.d.DecodeStringAsBytes()
+
+			if d.bufio && d.h.jsonHandle {
+				rvkencname = d.detach2Bytes(rvkencname, d.b[:], att)
+			}
 			d.mapElemValue()
 			if si := ti.siForEncName(rvkencname); si != nil {
 				d.kStructField(si, rv)
@@ -5862,12 +5817,17 @@ func (d *decoderBincIO) kStruct(f *decFnInfo, rv reflect.Value) {
 			name2 = make([]byte, 0, 16)
 		}
 		var rvkencname []byte
+		var att dBytesAttachState
 		tkt := ti.keyType
 		for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
 			d.mapElemKey()
 
 			if tkt == valueTypeString {
-				rvkencname, _ = d.d.DecodeStringAsBytes(nil)
+				rvkencname, att = d.d.DecodeStringAsBytes()
+
+				if d.bufio && d.h.jsonHandle {
+					rvkencname = d.detach2Bytes(rvkencname, d.b[:], att)
+				}
 			} else if tkt == valueTypeInt {
 				rvkencname = strconv.AppendInt(d.b[:0], d.d.DecodeInt64(), 10)
 			} else if tkt == valueTypeUint {
@@ -5978,11 +5938,12 @@ func (d *decoderBincIO) kSlice(f *decFnInfo, rv reflect.Value) {
 
 	rvlen := rvLenSlice(rv)
 	rvcap := rvCapSlice(rv)
+	maxInitLen := d.maxInitLen()
 	hasLen := containerLenS > 0
 	if hasLen {
 		if containerLenS > rvcap {
 			oldRvlenGtZero := rvlen > 0
-			rvlen1 := decInferLen(containerLenS, d.h.MaxInitLen, int(ti.elemsize))
+			rvlen1 := int(decInferLen(containerLenS, maxInitLen, uint(ti.elemsize)))
 			if rvlen1 == rvlen {
 			} else if rvlen1 <= rvcap {
 				if rvCanset {
@@ -6025,7 +5986,7 @@ func (d *decoderBincIO) kSlice(f *decFnInfo, rv reflect.Value) {
 		if j == 0 {
 			if rvIsNil(rv) {
 				if rvCanset {
-					rvlen = decInferLen(containerLenS, d.h.MaxInitLen, int(ti.elemsize))
+					rvlen = int(decInferLen(containerLenS, maxInitLen, uint(ti.elemsize)))
 					rv, rvCanset = rvMakeSlice(rv, f.ti, rvlen, rvlen)
 					rvcap = rvlen
 					rvChanged = !rvCanset
@@ -6196,7 +6157,7 @@ func (d *decoderBincIO) kChan(f *decFnInfo, rv reflect.Value) {
 		if !(ti.rtid == uint8SliceTypId || ti.elemkind == uint8(reflect.Uint8)) {
 			halt.errorf("bytes/string in stream must decode into slice/array of bytes, not %v", ti.rt)
 		}
-		bs2, _ := d.d.DecodeBytes(nil)
+		bs2, _ := d.d.DecodeBytes()
 		irv := rv2i(rv)
 		ch, ok := irv.(chan<- byte)
 		if !ok {
@@ -6235,12 +6196,13 @@ func (d *decoderBincIO) kChan(f *decFnInfo, rv reflect.Value) {
 
 	var rvlen int
 	hasLen := containerLenS > 0
+	maxInitLen := d.maxInitLen()
 
 	for j := 0; d.containerNext(j, containerLenS, hasLen); j++ {
 		if j == 0 {
 			if rvIsNil(rv) {
 				if hasLen {
-					rvlen = decInferLen(containerLenS, d.h.MaxInitLen, int(ti.elemsize))
+					rvlen = int(decInferLen(containerLenS, maxInitLen, uint(ti.elemsize)))
 				} else {
 					rvlen = decDefChanCap
 				}
@@ -6280,7 +6242,7 @@ func (d *decoderBincIO) kMap(f *decFnInfo, rv reflect.Value) {
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	ti := f.ti
 	if rvIsNil(rv) {
-		rvlen := decInferLen(containerLen, d.h.MaxInitLen, int(ti.keysize+ti.elemsize))
+		rvlen := int(decInferLen(containerLen, d.maxInitLen(), uint(ti.keysize+ti.elemsize)))
 		rvSetDirect(rv, makeMapReflect(ti.rt, rvlen))
 	}
 
@@ -6336,26 +6298,13 @@ func (d *decoderBincIO) kMap(f *decFnInfo, rv reflect.Value) {
 
 	ktypeIsString := ktypeId == stringTypId
 	ktypeIsIntf := ktypeId == intfTypId
-
 	hasLen := containerLen > 0
 
-	var kstrbs []byte
 	var kstr2bs []byte
-	var s string
+	var kstr string
 
-	var callFnRvk bool
-	var scratchBuf bool
-
-	fnRvk2 := func() (s string) {
-		callFnRvk = false
-
-		if len(kstr2bs) == 1 {
-			s = str4byte(kstr2bs[0])
-		} else if len(kstr2bs) != 0 {
-			s, callFnRvk = d.mapKeyString(&kstrbs, &kstr2bs, scratchBuf)
-		}
-		return
-	}
+	var mapKeyStringSharesBytesBuf bool
+	var att dBytesAttachState
 
 	var vElem, kElem reflect.Type
 	kbuiltin := ti.tikey.flagDecBuiltin && ti.keykind != uint8(reflect.Slice)
@@ -6368,7 +6317,8 @@ func (d *decoderBincIO) kMap(f *decFnInfo, rv reflect.Value) {
 	}
 
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-		callFnRvk = false
+		mapKeyStringSharesBytesBuf = false
+		kstr = ""
 		if j == 0 {
 
 			if decUseTransient && vTransient && kTransient {
@@ -6403,8 +6353,10 @@ func (d *decoderBincIO) kMap(f *decFnInfo, rv reflect.Value) {
 		if d.d.TryNil() {
 			rvSetZero(rvk)
 		} else if ktypeIsString {
-			kstr2bs, scratchBuf = d.d.DecodeStringAsBytes(nil)
-			rvSetString(rvk, fnRvk2())
+			kstr2bs, att = d.d.DecodeStringAsBytes()
+
+			kstr, mapKeyStringSharesBytesBuf = d.bytes2Str(kstr2bs, att)
+			rvSetString(rvk, kstr)
 		} else {
 			if kbuiltin {
 				if ktypePtr {
@@ -6422,26 +6374,36 @@ func (d *decoderBincIO) kMap(f *decFnInfo, rv reflect.Value) {
 			if ktypeIsIntf {
 				if rvk2 := rvk.Elem(); rvk2.IsValid() && rvk2.Type() == uint8SliceTyp {
 					kstr2bs = rvGetBytes(rvk2)
-					rvSetIntf(rvk, rv4istr(fnRvk2()))
+
+					kstr, mapKeyStringSharesBytesBuf = d.bytes2Str(kstr2bs, dBytesAttachView)
+					rvSetIntf(rvk, rv4istr(kstr))
 				}
 
 			}
 		}
 
+		if mapKeyStringSharesBytesBuf && d.bufio {
+			if ktypeIsString {
+				rvSetString(rvk, d.string(kstr2bs, att))
+			} else {
+				rvSetIntf(rvk, rv4istr(d.string(kstr2bs, att)))
+			}
+			mapKeyStringSharesBytesBuf = false
+		}
+
 		d.mapElemValue()
 
 		if d.d.TryNil() {
+			if mapKeyStringSharesBytesBuf {
+				if ktypeIsString {
+					rvSetString(rvk, d.string(kstr2bs, att))
+				} else {
+					rvSetIntf(rvk, rv4istr(d.string(kstr2bs, att)))
+				}
+			}
 
 			if !rvvz.IsValid() {
 				rvvz = rvZeroK(vtype, vtypeKind)
-			}
-			if callFnRvk {
-				s = d.string(kstr2bs)
-				if ktypeIsString {
-					rvSetString(rvk, s)
-				} else {
-					rvSetIntf(rvk, rv4istr(s))
-				}
 			}
 			mapSet(rv, rvk, rvvz, kfast, visindirect, visref)
 			continue
@@ -6495,6 +6457,13 @@ func (d *decoderBincIO) kMap(f *decFnInfo, rv reflect.Value) {
 		}
 
 	DECODE_VALUE_NO_CHECK_NIL:
+		if doMapSet && mapKeyStringSharesBytesBuf {
+			if ktypeIsString {
+				rvSetString(rvk, d.string(kstr2bs, att))
+			} else {
+				rvSetIntf(rvk, rv4istr(d.string(kstr2bs, att)))
+			}
+		}
 		if vbuiltin {
 			if vtypePtr {
 				if rvIsNil(rvv) {
@@ -6508,14 +6477,6 @@ func (d *decoderBincIO) kMap(f *decFnInfo, rv reflect.Value) {
 			d.decodeValueNoCheckNil(rvv, valFn)
 		}
 		if doMapSet {
-			if callFnRvk {
-				s = d.string(kstr2bs)
-				if ktypeIsString {
-					rvSetString(rvk, s)
-				} else {
-					rvSetIntf(rvk, rv4istr(s))
-				}
-			}
 			mapSet(rv, rvk, rvv, kfast, visindirect, visref)
 		}
 	}
@@ -6528,7 +6489,6 @@ func (d *decoderBincIO) init(h Handle) {
 	callMake(&d.d)
 	d.hh = h
 	d.h = h.getBasicHandle()
-	d.zeroCopy = d.h.ZeroCopy
 
 	d.err = errDecoderNotInitialized
 
@@ -6542,6 +6502,7 @@ func (d *decoderBincIO) init(h Handle) {
 		d.rtidFn = &d.h.rtidFnsDecBytes
 		d.rtidFnNoExt = &d.h.rtidFnsDecNoExtBytes
 	} else {
+		d.bufio = d.h.ReaderBufferSize > 0
 		d.rtidFn = &d.h.rtidFnsDecIO
 		d.rtidFnNoExt = &d.h.rtidFnsDecNoExtIO
 	}
@@ -6607,20 +6568,18 @@ func (d *decoderBincIO) ResetString(s string) {
 
 func (d *decoderBincIO) Decode(v interface{}) (err error) {
 
-	if !debugging {
-		defer func() {
-			if x := recover(); x != nil {
-				panicValToErr(d, x, &d.err)
-				err = d.err
-			}
-		}()
-	}
-
-	d.MustDecode(v)
+	defer panicValToErr(d, callRecoverSentinel, &d.err, &err, debugging)
+	d.mustDecode(v)
 	return
 }
 
 func (d *decoderBincIO) MustDecode(v interface{}) {
+	defer panicValToErr(d, callRecoverSentinel, &d.err, nil, true)
+	d.mustDecode(v)
+	return
+}
+
+func (d *decoderBincIO) mustDecode(v interface{}) {
 	halt.onerror(d.err)
 	if d.hh == nil {
 		halt.onerror(errNoFormatHandle)
@@ -6635,11 +6594,11 @@ func (d *decoderBincIO) Release() {
 }
 
 func (d *decoderBincIO) swallow() {
-	d.d.nextValueBytes(nil)
+	d.d.nextValueBytes()
 }
 
-func (d *decoderBincIO) nextValueBytes(start []byte) []byte {
-	return d.d.nextValueBytes(start)
+func (d *decoderBincIO) nextValueBytes() []byte {
+	return d.d.nextValueBytes()
 }
 
 func (d *decoderBincIO) decode(iv interface{}) {
@@ -6656,7 +6615,7 @@ func (d *decoderBincIO) decode(iv interface{}) {
 		}
 		d.decodeValue(v, nil)
 	case *string:
-		*v = d.stringZC(d.d.DecodeStringAsBytes(nil))
+		*v = d.string(d.d.DecodeStringAsBytes())
 	case *bool:
 		*v = d.d.DecodeBool()
 	case *int:
@@ -6776,16 +6735,13 @@ func (d *decoderBincIO) structFieldNotFound(index int, rvkencname string) {
 }
 
 func (d *decoderBincIO) decodeBytesInto(in []byte) (v []byte) {
-	if in == nil {
-		in = zeroByteSlice
-	}
-	v, _ = d.d.DecodeBytes(in)
-	return
+	v, att := d.d.DecodeBytes()
+	return d.detach2Bytes(v, in, att)
 }
 
 func (d *decoderBincIO) rawBytes() (v []byte) {
 
-	v = d.d.nextValueBytes(zeroByteSlice)
+	v = d.d.nextValueBytes()
 	if d.bytes && !d.h.ZeroCopy {
 		vv := make([]byte, len(v))
 		copy(vv, v)
@@ -6918,7 +6874,6 @@ func (helperDecDriverBincIO) newDecoderBytes(in []byte, h Handle) *decoderBincIO
 
 func (helperDecDriverBincIO) newDecoderIO(in io.Reader, h Handle) *decoderBincIO {
 	var c1 decoderBincIO
-	c1.bytes = false
 	c1.init(h)
 	c1.Reset(in)
 	return &c1
@@ -7728,23 +7683,16 @@ func (d *bincDecDriverIO) decLenNumber() (v uint64) {
 	return
 }
 
-func (d *bincDecDriverIO) DecodeStringAsBytes(in []byte) (bs2 []byte, scratchBuf bool) {
+func (d *bincDecDriverIO) DecodeStringAsBytes() (bs []byte, state dBytesAttachState) {
 	if d.advanceNil() {
 		return
 	}
+	var cond bool
 	var slen = -1
 	switch d.vd {
 	case bincVdString, bincVdByteArray:
 		slen = d.decLen()
-		if d.d.bytes {
-			bs2 = d.r.readx(uint(slen))
-		} else {
-			if in == nil {
-				in = d.d.b[:]
-				scratchBuf = true
-			}
-			bs2 = d.r.readxb(slen, d.h.MaxInitLen, in)
-		}
+		bs, cond = d.r.readxb(uint(slen))
 	case bincVdSymbol:
 
 		var symbol uint16
@@ -7759,7 +7707,7 @@ func (d *bincDecDriverIO) DecodeStringAsBytes(in []byte) (bs2 []byte, scratchBuf
 		}
 
 		if vs&0x4 == 0 {
-			bs2 = d.s[symbol]
+			bs = d.s[symbol]
 		} else {
 			switch vs & 0x3 {
 			case 0:
@@ -7772,57 +7720,49 @@ func (d *bincDecDriverIO) DecodeStringAsBytes(in []byte) (bs2 []byte, scratchBuf
 				slen = int(bigen.Uint64(d.r.readn8()))
 			}
 
-			bs2 = d.r.readxb(slen, d.h.MaxInitLen, nil)
-			scratchBuf = true
-			d.s[symbol] = bs2
+			bs, cond = d.r.readxb(uint(slen))
+			bs = d.d.detach2Bytes(bs, nil, d.d.attachState(cond))
+			d.s[symbol] = bs
 		}
 	default:
 		halt.errorf("string/bytes - %s %x-%x/%s", msgBadDesc, d.vd, d.vs, bincdesc(d.vd, d.vs))
 	}
 
-	if d.h.ValidateUnicode && !utf8.Valid(bs2) {
-		halt.errorf("DecodeStringAsBytes: invalid UTF-8: %s", bs2)
+	if d.h.ValidateUnicode && !utf8.Valid(bs) {
+		halt.errorf("DecodeStringAsBytes: invalid UTF-8: %s", bs)
 	}
 
 	d.bdRead = false
 	return
 }
 
-func (d *bincDecDriverIO) DecodeBytes(bs []byte) (out []byte, scratchBuf bool) {
+func (d *bincDecDriverIO) DecodeBytes() (bs []byte, state dBytesAttachState) {
 	if d.advanceNil() {
 		return
 	}
+	var cond bool
 	if d.vd == bincVdArray {
-		if bs == nil {
-			bs = d.d.b[:]
-			scratchBuf = true
-		}
 		slen := d.ReadArrayStart()
-		bs, _ = usableByteSlice(bs, slen)
+		bs, cond = usableByteSlice(d.d.buf, slen)
 		for i := 0; i < slen; i++ {
 			bs[i] = uint8(chkOvf.UintV(d.DecodeUint64(), 8))
 		}
 		for i := len(bs); i < slen; i++ {
 			bs = append(bs, uint8(chkOvf.UintV(d.DecodeUint64(), 8)))
 		}
-		out = bs
+		if cond {
+			d.d.buf = bs
+		}
+		state = dBytesAttachBuffer
 		return
 	}
-	var clen int
-	if d.vd == bincVdString || d.vd == bincVdByteArray {
-		clen = d.decLen()
-	} else {
+	if !(d.vd == bincVdString || d.vd == bincVdByteArray) {
 		halt.errorf("bytes - %s %x-%x/%s", msgBadDesc, d.vd, d.vs, bincdesc(d.vd, d.vs))
 	}
+	clen := d.decLen()
 	d.bdRead = false
-	if d.d.bytes && d.h.ZeroCopy {
-		return d.r.readx(uint(clen)), false
-	}
-	if bs == nil {
-		bs = d.d.b[:]
-		scratchBuf = true
-	}
-	out = d.r.readxb(clen, d.h.MaxInitLen, bs)
+	bs, cond = d.r.readxb(uint(clen))
+	state = d.d.attachState(cond)
 	return
 }
 
@@ -7839,15 +7779,15 @@ func (d *bincDecDriverIO) DecodeExt(rv interface{}, basetype reflect.Type, xtag 
 }
 
 func (d *bincDecDriverIO) DecodeRawExt(re *RawExt) {
-	xbs, realxtag, zerocopy, ok := d.decodeExtV(false, 0)
+	xbs, realxtag, state, ok := d.decodeExtV(false, 0)
 	if !ok {
 		return
 	}
 	re.Tag = uint64(realxtag)
-	re.setData(xbs, zerocopy)
+	re.setData(xbs, state >= dBytesAttachViewZerocopy)
 }
 
-func (d *bincDecDriverIO) decodeExtV(verifyTag bool, xtagIn uint64) (xbs []byte, xtag byte, zerocopy, ok bool) {
+func (d *bincDecDriverIO) decodeExtV(verifyTag bool, xtagIn uint64) (xbs []byte, xtag byte, bstate dBytesAttachState, ok bool) {
 	if xtagIn > 0xff {
 		halt.errorf("ext: tag must be <= 0xff; got: %v", xtagIn)
 	}
@@ -7861,14 +7801,11 @@ func (d *bincDecDriverIO) decodeExtV(verifyTag bool, xtagIn uint64) (xbs []byte,
 		if verifyTag && xtag != tag {
 			halt.errorf("wrong extension tag - got %b, expecting: %v", xtag, tag)
 		}
-		if d.d.bytes {
-			xbs = d.r.readx(uint(l))
-			zerocopy = true
-		} else {
-			xbs = d.r.readxb(l, d.h.MaxInitLen, d.d.b[:])
-		}
+		xbs, ok = d.r.readxb(uint(l))
+		bstate = d.d.attachState(ok)
+
 	} else if d.vd == bincVdByteArray {
-		xbs, _ = d.DecodeBytes(nil)
+		xbs, bstate = d.DecodeBytes()
 	} else {
 		halt.errorf("ext expects extensions or byte array - %s %x-%x/%s", msgBadDesc, d.vd, d.vs, bincdesc(d.vd, d.vs))
 	}
@@ -7931,12 +7868,12 @@ func (d *bincDecDriverIO) DecodeNaked() {
 		n.f = d.decFloatVal()
 	case bincVdString:
 		n.v = valueTypeString
-		n.s = d.d.stringZC(d.DecodeStringAsBytes(zeroByteSlice))
+		n.s = d.d.string(d.DecodeStringAsBytes())
 	case bincVdByteArray:
 		d.d.fauxUnionReadRawBytes(d, false, d.h.RawToString)
 	case bincVdSymbol:
 		n.v = valueTypeSymbol
-		n.s = d.d.stringZC(d.DecodeStringAsBytes(zeroByteSlice))
+		n.s = d.d.string(d.DecodeStringAsBytes())
 	case bincVdTimestamp:
 		n.v = valueTypeTime
 		tt, err := bincDecodeTime(d.r.readx(uint(d.vs)))
@@ -7946,11 +7883,7 @@ func (d *bincDecDriverIO) DecodeNaked() {
 		n.v = valueTypeExt
 		l := d.decLen()
 		n.u = uint64(d.r.readn1())
-		if d.d.bytes {
-			n.l = d.r.readx(uint(l))
-		} else {
-			n.l = d.r.readxb(l, d.h.MaxInitLen, d.d.b[:])
-		}
+		n.l = d.r.readx(uint(l))
 	case bincVdArray:
 		n.v = valueTypeArray
 		decodeFurther = true
@@ -7970,12 +7903,11 @@ func (d *bincDecDriverIO) DecodeNaked() {
 	}
 }
 
-func (d *bincDecDriverIO) nextValueBytes(v0 []byte) (v []byte) {
+func (d *bincDecDriverIO) nextValueBytes() (v []byte) {
 	if !d.bdRead {
 		d.readNextBd()
 	}
-	v0 = append(v0, d.bd)
-	d.r.startRecording(v0)
+	d.r.startRecording()
 	d.nextValueBytesBdReadR()
 	v = d.r.stopRecording()
 	d.bdRead = false
@@ -8035,23 +7967,23 @@ func (d *bincDecDriverIO) nextValueBytesBdReadR() {
 		}
 	case bincVdString, bincVdByteArray:
 		clen = fnLen(d.vs)
-		d.r.readx(clen)
+		d.r.skip(clen)
 	case bincVdSymbol:
 		if d.vs&0x8 == 0 {
 			d.r.readn1()
 		} else {
-			d.r.readx(2)
+			d.r.skip(2)
 		}
 		if d.vs&0x4 != 0 {
 			clen = fnLen(d.vs & 0x3)
-			d.r.readx(clen)
+			d.r.skip(clen)
 		}
 	case bincVdTimestamp:
-		d.r.readx(uint(d.vs))
+		d.r.skip(uint(d.vs))
 	case bincVdCustomExt:
 		clen = fnLen(d.vs)
 		d.r.readn1()
-		d.r.readx(clen)
+		d.r.skip(clen)
 	case bincVdArray:
 		clen = fnLen(d.vs)
 		for i := uint(0); i < clen; i++ {
@@ -8121,7 +8053,7 @@ func (d *bincDecDriverIO) resetInBytes(in []byte) {
 }
 
 func (d *bincDecDriverIO) resetInIO(r io.Reader) {
-	d.r.resetIO(r, d.h.ReaderBufferSize, &d.d.blist)
+	d.r.resetIO(r, d.h.ReaderBufferSize, d.h.MaxInitLen, &d.d.blist)
 }
 
 func (d *bincDecDriverIO) descBd() string {
