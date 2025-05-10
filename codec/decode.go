@@ -552,7 +552,6 @@ func (d *decoderBase) fauxUnionReadRawBytes(dr decDriverI, asString, rawToString
 // }
 
 func (d *decoderBase) string(v []byte, state dBytesAttachState) (s string) {
-	// defer func() { debugf("d.string: (%d) %s", hlWHITE, len(s), s) }()
 	// note: string([]byte) checks - and optimizes - for len 0 and len 1
 	if len(v) <= 1 {
 		s = string(v)
@@ -594,40 +593,6 @@ func (d *decoderBase) attachState(usingBufFromReader bool) (r dBytesAttachState)
 	}
 	return
 }
-
-// func (d *decoderBase) isAttachedReaderBytes(usingBuf bool) bool {
-// 	return usingBuf || !(d.bytes && d.zeroCopy)
-// }
-
-// func (d *decoderBase) stringZC(v []byte, state dBytesAttachState) (s string) {
-// 	// This method is called a lot. Inlining helps with performance.
-// 	//
-// 	// MARKER: TUNED BELOW TO force inlining
-// 	// - inlined d.string(...)
-// 	// - remove if len(v) == 0 { check
-// 	// - used double indexing to eliminate inline cost of the addition (v[0]:v[0]+1)
-
-// 	// if len(v) == 0 {
-// 	// } else if len(v) == 1 {
-// 	if len(v) == 1 {
-// 		s = str4byte(v[0]) // str256[v[0]:][:1] // str256[v[0] : v[0]+1]
-// 		// s = unsafe.String((*byte)(unsafe.Add(unsafe.Pointer(unsafe.StringData(str256)), v[0])), 1)
-// 	} else if state == dBytesAttachViewZerocopy { // !scratchBuf && d.bytes && d.zeroCopy
-// 		s = stringView(v)
-// 	} else if d.is == nil || d.c != containerMapKey || len(v) > internMaxStrLen {
-// 		s = string(v)
-// 	} else {
-// 		s = d.is.string(v)
-// 	}
-// 	return
-// }
-
-// func (d *decoderBase) string(v []byte) (s string) {
-// 	if d.is == nil || d.c != containerMapKey || len(v) < 2 || len(v) > internMaxStrLen {
-// 		return string(v)
-// 	}
-// 	return d.is.string(v)
-// }
 
 // Decoder reads and decodes an object from an input stream in a supported format.
 //
@@ -983,7 +948,6 @@ func (d *decoder[T]) kStructSimple(f *decFnInfo, rv reflect.Value) {
 			// Note: ioDecReader (non-bufio) and bytesDecReader do not have
 			// this issue (as no fillbuf exists where bytes might be returned from).
 
-			// debugf("kStructSimple: key, state: %s, %s", hlBLUE, rvkencname, att)
 			if d.bufio && d.h.jsonHandle {
 				rvkencname = d.detach2Bytes(rvkencname, d.b[:], att)
 			}
@@ -2654,7 +2618,6 @@ func decInferLen(clen int, maxlen, unit uint) (n uint) {
 	// We saw same typical alloc from 0-8, then a 20% increase at 16.
 	// Thus, we set it to 8.
 
-	// defer func() { debugf("decInferLen: clen/maxlen/unit=n: %d/%d/%d=%d", hlRED, clen, maxlen, unit, n) }()
 	const (
 		minLenIfUnset = 8
 		maxMem        = 1024 * 1024 // 1 MB Memory
@@ -2682,10 +2645,6 @@ func decInferLen(clen int, maxlen, unit uint) (n uint) {
 		maxlen = maxMem / unit
 	}
 	return min(uint(clen), maxlen)
-	// if uint(clen) < maxlen {
-	// 	return clen
-	// }
-	// return maxlen
 }
 
 type Decoder struct {
@@ -2997,3 +2956,39 @@ func oneOffDecode(sd decoderI, v interface{}, in []byte, basetype reflect.Type, 
 	// d.sideDecoder(xbs)
 	// d.sideDecode(rv, basetype)
 }
+
+// ----
+
+// func (d *decoderBase) isAttachedReaderBytes(usingBuf bool) bool {
+// 	return usingBuf || !(d.bytes && d.zeroCopy)
+// }
+
+// func (d *decoderBase) stringZC(v []byte, state dBytesAttachState) (s string) {
+// 	// This method is called a lot. Inlining helps with performance.
+// 	//
+// 	// MARKER: TUNED BELOW TO force inlining
+// 	// - inlined d.string(...)
+// 	// - remove if len(v) == 0 { check
+// 	// - used double indexing to eliminate inline cost of the addition (v[0]:v[0]+1)
+
+// 	// if len(v) == 0 {
+// 	// } else if len(v) == 1 {
+// 	if len(v) == 1 {
+// 		s = str4byte(v[0]) // str256[v[0]:][:1] // str256[v[0] : v[0]+1]
+// 		// s = unsafe.String((*byte)(unsafe.Add(unsafe.Pointer(unsafe.StringData(str256)), v[0])), 1)
+// 	} else if state == dBytesAttachViewZerocopy { // !scratchBuf && d.bytes && d.zeroCopy
+// 		s = stringView(v)
+// 	} else if d.is == nil || d.c != containerMapKey || len(v) > internMaxStrLen {
+// 		s = string(v)
+// 	} else {
+// 		s = d.is.string(v)
+// 	}
+// 	return
+// }
+
+// func (d *decoderBase) string(v []byte) (s string) {
+// 	if d.is == nil || d.c != containerMapKey || len(v) < 2 || len(v) > internMaxStrLen {
+// 		return string(v)
+// 	}
+// 	return d.is.string(v)
+// }

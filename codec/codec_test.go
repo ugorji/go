@@ -1875,8 +1875,7 @@ func doTestRawValue(t *testing.T, h Handle) {
 func doTestPythonGenStreams(t *testing.T, h Handle) {
 	defer testSetup2(t, &h)()
 
-	// time0 := time.Now()
-	// defer func() { xdebugf("python-gen-streams: %s: took: %v", h.Name(), time.Since(time0)) }()
+	// defer func(t0 time.Time) { debugf("python-gen-streams: %s: took: %v", h.Name(), time.Since(t0)) }(time.Now())
 
 	name := h.Name()
 	if testVerbose {
@@ -2738,14 +2737,10 @@ func doTestDifferentMapOrSliceType(t *testing.T, h Handle) {
 		testDeepEqualErr(bs1, bs2, t, "cmp-enc-dec-bytes-2")
 
 		bs1 = []byte{}
-		// debugf("bs1 (nil? %v): %v", hlGREEN, bs1 == nil, bs1)
 		b = testMarshalErr(bs1, h, t, "enc-bytes")
-		// debugf("enc (nil? %v): %v", hlYELLOW, b == nil, b)
 
 		bs2 = nil
-		// debugf("bs2 (nil? %v): %v (before)", hlGREEN, bs2 == nil, bs2)
 		testUnmarshalErr(&bs2, b, h, t, "dec-bytes-2")
-		// debugf("bs2 (nil? %v): %v", hlGREEN, bs2 == nil, bs2)
 		testDeepEqualErr(bs1, bs2, t, "cmp-enc-dec-bytes-2")
 
 		type Ti32 int32
@@ -3251,19 +3246,6 @@ func doTestStructKeyType(t *testing.T, h Handle) {
 		testUnmarshalErr(&v1, bs1, h, t, "")
 		testDeepEqualErr(v, v1, t, name+"")
 		bs2 = testMarshalErr(m, h, t, "")
-		// if _, ok := h.(*JsonHandle); ok {
-		// 	xdebugf("bs1: %s, bs2: %s", bs1, bs2)
-		// }
-		// if bcok {
-		// 	xdebug2f("-------------")
-		// 	xdebugf("v: %#v, m: %#v", v, m)
-		// 	xdebugf("bs1: %v", bs1)
-		// 	xdebugf("bs2: %v", bs2)
-		// 	xdebugf("bs1==bs2: %v", bytes.Equal(bs1, bs2))
-		// 	testDeepEqualErr(bs1, bs2, t, name+"")
-		// 	xdebug2f("-------------")
-		// 	return
-		// }
 		testDeepEqualErr(bs1, bs2, t, name+"")
 		testReleaseBytes(bs1)
 		testReleaseBytes(bs2)

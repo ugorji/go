@@ -610,14 +610,6 @@ func TestCborZeroCopyBytes(t *testing.T) {
 }
 
 func TestCborNextValueBytes(t *testing.T) {
-	// x := testCborH.IndefiniteLength
-	// defer func() { testCborH.IndefiniteLength = x }()
-
-	// xdebugf(">>>>> TestCborNextValueBytes: IndefiniteLength = false")
-	// testCborH.IndefiniteLength = false
-	// doTestNextValueBytes(t, testCborH)
-	// xdebugf(">>>>> TestCborNextValueBytes: IndefiniteLength = true")
-	// testCborH.IndefiniteLength = true
 	doTestNextValueBytes(t, testCborH)
 }
 

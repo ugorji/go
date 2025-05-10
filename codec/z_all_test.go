@@ -384,7 +384,6 @@ func TestCodecSuite(t *testing.T) {
 
 	fnRun := func(s string, f func(t *testing.T)) {
 		t.Run(s, f)
-		// xdebugf("%s: %v", s, tt.Elapsed())
 	}
 
 	testGroupResetFlags()
