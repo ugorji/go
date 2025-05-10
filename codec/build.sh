@@ -118,7 +118,7 @@ _tests() {
         true &&
             ${gocmd} vet -printfuncs "errorf" "$@" &&
             if [[ "$echo" == 1 ]]; then set -o xtrace; fi &&
-            ${gocmd} test ${zargs[*]} ${ztestargs[*]} -vet "$vet" -tags "alltests $i" -count $nc -cpu $cpus -run "TestCodecSuite" "${c[@]}" "$@" &
+            ${gocmd} test ${zargs[*]} ${ztestargs[*]} -vet "$vet" -tags "alltests $i" -count $nc -cpu $cpus -run "TestCodecSuite" -tdiff "${c[@]}" "$@" &
         if [[ "$echo" == 1 ]]; then set +o xtrace; fi
         b+=("${i2// /-}.cov.out")
         [[ "$zwait" == "1" ]] && wait
