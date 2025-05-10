@@ -816,8 +816,8 @@ LOOP:
 		token = z.b[i]
 	}
 	z.c = i + 1
-	bs = z.b[start:i]
-	// return byteSliceOf(z.b, start, i)
+	// bs = z.b[start:i]
+	bs = byteSliceOf(z.b, start, i)
 	return
 }
 
