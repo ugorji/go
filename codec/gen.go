@@ -219,7 +219,8 @@ func genTmplDecCommandAsString(s string, mapkey bool) string {
 		// return "string(d.d.DecodeStringAsBytes())"
 		return "d.string(d.d.DecodeStringAsBytes())"
 	case "[]byte", "[]uint8", "bytes":
-		return "bytesOk(d.d.DecodeBytes())"
+		// return "bytesOk(d.d.DecodeBytes())"
+		return "d.decodeBytesInto(v[uint(j)])"
 	case "float32":
 		return "float32(d.d.DecodeFloat32())"
 	case "float64":
