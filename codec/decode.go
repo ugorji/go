@@ -523,12 +523,7 @@ func (d *decoderBase) fauxUnionReadRawBytes(dr decDriverI, asString, rawToString
 		d.n.s = d.string(d.n.l, d.n.a)
 	} else {
 		d.n.v = valueTypeBytes
-		// MARKER 2025 - I think we should we handle the raw bytes here?
-		// d.n.l = d.detach2Bytes(d.n.l, nil, d.n.a)
-
-		// out := make([]byte, len(d.n.l))
-		// copy(out, d.n.l)
-		// d.n.l = out
+		d.n.l = d.detach2Bytes(d.n.l, nil, d.n.a)
 	}
 }
 
@@ -572,8 +567,11 @@ func (d *decoderBase) string(v []byte, state dBytesAttachState) (s string) {
 }
 
 func (d *decoderBase) detach2Bytes(in, out []byte, state dBytesAttachState) []byte {
-	if in == nil || state >= dBytesAttachViewZerocopy {
+	if cap(in) == 0 || state >= dBytesAttachViewZerocopy {
 		return in
+	}
+	if len(in) == 0 {
+		return zeroByteSlice
 	}
 	if cap(out) >= len(in) {
 		out = out[:len(in)]
