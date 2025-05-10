@@ -448,7 +448,7 @@ func (z *ioDecReader) readxb(n uint) (out []byte, useBuf bool) {
 		if n3 > 0 {
 			z.l = out[r+uint(n3)-1]
 			nn -= n3
-			r = r + uint(n3)
+			r += uint(n3)
 		}
 		halt.onerror(err)
 	}
@@ -488,10 +488,17 @@ func (z *ioDecReader) skip(n uint) {
 	// -------- NOT BUFIO ------
 
 	var out []byte
+	var fromBlist bool
 	if z.recording {
 		out = z.buf
 	} else {
-		out = z.blist.get(int(decInferLen(int(n), z.maxInitLen, 1)))
+		nn := int(decInferLen(int(n), z.maxInitLen, 1))
+		if cap(z.buf) >= nn/2 {
+			out = z.buf[:cap(z.buf)]
+		} else {
+			fromBlist = true
+			out = z.blist.get(nn)
+		}
 	}
 
 	var r, n2 uint
@@ -519,6 +526,8 @@ func (z *ioDecReader) skip(n uint) {
 	}
 	if z.recording {
 		z.buf = out
+	} else if fromBlist {
+		z.blist.put(out)
 	}
 	return
 }
@@ -559,7 +568,7 @@ func (z *ioDecReader) jsonReadNum() (bs []byte, token byte) {
 
 	// if not recording, add the last read byte into buf
 	if !z.recording {
-		z.buf = append(z.buf, z.l)
+		z.buf = append(z.buf[:0], z.l)
 	}
 	start = uint(len(z.buf) - 1) // incl last byte in z.buf
 	var b byte
@@ -656,6 +665,9 @@ func (z *ioDecReader) readUntil(stop1, stop2 byte) (bs []byte, tok byte) {
 	}
 
 	var err error
+	if !z.recording {
+		z.buf = z.buf[:0]
+	}
 	start = uint(len(z.buf))
 READER:
 	if z.rbr {
@@ -702,6 +714,7 @@ func (z *ioDecReader) stopRecording() (v []byte) {
 		z.recc = 0
 	} else {
 		v = z.buf
+		z.buf = z.buf[:0]
 	}
 	return
 }
