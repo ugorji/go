@@ -259,6 +259,18 @@ type EncodeOptions struct {
 	// Use it in the very rare occurrence that your types modify a pointer value when calling
 	// an encode callback function e.g. JsonMarshal, TextMarshal, BinaryMarshal or CodecEncodeSelf.
 	NoAddressableReadonly bool
+
+	// NilCollectionToZeroLength controls whether we encode nil collections (map, slice, chan)
+	// as nil (e.g. null if using JSON) or as zero length collections (e.g. [] or {} if using JSON).
+	//
+	// This is useful in many scenarios e.g.
+	//    - encoding in go, but decoding the encoded stream in python
+	//      where context of the type is missing but needed
+	//
+	// Note: this flag ignores the MapBySlice tag, and will encode nil slices, maps and chan
+	// in their natural zero-length formats e.g. a slice in json encoded as []
+	// (and not nil or {} if MapBySlice tag).
+	NilCollectionToZeroLength bool
 }
 
 // ---------------------------------------------
@@ -1336,6 +1348,19 @@ func (e *encoder[T]) encode(iv interface{}) {
 
 	rv, ok := isNil(iv)
 	if ok {
+		if e.h.NilCollectionToZeroLength {
+			switch rv.Kind() {
+			case reflect.Slice, reflect.Chan:
+				// if !f.ti.mbs {
+				e.arrayStart(0)
+				e.arrayEnd()
+				return
+			case reflect.Map:
+				e.mapStart(0)
+				e.mapEnd()
+				return
+			}
+		}
 		e.e.EncodeNil()
 		return
 	}
@@ -1474,9 +1499,24 @@ TOP:
 		rvp = reflect.Value{}
 		rv = rv.Elem()
 		goto TOP
-	case reflect.Map, reflect.Slice, reflect.Chan:
+	case reflect.Map:
 		if rvIsNil(rv) {
-			e.e.EncodeNil()
+			if e.h.NilCollectionToZeroLength {
+				e.mapStart(0)
+				e.mapEnd()
+			} else {
+				e.e.EncodeNil()
+			}
+			goto END
+		}
+	case reflect.Slice, reflect.Chan:
+		if rvIsNil(rv) {
+			if e.h.NilCollectionToZeroLength {
+				e.arrayStart(0)
+				e.arrayEnd()
+			} else {
+				e.e.EncodeNil()
+			}
 			goto END
 		}
 	case reflect.Invalid, reflect.Func:

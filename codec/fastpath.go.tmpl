@@ -184,6 +184,24 @@ func (helperDecDriver[T]) fastpathDList() *fastpathDs[T] {
 
 // -- -- fast path type switch
 func (helperEncDriver[T]) fastpathEncodeTypeSwitch(iv interface{}, e *encoder[T]) bool {
+	fnNilMap := func() {
+		if e.h.NilCollectionToZeroLength {
+			e.mapStart(0)
+			e.mapEnd()
+		} else {
+			e.e.EncodeNil()
+		}
+	}
+	
+	fnNilSeq := func() {
+		if e.h.NilCollectionToZeroLength {
+			e.arrayStart(0)
+			e.arrayEnd()
+		} else {
+			e.e.EncodeNil()
+		}
+	}
+		
 	var ft fastpathET[T]
 	switch v := iv.(type) {
 {{range .Values}}{{if not .Primitive}}{{if not .MapKey -}}
@@ -191,7 +209,7 @@ func (helperEncDriver[T]) fastpathEncodeTypeSwitch(iv interface{}, e *encoder[T]
 		ft.{{ .MethodNamePfx "Enc" false }}V(v, e)
 	case *[]{{ .Elem }}:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilSeq()
 		} else {
 			ft.{{ .MethodNamePfx "Enc" false }}V(*v, e)
 		}
@@ -202,7 +220,7 @@ func (helperEncDriver[T]) fastpathEncodeTypeSwitch(iv interface{}, e *encoder[T]
 		ft.{{ .MethodNamePfx "Enc" false }}V(v, e)
 	case *map[{{ .MapKey }}]{{ .Elem }}:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilMap()
 		} else {
 			ft.{{ .MethodNamePfx "Enc" false }}V(*v, e)
 		}
