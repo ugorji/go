@@ -69,15 +69,15 @@ func (x *genMono) reset() {
 	clear(x.typParamTransient)
 }
 
-func (m *genMono) hdl(h Handle) {
+func (m *genMono) hdl(hname string) {
 	m.reset()
-	hdlFname := h.Name() + ".go"
-	m.do(h, []string{"encode.go", "decode.go", hdlFname}, []string{"fastpath.not.go"}, "", "")
-	m.do(h, []string{"fastpath.not.go"}, nil, ".notfastpath", ` && (notfastpath || codec.notfastpath)`)
-	m.do(h, []string{"fastpath.generated.go"}, nil, ".fastpath", ` && !notfastpath && !codec.notfastpath`)
+	hdlFname := hname + ".go"
+	m.do(hname, []string{"encode.go", "decode.go", hdlFname}, []string{"fastpath.not.go"}, "", "")
+	m.do(hname, []string{"fastpath.not.go"}, nil, ".notfastpath", ` && (notfastpath || codec.notfastpath)`)
+	m.do(hname, []string{"fastpath.generated.go"}, nil, ".fastpath", ` && !notfastpath && !codec.notfastpath`)
 }
 
-func (m *genMono) do(h Handle, fnames, tnames []string, fnameInfx string, buildTagsSfx string) {
+func (m *genMono) do(hname string, fnames, tnames []string, fnameInfx string, buildTagsSfx string) {
 	// keep m.typParams across whole call, as all others use it
 
 	const fnameSfx = ".mono.generated.go"
@@ -85,12 +85,12 @@ func (m *genMono) do(h Handle, fnames, tnames []string, fnameInfx string, buildT
 	var imports = genMonoImports{set: make(map[string]struct{})}
 
 	r1, fset := m.merge(fnames, tnames, &imports)
-	m.trFile(r1, h, true)
+	m.trFile(r1, hname, true)
 
 	r2, fset := m.merge(fnames, tnames, &imports)
-	m.trFile(r2, h, false)
+	m.trFile(r2, hname, false)
 
-	fname := h.Name() + fnameInfx + fnameSfx
+	fname := hname + fnameInfx + fnameSfx
 
 	r0 := genMonoOutInit(imports.specs, fname)
 	r0.Decls = append(r0.Decls, r1.Decls...)
@@ -244,7 +244,7 @@ func (x *genMono) merge(fNames, tNames []string, imports *genMonoImports) (dst *
 	return
 }
 
-func (x *genMono) trFile(r *ast.File, h Handle, isbytes bool) {
+func (x *genMono) trFile(r *ast.File, hname string, isbytes bool) {
 	fn := func(node ast.Node) bool {
 		switch n := node.(type) {
 		case *ast.TypeSpec:
@@ -252,7 +252,7 @@ func (x *genMono) trFile(r *ast.File, h Handle, isbytes bool) {
 			if !genMonoTypeParamsOk(n.TypeParams) {
 				return false
 			}
-			x.trType(n, h, isbytes)
+			x.trType(n, hname, isbytes)
 			return false
 		case *ast.FuncDecl:
 			if n.Recv == nil || len(n.Recv.List) != 1 {
@@ -261,9 +261,9 @@ func (x *genMono) trFile(r *ast.File, h Handle, isbytes bool) {
 			if _, ok := n.Recv.List[0].Type.(*ast.Ident); ok {
 				return false
 			}
-			tp := x.trMethodSign(n, h, isbytes) // receiver, params, results
+			tp := x.trMethodSign(n, hname, isbytes) // receiver, params, results
 			// handle the body
-			x.trMethodBody(n.Body, tp, h, isbytes)
+			x.trMethodBody(n.Body, tp, hname, isbytes)
 			return false
 		}
 		return true
@@ -287,8 +287,8 @@ func (x *genMono) trFile(r *ast.File, h Handle, isbytes bool) {
 	ast.Inspect(r, fn)
 }
 
-func (x *genMono) trType(n *ast.TypeSpec, h Handle, isbytes bool) {
-	sfx, _, _, hnameUp := genMonoIsBytesVals(h.Name(), isbytes)
+func (x *genMono) trType(n *ast.TypeSpec, hname string, isbytes bool) {
+	sfx, _, _, hnameUp := genMonoIsBytesVals(hname, isbytes)
 	tp := n.TypeParams.List[0]
 	switch tp.Type.(*ast.Ident).Name {
 	case "encDriver", "decDriver":
@@ -300,31 +300,31 @@ func (x *genMono) trType(n *ast.TypeSpec, h Handle, isbytes bool) {
 	// handle the Struct and Array types
 	switch nn := n.Type.(type) {
 	case *ast.StructType:
-		x.trStruct(nn, tp, h, isbytes)
+		x.trStruct(nn, tp, hname, isbytes)
 	case *ast.ArrayType:
-		x.trArray(nn, tp, h, isbytes)
+		x.trArray(nn, tp, hname, isbytes)
 	}
 }
 
-func (x *genMono) trMethodSign(n *ast.FuncDecl, h Handle, isbytes bool) (tp *ast.Field) {
+func (x *genMono) trMethodSign(n *ast.FuncDecl, hname string, isbytes bool) (tp *ast.Field) {
 	// check if recv type is not parameterized
-	tp = x.trField(n.Recv.List[0], nil, h, isbytes, genMonoFieldRecv)
+	tp = x.trField(n.Recv.List[0], nil, hname, isbytes, genMonoFieldRecv)
 	// handle params and results
-	x.trMethodSignNonRecv(n.Type.Params, tp, h, isbytes)
-	x.trMethodSignNonRecv(n.Type.Results, tp, h, isbytes)
+	x.trMethodSignNonRecv(n.Type.Params, tp, hname, isbytes)
+	x.trMethodSignNonRecv(n.Type.Results, tp, hname, isbytes)
 	return
 }
 
-func (x *genMono) trMethodSignNonRecv(r *ast.FieldList, tp *ast.Field, h Handle, isbytes bool) {
+func (x *genMono) trMethodSignNonRecv(r *ast.FieldList, tp *ast.Field, hname string, isbytes bool) {
 	if r == nil || len(r.List) == 0 {
 		return
 	}
 	for _, v := range r.List {
-		x.trField(v, tp, h, isbytes, genMonoFieldParamsResult)
+		x.trField(v, tp, hname, isbytes, genMonoFieldParamsResult)
 	}
 }
 
-func (x *genMono) trStruct(r *ast.StructType, tp *ast.Field, h Handle, isbytes bool) {
+func (x *genMono) trStruct(r *ast.StructType, tp *ast.Field, hname string, isbytes bool) {
 	// search for fields, and update accordingly
 	//   type x[T encDriver] struct { w T }
 	//   var x *A[T]
@@ -333,12 +333,12 @@ func (x *genMono) trStruct(r *ast.StructType, tp *ast.Field, h Handle, isbytes b
 		return
 	}
 	for _, v := range r.Fields.List {
-		x.trField(v, tp, h, isbytes, genMonoFieldStruct)
+		x.trField(v, tp, hname, isbytes, genMonoFieldStruct)
 	}
 }
 
-func (x *genMono) trArray(n *ast.ArrayType, tp *ast.Field, h Handle, isbytes bool) {
-	sfx, _, _, hnameUp := genMonoIsBytesVals(h.Name(), isbytes)
+func (x *genMono) trArray(n *ast.ArrayType, tp *ast.Field, hname string, isbytes bool) {
+	sfx, _, _, hnameUp := genMonoIsBytesVals(hname, isbytes)
 	// type fastpathEs[T encDriver] [56]fastpathE[T]
 	// p := tp.Names[0].Name
 	switch elt := n.Elt.(type) {
@@ -350,13 +350,13 @@ func (x *genMono) trArray(n *ast.ArrayType, tp *ast.Field, h Handle, isbytes boo
 	}
 }
 
-func (x *genMono) trMethodBody(r *ast.BlockStmt, tp *ast.Field, h Handle, isbytes bool) {
+func (x *genMono) trMethodBody(r *ast.BlockStmt, tp *ast.Field, hname string, isbytes bool) {
 	// find the parent node for an indexExpr, or a T/*T, and set the value back in there
 
 	fn := func(pnode ast.Node) bool {
 		var pn *ast.Ident
 		fnUp := func() {
-			x.updateIdentForT(pn, h, tp, isbytes, false)
+			x.updateIdentForT(pn, hname, tp, isbytes, false)
 		}
 		switch n := pnode.(type) {
 		// case *ast.SelectorExpr:
@@ -415,7 +415,7 @@ func (x *genMono) trMethodBody(r *ast.BlockStmt, tp *ast.Field, h Handle, isbyte
 	ast.Inspect(r, fn)
 }
 
-func (x *genMono) trField(f *ast.Field, tpt *ast.Field, h Handle, isbytes bool, state genMonoFieldState) (tp *ast.Field) {
+func (x *genMono) trField(f *ast.Field, tpt *ast.Field, hname string, isbytes bool, state genMonoFieldState) (tp *ast.Field) {
 	var pn *ast.Ident
 	switch nn := f.Type.(type) {
 	case *ast.IndexExpr:
@@ -427,11 +427,11 @@ func (x *genMono) trField(f *ast.Field, tpt *ast.Field, h Handle, isbytes bool, 
 			nn.X = pn
 		}
 	case *ast.FuncType:
-		x.trMethodSignNonRecv(nn.Params, tpt, h, isbytes)
-		x.trMethodSignNonRecv(nn.Results, tpt, h, isbytes)
+		x.trMethodSignNonRecv(nn.Params, tpt, hname, isbytes)
+		x.trMethodSignNonRecv(nn.Results, tpt, hname, isbytes)
 		return
 	case *ast.ArrayType:
-		x.trArray(nn, tpt, h, isbytes)
+		x.trArray(nn, tpt, hname, isbytes)
 		return
 	case *ast.Ident:
 		if state == genMonoFieldRecv || nn.Name != "T" {
@@ -446,13 +446,13 @@ func (x *genMono) trField(f *ast.Field, tpt *ast.Field, h Handle, isbytes bool, 
 		return
 	}
 
-	tp = x.updateIdentForT(pn, h, tpt, isbytes, true)
+	tp = x.updateIdentForT(pn, hname, tpt, isbytes, true)
 	return
 }
 
-func (x *genMono) updateIdentForT(pn *ast.Ident, h Handle, tp *ast.Field,
+func (x *genMono) updateIdentForT(pn *ast.Ident, hname string, tp *ast.Field,
 	isbytes bool, lookupTP bool) (tp2 *ast.Field) {
-	sfx, writer, reader, hnameUp := genMonoIsBytesVals(h.Name(), isbytes)
+	sfx, writer, reader, hnameUp := genMonoIsBytesVals(hname, isbytes)
 	// handle special ones e.g. helperDecReader et al
 	if slices.Contains(genMonoSpecialFieldTypes, pn.Name) {
 		pn.Name += sfx
@@ -470,7 +470,7 @@ func (x *genMono) updateIdentForT(pn *ast.Ident, h Handle, tp *ast.Field,
 	if pn.Name == "T" {
 		switch paramtyp {
 		case "encDriver", "decDriver":
-			pn.Name = h.Name() + genMonoTitleCase(paramtyp) + sfx
+			pn.Name = hname + genMonoTitleCase(paramtyp) + sfx
 		case "encWriter":
 			pn.Name = writer
 		case "decReader":
@@ -569,13 +569,14 @@ import (
 }
 
 func genMonoAll() {
-	hdls := []Handle{
-		(*SimpleHandle)(nil),
-		(*JsonHandle)(nil),
-		(*CborHandle)(nil),
-		(*BincHandle)(nil),
-		(*MsgpackHandle)(nil),
-	}
+	// hdls := []Handle{
+	// 	(*SimpleHandle)(nil),
+	// 	(*JsonHandle)(nil),
+	// 	(*CborHandle)(nil),
+	// 	(*BincHandle)(nil),
+	// 	(*MsgpackHandle)(nil),
+	// }
+	hdls := []string{"simple", "json", "cbor", "binc", "msgpack"}
 	var m genMono
 	m.init()
 	for _, v := range hdls {
