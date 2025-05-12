@@ -9,21 +9,6 @@ import (
 	"os"
 )
 
-// marker2025ReadxbCopyBytes configures that we create copy of readxb
-// and not share a scratch buf. Unsure why the failure happens.
-//
-// MARKER 2025 - error occurs surprisingly if false. MUST investigate.
-// - Failures in doTestLargeContainerLen (all binary formats), and CborMammoth.
-// - reproduce by setting this to false
-// - seems something needs fixing in the tests or in the logic
-const marker2025IoDecReaderReadxbCopyBytes = false
-
-const marker2025IoDecReaderSkipUsingReadxb = false
-
-const marker2025IoDecReaderReadxbUsingHammer = false
-
-const marker2025IoDecReaderReadxbNoBufioNoDBuf = false
-
 // decReader abstracts the reading source, allowing implementations that can
 // read from an io.Reader or directly off a byte slice with zero-copying.
 type decReaderI interface {
@@ -102,7 +87,7 @@ type decReaderI interface {
 
 // // ------------------------------------------------
 
-const maxConsecutiveEmptyReads = 2 // MARKER 2025 (change to 64)
+const maxConsecutiveEmptyReads = 16 // 2 is sufficient, 16 is enough, 64 is optimal
 
 // const defBufReaderSize = 4096
 
@@ -235,7 +220,6 @@ func (z *ioDecReader) fillbuf(bufsize uint) (numShift, numRead uint) {
 	} else {
 		numShift = z.rc
 	}
-	// this numShift-- failed for some reason ... MARKER 2025
 	if numShift > 0 {
 		numShift-- // never shift last byte read out
 	}
@@ -389,48 +373,13 @@ func (z *ioDecReader) readxb(n uint) (out []byte, useBuf bool) {
 		z.n += uint(n)
 		out = z.buf[pos:z.rc]
 		useBuf = true
-
-		if marker2025IoDecReaderReadxbCopyBytes { // MARKER 2025
-			out2 := out
-			out = make([]byte, len(out))
-			copy(out, out2)
-			useBuf = false
-		}
 		return
 	}
 
 	// -------- NOT BUFIO ------
 
-	// if cap(in) >= n {
-	// 	out = in[:n]
-	// 	z.readb(out)
-	// 	return
-	// }
-
-	// MARKER 2025 - this works
-	if marker2025IoDecReaderReadxbUsingHammer {
-		useBuf = true
-		var len2 uint
-		for len2 < n {
-			len3 := decInferLen(int(n-len2), z.maxInitLen, 1)
-			bs3 := out
-			newlen := len2 + len3
-			out = z.blist.putGet(out, int(newlen))
-			out = out[:newlen]
-			// out = make([]byte, len2+len3)
-			copy(out, bs3)
-			z.readb(out[len2:])
-			len2 = newlen
-		}
-		return
-	}
-
-	if marker2025IoDecReaderReadxbNoBufioNoDBuf {
-		useBuf = false
-	} else {
-		useBuf = true
-		out = z.buf
-	}
+	useBuf = true
+	out = z.buf
 	r0 := uint(len(out))
 	r := r0
 	nn := int(n)
@@ -452,9 +401,7 @@ func (z *ioDecReader) readxb(n uint) (out []byte, useBuf bool) {
 		}
 		halt.onerror(err)
 	}
-	if !marker2025IoDecReaderReadxbNoBufioNoDBuf {
-		z.buf = out[:r0+n]
-	}
+	z.buf = out[:r0+n]
 	out = out[r0 : r0+n]
 	z.n += n
 	return
@@ -462,11 +409,6 @@ func (z *ioDecReader) readxb(n uint) (out []byte, useBuf bool) {
 
 func (z *ioDecReader) skip(n uint) {
 	if n == 0 {
-		return
-	}
-
-	if marker2025IoDecReaderSkipUsingReadxb {
-		z.readxb(n)
 		return
 	}
 
@@ -890,119 +832,6 @@ func (devNullReader) Read(p []byte) (int, error) { return 0, io.EOF }
 func (devNullReader) Close() error               { return nil }
 func (devNullReader) ReadByte() (byte, error)    { return 0, io.EOF }
 func (devNullReader) UnreadByte() error          { return io.EOF }
-
-// func readFull(r io.Reader, bs []byte) (n uint, err error) {
-// 	var nn int
-// 	for n < uint(len(bs)) && err == nil {
-// 		nn, err = r.Read(bs[n:])
-// 		if nn > 0 {
-// 			if err == io.EOF {
-// 				// leave EOF for next time
-// 				err = nil
-// 			}
-// 			n += uint(nn)
-// 		}
-// 	}
-// 	// do not do this below - it serves no purpose
-// 	// if n != len(bs) && err == io.EOF { err = io.ErrUnexpectedEOF }
-// 	return
-// }
-
-// func (z *ioDecReader) jsonReadAsisChars_old() (bs []byte, token byte) {
-// 	// defer func() { debugf("jsonReadAsisChars: %s", hlBLUE, bs) }()
-// 	pos := z.cursor()
-// LOOP:
-// 	token = z.readn1opt(false)
-// 	if !z.bufio {
-// 		z.buf = append(z.buf, token)
-// 	}
-// 	if token == '"' || token == '\\' {
-// 		if z.bufio {
-// 			return z.buf[pos : z.rc-1], token
-// 		}
-// 		return z.buf[pos : len(z.buf)-1], token
-// 	}
-// 	goto LOOP
-// }
-
-// func (z *ioDecReader) skipWhitespace() (token byte) {
-// LOOP:
-// 	token = z.readn1()
-// 	if isWhitespaceChar(token) {
-// 		goto LOOP
-// 	}
-// 	return
-// }
-
-// func (z *ioDecReader) readUntil(stop byte) (bs []byte) {
-// 	// defer func() { debugf("readUntil: %s", hlBLUE, bs) }()
-// 	pos := z.cursor()
-// LOOP:
-// 	token := z.readn1opt(false)
-// 	if !z.bufio {
-// 		z.buf = append(z.buf, token)
-// 	}
-// 	if token == stop {
-// 		if z.bufio {
-// 			return z.buf[pos : z.rc-1]
-// 		}
-// 		return z.buf[pos : len(z.buf)-1]
-// 	}
-// 	goto LOOP
-// }
-
-// func (z *ioDecReader) skip(n uint) {
-// 	// MARKER 2025 - needs to be optimized
-// 	z.readxb(int(n))
-// }
-
-// func (z *bytesDecReader) jsonReadNum() (bs []byte, token byte) {
-// 	z.c-- // unread
-// 	i := z.c
-// LOOP:
-// 	// gracefully handle end of slice, as end of stream is meaningful here
-// 	if i < uint(len(z.b)) && isNumberChar(z.b[i]) {
-// 		i++
-// 		goto LOOP
-// 	}
-// 	if i == uint(len(z.b))
-// 	z.c, i = i, z.c
-// 	// MARKER 2025 - re-validate this below
-// 	// MARKER: 20230103: byteSliceOf here prevents inlining of jsonReadNum
-// 	// return byteSliceOf(z.b, i, z.c)
-// 	return z.b[i:z.c]
-// }
-
-// func (z *bytesDecReader) skipWhitespace() (token byte) {
-// 	i := z.c
-// LOOP:
-// 	token = z.b[i]
-// 	i++
-// 	if isWhitespaceChar(token) {
-// 		goto LOOP
-// 	}
-// 	z.c = i
-// 	return
-// }
-
-// MARKER: do not use this - as it calls into memmove (as the size of data to move is unknown)
-// func (z *bytesDecReader) readnn(bs []byte, n uint) {
-// 	x := z.c
-// 	copy(bs, z.b[x:x+n])
-// 	z.c += n
-// }
-
-// func (z *bytesDecReader) readn(num uint8) (bs [8]byte) {
-// 	x := z.c + uint(num)
-// 	copy(bs[:], z.b[z.c:x]) // slice z.b completely, so we get bounds error if past
-// 	z.c = x
-// 	return
-// }
-
-// func (z *bytesDecReader) readn1() uint8 {
-// 	z.c++
-// 	return z.b[z.c-1]
-// }
 
 // MARKER: readn{1,2,3,4,8} should throw an out of bounds error if past length.
 // MARKER: readn1: explicitly ensure bounds check is done
