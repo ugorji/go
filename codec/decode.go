@@ -523,7 +523,7 @@ func (d *decoderBase) fauxUnionReadRawBytes(dr decDriverI, asString, rawToString
 		d.n.s = d.string(d.n.l, d.n.a)
 	} else {
 		d.n.v = valueTypeBytes
-		// d.n.l = d.detach2Bytes(d.n.l, nil, d.n.a)
+		d.n.l = d.detach2Bytes(d.n.l, nil, d.n.a)
 	}
 }
 
