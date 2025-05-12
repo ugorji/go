@@ -1022,6 +1022,7 @@ type BasicHandle struct {
 	// ---- cache line
 	inited uint32 // holds if inited, and also handle flags (binary encoding, json handler, etc)
 
+	// name string
 }
 
 // initHandle does a one-time initialization of the handle.
@@ -1068,7 +1069,7 @@ func initHandle2(x *BasicHandle, hh Handle) {
 		return NewDecoderBytes(nil, hh).decoderI
 	}
 
-	hh.init()
+	// hh.init()
 
 	atomic.StoreUint32(&x.inited, 1)
 }
@@ -1084,7 +1085,7 @@ func (x *BasicHandle) basicInit() {
 	x.timeBuiltin = !x.TimeNotBuiltin
 }
 
-func (x *BasicHandle) init() {}
+// func (x *BasicHandle) init() {}
 
 func (x *BasicHandle) isInited() bool {
 	return atomic.LoadUint32(&x.inited) != 0
@@ -1094,6 +1095,10 @@ func (x *BasicHandle) isInited() bool {
 func (x *BasicHandle) clearInited() {
 	atomic.StoreUint32(&x.inited, 0)
 }
+
+// func (x *BasicHandle) Name() string {
+// 	return x.name
+// }
 
 // // TimeBuiltin returns whether time.Time OOTB support is used,
 // // based on the initial configuration of TimeNotBuiltin
@@ -1189,7 +1194,7 @@ type Handle interface {
 	// desc describes the current byte descriptor, or returns "unknown[XXX]" if not understood.
 	desc(bd byte) string
 	// init initializes the handle based on handle-specific info (beyond what is in BasicHandle)
-	init()
+	// init()
 	// clone() Handle
 	newEncoderBytes(out *[]byte) encoderI
 	newEncoder(w io.Writer) encoderI
@@ -2752,7 +2757,6 @@ func panicValToErr(h errDecorator, recovered interface{}, err, errCopy *error, p
 		goto HANDLE_COPY
 	}
 	switch xerr := recovered.(type) {
-	case nil:
 	case *outOfBoundsError:
 		h.wrapErr(xerr, err)
 	case runtime.Error:
