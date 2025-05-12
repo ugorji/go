@@ -829,8 +829,8 @@ LOOP:
 		token = z.b[i]
 	}
 	z.c = i + 1
-	// bs = z.b[start:i]
-	bs = byteSliceOf(z.b, start, i)
+	bs = z.b[start:i]
+	// bs = byteSliceOf(z.b, start, i)
 	return
 }
 
@@ -840,8 +840,11 @@ LOOP:
 	token = z.b[i]
 	i++
 	if token == '"' || token == '\\' {
-		z.c, i = i, z.c
-		return byteSliceOf(z.b, i, z.c-1), token
+		// z.c, i = i, z.c
+		// return byteSliceOf(z.b, i, z.c-1), token
+		bs = z.b[z.c : i-1]
+		z.c = i
+		return
 		// return z.b[i : z.c-1], token
 	}
 	goto LOOP
