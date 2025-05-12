@@ -145,11 +145,10 @@ _usage() {
     # -pf [p=prebuild (f=force)]
     
     cat <<EOF
-primary usage: $0 
+primary usage: $0
     -t[esow]   -> t=tests [e=extra, s=short, o=cover, w=wait]
     -[md]      -> [m=make, d=race detector]
-    -[n l i]   -> [n=inlining diagnostics, l=mid-stack inlining, i=check inlining for path (path)]
-    -v         -> v=verbose
+    -v         -> v=verbose (more v's to increase verbose level)
 EOF
     if [[ "$(type -t _usage_run)" = "function" ]]; then _usage_run ; fi
 }
@@ -170,15 +169,15 @@ _main() {
     local gocmd=${MYGOCMD:-go}
     
     OPTIND=1
-    while getopts ":cetmnrgpfvldsowkxyzi" flag
+    while getopts ":cetmnrgpfvldsowikxyz" flag
     do
         case "x$flag" in
+            'xw') zwait=1 ;;
+            'xv') zverbose+=(1) ;;
             'xo') zcover=1 ;;
             'xe') zextra=1 ;;
-            'xw') zwait=1 ;;
             'xf') zforce=1 ;;
             'xs') ztestargs+=("-short") ;;
-            'xv') zverbose+=(1) ;;
             'xl') zargs+=("-gcflags"); zargs+=("-l=4") ;;
             'xn') zargs+=("-gcflags"); zargs+=("-m=2") ;;
             'xd') zargs+=("-race") ;;
@@ -196,6 +195,10 @@ _main() {
         'xg') _go ;;
         'xp') _prebuild "$@" ;;
         'xc') _clean "$@" ;;
+    esac
+
+    # handle from local run.sh
+    case "x$x" in
         'xi') _check_inlining_one "$@" ;;
         'xk') _go_compiler_validation_suite ;;
         'xx') _analyze_checks "$@" ;;
