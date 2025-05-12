@@ -1304,6 +1304,10 @@ func (e *encoder[T]) reset() {
 // Note that struct field names and keys in map[string]XXX will be treated as symbols.
 // Some formats support symbols (e.g. binc) and will properly encode the string
 // only once in the stream, and use a tag to refer to it thereafter.
+//
+// Note that an error from an Encode call will make the Encoder unusable moving forward.
+// This is because the state of the Encoder, it's output stream, etc are no longer stable.
+// Any subsequent calls to Encode will trigger the same error.
 func (e *encoder[T]) Encode(v interface{}) (err error) {
 	// tried to use closure, as runtime optimizes defer with no params.
 	// This seemed to be causing weird issues (like circular reference found, unexpected panic, etc).
@@ -1316,6 +1320,10 @@ func (e *encoder[T]) Encode(v interface{}) (err error) {
 // MustEncode is like Encode, but panics if unable to Encode.
 //
 // Note: This provides insight to the code location that triggered the error.
+//
+// Note that an error from an Encode call will make the Encoder unusable moving forward.
+// This is because the state of the Encoder, it's output stream, etc are no longer stable.
+// Any subsequent calls to Encode will trigger the same error.
 func (e *encoder[T]) MustEncode(v interface{}) {
 	defer panicValToErr(e, callRecoverSentinel, &e.err, nil, true)
 	e.mustEncode(v)

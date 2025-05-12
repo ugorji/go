@@ -1939,6 +1939,10 @@ func (d *decoder[T]) ResetString(s string) {
 //
 // Note: we allow nil values in the stream anywhere except for map keys.
 // A nil value in the encoded stream where a map key is expected is treated as an error.
+//
+// Note that an error from a Decode call will make the Decoder unusable moving forward.
+// This is because the state of the Decoder, it's input stream, etc are no longer stable.
+// Any subsequent calls to Decode will trigger the same error.
 func (d *decoder[T]) Decode(v interface{}) (err error) {
 	// tried to use closure, as runtime optimizes defer with no params.
 	// This seemed to be causing weird issues (like circular reference found, unexpected panic, etc).
@@ -1951,6 +1955,10 @@ func (d *decoder[T]) Decode(v interface{}) (err error) {
 // MustDecode is like Decode, but panics if unable to Decode.
 //
 // Note: This provides insight to the code location that triggered the error.
+//
+// Note that an error from a Decode call will make the Decoder unusable moving forward.
+// This is because the state of the Decoder, it's input stream, etc are no longer stable.
+// Any subsequent calls to Decode will trigger the same error.
 func (d *decoder[T]) MustDecode(v interface{}) {
 	defer panicValToErr(d, callRecoverSentinel, &d.err, nil, true)
 	d.mustDecode(v)
