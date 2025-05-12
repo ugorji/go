@@ -72,26 +72,22 @@ func benchmarkSuite(t *testing.B, fns ...func(t *testing.B)) {
 	// find . -name "*_test.go" | xargs grep -e 'flag.' | cut -d '&' -f 2 | cut -d ',' -f 1 | grep -e '^bench'
 
 	testReinit() // so flag.Parse() is called first, and never called again
-	benchReinit()
 
 	benchmarkGroupReset()
 
 	testReinit()
-	benchReinit()
 	t.Run("options-false...", f)
 
 	benchmarkGroupReset()
 
 	testUseIoEncDec = 1024
 	testReinit()
-	benchReinit()
 	t.Run("use-bufio-!bytes", f)
 
 	benchmarkGroupReset()
 
 	testUseReset = true
 	testReinit()
-	benchReinit()
 	t.Run("reset-enc-dec...", f)
 
 	benchmarkGroupReset()
@@ -107,7 +103,6 @@ func benchmarkVeryQuickSuite(t *testing.B, name string, fns ...func(t *testing.B
 	testUseIoEncDec = -1
 	// testDepth = depth
 	testReinit()
-	benchReinit()
 
 	t.Run(name+"-bd"+strconv.Itoa(testDepth)+"........", benchmarkOneFn(fns))
 	benchmarkGroupReset()
@@ -120,13 +115,11 @@ func benchmarkQuickSuite(t *testing.B, name string, fns ...func(t *testing.B)) {
 	testUseIoEncDec = 1024 // (value of defEncByteBufSize): use smaller buffer, and more flushes - it's ok.
 	// testDepth = depth
 	testReinit()
-	benchReinit()
 	t.Run(name+"-bd"+strconv.Itoa(testDepth)+"-buf"+strconv.Itoa(testUseIoEncDec), benchmarkOneFn(fns))
 
 	testUseIoEncDec = 0
 	// testDepth = depth
 	testReinit()
-	benchReinit()
 	t.Run(name+"-bd"+strconv.Itoa(testDepth)+"-io.....", benchmarkOneFn(fns))
 
 	benchmarkGroupReset()

@@ -74,6 +74,7 @@ func init() {
 	// testPreInitFns = append(testPreInitFns, benchPreInit)
 	// testPostInitFns = append(testPostInitFns, codecbenchPostInit)
 	testPostInitFns = append(testPostInitFns, benchInit)
+	testReInitFns = append(testReInitFns, benchReinit)
 }
 
 func benchInit() {
@@ -83,7 +84,6 @@ func benchInit() {
 	// if bytesLen < approxSize {
 	// 	bytesLen = approxSize
 	// }
-
 	if !testBenchmarkNoConfig {
 		// benchmark comparisons use zerocopy (easyjson, json-iterator, etc).
 		// use zerocopy for the benchmarks, for best performance, and better comparison to others.
