@@ -209,13 +209,13 @@ func setByteAt(b []byte, index uint, val byte) {
 	*(*byte)(unsafe.Pointer(uintptr((*unsafeSlice)(unsafe.Pointer(&b)).Data) + uintptr(index))) = val
 }
 
-func byteSliceOf(b []byte, start, end uint) []byte {
-	s := (*unsafeSlice)(unsafe.Pointer(&b))
-	s.Data = unsafe.Pointer(uintptr(s.Data) + uintptr(start))
-	s.Len = int(end - start)
-	s.Cap -= int(start)
-	return b
-}
+// func byteSliceOf(b []byte, start, end uint) []byte {
+// 	s := (*unsafeSlice)(unsafe.Pointer(&b))
+// 	s.Data = unsafe.Pointer(uintptr(s.Data) + uintptr(start))
+// 	s.Len = int(end - start)
+// 	s.Cap -= int(start)
+// 	return b
+// }
 
 // func byteSliceWithLen(b []byte, length uint) []byte {
 // 	(*unsafeSlice)(unsafe.Pointer(&b)).Len = int(length)
@@ -241,26 +241,6 @@ func bytesView(v string) (b []byte) {
 
 func byteSliceSameData(v1 []byte, v2 []byte) bool {
 	return (*unsafeSlice)(unsafe.Pointer(&v1)).Data == (*unsafeSlice)(unsafe.Pointer(&v2)).Data
-}
-
-// MARKER: okBytesN functions will copy N bytes into the top slots of the return array.
-// These functions expect that the bound check already occured and are are valid.
-// copy(...) does a number of checks which are unnecessary in this situation when in bounds.
-
-func okBytes2(b []byte) [2]byte {
-	return *((*[2]byte)(((*unsafeSlice)(unsafe.Pointer(&b))).Data))
-}
-
-func okBytes3(b []byte) [3]byte {
-	return *((*[3]byte)(((*unsafeSlice)(unsafe.Pointer(&b))).Data))
-}
-
-func okBytes4(b []byte) [4]byte {
-	return *((*[4]byte)(((*unsafeSlice)(unsafe.Pointer(&b))).Data))
-}
-
-func okBytes8(b []byte) [8]byte {
-	return *((*[8]byte)(((*unsafeSlice)(unsafe.Pointer(&b))).Data))
 }
 
 // isNil says whether the value v is nil.

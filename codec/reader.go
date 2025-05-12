@@ -729,31 +729,25 @@ func (z *bytesDecReader) readn1() (v uint8) {
 }
 
 func (z *bytesDecReader) readn2() (bs [2]byte) {
-	// copy(bs[:], z.b[z.c:z.c+2])
-	// bs[1] = z.b[z.c+1]
-	// bs[0] = z.b[z.c]
-	bs = okBytes2(z.b[z.c : z.c+2])
+	bs = [2]byte(z.b[z.c:])
 	z.c += 2
 	return
 }
 
 func (z *bytesDecReader) readn3() (bs [3]byte) {
-	// copy(bs[1:], z.b[z.c:z.c+3])
-	bs = okBytes3(z.b[z.c : z.c+3])
+	bs = [3]byte(z.b[z.c:])
 	z.c += 3
 	return
 }
 
 func (z *bytesDecReader) readn4() (bs [4]byte) {
-	// copy(bs[:], z.b[z.c:z.c+4])
-	bs = okBytes4(z.b[z.c : z.c+4])
+	bs = [4]byte(z.b[z.c:])
 	z.c += 4
 	return
 }
 
 func (z *bytesDecReader) readn8() (bs [8]byte) {
-	// copy(bs[:], z.b[z.c:z.c+8])
-	bs = okBytes8(z.b[z.c : z.c+8])
+	bs = [8]byte(z.b[z.c:])
 	z.c += 8
 	return
 }
@@ -808,7 +802,7 @@ func (z *bytesDecReader) jsonReadUntilDblQuote() (out []byte) {
 	i := z.c
 LOOP:
 	if z.b[i] == '"' {
-		out = byteSliceOf(z.b, z.c, i) // z.b[z.c:i]
+		out = z.b[z.c:i] // byteSliceOf(z.b, z.c, i)
 		z.c = i + 1
 		return
 	}

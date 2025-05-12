@@ -34,9 +34,9 @@ func setByteAt(b []byte, index uint, val byte) {
 	b[index] = val
 }
 
-func byteSliceOf(b []byte, start, end uint) []byte {
-	return b[start:end]
-}
+// func byteSliceOf(b []byte, start, end uint) []byte {
+// 	return b[start:end]
+// }
 
 // func byteSliceWithLen(b []byte, length uint) []byte {
 // 	return b[:length]
@@ -52,26 +52,6 @@ func bytesView(v string) []byte {
 
 func byteSliceSameData(v1 []byte, v2 []byte) bool {
 	return cap(v1) != 0 && cap(v2) != 0 && &(v1[:1][0]) == &(v2[:1][0])
-}
-
-func okBytes2(b []byte) (v [2]byte) {
-	copy(v[:], b)
-	return
-}
-
-func okBytes3(b []byte) (v [3]byte) {
-	copy(v[:], b)
-	return
-}
-
-func okBytes4(b []byte) (v [4]byte) {
-	copy(v[:], b)
-	return
-}
-
-func okBytes8(b []byte) (v [8]byte) {
-	copy(v[:], b)
-	return
 }
 
 func isNil(v interface{}) (rv reflect.Value, isnil bool) {

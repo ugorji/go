@@ -2670,8 +2670,9 @@ func bool2int(b bool) (v uint8) {
 }
 
 func isSliceBoundsError(s string) bool {
-	return strings.Contains(s, "index out of range") ||
-		strings.Contains(s, "slice bounds out of range")
+	return strings.Contains(s, "index out of range") || // indexing error
+		strings.Contains(s, "slice bounds out of range") || // slicing error
+		strings.Contains(s, "cannot convert slice with length") // slice-->array error
 }
 
 func sprintf(format string, v ...interface{}) string {
