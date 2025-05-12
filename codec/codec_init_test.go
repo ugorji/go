@@ -67,6 +67,7 @@ func init() {
 	testReInitFns = slices.Insert(testReInitFns, 0, doTestInit)
 	// testReInitFns = slices.Insert(testReInitFns, 0, doTestReinit)
 	// testReInitFns = append(testReInitFns, doTestInit)
+	testPostInitFns = append(testPostInitFns, doTestPostInit)
 }
 
 func doTestInit() {
@@ -86,6 +87,14 @@ func doTestInit() {
 	testHandles = append(testHandles, testSimpleH, testJsonH, testCborH, testMsgpackH, testBincH)
 
 	testHEDs = nil
+}
+
+func doTestPostInit() {
+	testUpdateBasicHandleOptions(&testBincH.BasicHandle)
+	testUpdateBasicHandleOptions(&testMsgpackH.BasicHandle)
+	testUpdateBasicHandleOptions(&testJsonH.BasicHandle)
+	testUpdateBasicHandleOptions(&testSimpleH.BasicHandle)
+	testUpdateBasicHandleOptions(&testCborH.BasicHandle)
 }
 
 // func doTestReinit() {
@@ -199,11 +208,14 @@ func testSharedCodecDecode(bs []byte, ts interface{}, h Handle, useMust bool) (e
 	return
 }
 
-func testUncontendedBytes(v []byte) []byte {
-	if testUseIoEncDec >= 0 { // useIO
-		v2 := make([]byte, len(v))
-		copy(v2, v)
-		v = v2
-	}
-	return v
+func testUpdateBasicHandleOptions(bh *BasicHandle) {
+	// bh.clearInited() // so it is reinitialized next time around // MARKER 2025 (may have to put it back)
+	// pre-fill them first
+	bh.EncodeOptions = testEncodeOptions
+	bh.DecodeOptions = testDecodeOptions
+	bh.RPCOptions = testRPCOptions
+	// bh.InterfaceReset = true
+	// bh.PreferArrayOverSlice = true
+	// modify from flag'ish things
+	// bh.MaxInitLen = testMaxInitLen
 }

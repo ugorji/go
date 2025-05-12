@@ -67,8 +67,6 @@ func init() {
 	// log.SetOutput(io.Discard) // don't allow things log to standard out/err // MARKER 2025
 	testPreInitFns = append(testPreInitFns, testInitFlags, benchInitFlags, testParseFlags)
 	testPreInitFns = append(testPreInitFns, testUpdateOptionsFromFlags)
-	testPostInitFns = append(testPostInitFns, testUpdateHandleOptions)
-	testReInitFns = append(testReInitFns, testUpdateHandleOptions)
 }
 
 func TestMain(m *testing.M) {
@@ -107,6 +105,7 @@ var (
 
 	testRpcBufsize       int // Deprecated: no-op
 	testMapStringKeyOnly bool
+	testZeroCopy         bool
 
 	testBenchmarkNoConfig bool
 
@@ -125,6 +124,7 @@ func testInitFlags() {
 	flag.BoolVar(&testUseParallel, "tp", false, "Run tests in parallel")
 	flag.IntVar(&testNumRepeatString, "trs", 8, "Create string variables by repeating a string N times")
 	flag.BoolVar(&testUseDiff, "tdiff", false, "Use Diff")
+	flag.BoolVar(&testZeroCopy, "tzc", false, "Use Zero copy mode")
 
 	flag.BoolVar(&bIgnore, "tm", true, "(Deprecated) Use Must(En|De)code")
 
@@ -153,21 +153,7 @@ func testUpdateOptionsFromFlags() {
 	testEncodeOptions.WriterBufferSize = testUseIoEncDec
 	testDecodeOptions.ReaderBufferSize = testUseIoEncDec
 	testDecodeOptions.MaxInitLen = testMaxInitLen
-}
-
-func testUpdateHandleOptions() {
-	for _, v := range testHandles {
-		bh := testBasicHandle(v)
-		bh.clearInited() // so it is reinitialized next time around // MARKER 2025
-		// pre-fill them first
-		bh.EncodeOptions = testEncodeOptions
-		bh.DecodeOptions = testDecodeOptions
-		bh.RPCOptions = testRPCOptions
-		// bh.InterfaceReset = true
-		// bh.PreferArrayOverSlice = true
-		// modify from flag'ish things
-		// bh.MaxInitLen = testMaxInitLen
-	}
+	testDecodeOptions.ZeroCopy = testZeroCopy
 }
 
 func testReinit() {

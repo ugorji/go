@@ -50,6 +50,8 @@ import (
 
 func init() {
 	testPostInitFns = append(testPostInitFns, testInit)
+	testPostInitFns = append(testPostInitFns, testUpdateHandleOptions)
+	testReInitFns = append(testReInitFns, testUpdateHandleOptions)
 }
 
 const (
@@ -530,8 +532,6 @@ func testSetupWithChecks(t *testing.T, h *Handle, allowParallel bool) (fn func()
 	return
 }
 
-func testBasicHandle(h Handle) *BasicHandle { return h.getBasicHandle() }
-
 func testCodecEncode(ts interface{}, bsIn []byte, fn func([]byte) *bytes.Buffer, h Handle, useMust bool) (bs []byte, err error) {
 	return testSharedCodecEncode(ts, bsIn, fn, h, useMust)
 }
@@ -568,6 +568,14 @@ func basicTestExtDecFn(x BytesExt, rv reflect.Value, bs []byte) (err error) {
 	defer panicValToErr(basicErrDecorator, callRecoverSentinel, &err, nil, false)
 	x.ReadExt(rv.Interface(), bs)
 	return
+}
+
+func testBasicHandle(h Handle) *BasicHandle { return h.getBasicHandle() }
+
+func testUpdateHandleOptions() {
+	for _, v := range testHandles {
+		testUpdateBasicHandleOptions(testBasicHandle(v))
+	}
 }
 
 func testInit() {
@@ -3972,3 +3980,12 @@ func TestMapRangeIndex(t *testing.T) {
 // ----- RPC custom -----
 
 // --------
+
+func testUncontendedBytes(v []byte) []byte {
+	if testUseIoEncDec >= 0 { // useIO
+		v2 := make([]byte, len(v))
+		copy(v2, v)
+		v = v2
+	}
+	return v
+}
