@@ -49,9 +49,10 @@ import (
 )
 
 func init() {
-	testPostInitFns = append(testPostInitFns, testInit)
-	testPostInitFns = append(testPostInitFns, testUpdateHandleOptions)
-	testReInitFns = append(testReInitFns, testUpdateHandleOptions)
+	// testPostInitFns = append(testPostInitFns, testInit, testUpdateHandleOptions, testFormatExtInit)
+	// testReInitFns = append(testReInitFns, testUpdateHandleOptions, testFormatExtInit)
+	testPostInitFns = append(testPostInitFns, testInit, testFormatExtInit)
+	testReInitFns = append(testReInitFns, testFormatExtInit)
 }
 
 const (
@@ -572,10 +573,18 @@ func basicTestExtDecFn(x BytesExt, rv reflect.Value, bs []byte) (err error) {
 
 func testBasicHandle(h Handle) *BasicHandle { return h.getBasicHandle() }
 
-func testUpdateHandleOptions() {
-	for _, v := range testHandles {
-		testUpdateBasicHandleOptions(testBasicHandle(v))
+// func testUpdateHandleOptions() {
+// 	for _, v := range testHandles {
+// 		testUpdateBasicHandleOptions(testBasicHandle(v))
+// 	}
+// }
+
+func testFormatExtInit() {
+	s := make([]testNameBasicHandle, len(testHandles))
+	for i, h := range testHandles {
+		s[i].n, s[i].h = h.Name(), testBasicHandle(h)
 	}
+	testUpdateExts(s...)
 }
 
 func testInit() {
@@ -1256,7 +1265,6 @@ func doTestCodecMiscOne(t *testing.T, h Handle) {
 	testCheckEqual(t, t2, t3, "t2=t3")
 	testReleaseBytes(bs)
 
-	// println(">>>>>")
 	// test simple arrays, non-addressable arrays, slices
 	type tarr struct {
 		A int64
@@ -1609,7 +1617,6 @@ func doTestCodecRpcOne(t *testing.T, rr Rpc, h Handle, doRequest bool, exitSleep
 
 func doTestMapEncodeForCanonical(t *testing.T, h Handle) {
 	defer testSetup2(t, &h)()
-	// println("doTestMapEncodeForCanonical")
 	v1 := map[stringUint64T]interface{}{
 		{"a", 1}: 1,
 		{"b", 2}: "hello",

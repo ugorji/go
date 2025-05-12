@@ -14,23 +14,6 @@ import (
 	"testing"
 )
 
-func init() {
-	testPostInitFns = append(testPostInitFns, cborTestInit)
-}
-
-func cborTestInit() {
-	var tI64Ext wrapInt64Ext
-	var tUintToBytesExt testUintToBytesExt
-	var tBytesExt wrapBytesExt
-
-	halt.onerror(testCborH.SetInterfaceExt(timeTyp, 1, testUnixNanoTimeInterfaceExt{}))
-	halt.onerror(testCborH.SetInterfaceExt(testSelfExtTyp, 78, SelfExt))
-	halt.onerror(testCborH.SetInterfaceExt(testSelfExt2Typ, 79, SelfExt))
-	halt.onerror(testCborH.SetInterfaceExt(wrapBytesTyp, 32, &tBytesExt))
-	halt.onerror(testCborH.SetInterfaceExt(testUintToBytesTyp, 33, &tUintToBytesExt))
-	halt.onerror(testCborH.SetInterfaceExt(wrapInt64Typ, 16, &tI64Ext))
-}
-
 func TestCborIndefiniteLength(t *testing.T) {
 	var h Handle = testCborH
 	defer testSetup2(t, &h)()

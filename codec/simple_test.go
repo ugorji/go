@@ -4,34 +4,8 @@
 package codec
 
 import (
-	"reflect"
 	"testing"
 )
-
-func init() {
-	testPostInitFns = append(testPostInitFns, simpleTestInit)
-}
-
-func simpleTestInit() {
-	// create legacy functions suitable for deprecated AddExt functionality,
-	// and use on some places for testSimpleH e.g. for time.Time and wrapInt64
-	var tUintToBytesExt testUintToBytesExt
-	var tBytesExt wrapBytesExt
-	var tI64Ext wrapInt64Ext
-	var tTimeExt timeBytesExt
-
-	timeExtEncFn := func(rv reflect.Value) (bs []byte, err error) { return basicTestExtEncFn(tTimeExt, rv) }
-	timeExtDecFn := func(rv reflect.Value, bs []byte) (err error) { return basicTestExtDecFn(tTimeExt, rv, bs) }
-	wrapInt64ExtEncFn := func(rv reflect.Value) (bs []byte, err error) { return basicTestExtEncFn(&tI64Ext, rv) }
-	wrapInt64ExtDecFn := func(rv reflect.Value, bs []byte) (err error) { return basicTestExtDecFn(&tI64Ext, rv, bs) }
-
-	halt.onerror(testSimpleH.AddExt(timeTyp, 1, timeExtEncFn, timeExtDecFn))
-	halt.onerror(testSimpleH.SetBytesExt(testSelfExtTyp, 78, SelfExt))
-	halt.onerror(testSimpleH.SetBytesExt(testSelfExt2Typ, 79, SelfExt))
-	halt.onerror(testSimpleH.SetBytesExt(wrapBytesTyp, 32, &tBytesExt))
-	halt.onerror(testSimpleH.SetBytesExt(testUintToBytesTyp, 33, &tUintToBytesExt))
-	halt.onerror(testSimpleH.AddExt(wrapInt64Typ, 16, wrapInt64ExtEncFn, wrapInt64ExtDecFn))
-}
 
 func TestSimpleCodecsTable(t *testing.T) {
 	doTestCodecTableOne(t, testSimpleH)

@@ -16,35 +16,6 @@ import (
 	"time"
 )
 
-func init() {
-	testPostInitFns = append(testPostInitFns, msgpackTestInit)
-}
-
-func msgpackTestInit() {
-	var tUintToBytesExt testUintToBytesExt
-	var tBytesExt wrapBytesExt
-	var tI64Ext wrapInt64Ext
-
-	// time.Time is a native type, so extensions will have no effect.
-	// However, we add these here to ensure nothing happens.
-	halt.onerror(testMsgpackH.SetBytesExt(timeTyp, 1, timeBytesExt{}))
-
-	// Add extensions for the testSelfExt
-	halt.onerror(testMsgpackH.SetBytesExt(testSelfExtTyp, 78, SelfExt))
-
-	halt.onerror(testMsgpackH.SetBytesExt(testSelfExt2Typ, 79, SelfExt))
-
-	// Now, add extensions for the type wrapInt64 and wrapBytes,
-	// so we can execute the Encode/Decode Ext paths.
-
-	halt.onerror(testMsgpackH.SetBytesExt(wrapBytesTyp, 32, &tBytesExt))
-
-	halt.onerror(testMsgpackH.SetBytesExt(testUintToBytesTyp, 33, &tUintToBytesExt))
-
-	// halt.onerror(testSimpleH.SetBytesExt(wrapInt64Typ, 16, &tI64Ext))
-	halt.onerror(testMsgpackH.SetBytesExt(wrapInt64Typ, 16, &tI64Ext))
-}
-
 // To test MsgpackSpecRpc, we test 3 scenarios:
 //    - Go Client to Go RPC Service (contained within TestMsgpackRpcSpec)
 //    - Go client to Python RPC Service (contained within doTestMsgpackRpcSpecGoClientToPythonSvc)

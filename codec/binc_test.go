@@ -5,23 +5,6 @@ package codec
 
 import "testing"
 
-func init() {
-	testPostInitFns = append(testPostInitFns, bincTestInit)
-}
-
-func bincTestInit() {
-	var tI64Ext wrapInt64Ext
-	var tUintToBytesExt testUintToBytesExt
-	var tBytesExt wrapBytesExt
-
-	// testBincH.SetBytesExt(timeTyp, 1, timeExt{}) // time is builtin for binc
-	halt.onerror(testBincH.SetBytesExt(testSelfExtTyp, 78, SelfExt))
-	halt.onerror(testBincH.SetBytesExt(testSelfExt2Typ, 79, SelfExt))
-	halt.onerror(testBincH.SetBytesExt(wrapBytesTyp, 32, &tBytesExt))
-	halt.onerror(testBincH.SetBytesExt(testUintToBytesTyp, 33, &tUintToBytesExt))
-	halt.onerror(testBincH.SetBytesExt(wrapInt64Typ, 16, &tI64Ext))
-}
-
 func TestBincCodecsTable(t *testing.T) {
 	doTestCodecTableOne(t, testBincH)
 }

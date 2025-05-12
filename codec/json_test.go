@@ -16,23 +16,6 @@ import (
 
 // ----
 
-func init() {
-	testPostInitFns = append(testPostInitFns, jsonTestInit)
-}
-
-func jsonTestInit() {
-	var tI64Ext wrapInt64Ext
-	var tUintToBytesExt testUintToBytesExt
-	var tBytesExt wrapBytesExt
-
-	// testJsonH.SetInterfaceExt(timeTyp, 1, &testUnixNanoTimeExt{})
-	halt.onerror(testJsonH.SetInterfaceExt(testSelfExtTyp, 78, SelfExt))
-	halt.onerror(testJsonH.SetInterfaceExt(testSelfExt2Typ, 79, SelfExt))
-	halt.onerror(testJsonH.SetInterfaceExt(wrapBytesTyp, 32, &tBytesExt))
-	halt.onerror(testJsonH.SetInterfaceExt(testUintToBytesTyp, 33, &tUintToBytesExt))
-	halt.onerror(testJsonH.SetInterfaceExt(wrapInt64Typ, 16, &tI64Ext))
-}
-
 func doTestJsonDecodeNonStringScalarInStringContext(t *testing.T, h Handle) {
 	defer testSetup2(t, &h)()
 	var b = `{"s.true": "true", "b.true": true, "s.false": "false", "b.false": false, "s.10": "10", "i.10": 10, "i.-10": -10}`
