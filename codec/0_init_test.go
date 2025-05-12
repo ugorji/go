@@ -66,7 +66,8 @@ import (
 func init() {
 	// log.SetOutput(io.Discard) // don't allow things log to standard out/err // MARKER 2025
 	testPreInitFns = append(testPreInitFns, testInitFlags, benchInitFlags, testParseFlags)
-	testPreInitFns = append(testPreInitFns, testUpdateOptionsFromFlags)
+	testPostInitFns = append(testPostInitFns, testUpdateOptionsFromFlags)
+	testReInitFns = append(testReInitFns, testUpdateOptionsFromFlags)
 }
 
 func TestMain(m *testing.M) {

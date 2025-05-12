@@ -9,12 +9,15 @@ package codec
 
 import (
 	"strconv"
-	"sync"
 	"testing"
 	"time"
 )
 
-var benchmarkGroupOnce sync.Once
+func init() {
+	testPostInitFns = append(testPostInitFns, benchmarkGroupInitAll)
+}
+
+// var benchmarkGroupOnce sync.Once
 
 var benchmarkGroupSave struct {
 	testUseIoEncDec int
@@ -22,6 +25,7 @@ var benchmarkGroupSave struct {
 
 	testDepth            int
 	testMapStringKeyOnly bool
+	testZeroCopy         bool
 }
 
 func benchmarkGroupInitAll() {
@@ -31,6 +35,7 @@ func benchmarkGroupInitAll() {
 
 	benchmarkGroupSave.testDepth = testDepth
 	benchmarkGroupSave.testMapStringKeyOnly = testMapStringKeyOnly
+	benchmarkGroupSave.testZeroCopy = testZeroCopy
 }
 
 func benchmarkGroupReset() {
@@ -39,6 +44,7 @@ func benchmarkGroupReset() {
 
 	testDepth = benchmarkGroupSave.testDepth
 	testMapStringKeyOnly = benchmarkGroupSave.testMapStringKeyOnly
+	testZeroCopy = benchmarkGroupSave.testZeroCopy
 }
 
 func benchmarkOneFn(fns []func(*testing.B)) func(*testing.B) {
@@ -66,12 +72,12 @@ func benchmarkSuiteNoop(b *testing.B) {
 }
 
 func benchmarkSuite(t *testing.B, fns ...func(t *testing.B)) {
-	benchmarkGroupOnce.Do(benchmarkGroupInitAll)
+	// benchmarkGroupOnce.Do(benchmarkGroupInitAll)
 
 	f := benchmarkOneFn(fns)
 	// find . -name "*_test.go" | xargs grep -e 'flag.' | cut -d '&' -f 2 | cut -d ',' -f 1 | grep -e '^bench'
 
-	testReinit() // so flag.Parse() is called first, and never called again
+	testReinit()
 
 	benchmarkGroupReset()
 
@@ -95,7 +101,7 @@ func benchmarkSuite(t *testing.B, fns ...func(t *testing.B)) {
 
 func benchmarkVeryQuickSuite(t *testing.B, name string, fns ...func(t *testing.B)) {
 	benchmarkDivider()
-	benchmarkGroupOnce.Do(benchmarkGroupInitAll)
+	// benchmarkGroupOnce.Do(benchmarkGroupInitAll)
 	benchmarkGroupReset()
 
 	// bd=1 2 | ti=-1, 1024 |

@@ -3996,3 +3996,53 @@ func testUncontendedBytes(v []byte) []byte {
 	}
 	return v
 }
+
+type testNameBasicHandle struct {
+	n string
+	h *BasicHandle
+}
+
+func testUpdateExts(nhs ...testNameBasicHandle) {
+	var tI64Ext wrapInt64Ext
+	var tUintToBytesExt testUintToBytesExt
+	var tBytesExt wrapBytesExt
+	var tTimeBytesExt timeBytesExt
+	var tUnixTimeIntfExt testUnixNanoTimeInterfaceExt
+
+	timeExtEncFn := func(rv reflect.Value) ([]byte, error) { return basicTestExtEncFn(tTimeBytesExt, rv) }
+	timeExtDecFn := func(rv reflect.Value, bs []byte) error { return basicTestExtDecFn(tTimeBytesExt, rv, bs) }
+	wrapInt64ExtEncFn := func(rv reflect.Value) ([]byte, error) { return basicTestExtEncFn(&tI64Ext, rv) }
+	wrapInt64ExtDecFn := func(rv reflect.Value, bs []byte) error { return basicTestExtDecFn(&tI64Ext, rv, bs) }
+
+	var bh *BasicHandle
+	ix := func(rt reflect.Type, tag uint64, ext interface{}) {
+		halt.onerror(bh.SetExt(rt, tag, makeExt(ext)))
+	}
+
+	for _, nh := range nhs {
+		bh = nh.h
+		ix(testSelfExtTyp, 78, SelfExt)
+		ix(testSelfExt2Typ, 79, SelfExt)
+		ix(wrapBytesTyp, 32, &tBytesExt)
+		ix(testUintToBytesTyp, 33, &tUintToBytesExt)
+		// Now, add extensions for the type wrapInt64 and wrapBytes,
+		// so we can execute the Encode/Decode Ext paths.
+		if nh.n == "simple" {
+			halt.onerror(bh.AddExt(wrapInt64Typ, 16, wrapInt64ExtEncFn, wrapInt64ExtDecFn))
+		} else {
+			ix(wrapInt64Typ, 16, &tI64Ext)
+		}
+
+		// add extensions for time.Time
+		switch nh.n {
+		case "cbor":
+			ix(timeTyp, 1, tUnixTimeIntfExt)
+		case "binc":
+			// ix(timeTyp, 1, timeExt{}) // time is builtin for binc
+		case "msgpack":
+			ix(timeTyp, 1, tTimeBytesExt)
+		case "simple":
+			halt.onerror(bh.AddExt(timeTyp, 1, timeExtEncFn, timeExtDecFn))
+		}
+	}
+}
