@@ -1234,7 +1234,7 @@ func (d *decoder[T]) kSlice(f *decFnInfo, rv reflect.Value) {
 		// e.g. if []ints, then fastpath should handle it?
 		// but if not, we should treat it as each element is *int, and decode into it.
 
-		rv9 = rvSliceIndex(rv, j, f.ti)
+		rv9 = rvArrayIndex(rv, j, f.ti, true)
 		if elemReset {
 			rvSetZero(rv9)
 		}
@@ -1336,7 +1336,7 @@ func (d *decoder[T]) kArray(f *decFnInfo, rv reflect.Value) {
 		}
 
 		slh.ElemContainerState(j)
-		rv9 = rvArrayIndex(rv, j, f.ti)
+		rv9 = rvArrayIndex(rv, j, f.ti, false)
 		if elemReset {
 			rvSetZero(rv9)
 		}

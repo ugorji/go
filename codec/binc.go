@@ -290,6 +290,14 @@ func (e *bincEncDriver[T]) WriteMapStart(length int) {
 	e.encLen(bincVdMap<<4, uint64(length))
 }
 
+func (e *bincEncDriver[T]) WriteArrayEmpty() {
+	e.WriteArrayStart(0)
+}
+
+func (e *bincEncDriver[T]) WriteMapEmpty() {
+	e.WriteMapStart(0)
+}
+
 func (e *bincEncDriver[T]) EncodeSymbol(v string) {
 	//symbols only offer benefit when string length > 1.
 	//This is because strings with length 1 take only 2 bytes to store

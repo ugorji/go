@@ -850,10 +850,16 @@ func rvGrowSlice(rv reflect.Value, ti *typeInfo, cap, incr int) (v reflect.Value
 
 // ------------
 
-func rvSliceIndex(rv reflect.Value, i int, ti *typeInfo) (v reflect.Value) {
+func rvArrayIndex(rv reflect.Value, i int, ti *typeInfo, isSlice bool) (v reflect.Value) {
 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
 	uv := (*unsafeReflectValue)(unsafe.Pointer(&v))
-	uv.ptr = unsafe.Pointer(uintptr(((*unsafeSlice)(urv.ptr)).Data) + uintptr(int(ti.elemsize)*i))
+	if isSlice {
+		uv.ptr = unsafe.Pointer(uintptr(((*unsafeSlice)(urv.ptr)).Data))
+	} else {
+		uv.ptr = unsafe.Pointer(uintptr(urv.ptr))
+	}
+	uv.ptr = unsafe.Add(uv.ptr, ti.elemsize*uint32(i))
+	// uv.ptr = unsafe.Pointer(ptr + uintptr(int(ti.elemsize)*i))
 	uv.typ = ((*unsafeIntf)(unsafe.Pointer(&ti.elem))).ptr
 	uv.flag = uintptr(ti.elemkind) | unsafeFlagIndir | unsafeFlagAddr
 	return
@@ -881,15 +887,15 @@ func rvCapSlice(rv reflect.Value) int {
 // 	return rv.Index(i)
 // }
 
-func rvArrayIndex(rv reflect.Value, i int, ti *typeInfo) (v reflect.Value) {
-	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	uv := (*unsafeReflectValue)(unsafe.Pointer(&v))
-	uv.ptr = unsafe.Pointer(uintptr(urv.ptr) + uintptr(int(ti.elemsize)*i))
-	uv.typ = ((*unsafeIntf)(unsafe.Pointer(&ti.elem))).ptr
-	// uv.flag = urv.flag&(unsafeFlagIndir|unsafeFlagAddr) | uintptr(ti.elemkind)
-	uv.flag = uintptr(ti.elemkind) | unsafeFlagIndir | unsafeFlagAddr
-	return
-}
+// func rvArrayIndex(rv reflect.Value, i int, ti *typeInfo) (v reflect.Value) {
+// 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
+// 	uv := (*unsafeReflectValue)(unsafe.Pointer(&v))
+// 	uv.ptr = unsafe.Pointer(uintptr(urv.ptr) + uintptr(int(ti.elemsize)*i))
+// 	uv.typ = ((*unsafeIntf)(unsafe.Pointer(&ti.elem))).ptr
+// 	// uv.flag = urv.flag&(unsafeFlagIndir|unsafeFlagAddr) | uintptr(ti.elemkind)
+// 	uv.flag = uintptr(ti.elemkind) | unsafeFlagIndir | unsafeFlagAddr
+// 	return
+// }
 
 // if scratch is nil, then return a writable view (assuming canAddr=true)
 func rvGetArrayBytes(rv reflect.Value, _ []byte) (bs []byte) {

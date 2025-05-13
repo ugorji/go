@@ -535,13 +535,13 @@ func rvGrowSlice(rv reflect.Value, ti *typeInfo, cap, incr int) (v reflect.Value
 
 // ----------------
 
-func rvSliceIndex(rv reflect.Value, i int, ti *typeInfo) reflect.Value {
+func rvArrayIndex(rv reflect.Value, i int, _ *typeInfo, _ bool) reflect.Value {
 	return rv.Index(i)
 }
 
-func rvArrayIndex(rv reflect.Value, i int, ti *typeInfo) reflect.Value {
-	return rv.Index(i)
-}
+// func rvArrayIndex(rv reflect.Value, i int, ti *typeInfo) reflect.Value {
+// 	return rv.Index(i)
+// }
 
 func rvSliceZeroCap(t reflect.Type) (v reflect.Value) {
 	return reflect.MakeSlice(t, 0, 0)

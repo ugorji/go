@@ -219,6 +219,14 @@ func (e *simpleEncDriver[T]) WriteMapStart(length int) {
 	e.encLen(simpleVdMap, length)
 }
 
+func (e *simpleEncDriver[T]) WriteArrayEmpty() {
+	e.WriteArrayStart(0)
+}
+
+func (e *simpleEncDriver[T]) WriteMapEmpty() {
+	e.WriteMapStart(0)
+}
+
 func (e *simpleEncDriver[T]) EncodeString(v string) {
 	if e.h.EncZeroValuesAsNil && e.e.c != containerMapKey && v == "" {
 		e.EncodeNil()

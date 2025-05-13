@@ -186,8 +186,7 @@ func (helperDecDriver[T]) fastpathDList() *fastpathDs[T] {
 func (helperEncDriver[T]) fastpathEncodeTypeSwitch(iv interface{}, e *encoder[T]) bool {
 	fnNilMap := func() {
 		if e.h.NilCollectionToZeroLength {
-			e.mapStart(0)
-			e.mapEnd()
+			e.e.WriteMapEmpty()
 		} else {
 			e.e.EncodeNil()
 		}
@@ -195,8 +194,7 @@ func (helperEncDriver[T]) fastpathEncodeTypeSwitch(iv interface{}, e *encoder[T]
 	
 	fnNilSeq := func() {
 		if e.h.NilCollectionToZeroLength {
-			e.arrayStart(0)
-			e.arrayEnd()
+			e.e.WriteArrayEmpty()
 		} else {
 			e.e.EncodeNil()
 		}
@@ -256,7 +254,7 @@ func (fastpathET[T]) {{ .MethodNamePfx "Enc" false }}V(v []{{ .Elem }}, e *encod
 	{{ else -}}
 	e.arrayStart(len(v))
 	for j := range v {
-		e.arrayElem()
+		e.arrayElem(j == 0)
 		{{ encmd .Elem "v[j]"}}
 	} 
 	e.arrayEnd()
@@ -265,6 +263,10 @@ func (fastpathET[T]) {{ .MethodNamePfx "Enc" false }}V(v []{{ .Elem }}, e *encod
 func (fastpathET[T]) {{ .MethodNamePfx "EncAsMap" false }}V(v []{{ .Elem }}, e *encoder[T]) {
 	{{/* if v == nil { e.e.EncodeNil() } else */ -}}
 	e.haltOnMbsOddLen(len(v))
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
 	{{/*
 	if len(v)&1 != 0 { // similar to &1==1 or %2 == 1
 		halt.errorInt(fastpathMapBySliceErrMsg, len(v))
@@ -273,7 +275,7 @@ func (fastpathET[T]) {{ .MethodNamePfx "EncAsMap" false }}V(v []{{ .Elem }}, e *
 	e.mapStart(len(v) >> 1) // e.mapStart(len(v) / 2)
 	for j := range v {
 		if j&1 == 0 { // if j%2 == 0 {
-			e.mapElemKey()
+			e.mapElemKey(j == 0)
 		} else {
 			e.mapElemValue()
 		}
@@ -291,13 +293,18 @@ func (e *encoder[T]) {{ .MethodNamePfx "fastpathEnc" false }}R(f *encFnInfo, rv 
 }
 func (fastpathET[T]) {{ .MethodNamePfx "Enc" false }}V(v map[{{ .MapKey }}]{{ .Elem }}, e *encoder[T]) {
 	{{/* if v == nil { e.e.EncodeNil(); return } */ -}}
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
+		var i uint
 	e.mapStart(len(v))
 	if e.h.Canonical { {{/* need to figure out .NoCanonical */}}
 		{{if eq .MapKey "interface{}"}}{{/* out of band */ -}}
 		var mksv []byte = make([]byte, 0, len(v)*16) // temporary byte slice for the encoding
 		e2 := NewEncoderBytes(&mksv, e.hh)
 		v2 := make([]bytesIntf, len(v))
-		var i, l uint {{/* put loop variables outside. seems currently needed for better perf */}}
+		var l uint {{/* put loop variables outside. seems currently needed for better perf */}}
 		var vp *bytesIntf
 		for k2 := range v {
 			l = uint(len(mksv))
@@ -309,30 +316,31 @@ func (fastpathET[T]) {{ .MethodNamePfx "Enc" false }}V(v map[{{ .MapKey }}]{{ .E
 		}
 		slices.SortFunc(v2, cmpBytesIntf)
 		for j := range v2 {
-			e.mapElemKey()
+			e.mapElemKey(j == 0)
 			e.asis(v2[j].v)
 			e.mapElemValue()
 			e.encode(v[v2[j].i])
 		} {{else}}{{ $x := sorttype .MapKey true}}v2 := make([]{{ $x }}, len(v))
-		var i uint
 		for k := range v {
 			v2[i] = {{if eq $x .MapKey}}k{{else}}{{ $x }}(k){{end}}
 			i++
 		}
 		slices.Sort(v2)
 		{{/* // sort.Sort({{ sorttype .MapKey false}}(v2)) */ -}}
-		for _, k2 := range v2 {
-			e.mapElemKey()
+		for i, k2 := range v2 {
+			e.mapElemKey(i == 0)
 			{{if eq .MapKey "string"}} e.e.EncodeString(k2) {{else}}{{ $y := printf "%s(k2)" .MapKey }}{{if eq $x .MapKey }}{{ $y = "k2" }}{{end}}{{ encmd .MapKey $y }}{{end}}
 			e.mapElemValue()
 			{{ $y := printf "v[%s(k2)]" .MapKey }}{{if eq $x .MapKey }}{{ $y = "v[k2]" }}{{end}}{{ encmd .Elem $y }}
 		} {{end}}
-	} else { 
+	} else {
+		i = 0
 		for k2, v2 := range v {
-			e.mapElemKey()
+			e.mapElemKey(i == 0)
 			{{if eq .MapKey "string"}} e.e.EncodeString(k2) {{else}}{{ encmd .MapKey "k2"}}{{end}}
 			e.mapElemValue()
 			{{ encmd .Elem "v2"}}
+			i++
 		}
 	}
 	e.mapEnd()

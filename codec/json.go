@@ -168,8 +168,8 @@ func (e *jsonEncDriver[T]) writeIndent() {
 	}
 }
 
-func (e *jsonEncDriver[T]) WriteArrayElem() {
-	if e.e.c != containerArrayStart {
+func (e *jsonEncDriver[T]) WriteArrayElem(firstTime bool) {
+	if !firstTime {
 		e.w.writen1(',')
 	}
 	if e.d {
@@ -177,8 +177,8 @@ func (e *jsonEncDriver[T]) WriteArrayElem() {
 	}
 }
 
-func (e *jsonEncDriver[T]) WriteMapElemKey() {
-	if e.e.c != containerMapStart {
+func (e *jsonEncDriver[T]) WriteMapElemKey(firstTime bool) {
+	if !firstTime {
 		e.w.writen1(',')
 	}
 	if e.d {
@@ -439,6 +439,14 @@ func (e *jsonEncDriver[T]) EncodeStringBytesRaw(v []byte) {
 //   - newline and indent are added before each ending,
 //     except there was no entry (so we can have {} or [])
 
+func (e *jsonEncDriver[T]) WriteArrayEmpty() {
+	e.w.writen2('[', ']')
+}
+
+func (e *jsonEncDriver[T]) WriteMapEmpty() {
+	e.w.writen2('{', '}')
+}
+
 func (e *jsonEncDriver[T]) WriteArrayStart(length int) {
 	if e.d {
 		e.dl++
@@ -449,9 +457,9 @@ func (e *jsonEncDriver[T]) WriteArrayStart(length int) {
 func (e *jsonEncDriver[T]) WriteArrayEnd() {
 	if e.d {
 		e.dl--
-		if e.e.c != containerArrayStart {
-			e.writeIndent()
-		}
+		// No need as encoder handles zero-len already
+		// if e.e.c != containerArrayStart {
+		e.writeIndent()
 	}
 	e.w.writen1(']')
 }
@@ -466,9 +474,9 @@ func (e *jsonEncDriver[T]) WriteMapStart(length int) {
 func (e *jsonEncDriver[T]) WriteMapEnd() {
 	if e.d {
 		e.dl--
-		if e.e.c != containerMapStart {
-			e.writeIndent()
-		}
+		// No need as encoder handles zero-len already
+		// if e.e.c != containerMapStart {
+		e.writeIndent()
 	}
 	e.w.writen1('}')
 }

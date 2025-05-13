@@ -357,6 +357,14 @@ func (e *msgpackEncDriver[T]) WriteMapStart(length int) {
 	e.writeContainerLen(msgpackContainerMap, length)
 }
 
+func (e *msgpackEncDriver[T]) WriteArrayEmpty() {
+	e.WriteArrayStart(0)
+}
+
+func (e *msgpackEncDriver[T]) WriteMapEmpty() {
+	e.WriteMapStart(0)
+}
+
 func (e *msgpackEncDriver[T]) EncodeString(s string) {
 	var ct msgpackContainerType
 	if e.h.WriteExt {

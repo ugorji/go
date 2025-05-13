@@ -244,6 +244,24 @@ func (e *cborEncDriver[T]) EncodeRawExt(re *RawExt) {
 	}
 }
 
+func (e *cborEncDriver[T]) WriteArrayEmpty() {
+	if e.h.IndefiniteLength {
+		e.w.writen1(cborBdIndefiniteArray)
+		e.w.writen1(cborBdBreak)
+	} else {
+		e.encLen(cborBaseArray, 0)
+	}
+}
+
+func (e *cborEncDriver[T]) WriteMapEmpty() {
+	if e.h.IndefiniteLength {
+		e.w.writen1(cborBdIndefiniteMap)
+		e.w.writen1(cborBdBreak)
+	} else {
+		e.encLen(cborBaseMap, 0)
+	}
+}
+
 func (e *cborEncDriver[T]) WriteArrayStart(length int) {
 	if e.h.IndefiniteLength {
 		e.w.writen1(cborBdIndefiniteArray)
