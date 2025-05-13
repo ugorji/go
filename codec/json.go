@@ -659,53 +659,45 @@ func (d *jsonDecDriver[T]) CheckBreak() bool {
 	return d.tok == '}' || d.tok == ']'
 }
 
+func (d *jsonDecDriver[T]) checkSep(xc byte) {
+	d.advance()
+	if d.tok != xc {
+		d.readDelimError(xc)
+	}
+	d.tok = 0
+}
+
+// func (d *jsonDecDriver[T]) ReadArrayElem(firstTime bool) {
+// 	const xc uint8 = ','
+// 	if !firstTime {
+// 		d.advance()
+// 		if d.tok != xc {
+// 			d.readDelimError(xc)
+// 		}
+// 		d.tok = 0
+// 	}
+// }
+
 func (d *jsonDecDriver[T]) ReadArrayElem(firstTime bool) {
-	const xc uint8 = ','
 	if !firstTime {
-		d.advance()
-		if d.tok != xc {
-			d.readDelimError(xc)
-		}
-		d.tok = 0
+		d.checkSep(',')
 	}
 }
 
 func (d *jsonDecDriver[T]) ReadArrayEnd() {
-	const xc uint8 = ']'
-	d.advance()
-	if d.tok != xc {
-		d.readDelimError(xc)
-	}
-	d.tok = 0
+	d.checkSep(']')
 }
 
 func (d *jsonDecDriver[T]) ReadMapElemKey(firstTime bool) {
-	const xc uint8 = ','
-	if !firstTime {
-		d.advance()
-		if d.tok != xc {
-			d.readDelimError(xc)
-		}
-		d.tok = 0
-	}
+	d.ReadArrayElem(firstTime)
 }
 
 func (d *jsonDecDriver[T]) ReadMapElemValue() {
-	const xc uint8 = ':'
-	d.advance()
-	if d.tok != xc {
-		d.readDelimError(xc)
-	}
-	d.tok = 0
+	d.checkSep(':')
 }
 
 func (d *jsonDecDriver[T]) ReadMapEnd() {
-	const xc uint8 = '}'
-	d.advance()
-	if d.tok != xc {
-		d.readDelimError(xc)
-	}
-	d.tok = 0
+	d.checkSep('}')
 }
 
 //go:inline
