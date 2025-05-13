@@ -170,13 +170,29 @@ func (helperDecDriverCborBytes) fastpathDList() *fastpathDsCborBytes {
 }
 
 func (helperEncDriverCborBytes) fastpathEncodeTypeSwitch(iv interface{}, e *encoderCborBytes) bool {
+	fnNilMap := func() {
+		if e.h.NilCollectionToZeroLength {
+			e.e.WriteMapEmpty()
+		} else {
+			e.e.EncodeNil()
+		}
+	}
+
+	fnNilSeq := func() {
+		if e.h.NilCollectionToZeroLength {
+			e.e.WriteArrayEmpty()
+		} else {
+			e.e.EncodeNil()
+		}
+	}
+
 	var ft fastpathETCborBytes
 	switch v := iv.(type) {
 	case []interface{}:
 		ft.EncSliceIntfV(v, e)
 	case *[]interface{}:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilSeq()
 		} else {
 			ft.EncSliceIntfV(*v, e)
 		}
@@ -184,7 +200,7 @@ func (helperEncDriverCborBytes) fastpathEncodeTypeSwitch(iv interface{}, e *enco
 		ft.EncSliceStringV(v, e)
 	case *[]string:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilSeq()
 		} else {
 			ft.EncSliceStringV(*v, e)
 		}
@@ -192,7 +208,7 @@ func (helperEncDriverCborBytes) fastpathEncodeTypeSwitch(iv interface{}, e *enco
 		ft.EncSliceBytesV(v, e)
 	case *[][]byte:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilSeq()
 		} else {
 			ft.EncSliceBytesV(*v, e)
 		}
@@ -200,7 +216,7 @@ func (helperEncDriverCborBytes) fastpathEncodeTypeSwitch(iv interface{}, e *enco
 		ft.EncSliceFloat32V(v, e)
 	case *[]float32:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilSeq()
 		} else {
 			ft.EncSliceFloat32V(*v, e)
 		}
@@ -208,7 +224,7 @@ func (helperEncDriverCborBytes) fastpathEncodeTypeSwitch(iv interface{}, e *enco
 		ft.EncSliceFloat64V(v, e)
 	case *[]float64:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilSeq()
 		} else {
 			ft.EncSliceFloat64V(*v, e)
 		}
@@ -216,7 +232,7 @@ func (helperEncDriverCborBytes) fastpathEncodeTypeSwitch(iv interface{}, e *enco
 		ft.EncSliceUint8V(v, e)
 	case *[]uint8:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilSeq()
 		} else {
 			ft.EncSliceUint8V(*v, e)
 		}
@@ -224,7 +240,7 @@ func (helperEncDriverCborBytes) fastpathEncodeTypeSwitch(iv interface{}, e *enco
 		ft.EncSliceUint64V(v, e)
 	case *[]uint64:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilSeq()
 		} else {
 			ft.EncSliceUint64V(*v, e)
 		}
@@ -232,7 +248,7 @@ func (helperEncDriverCborBytes) fastpathEncodeTypeSwitch(iv interface{}, e *enco
 		ft.EncSliceIntV(v, e)
 	case *[]int:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilSeq()
 		} else {
 			ft.EncSliceIntV(*v, e)
 		}
@@ -240,7 +256,7 @@ func (helperEncDriverCborBytes) fastpathEncodeTypeSwitch(iv interface{}, e *enco
 		ft.EncSliceInt32V(v, e)
 	case *[]int32:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilSeq()
 		} else {
 			ft.EncSliceInt32V(*v, e)
 		}
@@ -248,7 +264,7 @@ func (helperEncDriverCborBytes) fastpathEncodeTypeSwitch(iv interface{}, e *enco
 		ft.EncSliceInt64V(v, e)
 	case *[]int64:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilSeq()
 		} else {
 			ft.EncSliceInt64V(*v, e)
 		}
@@ -256,7 +272,7 @@ func (helperEncDriverCborBytes) fastpathEncodeTypeSwitch(iv interface{}, e *enco
 		ft.EncSliceBoolV(v, e)
 	case *[]bool:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilSeq()
 		} else {
 			ft.EncSliceBoolV(*v, e)
 		}
@@ -264,7 +280,7 @@ func (helperEncDriverCborBytes) fastpathEncodeTypeSwitch(iv interface{}, e *enco
 		ft.EncMapStringIntfV(v, e)
 	case *map[string]interface{}:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilMap()
 		} else {
 			ft.EncMapStringIntfV(*v, e)
 		}
@@ -272,7 +288,7 @@ func (helperEncDriverCborBytes) fastpathEncodeTypeSwitch(iv interface{}, e *enco
 		ft.EncMapStringStringV(v, e)
 	case *map[string]string:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilMap()
 		} else {
 			ft.EncMapStringStringV(*v, e)
 		}
@@ -280,7 +296,7 @@ func (helperEncDriverCborBytes) fastpathEncodeTypeSwitch(iv interface{}, e *enco
 		ft.EncMapStringBytesV(v, e)
 	case *map[string][]byte:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilMap()
 		} else {
 			ft.EncMapStringBytesV(*v, e)
 		}
@@ -288,7 +304,7 @@ func (helperEncDriverCborBytes) fastpathEncodeTypeSwitch(iv interface{}, e *enco
 		ft.EncMapStringUint8V(v, e)
 	case *map[string]uint8:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilMap()
 		} else {
 			ft.EncMapStringUint8V(*v, e)
 		}
@@ -296,7 +312,7 @@ func (helperEncDriverCborBytes) fastpathEncodeTypeSwitch(iv interface{}, e *enco
 		ft.EncMapStringUint64V(v, e)
 	case *map[string]uint64:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilMap()
 		} else {
 			ft.EncMapStringUint64V(*v, e)
 		}
@@ -304,7 +320,7 @@ func (helperEncDriverCborBytes) fastpathEncodeTypeSwitch(iv interface{}, e *enco
 		ft.EncMapStringIntV(v, e)
 	case *map[string]int:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilMap()
 		} else {
 			ft.EncMapStringIntV(*v, e)
 		}
@@ -312,7 +328,7 @@ func (helperEncDriverCborBytes) fastpathEncodeTypeSwitch(iv interface{}, e *enco
 		ft.EncMapStringInt32V(v, e)
 	case *map[string]int32:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilMap()
 		} else {
 			ft.EncMapStringInt32V(*v, e)
 		}
@@ -320,7 +336,7 @@ func (helperEncDriverCborBytes) fastpathEncodeTypeSwitch(iv interface{}, e *enco
 		ft.EncMapStringFloat64V(v, e)
 	case *map[string]float64:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilMap()
 		} else {
 			ft.EncMapStringFloat64V(*v, e)
 		}
@@ -328,7 +344,7 @@ func (helperEncDriverCborBytes) fastpathEncodeTypeSwitch(iv interface{}, e *enco
 		ft.EncMapStringBoolV(v, e)
 	case *map[string]bool:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilMap()
 		} else {
 			ft.EncMapStringBoolV(*v, e)
 		}
@@ -336,7 +352,7 @@ func (helperEncDriverCborBytes) fastpathEncodeTypeSwitch(iv interface{}, e *enco
 		ft.EncMapUint8IntfV(v, e)
 	case *map[uint8]interface{}:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilMap()
 		} else {
 			ft.EncMapUint8IntfV(*v, e)
 		}
@@ -344,7 +360,7 @@ func (helperEncDriverCborBytes) fastpathEncodeTypeSwitch(iv interface{}, e *enco
 		ft.EncMapUint8StringV(v, e)
 	case *map[uint8]string:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilMap()
 		} else {
 			ft.EncMapUint8StringV(*v, e)
 		}
@@ -352,7 +368,7 @@ func (helperEncDriverCborBytes) fastpathEncodeTypeSwitch(iv interface{}, e *enco
 		ft.EncMapUint8BytesV(v, e)
 	case *map[uint8][]byte:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilMap()
 		} else {
 			ft.EncMapUint8BytesV(*v, e)
 		}
@@ -360,7 +376,7 @@ func (helperEncDriverCborBytes) fastpathEncodeTypeSwitch(iv interface{}, e *enco
 		ft.EncMapUint8Uint8V(v, e)
 	case *map[uint8]uint8:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilMap()
 		} else {
 			ft.EncMapUint8Uint8V(*v, e)
 		}
@@ -368,7 +384,7 @@ func (helperEncDriverCborBytes) fastpathEncodeTypeSwitch(iv interface{}, e *enco
 		ft.EncMapUint8Uint64V(v, e)
 	case *map[uint8]uint64:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilMap()
 		} else {
 			ft.EncMapUint8Uint64V(*v, e)
 		}
@@ -376,7 +392,7 @@ func (helperEncDriverCborBytes) fastpathEncodeTypeSwitch(iv interface{}, e *enco
 		ft.EncMapUint8IntV(v, e)
 	case *map[uint8]int:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilMap()
 		} else {
 			ft.EncMapUint8IntV(*v, e)
 		}
@@ -384,7 +400,7 @@ func (helperEncDriverCborBytes) fastpathEncodeTypeSwitch(iv interface{}, e *enco
 		ft.EncMapUint8Int32V(v, e)
 	case *map[uint8]int32:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilMap()
 		} else {
 			ft.EncMapUint8Int32V(*v, e)
 		}
@@ -392,7 +408,7 @@ func (helperEncDriverCborBytes) fastpathEncodeTypeSwitch(iv interface{}, e *enco
 		ft.EncMapUint8Float64V(v, e)
 	case *map[uint8]float64:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilMap()
 		} else {
 			ft.EncMapUint8Float64V(*v, e)
 		}
@@ -400,7 +416,7 @@ func (helperEncDriverCborBytes) fastpathEncodeTypeSwitch(iv interface{}, e *enco
 		ft.EncMapUint8BoolV(v, e)
 	case *map[uint8]bool:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilMap()
 		} else {
 			ft.EncMapUint8BoolV(*v, e)
 		}
@@ -408,7 +424,7 @@ func (helperEncDriverCborBytes) fastpathEncodeTypeSwitch(iv interface{}, e *enco
 		ft.EncMapUint64IntfV(v, e)
 	case *map[uint64]interface{}:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilMap()
 		} else {
 			ft.EncMapUint64IntfV(*v, e)
 		}
@@ -416,7 +432,7 @@ func (helperEncDriverCborBytes) fastpathEncodeTypeSwitch(iv interface{}, e *enco
 		ft.EncMapUint64StringV(v, e)
 	case *map[uint64]string:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilMap()
 		} else {
 			ft.EncMapUint64StringV(*v, e)
 		}
@@ -424,7 +440,7 @@ func (helperEncDriverCborBytes) fastpathEncodeTypeSwitch(iv interface{}, e *enco
 		ft.EncMapUint64BytesV(v, e)
 	case *map[uint64][]byte:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilMap()
 		} else {
 			ft.EncMapUint64BytesV(*v, e)
 		}
@@ -432,7 +448,7 @@ func (helperEncDriverCborBytes) fastpathEncodeTypeSwitch(iv interface{}, e *enco
 		ft.EncMapUint64Uint8V(v, e)
 	case *map[uint64]uint8:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilMap()
 		} else {
 			ft.EncMapUint64Uint8V(*v, e)
 		}
@@ -440,7 +456,7 @@ func (helperEncDriverCborBytes) fastpathEncodeTypeSwitch(iv interface{}, e *enco
 		ft.EncMapUint64Uint64V(v, e)
 	case *map[uint64]uint64:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilMap()
 		} else {
 			ft.EncMapUint64Uint64V(*v, e)
 		}
@@ -448,7 +464,7 @@ func (helperEncDriverCborBytes) fastpathEncodeTypeSwitch(iv interface{}, e *enco
 		ft.EncMapUint64IntV(v, e)
 	case *map[uint64]int:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilMap()
 		} else {
 			ft.EncMapUint64IntV(*v, e)
 		}
@@ -456,7 +472,7 @@ func (helperEncDriverCborBytes) fastpathEncodeTypeSwitch(iv interface{}, e *enco
 		ft.EncMapUint64Int32V(v, e)
 	case *map[uint64]int32:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilMap()
 		} else {
 			ft.EncMapUint64Int32V(*v, e)
 		}
@@ -464,7 +480,7 @@ func (helperEncDriverCborBytes) fastpathEncodeTypeSwitch(iv interface{}, e *enco
 		ft.EncMapUint64Float64V(v, e)
 	case *map[uint64]float64:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilMap()
 		} else {
 			ft.EncMapUint64Float64V(*v, e)
 		}
@@ -472,7 +488,7 @@ func (helperEncDriverCborBytes) fastpathEncodeTypeSwitch(iv interface{}, e *enco
 		ft.EncMapUint64BoolV(v, e)
 	case *map[uint64]bool:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilMap()
 		} else {
 			ft.EncMapUint64BoolV(*v, e)
 		}
@@ -480,7 +496,7 @@ func (helperEncDriverCborBytes) fastpathEncodeTypeSwitch(iv interface{}, e *enco
 		ft.EncMapIntIntfV(v, e)
 	case *map[int]interface{}:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilMap()
 		} else {
 			ft.EncMapIntIntfV(*v, e)
 		}
@@ -488,7 +504,7 @@ func (helperEncDriverCborBytes) fastpathEncodeTypeSwitch(iv interface{}, e *enco
 		ft.EncMapIntStringV(v, e)
 	case *map[int]string:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilMap()
 		} else {
 			ft.EncMapIntStringV(*v, e)
 		}
@@ -496,7 +512,7 @@ func (helperEncDriverCborBytes) fastpathEncodeTypeSwitch(iv interface{}, e *enco
 		ft.EncMapIntBytesV(v, e)
 	case *map[int][]byte:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilMap()
 		} else {
 			ft.EncMapIntBytesV(*v, e)
 		}
@@ -504,7 +520,7 @@ func (helperEncDriverCborBytes) fastpathEncodeTypeSwitch(iv interface{}, e *enco
 		ft.EncMapIntUint8V(v, e)
 	case *map[int]uint8:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilMap()
 		} else {
 			ft.EncMapIntUint8V(*v, e)
 		}
@@ -512,7 +528,7 @@ func (helperEncDriverCborBytes) fastpathEncodeTypeSwitch(iv interface{}, e *enco
 		ft.EncMapIntUint64V(v, e)
 	case *map[int]uint64:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilMap()
 		} else {
 			ft.EncMapIntUint64V(*v, e)
 		}
@@ -520,7 +536,7 @@ func (helperEncDriverCborBytes) fastpathEncodeTypeSwitch(iv interface{}, e *enco
 		ft.EncMapIntIntV(v, e)
 	case *map[int]int:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilMap()
 		} else {
 			ft.EncMapIntIntV(*v, e)
 		}
@@ -528,7 +544,7 @@ func (helperEncDriverCborBytes) fastpathEncodeTypeSwitch(iv interface{}, e *enco
 		ft.EncMapIntInt32V(v, e)
 	case *map[int]int32:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilMap()
 		} else {
 			ft.EncMapIntInt32V(*v, e)
 		}
@@ -536,7 +552,7 @@ func (helperEncDriverCborBytes) fastpathEncodeTypeSwitch(iv interface{}, e *enco
 		ft.EncMapIntFloat64V(v, e)
 	case *map[int]float64:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilMap()
 		} else {
 			ft.EncMapIntFloat64V(*v, e)
 		}
@@ -544,7 +560,7 @@ func (helperEncDriverCborBytes) fastpathEncodeTypeSwitch(iv interface{}, e *enco
 		ft.EncMapIntBoolV(v, e)
 	case *map[int]bool:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilMap()
 		} else {
 			ft.EncMapIntBoolV(*v, e)
 		}
@@ -552,7 +568,7 @@ func (helperEncDriverCborBytes) fastpathEncodeTypeSwitch(iv interface{}, e *enco
 		ft.EncMapInt32IntfV(v, e)
 	case *map[int32]interface{}:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilMap()
 		} else {
 			ft.EncMapInt32IntfV(*v, e)
 		}
@@ -560,7 +576,7 @@ func (helperEncDriverCborBytes) fastpathEncodeTypeSwitch(iv interface{}, e *enco
 		ft.EncMapInt32StringV(v, e)
 	case *map[int32]string:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilMap()
 		} else {
 			ft.EncMapInt32StringV(*v, e)
 		}
@@ -568,7 +584,7 @@ func (helperEncDriverCborBytes) fastpathEncodeTypeSwitch(iv interface{}, e *enco
 		ft.EncMapInt32BytesV(v, e)
 	case *map[int32][]byte:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilMap()
 		} else {
 			ft.EncMapInt32BytesV(*v, e)
 		}
@@ -576,7 +592,7 @@ func (helperEncDriverCborBytes) fastpathEncodeTypeSwitch(iv interface{}, e *enco
 		ft.EncMapInt32Uint8V(v, e)
 	case *map[int32]uint8:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilMap()
 		} else {
 			ft.EncMapInt32Uint8V(*v, e)
 		}
@@ -584,7 +600,7 @@ func (helperEncDriverCborBytes) fastpathEncodeTypeSwitch(iv interface{}, e *enco
 		ft.EncMapInt32Uint64V(v, e)
 	case *map[int32]uint64:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilMap()
 		} else {
 			ft.EncMapInt32Uint64V(*v, e)
 		}
@@ -592,7 +608,7 @@ func (helperEncDriverCborBytes) fastpathEncodeTypeSwitch(iv interface{}, e *enco
 		ft.EncMapInt32IntV(v, e)
 	case *map[int32]int:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilMap()
 		} else {
 			ft.EncMapInt32IntV(*v, e)
 		}
@@ -600,7 +616,7 @@ func (helperEncDriverCborBytes) fastpathEncodeTypeSwitch(iv interface{}, e *enco
 		ft.EncMapInt32Int32V(v, e)
 	case *map[int32]int32:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilMap()
 		} else {
 			ft.EncMapInt32Int32V(*v, e)
 		}
@@ -608,7 +624,7 @@ func (helperEncDriverCborBytes) fastpathEncodeTypeSwitch(iv interface{}, e *enco
 		ft.EncMapInt32Float64V(v, e)
 	case *map[int32]float64:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilMap()
 		} else {
 			ft.EncMapInt32Float64V(*v, e)
 		}
@@ -616,7 +632,7 @@ func (helperEncDriverCborBytes) fastpathEncodeTypeSwitch(iv interface{}, e *enco
 		ft.EncMapInt32BoolV(v, e)
 	case *map[int32]bool:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilMap()
 		} else {
 			ft.EncMapInt32BoolV(*v, e)
 		}
@@ -644,23 +660,31 @@ func (e *encoderCborBytes) fastpathEncSliceIntfR(f *encFnInfo, rv reflect.Value)
 func (fastpathETCborBytes) EncSliceIntfV(v []interface{}, e *encoderCborBytes) {
 	e.arrayStart(len(v))
 	for j := range v {
-		e.arrayElem()
+		e.c = containerArrayElem
+		e.e.WriteArrayElem(j == 0)
 		e.encode(v[j])
 	}
-	e.arrayEnd()
+	e.c = 0
+	e.e.WriteArrayEnd()
 }
 func (fastpathETCborBytes) EncAsMapSliceIntfV(v []interface{}, e *encoderCborBytes) {
 	e.haltOnMbsOddLen(len(v))
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
 	e.mapStart(len(v) >> 1)
 	for j := range v {
 		if j&1 == 0 {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(j == 0)
 		} else {
 			e.mapElemValue()
 		}
 		e.encode(v[j])
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborBytes) fastpathEncSliceStringR(f *encFnInfo, rv reflect.Value) {
 	var ft fastpathETCborBytes
@@ -679,23 +703,31 @@ func (e *encoderCborBytes) fastpathEncSliceStringR(f *encFnInfo, rv reflect.Valu
 func (fastpathETCborBytes) EncSliceStringV(v []string, e *encoderCborBytes) {
 	e.arrayStart(len(v))
 	for j := range v {
-		e.arrayElem()
+		e.c = containerArrayElem
+		e.e.WriteArrayElem(j == 0)
 		e.e.EncodeString(v[j])
 	}
-	e.arrayEnd()
+	e.c = 0
+	e.e.WriteArrayEnd()
 }
 func (fastpathETCborBytes) EncAsMapSliceStringV(v []string, e *encoderCborBytes) {
 	e.haltOnMbsOddLen(len(v))
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
 	e.mapStart(len(v) >> 1)
 	for j := range v {
 		if j&1 == 0 {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(j == 0)
 		} else {
 			e.mapElemValue()
 		}
 		e.e.EncodeString(v[j])
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborBytes) fastpathEncSliceBytesR(f *encFnInfo, rv reflect.Value) {
 	var ft fastpathETCborBytes
@@ -714,23 +746,31 @@ func (e *encoderCborBytes) fastpathEncSliceBytesR(f *encFnInfo, rv reflect.Value
 func (fastpathETCborBytes) EncSliceBytesV(v [][]byte, e *encoderCborBytes) {
 	e.arrayStart(len(v))
 	for j := range v {
-		e.arrayElem()
+		e.c = containerArrayElem
+		e.e.WriteArrayElem(j == 0)
 		e.e.EncodeStringBytesRaw(v[j])
 	}
-	e.arrayEnd()
+	e.c = 0
+	e.e.WriteArrayEnd()
 }
 func (fastpathETCborBytes) EncAsMapSliceBytesV(v [][]byte, e *encoderCborBytes) {
 	e.haltOnMbsOddLen(len(v))
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
 	e.mapStart(len(v) >> 1)
 	for j := range v {
 		if j&1 == 0 {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(j == 0)
 		} else {
 			e.mapElemValue()
 		}
 		e.e.EncodeStringBytesRaw(v[j])
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborBytes) fastpathEncSliceFloat32R(f *encFnInfo, rv reflect.Value) {
 	var ft fastpathETCborBytes
@@ -749,23 +789,31 @@ func (e *encoderCborBytes) fastpathEncSliceFloat32R(f *encFnInfo, rv reflect.Val
 func (fastpathETCborBytes) EncSliceFloat32V(v []float32, e *encoderCborBytes) {
 	e.arrayStart(len(v))
 	for j := range v {
-		e.arrayElem()
+		e.c = containerArrayElem
+		e.e.WriteArrayElem(j == 0)
 		e.e.EncodeFloat32(v[j])
 	}
-	e.arrayEnd()
+	e.c = 0
+	e.e.WriteArrayEnd()
 }
 func (fastpathETCborBytes) EncAsMapSliceFloat32V(v []float32, e *encoderCborBytes) {
 	e.haltOnMbsOddLen(len(v))
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
 	e.mapStart(len(v) >> 1)
 	for j := range v {
 		if j&1 == 0 {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(j == 0)
 		} else {
 			e.mapElemValue()
 		}
 		e.e.EncodeFloat32(v[j])
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborBytes) fastpathEncSliceFloat64R(f *encFnInfo, rv reflect.Value) {
 	var ft fastpathETCborBytes
@@ -784,23 +832,31 @@ func (e *encoderCborBytes) fastpathEncSliceFloat64R(f *encFnInfo, rv reflect.Val
 func (fastpathETCborBytes) EncSliceFloat64V(v []float64, e *encoderCborBytes) {
 	e.arrayStart(len(v))
 	for j := range v {
-		e.arrayElem()
+		e.c = containerArrayElem
+		e.e.WriteArrayElem(j == 0)
 		e.e.EncodeFloat64(v[j])
 	}
-	e.arrayEnd()
+	e.c = 0
+	e.e.WriteArrayEnd()
 }
 func (fastpathETCborBytes) EncAsMapSliceFloat64V(v []float64, e *encoderCborBytes) {
 	e.haltOnMbsOddLen(len(v))
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
 	e.mapStart(len(v) >> 1)
 	for j := range v {
 		if j&1 == 0 {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(j == 0)
 		} else {
 			e.mapElemValue()
 		}
 		e.e.EncodeFloat64(v[j])
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborBytes) fastpathEncSliceUint8R(f *encFnInfo, rv reflect.Value) {
 	var ft fastpathETCborBytes
@@ -821,16 +877,22 @@ func (fastpathETCborBytes) EncSliceUint8V(v []uint8, e *encoderCborBytes) {
 }
 func (fastpathETCborBytes) EncAsMapSliceUint8V(v []uint8, e *encoderCborBytes) {
 	e.haltOnMbsOddLen(len(v))
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
 	e.mapStart(len(v) >> 1)
 	for j := range v {
 		if j&1 == 0 {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(j == 0)
 		} else {
 			e.mapElemValue()
 		}
 		e.e.EncodeUint(uint64(v[j]))
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborBytes) fastpathEncSliceUint64R(f *encFnInfo, rv reflect.Value) {
 	var ft fastpathETCborBytes
@@ -849,23 +911,31 @@ func (e *encoderCborBytes) fastpathEncSliceUint64R(f *encFnInfo, rv reflect.Valu
 func (fastpathETCborBytes) EncSliceUint64V(v []uint64, e *encoderCborBytes) {
 	e.arrayStart(len(v))
 	for j := range v {
-		e.arrayElem()
+		e.c = containerArrayElem
+		e.e.WriteArrayElem(j == 0)
 		e.e.EncodeUint(v[j])
 	}
-	e.arrayEnd()
+	e.c = 0
+	e.e.WriteArrayEnd()
 }
 func (fastpathETCborBytes) EncAsMapSliceUint64V(v []uint64, e *encoderCborBytes) {
 	e.haltOnMbsOddLen(len(v))
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
 	e.mapStart(len(v) >> 1)
 	for j := range v {
 		if j&1 == 0 {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(j == 0)
 		} else {
 			e.mapElemValue()
 		}
 		e.e.EncodeUint(v[j])
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborBytes) fastpathEncSliceIntR(f *encFnInfo, rv reflect.Value) {
 	var ft fastpathETCborBytes
@@ -884,23 +954,31 @@ func (e *encoderCborBytes) fastpathEncSliceIntR(f *encFnInfo, rv reflect.Value) 
 func (fastpathETCborBytes) EncSliceIntV(v []int, e *encoderCborBytes) {
 	e.arrayStart(len(v))
 	for j := range v {
-		e.arrayElem()
+		e.c = containerArrayElem
+		e.e.WriteArrayElem(j == 0)
 		e.e.EncodeInt(int64(v[j]))
 	}
-	e.arrayEnd()
+	e.c = 0
+	e.e.WriteArrayEnd()
 }
 func (fastpathETCborBytes) EncAsMapSliceIntV(v []int, e *encoderCborBytes) {
 	e.haltOnMbsOddLen(len(v))
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
 	e.mapStart(len(v) >> 1)
 	for j := range v {
 		if j&1 == 0 {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(j == 0)
 		} else {
 			e.mapElemValue()
 		}
 		e.e.EncodeInt(int64(v[j]))
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborBytes) fastpathEncSliceInt32R(f *encFnInfo, rv reflect.Value) {
 	var ft fastpathETCborBytes
@@ -919,23 +997,31 @@ func (e *encoderCborBytes) fastpathEncSliceInt32R(f *encFnInfo, rv reflect.Value
 func (fastpathETCborBytes) EncSliceInt32V(v []int32, e *encoderCborBytes) {
 	e.arrayStart(len(v))
 	for j := range v {
-		e.arrayElem()
+		e.c = containerArrayElem
+		e.e.WriteArrayElem(j == 0)
 		e.e.EncodeInt(int64(v[j]))
 	}
-	e.arrayEnd()
+	e.c = 0
+	e.e.WriteArrayEnd()
 }
 func (fastpathETCborBytes) EncAsMapSliceInt32V(v []int32, e *encoderCborBytes) {
 	e.haltOnMbsOddLen(len(v))
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
 	e.mapStart(len(v) >> 1)
 	for j := range v {
 		if j&1 == 0 {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(j == 0)
 		} else {
 			e.mapElemValue()
 		}
 		e.e.EncodeInt(int64(v[j]))
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborBytes) fastpathEncSliceInt64R(f *encFnInfo, rv reflect.Value) {
 	var ft fastpathETCborBytes
@@ -954,23 +1040,31 @@ func (e *encoderCborBytes) fastpathEncSliceInt64R(f *encFnInfo, rv reflect.Value
 func (fastpathETCborBytes) EncSliceInt64V(v []int64, e *encoderCborBytes) {
 	e.arrayStart(len(v))
 	for j := range v {
-		e.arrayElem()
+		e.c = containerArrayElem
+		e.e.WriteArrayElem(j == 0)
 		e.e.EncodeInt(v[j])
 	}
-	e.arrayEnd()
+	e.c = 0
+	e.e.WriteArrayEnd()
 }
 func (fastpathETCborBytes) EncAsMapSliceInt64V(v []int64, e *encoderCborBytes) {
 	e.haltOnMbsOddLen(len(v))
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
 	e.mapStart(len(v) >> 1)
 	for j := range v {
 		if j&1 == 0 {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(j == 0)
 		} else {
 			e.mapElemValue()
 		}
 		e.e.EncodeInt(v[j])
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborBytes) fastpathEncSliceBoolR(f *encFnInfo, rv reflect.Value) {
 	var ft fastpathETCborBytes
@@ -989,1328 +1083,1741 @@ func (e *encoderCborBytes) fastpathEncSliceBoolR(f *encFnInfo, rv reflect.Value)
 func (fastpathETCborBytes) EncSliceBoolV(v []bool, e *encoderCborBytes) {
 	e.arrayStart(len(v))
 	for j := range v {
-		e.arrayElem()
+		e.c = containerArrayElem
+		e.e.WriteArrayElem(j == 0)
 		e.e.EncodeBool(v[j])
 	}
-	e.arrayEnd()
+	e.c = 0
+	e.e.WriteArrayEnd()
 }
 func (fastpathETCborBytes) EncAsMapSliceBoolV(v []bool, e *encoderCborBytes) {
 	e.haltOnMbsOddLen(len(v))
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
 	e.mapStart(len(v) >> 1)
 	for j := range v {
 		if j&1 == 0 {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(j == 0)
 		} else {
 			e.mapElemValue()
 		}
 		e.e.EncodeBool(v[j])
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborBytes) fastpathEncMapStringIntfR(f *encFnInfo, rv reflect.Value) {
 	fastpathETCborBytes{}.EncMapStringIntfV(rv2i(rv).(map[string]interface{}), e)
 }
 func (fastpathETCborBytes) EncMapStringIntfV(v map[string]interface{}, e *encoderCborBytes) {
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
+	var i uint
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]string, len(v))
-		var i uint
 		for k := range v {
 			v2[i] = k
 			i++
 		}
 		slices.Sort(v2)
-		for _, k2 := range v2 {
-			e.mapElemKey()
+		for i, k2 := range v2 {
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeString(k2)
 			e.mapElemValue()
 			e.encode(v[k2])
 		}
 	} else {
+		i = 0
 		for k2, v2 := range v {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeString(k2)
 			e.mapElemValue()
 			e.encode(v2)
+			i++
 		}
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborBytes) fastpathEncMapStringStringR(f *encFnInfo, rv reflect.Value) {
 	fastpathETCborBytes{}.EncMapStringStringV(rv2i(rv).(map[string]string), e)
 }
 func (fastpathETCborBytes) EncMapStringStringV(v map[string]string, e *encoderCborBytes) {
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
+	var i uint
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]string, len(v))
-		var i uint
 		for k := range v {
 			v2[i] = k
 			i++
 		}
 		slices.Sort(v2)
-		for _, k2 := range v2 {
-			e.mapElemKey()
+		for i, k2 := range v2 {
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeString(k2)
 			e.mapElemValue()
 			e.e.EncodeString(v[k2])
 		}
 	} else {
+		i = 0
 		for k2, v2 := range v {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeString(k2)
 			e.mapElemValue()
 			e.e.EncodeString(v2)
+			i++
 		}
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborBytes) fastpathEncMapStringBytesR(f *encFnInfo, rv reflect.Value) {
 	fastpathETCborBytes{}.EncMapStringBytesV(rv2i(rv).(map[string][]byte), e)
 }
 func (fastpathETCborBytes) EncMapStringBytesV(v map[string][]byte, e *encoderCborBytes) {
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
+	var i uint
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]string, len(v))
-		var i uint
 		for k := range v {
 			v2[i] = k
 			i++
 		}
 		slices.Sort(v2)
-		for _, k2 := range v2 {
-			e.mapElemKey()
+		for i, k2 := range v2 {
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeString(k2)
 			e.mapElemValue()
 			e.e.EncodeStringBytesRaw(v[k2])
 		}
 	} else {
+		i = 0
 		for k2, v2 := range v {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeString(k2)
 			e.mapElemValue()
 			e.e.EncodeStringBytesRaw(v2)
+			i++
 		}
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborBytes) fastpathEncMapStringUint8R(f *encFnInfo, rv reflect.Value) {
 	fastpathETCborBytes{}.EncMapStringUint8V(rv2i(rv).(map[string]uint8), e)
 }
 func (fastpathETCborBytes) EncMapStringUint8V(v map[string]uint8, e *encoderCborBytes) {
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
+	var i uint
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]string, len(v))
-		var i uint
 		for k := range v {
 			v2[i] = k
 			i++
 		}
 		slices.Sort(v2)
-		for _, k2 := range v2 {
-			e.mapElemKey()
+		for i, k2 := range v2 {
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeString(k2)
 			e.mapElemValue()
 			e.e.EncodeUint(uint64(v[k2]))
 		}
 	} else {
+		i = 0
 		for k2, v2 := range v {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeString(k2)
 			e.mapElemValue()
 			e.e.EncodeUint(uint64(v2))
+			i++
 		}
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborBytes) fastpathEncMapStringUint64R(f *encFnInfo, rv reflect.Value) {
 	fastpathETCborBytes{}.EncMapStringUint64V(rv2i(rv).(map[string]uint64), e)
 }
 func (fastpathETCborBytes) EncMapStringUint64V(v map[string]uint64, e *encoderCborBytes) {
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
+	var i uint
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]string, len(v))
-		var i uint
 		for k := range v {
 			v2[i] = k
 			i++
 		}
 		slices.Sort(v2)
-		for _, k2 := range v2 {
-			e.mapElemKey()
+		for i, k2 := range v2 {
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeString(k2)
 			e.mapElemValue()
 			e.e.EncodeUint(v[k2])
 		}
 	} else {
+		i = 0
 		for k2, v2 := range v {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeString(k2)
 			e.mapElemValue()
 			e.e.EncodeUint(v2)
+			i++
 		}
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborBytes) fastpathEncMapStringIntR(f *encFnInfo, rv reflect.Value) {
 	fastpathETCborBytes{}.EncMapStringIntV(rv2i(rv).(map[string]int), e)
 }
 func (fastpathETCborBytes) EncMapStringIntV(v map[string]int, e *encoderCborBytes) {
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
+	var i uint
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]string, len(v))
-		var i uint
 		for k := range v {
 			v2[i] = k
 			i++
 		}
 		slices.Sort(v2)
-		for _, k2 := range v2 {
-			e.mapElemKey()
+		for i, k2 := range v2 {
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeString(k2)
 			e.mapElemValue()
 			e.e.EncodeInt(int64(v[k2]))
 		}
 	} else {
+		i = 0
 		for k2, v2 := range v {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeString(k2)
 			e.mapElemValue()
 			e.e.EncodeInt(int64(v2))
+			i++
 		}
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborBytes) fastpathEncMapStringInt32R(f *encFnInfo, rv reflect.Value) {
 	fastpathETCborBytes{}.EncMapStringInt32V(rv2i(rv).(map[string]int32), e)
 }
 func (fastpathETCborBytes) EncMapStringInt32V(v map[string]int32, e *encoderCborBytes) {
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
+	var i uint
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]string, len(v))
-		var i uint
 		for k := range v {
 			v2[i] = k
 			i++
 		}
 		slices.Sort(v2)
-		for _, k2 := range v2 {
-			e.mapElemKey()
+		for i, k2 := range v2 {
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeString(k2)
 			e.mapElemValue()
 			e.e.EncodeInt(int64(v[k2]))
 		}
 	} else {
+		i = 0
 		for k2, v2 := range v {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeString(k2)
 			e.mapElemValue()
 			e.e.EncodeInt(int64(v2))
+			i++
 		}
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborBytes) fastpathEncMapStringFloat64R(f *encFnInfo, rv reflect.Value) {
 	fastpathETCborBytes{}.EncMapStringFloat64V(rv2i(rv).(map[string]float64), e)
 }
 func (fastpathETCborBytes) EncMapStringFloat64V(v map[string]float64, e *encoderCborBytes) {
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
+	var i uint
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]string, len(v))
-		var i uint
 		for k := range v {
 			v2[i] = k
 			i++
 		}
 		slices.Sort(v2)
-		for _, k2 := range v2 {
-			e.mapElemKey()
+		for i, k2 := range v2 {
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeString(k2)
 			e.mapElemValue()
 			e.e.EncodeFloat64(v[k2])
 		}
 	} else {
+		i = 0
 		for k2, v2 := range v {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeString(k2)
 			e.mapElemValue()
 			e.e.EncodeFloat64(v2)
+			i++
 		}
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborBytes) fastpathEncMapStringBoolR(f *encFnInfo, rv reflect.Value) {
 	fastpathETCborBytes{}.EncMapStringBoolV(rv2i(rv).(map[string]bool), e)
 }
 func (fastpathETCborBytes) EncMapStringBoolV(v map[string]bool, e *encoderCborBytes) {
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
+	var i uint
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]string, len(v))
-		var i uint
 		for k := range v {
 			v2[i] = k
 			i++
 		}
 		slices.Sort(v2)
-		for _, k2 := range v2 {
-			e.mapElemKey()
+		for i, k2 := range v2 {
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeString(k2)
 			e.mapElemValue()
 			e.e.EncodeBool(v[k2])
 		}
 	} else {
+		i = 0
 		for k2, v2 := range v {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeString(k2)
 			e.mapElemValue()
 			e.e.EncodeBool(v2)
+			i++
 		}
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborBytes) fastpathEncMapUint8IntfR(f *encFnInfo, rv reflect.Value) {
 	fastpathETCborBytes{}.EncMapUint8IntfV(rv2i(rv).(map[uint8]interface{}), e)
 }
 func (fastpathETCborBytes) EncMapUint8IntfV(v map[uint8]interface{}, e *encoderCborBytes) {
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
+	var i uint
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint8, len(v))
-		var i uint
 		for k := range v {
 			v2[i] = k
 			i++
 		}
 		slices.Sort(v2)
-		for _, k2 := range v2 {
-			e.mapElemKey()
+		for i, k2 := range v2 {
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeUint(uint64(k2))
 			e.mapElemValue()
 			e.encode(v[k2])
 		}
 	} else {
+		i = 0
 		for k2, v2 := range v {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeUint(uint64(k2))
 			e.mapElemValue()
 			e.encode(v2)
+			i++
 		}
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborBytes) fastpathEncMapUint8StringR(f *encFnInfo, rv reflect.Value) {
 	fastpathETCborBytes{}.EncMapUint8StringV(rv2i(rv).(map[uint8]string), e)
 }
 func (fastpathETCborBytes) EncMapUint8StringV(v map[uint8]string, e *encoderCborBytes) {
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
+	var i uint
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint8, len(v))
-		var i uint
 		for k := range v {
 			v2[i] = k
 			i++
 		}
 		slices.Sort(v2)
-		for _, k2 := range v2 {
-			e.mapElemKey()
+		for i, k2 := range v2 {
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeUint(uint64(k2))
 			e.mapElemValue()
 			e.e.EncodeString(v[k2])
 		}
 	} else {
+		i = 0
 		for k2, v2 := range v {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeUint(uint64(k2))
 			e.mapElemValue()
 			e.e.EncodeString(v2)
+			i++
 		}
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborBytes) fastpathEncMapUint8BytesR(f *encFnInfo, rv reflect.Value) {
 	fastpathETCborBytes{}.EncMapUint8BytesV(rv2i(rv).(map[uint8][]byte), e)
 }
 func (fastpathETCborBytes) EncMapUint8BytesV(v map[uint8][]byte, e *encoderCborBytes) {
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
+	var i uint
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint8, len(v))
-		var i uint
 		for k := range v {
 			v2[i] = k
 			i++
 		}
 		slices.Sort(v2)
-		for _, k2 := range v2 {
-			e.mapElemKey()
+		for i, k2 := range v2 {
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeUint(uint64(k2))
 			e.mapElemValue()
 			e.e.EncodeStringBytesRaw(v[k2])
 		}
 	} else {
+		i = 0
 		for k2, v2 := range v {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeUint(uint64(k2))
 			e.mapElemValue()
 			e.e.EncodeStringBytesRaw(v2)
+			i++
 		}
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborBytes) fastpathEncMapUint8Uint8R(f *encFnInfo, rv reflect.Value) {
 	fastpathETCborBytes{}.EncMapUint8Uint8V(rv2i(rv).(map[uint8]uint8), e)
 }
 func (fastpathETCborBytes) EncMapUint8Uint8V(v map[uint8]uint8, e *encoderCborBytes) {
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
+	var i uint
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint8, len(v))
-		var i uint
 		for k := range v {
 			v2[i] = k
 			i++
 		}
 		slices.Sort(v2)
-		for _, k2 := range v2 {
-			e.mapElemKey()
+		for i, k2 := range v2 {
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeUint(uint64(k2))
 			e.mapElemValue()
 			e.e.EncodeUint(uint64(v[k2]))
 		}
 	} else {
+		i = 0
 		for k2, v2 := range v {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeUint(uint64(k2))
 			e.mapElemValue()
 			e.e.EncodeUint(uint64(v2))
+			i++
 		}
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborBytes) fastpathEncMapUint8Uint64R(f *encFnInfo, rv reflect.Value) {
 	fastpathETCborBytes{}.EncMapUint8Uint64V(rv2i(rv).(map[uint8]uint64), e)
 }
 func (fastpathETCborBytes) EncMapUint8Uint64V(v map[uint8]uint64, e *encoderCborBytes) {
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
+	var i uint
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint8, len(v))
-		var i uint
 		for k := range v {
 			v2[i] = k
 			i++
 		}
 		slices.Sort(v2)
-		for _, k2 := range v2 {
-			e.mapElemKey()
+		for i, k2 := range v2 {
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeUint(uint64(k2))
 			e.mapElemValue()
 			e.e.EncodeUint(v[k2])
 		}
 	} else {
+		i = 0
 		for k2, v2 := range v {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeUint(uint64(k2))
 			e.mapElemValue()
 			e.e.EncodeUint(v2)
+			i++
 		}
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborBytes) fastpathEncMapUint8IntR(f *encFnInfo, rv reflect.Value) {
 	fastpathETCborBytes{}.EncMapUint8IntV(rv2i(rv).(map[uint8]int), e)
 }
 func (fastpathETCborBytes) EncMapUint8IntV(v map[uint8]int, e *encoderCborBytes) {
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
+	var i uint
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint8, len(v))
-		var i uint
 		for k := range v {
 			v2[i] = k
 			i++
 		}
 		slices.Sort(v2)
-		for _, k2 := range v2 {
-			e.mapElemKey()
+		for i, k2 := range v2 {
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeUint(uint64(k2))
 			e.mapElemValue()
 			e.e.EncodeInt(int64(v[k2]))
 		}
 	} else {
+		i = 0
 		for k2, v2 := range v {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeUint(uint64(k2))
 			e.mapElemValue()
 			e.e.EncodeInt(int64(v2))
+			i++
 		}
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborBytes) fastpathEncMapUint8Int32R(f *encFnInfo, rv reflect.Value) {
 	fastpathETCborBytes{}.EncMapUint8Int32V(rv2i(rv).(map[uint8]int32), e)
 }
 func (fastpathETCborBytes) EncMapUint8Int32V(v map[uint8]int32, e *encoderCborBytes) {
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
+	var i uint
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint8, len(v))
-		var i uint
 		for k := range v {
 			v2[i] = k
 			i++
 		}
 		slices.Sort(v2)
-		for _, k2 := range v2 {
-			e.mapElemKey()
+		for i, k2 := range v2 {
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeUint(uint64(k2))
 			e.mapElemValue()
 			e.e.EncodeInt(int64(v[k2]))
 		}
 	} else {
+		i = 0
 		for k2, v2 := range v {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeUint(uint64(k2))
 			e.mapElemValue()
 			e.e.EncodeInt(int64(v2))
+			i++
 		}
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborBytes) fastpathEncMapUint8Float64R(f *encFnInfo, rv reflect.Value) {
 	fastpathETCborBytes{}.EncMapUint8Float64V(rv2i(rv).(map[uint8]float64), e)
 }
 func (fastpathETCborBytes) EncMapUint8Float64V(v map[uint8]float64, e *encoderCborBytes) {
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
+	var i uint
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint8, len(v))
-		var i uint
 		for k := range v {
 			v2[i] = k
 			i++
 		}
 		slices.Sort(v2)
-		for _, k2 := range v2 {
-			e.mapElemKey()
+		for i, k2 := range v2 {
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeUint(uint64(k2))
 			e.mapElemValue()
 			e.e.EncodeFloat64(v[k2])
 		}
 	} else {
+		i = 0
 		for k2, v2 := range v {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeUint(uint64(k2))
 			e.mapElemValue()
 			e.e.EncodeFloat64(v2)
+			i++
 		}
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborBytes) fastpathEncMapUint8BoolR(f *encFnInfo, rv reflect.Value) {
 	fastpathETCborBytes{}.EncMapUint8BoolV(rv2i(rv).(map[uint8]bool), e)
 }
 func (fastpathETCborBytes) EncMapUint8BoolV(v map[uint8]bool, e *encoderCborBytes) {
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
+	var i uint
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint8, len(v))
-		var i uint
 		for k := range v {
 			v2[i] = k
 			i++
 		}
 		slices.Sort(v2)
-		for _, k2 := range v2 {
-			e.mapElemKey()
+		for i, k2 := range v2 {
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeUint(uint64(k2))
 			e.mapElemValue()
 			e.e.EncodeBool(v[k2])
 		}
 	} else {
+		i = 0
 		for k2, v2 := range v {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeUint(uint64(k2))
 			e.mapElemValue()
 			e.e.EncodeBool(v2)
+			i++
 		}
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborBytes) fastpathEncMapUint64IntfR(f *encFnInfo, rv reflect.Value) {
 	fastpathETCborBytes{}.EncMapUint64IntfV(rv2i(rv).(map[uint64]interface{}), e)
 }
 func (fastpathETCborBytes) EncMapUint64IntfV(v map[uint64]interface{}, e *encoderCborBytes) {
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
+	var i uint
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint64, len(v))
-		var i uint
 		for k := range v {
 			v2[i] = k
 			i++
 		}
 		slices.Sort(v2)
-		for _, k2 := range v2 {
-			e.mapElemKey()
+		for i, k2 := range v2 {
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeUint(k2)
 			e.mapElemValue()
 			e.encode(v[k2])
 		}
 	} else {
+		i = 0
 		for k2, v2 := range v {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeUint(k2)
 			e.mapElemValue()
 			e.encode(v2)
+			i++
 		}
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborBytes) fastpathEncMapUint64StringR(f *encFnInfo, rv reflect.Value) {
 	fastpathETCborBytes{}.EncMapUint64StringV(rv2i(rv).(map[uint64]string), e)
 }
 func (fastpathETCborBytes) EncMapUint64StringV(v map[uint64]string, e *encoderCborBytes) {
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
+	var i uint
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint64, len(v))
-		var i uint
 		for k := range v {
 			v2[i] = k
 			i++
 		}
 		slices.Sort(v2)
-		for _, k2 := range v2 {
-			e.mapElemKey()
+		for i, k2 := range v2 {
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeUint(k2)
 			e.mapElemValue()
 			e.e.EncodeString(v[k2])
 		}
 	} else {
+		i = 0
 		for k2, v2 := range v {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeUint(k2)
 			e.mapElemValue()
 			e.e.EncodeString(v2)
+			i++
 		}
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborBytes) fastpathEncMapUint64BytesR(f *encFnInfo, rv reflect.Value) {
 	fastpathETCborBytes{}.EncMapUint64BytesV(rv2i(rv).(map[uint64][]byte), e)
 }
 func (fastpathETCborBytes) EncMapUint64BytesV(v map[uint64][]byte, e *encoderCborBytes) {
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
+	var i uint
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint64, len(v))
-		var i uint
 		for k := range v {
 			v2[i] = k
 			i++
 		}
 		slices.Sort(v2)
-		for _, k2 := range v2 {
-			e.mapElemKey()
+		for i, k2 := range v2 {
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeUint(k2)
 			e.mapElemValue()
 			e.e.EncodeStringBytesRaw(v[k2])
 		}
 	} else {
+		i = 0
 		for k2, v2 := range v {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeUint(k2)
 			e.mapElemValue()
 			e.e.EncodeStringBytesRaw(v2)
+			i++
 		}
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborBytes) fastpathEncMapUint64Uint8R(f *encFnInfo, rv reflect.Value) {
 	fastpathETCborBytes{}.EncMapUint64Uint8V(rv2i(rv).(map[uint64]uint8), e)
 }
 func (fastpathETCborBytes) EncMapUint64Uint8V(v map[uint64]uint8, e *encoderCborBytes) {
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
+	var i uint
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint64, len(v))
-		var i uint
 		for k := range v {
 			v2[i] = k
 			i++
 		}
 		slices.Sort(v2)
-		for _, k2 := range v2 {
-			e.mapElemKey()
+		for i, k2 := range v2 {
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeUint(k2)
 			e.mapElemValue()
 			e.e.EncodeUint(uint64(v[k2]))
 		}
 	} else {
+		i = 0
 		for k2, v2 := range v {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeUint(k2)
 			e.mapElemValue()
 			e.e.EncodeUint(uint64(v2))
+			i++
 		}
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborBytes) fastpathEncMapUint64Uint64R(f *encFnInfo, rv reflect.Value) {
 	fastpathETCborBytes{}.EncMapUint64Uint64V(rv2i(rv).(map[uint64]uint64), e)
 }
 func (fastpathETCborBytes) EncMapUint64Uint64V(v map[uint64]uint64, e *encoderCborBytes) {
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
+	var i uint
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint64, len(v))
-		var i uint
 		for k := range v {
 			v2[i] = k
 			i++
 		}
 		slices.Sort(v2)
-		for _, k2 := range v2 {
-			e.mapElemKey()
+		for i, k2 := range v2 {
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeUint(k2)
 			e.mapElemValue()
 			e.e.EncodeUint(v[k2])
 		}
 	} else {
+		i = 0
 		for k2, v2 := range v {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeUint(k2)
 			e.mapElemValue()
 			e.e.EncodeUint(v2)
+			i++
 		}
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborBytes) fastpathEncMapUint64IntR(f *encFnInfo, rv reflect.Value) {
 	fastpathETCborBytes{}.EncMapUint64IntV(rv2i(rv).(map[uint64]int), e)
 }
 func (fastpathETCborBytes) EncMapUint64IntV(v map[uint64]int, e *encoderCborBytes) {
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
+	var i uint
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint64, len(v))
-		var i uint
 		for k := range v {
 			v2[i] = k
 			i++
 		}
 		slices.Sort(v2)
-		for _, k2 := range v2 {
-			e.mapElemKey()
+		for i, k2 := range v2 {
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeUint(k2)
 			e.mapElemValue()
 			e.e.EncodeInt(int64(v[k2]))
 		}
 	} else {
+		i = 0
 		for k2, v2 := range v {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeUint(k2)
 			e.mapElemValue()
 			e.e.EncodeInt(int64(v2))
+			i++
 		}
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborBytes) fastpathEncMapUint64Int32R(f *encFnInfo, rv reflect.Value) {
 	fastpathETCborBytes{}.EncMapUint64Int32V(rv2i(rv).(map[uint64]int32), e)
 }
 func (fastpathETCborBytes) EncMapUint64Int32V(v map[uint64]int32, e *encoderCborBytes) {
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
+	var i uint
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint64, len(v))
-		var i uint
 		for k := range v {
 			v2[i] = k
 			i++
 		}
 		slices.Sort(v2)
-		for _, k2 := range v2 {
-			e.mapElemKey()
+		for i, k2 := range v2 {
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeUint(k2)
 			e.mapElemValue()
 			e.e.EncodeInt(int64(v[k2]))
 		}
 	} else {
+		i = 0
 		for k2, v2 := range v {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeUint(k2)
 			e.mapElemValue()
 			e.e.EncodeInt(int64(v2))
+			i++
 		}
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborBytes) fastpathEncMapUint64Float64R(f *encFnInfo, rv reflect.Value) {
 	fastpathETCborBytes{}.EncMapUint64Float64V(rv2i(rv).(map[uint64]float64), e)
 }
 func (fastpathETCborBytes) EncMapUint64Float64V(v map[uint64]float64, e *encoderCborBytes) {
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
+	var i uint
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint64, len(v))
-		var i uint
 		for k := range v {
 			v2[i] = k
 			i++
 		}
 		slices.Sort(v2)
-		for _, k2 := range v2 {
-			e.mapElemKey()
+		for i, k2 := range v2 {
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeUint(k2)
 			e.mapElemValue()
 			e.e.EncodeFloat64(v[k2])
 		}
 	} else {
+		i = 0
 		for k2, v2 := range v {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeUint(k2)
 			e.mapElemValue()
 			e.e.EncodeFloat64(v2)
+			i++
 		}
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborBytes) fastpathEncMapUint64BoolR(f *encFnInfo, rv reflect.Value) {
 	fastpathETCborBytes{}.EncMapUint64BoolV(rv2i(rv).(map[uint64]bool), e)
 }
 func (fastpathETCborBytes) EncMapUint64BoolV(v map[uint64]bool, e *encoderCborBytes) {
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
+	var i uint
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint64, len(v))
-		var i uint
 		for k := range v {
 			v2[i] = k
 			i++
 		}
 		slices.Sort(v2)
-		for _, k2 := range v2 {
-			e.mapElemKey()
+		for i, k2 := range v2 {
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeUint(k2)
 			e.mapElemValue()
 			e.e.EncodeBool(v[k2])
 		}
 	} else {
+		i = 0
 		for k2, v2 := range v {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeUint(k2)
 			e.mapElemValue()
 			e.e.EncodeBool(v2)
+			i++
 		}
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborBytes) fastpathEncMapIntIntfR(f *encFnInfo, rv reflect.Value) {
 	fastpathETCborBytes{}.EncMapIntIntfV(rv2i(rv).(map[int]interface{}), e)
 }
 func (fastpathETCborBytes) EncMapIntIntfV(v map[int]interface{}, e *encoderCborBytes) {
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
+	var i uint
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]int, len(v))
-		var i uint
 		for k := range v {
 			v2[i] = k
 			i++
 		}
 		slices.Sort(v2)
-		for _, k2 := range v2 {
-			e.mapElemKey()
+		for i, k2 := range v2 {
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeInt(int64(k2))
 			e.mapElemValue()
 			e.encode(v[k2])
 		}
 	} else {
+		i = 0
 		for k2, v2 := range v {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeInt(int64(k2))
 			e.mapElemValue()
 			e.encode(v2)
+			i++
 		}
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborBytes) fastpathEncMapIntStringR(f *encFnInfo, rv reflect.Value) {
 	fastpathETCborBytes{}.EncMapIntStringV(rv2i(rv).(map[int]string), e)
 }
 func (fastpathETCborBytes) EncMapIntStringV(v map[int]string, e *encoderCborBytes) {
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
+	var i uint
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]int, len(v))
-		var i uint
 		for k := range v {
 			v2[i] = k
 			i++
 		}
 		slices.Sort(v2)
-		for _, k2 := range v2 {
-			e.mapElemKey()
+		for i, k2 := range v2 {
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeInt(int64(k2))
 			e.mapElemValue()
 			e.e.EncodeString(v[k2])
 		}
 	} else {
+		i = 0
 		for k2, v2 := range v {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeInt(int64(k2))
 			e.mapElemValue()
 			e.e.EncodeString(v2)
+			i++
 		}
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborBytes) fastpathEncMapIntBytesR(f *encFnInfo, rv reflect.Value) {
 	fastpathETCborBytes{}.EncMapIntBytesV(rv2i(rv).(map[int][]byte), e)
 }
 func (fastpathETCborBytes) EncMapIntBytesV(v map[int][]byte, e *encoderCborBytes) {
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
+	var i uint
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]int, len(v))
-		var i uint
 		for k := range v {
 			v2[i] = k
 			i++
 		}
 		slices.Sort(v2)
-		for _, k2 := range v2 {
-			e.mapElemKey()
+		for i, k2 := range v2 {
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeInt(int64(k2))
 			e.mapElemValue()
 			e.e.EncodeStringBytesRaw(v[k2])
 		}
 	} else {
+		i = 0
 		for k2, v2 := range v {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeInt(int64(k2))
 			e.mapElemValue()
 			e.e.EncodeStringBytesRaw(v2)
+			i++
 		}
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborBytes) fastpathEncMapIntUint8R(f *encFnInfo, rv reflect.Value) {
 	fastpathETCborBytes{}.EncMapIntUint8V(rv2i(rv).(map[int]uint8), e)
 }
 func (fastpathETCborBytes) EncMapIntUint8V(v map[int]uint8, e *encoderCborBytes) {
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
+	var i uint
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]int, len(v))
-		var i uint
 		for k := range v {
 			v2[i] = k
 			i++
 		}
 		slices.Sort(v2)
-		for _, k2 := range v2 {
-			e.mapElemKey()
+		for i, k2 := range v2 {
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeInt(int64(k2))
 			e.mapElemValue()
 			e.e.EncodeUint(uint64(v[k2]))
 		}
 	} else {
+		i = 0
 		for k2, v2 := range v {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeInt(int64(k2))
 			e.mapElemValue()
 			e.e.EncodeUint(uint64(v2))
+			i++
 		}
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborBytes) fastpathEncMapIntUint64R(f *encFnInfo, rv reflect.Value) {
 	fastpathETCborBytes{}.EncMapIntUint64V(rv2i(rv).(map[int]uint64), e)
 }
 func (fastpathETCborBytes) EncMapIntUint64V(v map[int]uint64, e *encoderCborBytes) {
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
+	var i uint
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]int, len(v))
-		var i uint
 		for k := range v {
 			v2[i] = k
 			i++
 		}
 		slices.Sort(v2)
-		for _, k2 := range v2 {
-			e.mapElemKey()
+		for i, k2 := range v2 {
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeInt(int64(k2))
 			e.mapElemValue()
 			e.e.EncodeUint(v[k2])
 		}
 	} else {
+		i = 0
 		for k2, v2 := range v {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeInt(int64(k2))
 			e.mapElemValue()
 			e.e.EncodeUint(v2)
+			i++
 		}
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborBytes) fastpathEncMapIntIntR(f *encFnInfo, rv reflect.Value) {
 	fastpathETCborBytes{}.EncMapIntIntV(rv2i(rv).(map[int]int), e)
 }
 func (fastpathETCborBytes) EncMapIntIntV(v map[int]int, e *encoderCborBytes) {
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
+	var i uint
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]int, len(v))
-		var i uint
 		for k := range v {
 			v2[i] = k
 			i++
 		}
 		slices.Sort(v2)
-		for _, k2 := range v2 {
-			e.mapElemKey()
+		for i, k2 := range v2 {
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeInt(int64(k2))
 			e.mapElemValue()
 			e.e.EncodeInt(int64(v[k2]))
 		}
 	} else {
+		i = 0
 		for k2, v2 := range v {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeInt(int64(k2))
 			e.mapElemValue()
 			e.e.EncodeInt(int64(v2))
+			i++
 		}
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborBytes) fastpathEncMapIntInt32R(f *encFnInfo, rv reflect.Value) {
 	fastpathETCborBytes{}.EncMapIntInt32V(rv2i(rv).(map[int]int32), e)
 }
 func (fastpathETCborBytes) EncMapIntInt32V(v map[int]int32, e *encoderCborBytes) {
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
+	var i uint
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]int, len(v))
-		var i uint
 		for k := range v {
 			v2[i] = k
 			i++
 		}
 		slices.Sort(v2)
-		for _, k2 := range v2 {
-			e.mapElemKey()
+		for i, k2 := range v2 {
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeInt(int64(k2))
 			e.mapElemValue()
 			e.e.EncodeInt(int64(v[k2]))
 		}
 	} else {
+		i = 0
 		for k2, v2 := range v {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeInt(int64(k2))
 			e.mapElemValue()
 			e.e.EncodeInt(int64(v2))
+			i++
 		}
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborBytes) fastpathEncMapIntFloat64R(f *encFnInfo, rv reflect.Value) {
 	fastpathETCborBytes{}.EncMapIntFloat64V(rv2i(rv).(map[int]float64), e)
 }
 func (fastpathETCborBytes) EncMapIntFloat64V(v map[int]float64, e *encoderCborBytes) {
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
+	var i uint
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]int, len(v))
-		var i uint
 		for k := range v {
 			v2[i] = k
 			i++
 		}
 		slices.Sort(v2)
-		for _, k2 := range v2 {
-			e.mapElemKey()
+		for i, k2 := range v2 {
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeInt(int64(k2))
 			e.mapElemValue()
 			e.e.EncodeFloat64(v[k2])
 		}
 	} else {
+		i = 0
 		for k2, v2 := range v {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeInt(int64(k2))
 			e.mapElemValue()
 			e.e.EncodeFloat64(v2)
+			i++
 		}
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborBytes) fastpathEncMapIntBoolR(f *encFnInfo, rv reflect.Value) {
 	fastpathETCborBytes{}.EncMapIntBoolV(rv2i(rv).(map[int]bool), e)
 }
 func (fastpathETCborBytes) EncMapIntBoolV(v map[int]bool, e *encoderCborBytes) {
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
+	var i uint
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]int, len(v))
-		var i uint
 		for k := range v {
 			v2[i] = k
 			i++
 		}
 		slices.Sort(v2)
-		for _, k2 := range v2 {
-			e.mapElemKey()
+		for i, k2 := range v2 {
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeInt(int64(k2))
 			e.mapElemValue()
 			e.e.EncodeBool(v[k2])
 		}
 	} else {
+		i = 0
 		for k2, v2 := range v {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeInt(int64(k2))
 			e.mapElemValue()
 			e.e.EncodeBool(v2)
+			i++
 		}
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborBytes) fastpathEncMapInt32IntfR(f *encFnInfo, rv reflect.Value) {
 	fastpathETCborBytes{}.EncMapInt32IntfV(rv2i(rv).(map[int32]interface{}), e)
 }
 func (fastpathETCborBytes) EncMapInt32IntfV(v map[int32]interface{}, e *encoderCborBytes) {
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
+	var i uint
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]int32, len(v))
-		var i uint
 		for k := range v {
 			v2[i] = k
 			i++
 		}
 		slices.Sort(v2)
-		for _, k2 := range v2 {
-			e.mapElemKey()
+		for i, k2 := range v2 {
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeInt(int64(k2))
 			e.mapElemValue()
 			e.encode(v[k2])
 		}
 	} else {
+		i = 0
 		for k2, v2 := range v {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeInt(int64(k2))
 			e.mapElemValue()
 			e.encode(v2)
+			i++
 		}
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborBytes) fastpathEncMapInt32StringR(f *encFnInfo, rv reflect.Value) {
 	fastpathETCborBytes{}.EncMapInt32StringV(rv2i(rv).(map[int32]string), e)
 }
 func (fastpathETCborBytes) EncMapInt32StringV(v map[int32]string, e *encoderCborBytes) {
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
+	var i uint
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]int32, len(v))
-		var i uint
 		for k := range v {
 			v2[i] = k
 			i++
 		}
 		slices.Sort(v2)
-		for _, k2 := range v2 {
-			e.mapElemKey()
+		for i, k2 := range v2 {
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeInt(int64(k2))
 			e.mapElemValue()
 			e.e.EncodeString(v[k2])
 		}
 	} else {
+		i = 0
 		for k2, v2 := range v {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeInt(int64(k2))
 			e.mapElemValue()
 			e.e.EncodeString(v2)
+			i++
 		}
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborBytes) fastpathEncMapInt32BytesR(f *encFnInfo, rv reflect.Value) {
 	fastpathETCborBytes{}.EncMapInt32BytesV(rv2i(rv).(map[int32][]byte), e)
 }
 func (fastpathETCborBytes) EncMapInt32BytesV(v map[int32][]byte, e *encoderCborBytes) {
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
+	var i uint
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]int32, len(v))
-		var i uint
 		for k := range v {
 			v2[i] = k
 			i++
 		}
 		slices.Sort(v2)
-		for _, k2 := range v2 {
-			e.mapElemKey()
+		for i, k2 := range v2 {
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeInt(int64(k2))
 			e.mapElemValue()
 			e.e.EncodeStringBytesRaw(v[k2])
 		}
 	} else {
+		i = 0
 		for k2, v2 := range v {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeInt(int64(k2))
 			e.mapElemValue()
 			e.e.EncodeStringBytesRaw(v2)
+			i++
 		}
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborBytes) fastpathEncMapInt32Uint8R(f *encFnInfo, rv reflect.Value) {
 	fastpathETCborBytes{}.EncMapInt32Uint8V(rv2i(rv).(map[int32]uint8), e)
 }
 func (fastpathETCborBytes) EncMapInt32Uint8V(v map[int32]uint8, e *encoderCborBytes) {
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
+	var i uint
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]int32, len(v))
-		var i uint
 		for k := range v {
 			v2[i] = k
 			i++
 		}
 		slices.Sort(v2)
-		for _, k2 := range v2 {
-			e.mapElemKey()
+		for i, k2 := range v2 {
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeInt(int64(k2))
 			e.mapElemValue()
 			e.e.EncodeUint(uint64(v[k2]))
 		}
 	} else {
+		i = 0
 		for k2, v2 := range v {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeInt(int64(k2))
 			e.mapElemValue()
 			e.e.EncodeUint(uint64(v2))
+			i++
 		}
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborBytes) fastpathEncMapInt32Uint64R(f *encFnInfo, rv reflect.Value) {
 	fastpathETCborBytes{}.EncMapInt32Uint64V(rv2i(rv).(map[int32]uint64), e)
 }
 func (fastpathETCborBytes) EncMapInt32Uint64V(v map[int32]uint64, e *encoderCborBytes) {
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
+	var i uint
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]int32, len(v))
-		var i uint
 		for k := range v {
 			v2[i] = k
 			i++
 		}
 		slices.Sort(v2)
-		for _, k2 := range v2 {
-			e.mapElemKey()
+		for i, k2 := range v2 {
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeInt(int64(k2))
 			e.mapElemValue()
 			e.e.EncodeUint(v[k2])
 		}
 	} else {
+		i = 0
 		for k2, v2 := range v {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeInt(int64(k2))
 			e.mapElemValue()
 			e.e.EncodeUint(v2)
+			i++
 		}
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborBytes) fastpathEncMapInt32IntR(f *encFnInfo, rv reflect.Value) {
 	fastpathETCborBytes{}.EncMapInt32IntV(rv2i(rv).(map[int32]int), e)
 }
 func (fastpathETCborBytes) EncMapInt32IntV(v map[int32]int, e *encoderCborBytes) {
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
+	var i uint
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]int32, len(v))
-		var i uint
 		for k := range v {
 			v2[i] = k
 			i++
 		}
 		slices.Sort(v2)
-		for _, k2 := range v2 {
-			e.mapElemKey()
+		for i, k2 := range v2 {
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeInt(int64(k2))
 			e.mapElemValue()
 			e.e.EncodeInt(int64(v[k2]))
 		}
 	} else {
+		i = 0
 		for k2, v2 := range v {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeInt(int64(k2))
 			e.mapElemValue()
 			e.e.EncodeInt(int64(v2))
+			i++
 		}
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborBytes) fastpathEncMapInt32Int32R(f *encFnInfo, rv reflect.Value) {
 	fastpathETCborBytes{}.EncMapInt32Int32V(rv2i(rv).(map[int32]int32), e)
 }
 func (fastpathETCborBytes) EncMapInt32Int32V(v map[int32]int32, e *encoderCborBytes) {
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
+	var i uint
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]int32, len(v))
-		var i uint
 		for k := range v {
 			v2[i] = k
 			i++
 		}
 		slices.Sort(v2)
-		for _, k2 := range v2 {
-			e.mapElemKey()
+		for i, k2 := range v2 {
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeInt(int64(k2))
 			e.mapElemValue()
 			e.e.EncodeInt(int64(v[k2]))
 		}
 	} else {
+		i = 0
 		for k2, v2 := range v {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeInt(int64(k2))
 			e.mapElemValue()
 			e.e.EncodeInt(int64(v2))
+			i++
 		}
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborBytes) fastpathEncMapInt32Float64R(f *encFnInfo, rv reflect.Value) {
 	fastpathETCborBytes{}.EncMapInt32Float64V(rv2i(rv).(map[int32]float64), e)
 }
 func (fastpathETCborBytes) EncMapInt32Float64V(v map[int32]float64, e *encoderCborBytes) {
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
+	var i uint
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]int32, len(v))
-		var i uint
 		for k := range v {
 			v2[i] = k
 			i++
 		}
 		slices.Sort(v2)
-		for _, k2 := range v2 {
-			e.mapElemKey()
+		for i, k2 := range v2 {
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeInt(int64(k2))
 			e.mapElemValue()
 			e.e.EncodeFloat64(v[k2])
 		}
 	} else {
+		i = 0
 		for k2, v2 := range v {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeInt(int64(k2))
 			e.mapElemValue()
 			e.e.EncodeFloat64(v2)
+			i++
 		}
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborBytes) fastpathEncMapInt32BoolR(f *encFnInfo, rv reflect.Value) {
 	fastpathETCborBytes{}.EncMapInt32BoolV(rv2i(rv).(map[int32]bool), e)
 }
 func (fastpathETCborBytes) EncMapInt32BoolV(v map[int32]bool, e *encoderCborBytes) {
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
+	var i uint
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]int32, len(v))
-		var i uint
 		for k := range v {
 			v2[i] = k
 			i++
 		}
 		slices.Sort(v2)
-		for _, k2 := range v2 {
-			e.mapElemKey()
+		for i, k2 := range v2 {
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeInt(int64(k2))
 			e.mapElemValue()
 			e.e.EncodeBool(v[k2])
 		}
 	} else {
+		i = 0
 		for k2, v2 := range v {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeInt(int64(k2))
 			e.mapElemValue()
 			e.e.EncodeBool(v2)
+			i++
 		}
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 
 func (helperDecDriverCborBytes) fastpathDecodeTypeSwitch(iv interface{}, d *decoderCborBytes) bool {
@@ -4009,7 +4516,7 @@ func (fastpathDTCborBytes) DecMapStringIntfL(v map[string]interface{}, container
 	var mv interface{}
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-		d.mapElemKey()
+		d.mapElemKey(j == 0)
 		mk = d.string(d.d.DecodeStringAsBytes())
 		d.mapElemValue()
 		if mapGet {
@@ -4060,7 +4567,7 @@ func (fastpathDTCborBytes) DecMapStringStringL(v map[string]string, containerLen
 	var mv string
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-		d.mapElemKey()
+		d.mapElemKey(j == 0)
 		mk = d.string(d.d.DecodeStringAsBytes())
 		d.mapElemValue()
 		mv = d.string(d.d.DecodeStringAsBytes())
@@ -4107,7 +4614,7 @@ func (fastpathDTCborBytes) DecMapStringBytesL(v map[string][]byte, containerLen 
 	var mv []byte
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-		d.mapElemKey()
+		d.mapElemKey(j == 0)
 		mk = d.string(d.d.DecodeStringAsBytes())
 		d.mapElemValue()
 		if mapGet {
@@ -4158,7 +4665,7 @@ func (fastpathDTCborBytes) DecMapStringUint8L(v map[string]uint8, containerLen i
 	var mv uint8
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-		d.mapElemKey()
+		d.mapElemKey(j == 0)
 		mk = d.string(d.d.DecodeStringAsBytes())
 		d.mapElemValue()
 		mv = uint8(chkOvf.UintV(d.d.DecodeUint64(), 8))
@@ -4204,7 +4711,7 @@ func (fastpathDTCborBytes) DecMapStringUint64L(v map[string]uint64, containerLen
 	var mv uint64
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-		d.mapElemKey()
+		d.mapElemKey(j == 0)
 		mk = d.string(d.d.DecodeStringAsBytes())
 		d.mapElemValue()
 		mv = d.d.DecodeUint64()
@@ -4250,7 +4757,7 @@ func (fastpathDTCborBytes) DecMapStringIntL(v map[string]int, containerLen int, 
 	var mv int
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-		d.mapElemKey()
+		d.mapElemKey(j == 0)
 		mk = d.string(d.d.DecodeStringAsBytes())
 		d.mapElemValue()
 		mv = int(chkOvf.IntV(d.d.DecodeInt64(), intBitsize))
@@ -4296,7 +4803,7 @@ func (fastpathDTCborBytes) DecMapStringInt32L(v map[string]int32, containerLen i
 	var mv int32
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-		d.mapElemKey()
+		d.mapElemKey(j == 0)
 		mk = d.string(d.d.DecodeStringAsBytes())
 		d.mapElemValue()
 		mv = int32(chkOvf.IntV(d.d.DecodeInt64(), 32))
@@ -4342,7 +4849,7 @@ func (fastpathDTCborBytes) DecMapStringFloat64L(v map[string]float64, containerL
 	var mv float64
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-		d.mapElemKey()
+		d.mapElemKey(j == 0)
 		mk = d.string(d.d.DecodeStringAsBytes())
 		d.mapElemValue()
 		mv = d.d.DecodeFloat64()
@@ -4388,7 +4895,7 @@ func (fastpathDTCborBytes) DecMapStringBoolL(v map[string]bool, containerLen int
 	var mv bool
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-		d.mapElemKey()
+		d.mapElemKey(j == 0)
 		mk = d.string(d.d.DecodeStringAsBytes())
 		d.mapElemValue()
 		mv = d.d.DecodeBool()
@@ -4435,7 +4942,7 @@ func (fastpathDTCborBytes) DecMapUint8IntfL(v map[uint8]interface{}, containerLe
 	var mv interface{}
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-		d.mapElemKey()
+		d.mapElemKey(j == 0)
 		mk = uint8(chkOvf.UintV(d.d.DecodeUint64(), 8))
 		d.mapElemValue()
 		if mapGet {
@@ -4486,7 +4993,7 @@ func (fastpathDTCborBytes) DecMapUint8StringL(v map[uint8]string, containerLen i
 	var mv string
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-		d.mapElemKey()
+		d.mapElemKey(j == 0)
 		mk = uint8(chkOvf.UintV(d.d.DecodeUint64(), 8))
 		d.mapElemValue()
 		mv = d.string(d.d.DecodeStringAsBytes())
@@ -4533,7 +5040,7 @@ func (fastpathDTCborBytes) DecMapUint8BytesL(v map[uint8][]byte, containerLen in
 	var mv []byte
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-		d.mapElemKey()
+		d.mapElemKey(j == 0)
 		mk = uint8(chkOvf.UintV(d.d.DecodeUint64(), 8))
 		d.mapElemValue()
 		if mapGet {
@@ -4584,7 +5091,7 @@ func (fastpathDTCborBytes) DecMapUint8Uint8L(v map[uint8]uint8, containerLen int
 	var mv uint8
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-		d.mapElemKey()
+		d.mapElemKey(j == 0)
 		mk = uint8(chkOvf.UintV(d.d.DecodeUint64(), 8))
 		d.mapElemValue()
 		mv = uint8(chkOvf.UintV(d.d.DecodeUint64(), 8))
@@ -4630,7 +5137,7 @@ func (fastpathDTCborBytes) DecMapUint8Uint64L(v map[uint8]uint64, containerLen i
 	var mv uint64
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-		d.mapElemKey()
+		d.mapElemKey(j == 0)
 		mk = uint8(chkOvf.UintV(d.d.DecodeUint64(), 8))
 		d.mapElemValue()
 		mv = d.d.DecodeUint64()
@@ -4676,7 +5183,7 @@ func (fastpathDTCborBytes) DecMapUint8IntL(v map[uint8]int, containerLen int, d 
 	var mv int
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-		d.mapElemKey()
+		d.mapElemKey(j == 0)
 		mk = uint8(chkOvf.UintV(d.d.DecodeUint64(), 8))
 		d.mapElemValue()
 		mv = int(chkOvf.IntV(d.d.DecodeInt64(), intBitsize))
@@ -4722,7 +5229,7 @@ func (fastpathDTCborBytes) DecMapUint8Int32L(v map[uint8]int32, containerLen int
 	var mv int32
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-		d.mapElemKey()
+		d.mapElemKey(j == 0)
 		mk = uint8(chkOvf.UintV(d.d.DecodeUint64(), 8))
 		d.mapElemValue()
 		mv = int32(chkOvf.IntV(d.d.DecodeInt64(), 32))
@@ -4768,7 +5275,7 @@ func (fastpathDTCborBytes) DecMapUint8Float64L(v map[uint8]float64, containerLen
 	var mv float64
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-		d.mapElemKey()
+		d.mapElemKey(j == 0)
 		mk = uint8(chkOvf.UintV(d.d.DecodeUint64(), 8))
 		d.mapElemValue()
 		mv = d.d.DecodeFloat64()
@@ -4814,7 +5321,7 @@ func (fastpathDTCborBytes) DecMapUint8BoolL(v map[uint8]bool, containerLen int, 
 	var mv bool
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-		d.mapElemKey()
+		d.mapElemKey(j == 0)
 		mk = uint8(chkOvf.UintV(d.d.DecodeUint64(), 8))
 		d.mapElemValue()
 		mv = d.d.DecodeBool()
@@ -4861,7 +5368,7 @@ func (fastpathDTCborBytes) DecMapUint64IntfL(v map[uint64]interface{}, container
 	var mv interface{}
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-		d.mapElemKey()
+		d.mapElemKey(j == 0)
 		mk = d.d.DecodeUint64()
 		d.mapElemValue()
 		if mapGet {
@@ -4912,7 +5419,7 @@ func (fastpathDTCborBytes) DecMapUint64StringL(v map[uint64]string, containerLen
 	var mv string
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-		d.mapElemKey()
+		d.mapElemKey(j == 0)
 		mk = d.d.DecodeUint64()
 		d.mapElemValue()
 		mv = d.string(d.d.DecodeStringAsBytes())
@@ -4959,7 +5466,7 @@ func (fastpathDTCborBytes) DecMapUint64BytesL(v map[uint64][]byte, containerLen 
 	var mv []byte
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-		d.mapElemKey()
+		d.mapElemKey(j == 0)
 		mk = d.d.DecodeUint64()
 		d.mapElemValue()
 		if mapGet {
@@ -5010,7 +5517,7 @@ func (fastpathDTCborBytes) DecMapUint64Uint8L(v map[uint64]uint8, containerLen i
 	var mv uint8
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-		d.mapElemKey()
+		d.mapElemKey(j == 0)
 		mk = d.d.DecodeUint64()
 		d.mapElemValue()
 		mv = uint8(chkOvf.UintV(d.d.DecodeUint64(), 8))
@@ -5056,7 +5563,7 @@ func (fastpathDTCborBytes) DecMapUint64Uint64L(v map[uint64]uint64, containerLen
 	var mv uint64
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-		d.mapElemKey()
+		d.mapElemKey(j == 0)
 		mk = d.d.DecodeUint64()
 		d.mapElemValue()
 		mv = d.d.DecodeUint64()
@@ -5102,7 +5609,7 @@ func (fastpathDTCborBytes) DecMapUint64IntL(v map[uint64]int, containerLen int, 
 	var mv int
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-		d.mapElemKey()
+		d.mapElemKey(j == 0)
 		mk = d.d.DecodeUint64()
 		d.mapElemValue()
 		mv = int(chkOvf.IntV(d.d.DecodeInt64(), intBitsize))
@@ -5148,7 +5655,7 @@ func (fastpathDTCborBytes) DecMapUint64Int32L(v map[uint64]int32, containerLen i
 	var mv int32
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-		d.mapElemKey()
+		d.mapElemKey(j == 0)
 		mk = d.d.DecodeUint64()
 		d.mapElemValue()
 		mv = int32(chkOvf.IntV(d.d.DecodeInt64(), 32))
@@ -5194,7 +5701,7 @@ func (fastpathDTCborBytes) DecMapUint64Float64L(v map[uint64]float64, containerL
 	var mv float64
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-		d.mapElemKey()
+		d.mapElemKey(j == 0)
 		mk = d.d.DecodeUint64()
 		d.mapElemValue()
 		mv = d.d.DecodeFloat64()
@@ -5240,7 +5747,7 @@ func (fastpathDTCborBytes) DecMapUint64BoolL(v map[uint64]bool, containerLen int
 	var mv bool
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-		d.mapElemKey()
+		d.mapElemKey(j == 0)
 		mk = d.d.DecodeUint64()
 		d.mapElemValue()
 		mv = d.d.DecodeBool()
@@ -5287,7 +5794,7 @@ func (fastpathDTCborBytes) DecMapIntIntfL(v map[int]interface{}, containerLen in
 	var mv interface{}
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-		d.mapElemKey()
+		d.mapElemKey(j == 0)
 		mk = int(chkOvf.IntV(d.d.DecodeInt64(), intBitsize))
 		d.mapElemValue()
 		if mapGet {
@@ -5338,7 +5845,7 @@ func (fastpathDTCborBytes) DecMapIntStringL(v map[int]string, containerLen int, 
 	var mv string
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-		d.mapElemKey()
+		d.mapElemKey(j == 0)
 		mk = int(chkOvf.IntV(d.d.DecodeInt64(), intBitsize))
 		d.mapElemValue()
 		mv = d.string(d.d.DecodeStringAsBytes())
@@ -5385,7 +5892,7 @@ func (fastpathDTCborBytes) DecMapIntBytesL(v map[int][]byte, containerLen int, d
 	var mv []byte
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-		d.mapElemKey()
+		d.mapElemKey(j == 0)
 		mk = int(chkOvf.IntV(d.d.DecodeInt64(), intBitsize))
 		d.mapElemValue()
 		if mapGet {
@@ -5436,7 +5943,7 @@ func (fastpathDTCborBytes) DecMapIntUint8L(v map[int]uint8, containerLen int, d 
 	var mv uint8
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-		d.mapElemKey()
+		d.mapElemKey(j == 0)
 		mk = int(chkOvf.IntV(d.d.DecodeInt64(), intBitsize))
 		d.mapElemValue()
 		mv = uint8(chkOvf.UintV(d.d.DecodeUint64(), 8))
@@ -5482,7 +5989,7 @@ func (fastpathDTCborBytes) DecMapIntUint64L(v map[int]uint64, containerLen int, 
 	var mv uint64
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-		d.mapElemKey()
+		d.mapElemKey(j == 0)
 		mk = int(chkOvf.IntV(d.d.DecodeInt64(), intBitsize))
 		d.mapElemValue()
 		mv = d.d.DecodeUint64()
@@ -5528,7 +6035,7 @@ func (fastpathDTCborBytes) DecMapIntIntL(v map[int]int, containerLen int, d *dec
 	var mv int
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-		d.mapElemKey()
+		d.mapElemKey(j == 0)
 		mk = int(chkOvf.IntV(d.d.DecodeInt64(), intBitsize))
 		d.mapElemValue()
 		mv = int(chkOvf.IntV(d.d.DecodeInt64(), intBitsize))
@@ -5574,7 +6081,7 @@ func (fastpathDTCborBytes) DecMapIntInt32L(v map[int]int32, containerLen int, d 
 	var mv int32
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-		d.mapElemKey()
+		d.mapElemKey(j == 0)
 		mk = int(chkOvf.IntV(d.d.DecodeInt64(), intBitsize))
 		d.mapElemValue()
 		mv = int32(chkOvf.IntV(d.d.DecodeInt64(), 32))
@@ -5620,7 +6127,7 @@ func (fastpathDTCborBytes) DecMapIntFloat64L(v map[int]float64, containerLen int
 	var mv float64
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-		d.mapElemKey()
+		d.mapElemKey(j == 0)
 		mk = int(chkOvf.IntV(d.d.DecodeInt64(), intBitsize))
 		d.mapElemValue()
 		mv = d.d.DecodeFloat64()
@@ -5666,7 +6173,7 @@ func (fastpathDTCborBytes) DecMapIntBoolL(v map[int]bool, containerLen int, d *d
 	var mv bool
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-		d.mapElemKey()
+		d.mapElemKey(j == 0)
 		mk = int(chkOvf.IntV(d.d.DecodeInt64(), intBitsize))
 		d.mapElemValue()
 		mv = d.d.DecodeBool()
@@ -5713,7 +6220,7 @@ func (fastpathDTCborBytes) DecMapInt32IntfL(v map[int32]interface{}, containerLe
 	var mv interface{}
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-		d.mapElemKey()
+		d.mapElemKey(j == 0)
 		mk = int32(chkOvf.IntV(d.d.DecodeInt64(), 32))
 		d.mapElemValue()
 		if mapGet {
@@ -5764,7 +6271,7 @@ func (fastpathDTCborBytes) DecMapInt32StringL(v map[int32]string, containerLen i
 	var mv string
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-		d.mapElemKey()
+		d.mapElemKey(j == 0)
 		mk = int32(chkOvf.IntV(d.d.DecodeInt64(), 32))
 		d.mapElemValue()
 		mv = d.string(d.d.DecodeStringAsBytes())
@@ -5811,7 +6318,7 @@ func (fastpathDTCborBytes) DecMapInt32BytesL(v map[int32][]byte, containerLen in
 	var mv []byte
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-		d.mapElemKey()
+		d.mapElemKey(j == 0)
 		mk = int32(chkOvf.IntV(d.d.DecodeInt64(), 32))
 		d.mapElemValue()
 		if mapGet {
@@ -5862,7 +6369,7 @@ func (fastpathDTCborBytes) DecMapInt32Uint8L(v map[int32]uint8, containerLen int
 	var mv uint8
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-		d.mapElemKey()
+		d.mapElemKey(j == 0)
 		mk = int32(chkOvf.IntV(d.d.DecodeInt64(), 32))
 		d.mapElemValue()
 		mv = uint8(chkOvf.UintV(d.d.DecodeUint64(), 8))
@@ -5908,7 +6415,7 @@ func (fastpathDTCborBytes) DecMapInt32Uint64L(v map[int32]uint64, containerLen i
 	var mv uint64
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-		d.mapElemKey()
+		d.mapElemKey(j == 0)
 		mk = int32(chkOvf.IntV(d.d.DecodeInt64(), 32))
 		d.mapElemValue()
 		mv = d.d.DecodeUint64()
@@ -5954,7 +6461,7 @@ func (fastpathDTCborBytes) DecMapInt32IntL(v map[int32]int, containerLen int, d 
 	var mv int
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-		d.mapElemKey()
+		d.mapElemKey(j == 0)
 		mk = int32(chkOvf.IntV(d.d.DecodeInt64(), 32))
 		d.mapElemValue()
 		mv = int(chkOvf.IntV(d.d.DecodeInt64(), intBitsize))
@@ -6000,7 +6507,7 @@ func (fastpathDTCborBytes) DecMapInt32Int32L(v map[int32]int32, containerLen int
 	var mv int32
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-		d.mapElemKey()
+		d.mapElemKey(j == 0)
 		mk = int32(chkOvf.IntV(d.d.DecodeInt64(), 32))
 		d.mapElemValue()
 		mv = int32(chkOvf.IntV(d.d.DecodeInt64(), 32))
@@ -6046,7 +6553,7 @@ func (fastpathDTCborBytes) DecMapInt32Float64L(v map[int32]float64, containerLen
 	var mv float64
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-		d.mapElemKey()
+		d.mapElemKey(j == 0)
 		mk = int32(chkOvf.IntV(d.d.DecodeInt64(), 32))
 		d.mapElemValue()
 		mv = d.d.DecodeFloat64()
@@ -6092,7 +6599,7 @@ func (fastpathDTCborBytes) DecMapInt32BoolL(v map[int32]bool, containerLen int, 
 	var mv bool
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-		d.mapElemKey()
+		d.mapElemKey(j == 0)
 		mk = int32(chkOvf.IntV(d.d.DecodeInt64(), 32))
 		d.mapElemValue()
 		mv = d.d.DecodeBool()
@@ -6258,13 +6765,29 @@ func (helperDecDriverCborIO) fastpathDList() *fastpathDsCborIO {
 }
 
 func (helperEncDriverCborIO) fastpathEncodeTypeSwitch(iv interface{}, e *encoderCborIO) bool {
+	fnNilMap := func() {
+		if e.h.NilCollectionToZeroLength {
+			e.e.WriteMapEmpty()
+		} else {
+			e.e.EncodeNil()
+		}
+	}
+
+	fnNilSeq := func() {
+		if e.h.NilCollectionToZeroLength {
+			e.e.WriteArrayEmpty()
+		} else {
+			e.e.EncodeNil()
+		}
+	}
+
 	var ft fastpathETCborIO
 	switch v := iv.(type) {
 	case []interface{}:
 		ft.EncSliceIntfV(v, e)
 	case *[]interface{}:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilSeq()
 		} else {
 			ft.EncSliceIntfV(*v, e)
 		}
@@ -6272,7 +6795,7 @@ func (helperEncDriverCborIO) fastpathEncodeTypeSwitch(iv interface{}, e *encoder
 		ft.EncSliceStringV(v, e)
 	case *[]string:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilSeq()
 		} else {
 			ft.EncSliceStringV(*v, e)
 		}
@@ -6280,7 +6803,7 @@ func (helperEncDriverCborIO) fastpathEncodeTypeSwitch(iv interface{}, e *encoder
 		ft.EncSliceBytesV(v, e)
 	case *[][]byte:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilSeq()
 		} else {
 			ft.EncSliceBytesV(*v, e)
 		}
@@ -6288,7 +6811,7 @@ func (helperEncDriverCborIO) fastpathEncodeTypeSwitch(iv interface{}, e *encoder
 		ft.EncSliceFloat32V(v, e)
 	case *[]float32:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilSeq()
 		} else {
 			ft.EncSliceFloat32V(*v, e)
 		}
@@ -6296,7 +6819,7 @@ func (helperEncDriverCborIO) fastpathEncodeTypeSwitch(iv interface{}, e *encoder
 		ft.EncSliceFloat64V(v, e)
 	case *[]float64:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilSeq()
 		} else {
 			ft.EncSliceFloat64V(*v, e)
 		}
@@ -6304,7 +6827,7 @@ func (helperEncDriverCborIO) fastpathEncodeTypeSwitch(iv interface{}, e *encoder
 		ft.EncSliceUint8V(v, e)
 	case *[]uint8:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilSeq()
 		} else {
 			ft.EncSliceUint8V(*v, e)
 		}
@@ -6312,7 +6835,7 @@ func (helperEncDriverCborIO) fastpathEncodeTypeSwitch(iv interface{}, e *encoder
 		ft.EncSliceUint64V(v, e)
 	case *[]uint64:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilSeq()
 		} else {
 			ft.EncSliceUint64V(*v, e)
 		}
@@ -6320,7 +6843,7 @@ func (helperEncDriverCborIO) fastpathEncodeTypeSwitch(iv interface{}, e *encoder
 		ft.EncSliceIntV(v, e)
 	case *[]int:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilSeq()
 		} else {
 			ft.EncSliceIntV(*v, e)
 		}
@@ -6328,7 +6851,7 @@ func (helperEncDriverCborIO) fastpathEncodeTypeSwitch(iv interface{}, e *encoder
 		ft.EncSliceInt32V(v, e)
 	case *[]int32:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilSeq()
 		} else {
 			ft.EncSliceInt32V(*v, e)
 		}
@@ -6336,7 +6859,7 @@ func (helperEncDriverCborIO) fastpathEncodeTypeSwitch(iv interface{}, e *encoder
 		ft.EncSliceInt64V(v, e)
 	case *[]int64:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilSeq()
 		} else {
 			ft.EncSliceInt64V(*v, e)
 		}
@@ -6344,7 +6867,7 @@ func (helperEncDriverCborIO) fastpathEncodeTypeSwitch(iv interface{}, e *encoder
 		ft.EncSliceBoolV(v, e)
 	case *[]bool:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilSeq()
 		} else {
 			ft.EncSliceBoolV(*v, e)
 		}
@@ -6352,7 +6875,7 @@ func (helperEncDriverCborIO) fastpathEncodeTypeSwitch(iv interface{}, e *encoder
 		ft.EncMapStringIntfV(v, e)
 	case *map[string]interface{}:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilMap()
 		} else {
 			ft.EncMapStringIntfV(*v, e)
 		}
@@ -6360,7 +6883,7 @@ func (helperEncDriverCborIO) fastpathEncodeTypeSwitch(iv interface{}, e *encoder
 		ft.EncMapStringStringV(v, e)
 	case *map[string]string:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilMap()
 		} else {
 			ft.EncMapStringStringV(*v, e)
 		}
@@ -6368,7 +6891,7 @@ func (helperEncDriverCborIO) fastpathEncodeTypeSwitch(iv interface{}, e *encoder
 		ft.EncMapStringBytesV(v, e)
 	case *map[string][]byte:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilMap()
 		} else {
 			ft.EncMapStringBytesV(*v, e)
 		}
@@ -6376,7 +6899,7 @@ func (helperEncDriverCborIO) fastpathEncodeTypeSwitch(iv interface{}, e *encoder
 		ft.EncMapStringUint8V(v, e)
 	case *map[string]uint8:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilMap()
 		} else {
 			ft.EncMapStringUint8V(*v, e)
 		}
@@ -6384,7 +6907,7 @@ func (helperEncDriverCborIO) fastpathEncodeTypeSwitch(iv interface{}, e *encoder
 		ft.EncMapStringUint64V(v, e)
 	case *map[string]uint64:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilMap()
 		} else {
 			ft.EncMapStringUint64V(*v, e)
 		}
@@ -6392,7 +6915,7 @@ func (helperEncDriverCborIO) fastpathEncodeTypeSwitch(iv interface{}, e *encoder
 		ft.EncMapStringIntV(v, e)
 	case *map[string]int:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilMap()
 		} else {
 			ft.EncMapStringIntV(*v, e)
 		}
@@ -6400,7 +6923,7 @@ func (helperEncDriverCborIO) fastpathEncodeTypeSwitch(iv interface{}, e *encoder
 		ft.EncMapStringInt32V(v, e)
 	case *map[string]int32:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilMap()
 		} else {
 			ft.EncMapStringInt32V(*v, e)
 		}
@@ -6408,7 +6931,7 @@ func (helperEncDriverCborIO) fastpathEncodeTypeSwitch(iv interface{}, e *encoder
 		ft.EncMapStringFloat64V(v, e)
 	case *map[string]float64:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilMap()
 		} else {
 			ft.EncMapStringFloat64V(*v, e)
 		}
@@ -6416,7 +6939,7 @@ func (helperEncDriverCborIO) fastpathEncodeTypeSwitch(iv interface{}, e *encoder
 		ft.EncMapStringBoolV(v, e)
 	case *map[string]bool:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilMap()
 		} else {
 			ft.EncMapStringBoolV(*v, e)
 		}
@@ -6424,7 +6947,7 @@ func (helperEncDriverCborIO) fastpathEncodeTypeSwitch(iv interface{}, e *encoder
 		ft.EncMapUint8IntfV(v, e)
 	case *map[uint8]interface{}:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilMap()
 		} else {
 			ft.EncMapUint8IntfV(*v, e)
 		}
@@ -6432,7 +6955,7 @@ func (helperEncDriverCborIO) fastpathEncodeTypeSwitch(iv interface{}, e *encoder
 		ft.EncMapUint8StringV(v, e)
 	case *map[uint8]string:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilMap()
 		} else {
 			ft.EncMapUint8StringV(*v, e)
 		}
@@ -6440,7 +6963,7 @@ func (helperEncDriverCborIO) fastpathEncodeTypeSwitch(iv interface{}, e *encoder
 		ft.EncMapUint8BytesV(v, e)
 	case *map[uint8][]byte:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilMap()
 		} else {
 			ft.EncMapUint8BytesV(*v, e)
 		}
@@ -6448,7 +6971,7 @@ func (helperEncDriverCborIO) fastpathEncodeTypeSwitch(iv interface{}, e *encoder
 		ft.EncMapUint8Uint8V(v, e)
 	case *map[uint8]uint8:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilMap()
 		} else {
 			ft.EncMapUint8Uint8V(*v, e)
 		}
@@ -6456,7 +6979,7 @@ func (helperEncDriverCborIO) fastpathEncodeTypeSwitch(iv interface{}, e *encoder
 		ft.EncMapUint8Uint64V(v, e)
 	case *map[uint8]uint64:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilMap()
 		} else {
 			ft.EncMapUint8Uint64V(*v, e)
 		}
@@ -6464,7 +6987,7 @@ func (helperEncDriverCborIO) fastpathEncodeTypeSwitch(iv interface{}, e *encoder
 		ft.EncMapUint8IntV(v, e)
 	case *map[uint8]int:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilMap()
 		} else {
 			ft.EncMapUint8IntV(*v, e)
 		}
@@ -6472,7 +6995,7 @@ func (helperEncDriverCborIO) fastpathEncodeTypeSwitch(iv interface{}, e *encoder
 		ft.EncMapUint8Int32V(v, e)
 	case *map[uint8]int32:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilMap()
 		} else {
 			ft.EncMapUint8Int32V(*v, e)
 		}
@@ -6480,7 +7003,7 @@ func (helperEncDriverCborIO) fastpathEncodeTypeSwitch(iv interface{}, e *encoder
 		ft.EncMapUint8Float64V(v, e)
 	case *map[uint8]float64:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilMap()
 		} else {
 			ft.EncMapUint8Float64V(*v, e)
 		}
@@ -6488,7 +7011,7 @@ func (helperEncDriverCborIO) fastpathEncodeTypeSwitch(iv interface{}, e *encoder
 		ft.EncMapUint8BoolV(v, e)
 	case *map[uint8]bool:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilMap()
 		} else {
 			ft.EncMapUint8BoolV(*v, e)
 		}
@@ -6496,7 +7019,7 @@ func (helperEncDriverCborIO) fastpathEncodeTypeSwitch(iv interface{}, e *encoder
 		ft.EncMapUint64IntfV(v, e)
 	case *map[uint64]interface{}:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilMap()
 		} else {
 			ft.EncMapUint64IntfV(*v, e)
 		}
@@ -6504,7 +7027,7 @@ func (helperEncDriverCborIO) fastpathEncodeTypeSwitch(iv interface{}, e *encoder
 		ft.EncMapUint64StringV(v, e)
 	case *map[uint64]string:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilMap()
 		} else {
 			ft.EncMapUint64StringV(*v, e)
 		}
@@ -6512,7 +7035,7 @@ func (helperEncDriverCborIO) fastpathEncodeTypeSwitch(iv interface{}, e *encoder
 		ft.EncMapUint64BytesV(v, e)
 	case *map[uint64][]byte:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilMap()
 		} else {
 			ft.EncMapUint64BytesV(*v, e)
 		}
@@ -6520,7 +7043,7 @@ func (helperEncDriverCborIO) fastpathEncodeTypeSwitch(iv interface{}, e *encoder
 		ft.EncMapUint64Uint8V(v, e)
 	case *map[uint64]uint8:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilMap()
 		} else {
 			ft.EncMapUint64Uint8V(*v, e)
 		}
@@ -6528,7 +7051,7 @@ func (helperEncDriverCborIO) fastpathEncodeTypeSwitch(iv interface{}, e *encoder
 		ft.EncMapUint64Uint64V(v, e)
 	case *map[uint64]uint64:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilMap()
 		} else {
 			ft.EncMapUint64Uint64V(*v, e)
 		}
@@ -6536,7 +7059,7 @@ func (helperEncDriverCborIO) fastpathEncodeTypeSwitch(iv interface{}, e *encoder
 		ft.EncMapUint64IntV(v, e)
 	case *map[uint64]int:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilMap()
 		} else {
 			ft.EncMapUint64IntV(*v, e)
 		}
@@ -6544,7 +7067,7 @@ func (helperEncDriverCborIO) fastpathEncodeTypeSwitch(iv interface{}, e *encoder
 		ft.EncMapUint64Int32V(v, e)
 	case *map[uint64]int32:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilMap()
 		} else {
 			ft.EncMapUint64Int32V(*v, e)
 		}
@@ -6552,7 +7075,7 @@ func (helperEncDriverCborIO) fastpathEncodeTypeSwitch(iv interface{}, e *encoder
 		ft.EncMapUint64Float64V(v, e)
 	case *map[uint64]float64:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilMap()
 		} else {
 			ft.EncMapUint64Float64V(*v, e)
 		}
@@ -6560,7 +7083,7 @@ func (helperEncDriverCborIO) fastpathEncodeTypeSwitch(iv interface{}, e *encoder
 		ft.EncMapUint64BoolV(v, e)
 	case *map[uint64]bool:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilMap()
 		} else {
 			ft.EncMapUint64BoolV(*v, e)
 		}
@@ -6568,7 +7091,7 @@ func (helperEncDriverCborIO) fastpathEncodeTypeSwitch(iv interface{}, e *encoder
 		ft.EncMapIntIntfV(v, e)
 	case *map[int]interface{}:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilMap()
 		} else {
 			ft.EncMapIntIntfV(*v, e)
 		}
@@ -6576,7 +7099,7 @@ func (helperEncDriverCborIO) fastpathEncodeTypeSwitch(iv interface{}, e *encoder
 		ft.EncMapIntStringV(v, e)
 	case *map[int]string:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilMap()
 		} else {
 			ft.EncMapIntStringV(*v, e)
 		}
@@ -6584,7 +7107,7 @@ func (helperEncDriverCborIO) fastpathEncodeTypeSwitch(iv interface{}, e *encoder
 		ft.EncMapIntBytesV(v, e)
 	case *map[int][]byte:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilMap()
 		} else {
 			ft.EncMapIntBytesV(*v, e)
 		}
@@ -6592,7 +7115,7 @@ func (helperEncDriverCborIO) fastpathEncodeTypeSwitch(iv interface{}, e *encoder
 		ft.EncMapIntUint8V(v, e)
 	case *map[int]uint8:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilMap()
 		} else {
 			ft.EncMapIntUint8V(*v, e)
 		}
@@ -6600,7 +7123,7 @@ func (helperEncDriverCborIO) fastpathEncodeTypeSwitch(iv interface{}, e *encoder
 		ft.EncMapIntUint64V(v, e)
 	case *map[int]uint64:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilMap()
 		} else {
 			ft.EncMapIntUint64V(*v, e)
 		}
@@ -6608,7 +7131,7 @@ func (helperEncDriverCborIO) fastpathEncodeTypeSwitch(iv interface{}, e *encoder
 		ft.EncMapIntIntV(v, e)
 	case *map[int]int:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilMap()
 		} else {
 			ft.EncMapIntIntV(*v, e)
 		}
@@ -6616,7 +7139,7 @@ func (helperEncDriverCborIO) fastpathEncodeTypeSwitch(iv interface{}, e *encoder
 		ft.EncMapIntInt32V(v, e)
 	case *map[int]int32:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilMap()
 		} else {
 			ft.EncMapIntInt32V(*v, e)
 		}
@@ -6624,7 +7147,7 @@ func (helperEncDriverCborIO) fastpathEncodeTypeSwitch(iv interface{}, e *encoder
 		ft.EncMapIntFloat64V(v, e)
 	case *map[int]float64:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilMap()
 		} else {
 			ft.EncMapIntFloat64V(*v, e)
 		}
@@ -6632,7 +7155,7 @@ func (helperEncDriverCborIO) fastpathEncodeTypeSwitch(iv interface{}, e *encoder
 		ft.EncMapIntBoolV(v, e)
 	case *map[int]bool:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilMap()
 		} else {
 			ft.EncMapIntBoolV(*v, e)
 		}
@@ -6640,7 +7163,7 @@ func (helperEncDriverCborIO) fastpathEncodeTypeSwitch(iv interface{}, e *encoder
 		ft.EncMapInt32IntfV(v, e)
 	case *map[int32]interface{}:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilMap()
 		} else {
 			ft.EncMapInt32IntfV(*v, e)
 		}
@@ -6648,7 +7171,7 @@ func (helperEncDriverCborIO) fastpathEncodeTypeSwitch(iv interface{}, e *encoder
 		ft.EncMapInt32StringV(v, e)
 	case *map[int32]string:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilMap()
 		} else {
 			ft.EncMapInt32StringV(*v, e)
 		}
@@ -6656,7 +7179,7 @@ func (helperEncDriverCborIO) fastpathEncodeTypeSwitch(iv interface{}, e *encoder
 		ft.EncMapInt32BytesV(v, e)
 	case *map[int32][]byte:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilMap()
 		} else {
 			ft.EncMapInt32BytesV(*v, e)
 		}
@@ -6664,7 +7187,7 @@ func (helperEncDriverCborIO) fastpathEncodeTypeSwitch(iv interface{}, e *encoder
 		ft.EncMapInt32Uint8V(v, e)
 	case *map[int32]uint8:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilMap()
 		} else {
 			ft.EncMapInt32Uint8V(*v, e)
 		}
@@ -6672,7 +7195,7 @@ func (helperEncDriverCborIO) fastpathEncodeTypeSwitch(iv interface{}, e *encoder
 		ft.EncMapInt32Uint64V(v, e)
 	case *map[int32]uint64:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilMap()
 		} else {
 			ft.EncMapInt32Uint64V(*v, e)
 		}
@@ -6680,7 +7203,7 @@ func (helperEncDriverCborIO) fastpathEncodeTypeSwitch(iv interface{}, e *encoder
 		ft.EncMapInt32IntV(v, e)
 	case *map[int32]int:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilMap()
 		} else {
 			ft.EncMapInt32IntV(*v, e)
 		}
@@ -6688,7 +7211,7 @@ func (helperEncDriverCborIO) fastpathEncodeTypeSwitch(iv interface{}, e *encoder
 		ft.EncMapInt32Int32V(v, e)
 	case *map[int32]int32:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilMap()
 		} else {
 			ft.EncMapInt32Int32V(*v, e)
 		}
@@ -6696,7 +7219,7 @@ func (helperEncDriverCborIO) fastpathEncodeTypeSwitch(iv interface{}, e *encoder
 		ft.EncMapInt32Float64V(v, e)
 	case *map[int32]float64:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilMap()
 		} else {
 			ft.EncMapInt32Float64V(*v, e)
 		}
@@ -6704,7 +7227,7 @@ func (helperEncDriverCborIO) fastpathEncodeTypeSwitch(iv interface{}, e *encoder
 		ft.EncMapInt32BoolV(v, e)
 	case *map[int32]bool:
 		if *v == nil {
-			e.e.EncodeNil()
+			fnNilMap()
 		} else {
 			ft.EncMapInt32BoolV(*v, e)
 		}
@@ -6732,23 +7255,31 @@ func (e *encoderCborIO) fastpathEncSliceIntfR(f *encFnInfo, rv reflect.Value) {
 func (fastpathETCborIO) EncSliceIntfV(v []interface{}, e *encoderCborIO) {
 	e.arrayStart(len(v))
 	for j := range v {
-		e.arrayElem()
+		e.c = containerArrayElem
+		e.e.WriteArrayElem(j == 0)
 		e.encode(v[j])
 	}
-	e.arrayEnd()
+	e.c = 0
+	e.e.WriteArrayEnd()
 }
 func (fastpathETCborIO) EncAsMapSliceIntfV(v []interface{}, e *encoderCborIO) {
 	e.haltOnMbsOddLen(len(v))
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
 	e.mapStart(len(v) >> 1)
 	for j := range v {
 		if j&1 == 0 {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(j == 0)
 		} else {
 			e.mapElemValue()
 		}
 		e.encode(v[j])
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborIO) fastpathEncSliceStringR(f *encFnInfo, rv reflect.Value) {
 	var ft fastpathETCborIO
@@ -6767,23 +7298,31 @@ func (e *encoderCborIO) fastpathEncSliceStringR(f *encFnInfo, rv reflect.Value) 
 func (fastpathETCborIO) EncSliceStringV(v []string, e *encoderCborIO) {
 	e.arrayStart(len(v))
 	for j := range v {
-		e.arrayElem()
+		e.c = containerArrayElem
+		e.e.WriteArrayElem(j == 0)
 		e.e.EncodeString(v[j])
 	}
-	e.arrayEnd()
+	e.c = 0
+	e.e.WriteArrayEnd()
 }
 func (fastpathETCborIO) EncAsMapSliceStringV(v []string, e *encoderCborIO) {
 	e.haltOnMbsOddLen(len(v))
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
 	e.mapStart(len(v) >> 1)
 	for j := range v {
 		if j&1 == 0 {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(j == 0)
 		} else {
 			e.mapElemValue()
 		}
 		e.e.EncodeString(v[j])
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborIO) fastpathEncSliceBytesR(f *encFnInfo, rv reflect.Value) {
 	var ft fastpathETCborIO
@@ -6802,23 +7341,31 @@ func (e *encoderCborIO) fastpathEncSliceBytesR(f *encFnInfo, rv reflect.Value) {
 func (fastpathETCborIO) EncSliceBytesV(v [][]byte, e *encoderCborIO) {
 	e.arrayStart(len(v))
 	for j := range v {
-		e.arrayElem()
+		e.c = containerArrayElem
+		e.e.WriteArrayElem(j == 0)
 		e.e.EncodeStringBytesRaw(v[j])
 	}
-	e.arrayEnd()
+	e.c = 0
+	e.e.WriteArrayEnd()
 }
 func (fastpathETCborIO) EncAsMapSliceBytesV(v [][]byte, e *encoderCborIO) {
 	e.haltOnMbsOddLen(len(v))
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
 	e.mapStart(len(v) >> 1)
 	for j := range v {
 		if j&1 == 0 {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(j == 0)
 		} else {
 			e.mapElemValue()
 		}
 		e.e.EncodeStringBytesRaw(v[j])
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborIO) fastpathEncSliceFloat32R(f *encFnInfo, rv reflect.Value) {
 	var ft fastpathETCborIO
@@ -6837,23 +7384,31 @@ func (e *encoderCborIO) fastpathEncSliceFloat32R(f *encFnInfo, rv reflect.Value)
 func (fastpathETCborIO) EncSliceFloat32V(v []float32, e *encoderCborIO) {
 	e.arrayStart(len(v))
 	for j := range v {
-		e.arrayElem()
+		e.c = containerArrayElem
+		e.e.WriteArrayElem(j == 0)
 		e.e.EncodeFloat32(v[j])
 	}
-	e.arrayEnd()
+	e.c = 0
+	e.e.WriteArrayEnd()
 }
 func (fastpathETCborIO) EncAsMapSliceFloat32V(v []float32, e *encoderCborIO) {
 	e.haltOnMbsOddLen(len(v))
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
 	e.mapStart(len(v) >> 1)
 	for j := range v {
 		if j&1 == 0 {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(j == 0)
 		} else {
 			e.mapElemValue()
 		}
 		e.e.EncodeFloat32(v[j])
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborIO) fastpathEncSliceFloat64R(f *encFnInfo, rv reflect.Value) {
 	var ft fastpathETCborIO
@@ -6872,23 +7427,31 @@ func (e *encoderCborIO) fastpathEncSliceFloat64R(f *encFnInfo, rv reflect.Value)
 func (fastpathETCborIO) EncSliceFloat64V(v []float64, e *encoderCborIO) {
 	e.arrayStart(len(v))
 	for j := range v {
-		e.arrayElem()
+		e.c = containerArrayElem
+		e.e.WriteArrayElem(j == 0)
 		e.e.EncodeFloat64(v[j])
 	}
-	e.arrayEnd()
+	e.c = 0
+	e.e.WriteArrayEnd()
 }
 func (fastpathETCborIO) EncAsMapSliceFloat64V(v []float64, e *encoderCborIO) {
 	e.haltOnMbsOddLen(len(v))
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
 	e.mapStart(len(v) >> 1)
 	for j := range v {
 		if j&1 == 0 {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(j == 0)
 		} else {
 			e.mapElemValue()
 		}
 		e.e.EncodeFloat64(v[j])
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborIO) fastpathEncSliceUint8R(f *encFnInfo, rv reflect.Value) {
 	var ft fastpathETCborIO
@@ -6909,16 +7472,22 @@ func (fastpathETCborIO) EncSliceUint8V(v []uint8, e *encoderCborIO) {
 }
 func (fastpathETCborIO) EncAsMapSliceUint8V(v []uint8, e *encoderCborIO) {
 	e.haltOnMbsOddLen(len(v))
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
 	e.mapStart(len(v) >> 1)
 	for j := range v {
 		if j&1 == 0 {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(j == 0)
 		} else {
 			e.mapElemValue()
 		}
 		e.e.EncodeUint(uint64(v[j]))
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborIO) fastpathEncSliceUint64R(f *encFnInfo, rv reflect.Value) {
 	var ft fastpathETCborIO
@@ -6937,23 +7506,31 @@ func (e *encoderCborIO) fastpathEncSliceUint64R(f *encFnInfo, rv reflect.Value) 
 func (fastpathETCborIO) EncSliceUint64V(v []uint64, e *encoderCborIO) {
 	e.arrayStart(len(v))
 	for j := range v {
-		e.arrayElem()
+		e.c = containerArrayElem
+		e.e.WriteArrayElem(j == 0)
 		e.e.EncodeUint(v[j])
 	}
-	e.arrayEnd()
+	e.c = 0
+	e.e.WriteArrayEnd()
 }
 func (fastpathETCborIO) EncAsMapSliceUint64V(v []uint64, e *encoderCborIO) {
 	e.haltOnMbsOddLen(len(v))
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
 	e.mapStart(len(v) >> 1)
 	for j := range v {
 		if j&1 == 0 {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(j == 0)
 		} else {
 			e.mapElemValue()
 		}
 		e.e.EncodeUint(v[j])
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborIO) fastpathEncSliceIntR(f *encFnInfo, rv reflect.Value) {
 	var ft fastpathETCborIO
@@ -6972,23 +7549,31 @@ func (e *encoderCborIO) fastpathEncSliceIntR(f *encFnInfo, rv reflect.Value) {
 func (fastpathETCborIO) EncSliceIntV(v []int, e *encoderCborIO) {
 	e.arrayStart(len(v))
 	for j := range v {
-		e.arrayElem()
+		e.c = containerArrayElem
+		e.e.WriteArrayElem(j == 0)
 		e.e.EncodeInt(int64(v[j]))
 	}
-	e.arrayEnd()
+	e.c = 0
+	e.e.WriteArrayEnd()
 }
 func (fastpathETCborIO) EncAsMapSliceIntV(v []int, e *encoderCborIO) {
 	e.haltOnMbsOddLen(len(v))
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
 	e.mapStart(len(v) >> 1)
 	for j := range v {
 		if j&1 == 0 {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(j == 0)
 		} else {
 			e.mapElemValue()
 		}
 		e.e.EncodeInt(int64(v[j]))
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborIO) fastpathEncSliceInt32R(f *encFnInfo, rv reflect.Value) {
 	var ft fastpathETCborIO
@@ -7007,23 +7592,31 @@ func (e *encoderCborIO) fastpathEncSliceInt32R(f *encFnInfo, rv reflect.Value) {
 func (fastpathETCborIO) EncSliceInt32V(v []int32, e *encoderCborIO) {
 	e.arrayStart(len(v))
 	for j := range v {
-		e.arrayElem()
+		e.c = containerArrayElem
+		e.e.WriteArrayElem(j == 0)
 		e.e.EncodeInt(int64(v[j]))
 	}
-	e.arrayEnd()
+	e.c = 0
+	e.e.WriteArrayEnd()
 }
 func (fastpathETCborIO) EncAsMapSliceInt32V(v []int32, e *encoderCborIO) {
 	e.haltOnMbsOddLen(len(v))
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
 	e.mapStart(len(v) >> 1)
 	for j := range v {
 		if j&1 == 0 {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(j == 0)
 		} else {
 			e.mapElemValue()
 		}
 		e.e.EncodeInt(int64(v[j]))
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborIO) fastpathEncSliceInt64R(f *encFnInfo, rv reflect.Value) {
 	var ft fastpathETCborIO
@@ -7042,23 +7635,31 @@ func (e *encoderCborIO) fastpathEncSliceInt64R(f *encFnInfo, rv reflect.Value) {
 func (fastpathETCborIO) EncSliceInt64V(v []int64, e *encoderCborIO) {
 	e.arrayStart(len(v))
 	for j := range v {
-		e.arrayElem()
+		e.c = containerArrayElem
+		e.e.WriteArrayElem(j == 0)
 		e.e.EncodeInt(v[j])
 	}
-	e.arrayEnd()
+	e.c = 0
+	e.e.WriteArrayEnd()
 }
 func (fastpathETCborIO) EncAsMapSliceInt64V(v []int64, e *encoderCborIO) {
 	e.haltOnMbsOddLen(len(v))
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
 	e.mapStart(len(v) >> 1)
 	for j := range v {
 		if j&1 == 0 {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(j == 0)
 		} else {
 			e.mapElemValue()
 		}
 		e.e.EncodeInt(v[j])
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborIO) fastpathEncSliceBoolR(f *encFnInfo, rv reflect.Value) {
 	var ft fastpathETCborIO
@@ -7077,1328 +7678,1741 @@ func (e *encoderCborIO) fastpathEncSliceBoolR(f *encFnInfo, rv reflect.Value) {
 func (fastpathETCborIO) EncSliceBoolV(v []bool, e *encoderCborIO) {
 	e.arrayStart(len(v))
 	for j := range v {
-		e.arrayElem()
+		e.c = containerArrayElem
+		e.e.WriteArrayElem(j == 0)
 		e.e.EncodeBool(v[j])
 	}
-	e.arrayEnd()
+	e.c = 0
+	e.e.WriteArrayEnd()
 }
 func (fastpathETCborIO) EncAsMapSliceBoolV(v []bool, e *encoderCborIO) {
 	e.haltOnMbsOddLen(len(v))
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
 	e.mapStart(len(v) >> 1)
 	for j := range v {
 		if j&1 == 0 {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(j == 0)
 		} else {
 			e.mapElemValue()
 		}
 		e.e.EncodeBool(v[j])
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborIO) fastpathEncMapStringIntfR(f *encFnInfo, rv reflect.Value) {
 	fastpathETCborIO{}.EncMapStringIntfV(rv2i(rv).(map[string]interface{}), e)
 }
 func (fastpathETCborIO) EncMapStringIntfV(v map[string]interface{}, e *encoderCborIO) {
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
+	var i uint
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]string, len(v))
-		var i uint
 		for k := range v {
 			v2[i] = k
 			i++
 		}
 		slices.Sort(v2)
-		for _, k2 := range v2 {
-			e.mapElemKey()
+		for i, k2 := range v2 {
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeString(k2)
 			e.mapElemValue()
 			e.encode(v[k2])
 		}
 	} else {
+		i = 0
 		for k2, v2 := range v {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeString(k2)
 			e.mapElemValue()
 			e.encode(v2)
+			i++
 		}
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborIO) fastpathEncMapStringStringR(f *encFnInfo, rv reflect.Value) {
 	fastpathETCborIO{}.EncMapStringStringV(rv2i(rv).(map[string]string), e)
 }
 func (fastpathETCborIO) EncMapStringStringV(v map[string]string, e *encoderCborIO) {
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
+	var i uint
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]string, len(v))
-		var i uint
 		for k := range v {
 			v2[i] = k
 			i++
 		}
 		slices.Sort(v2)
-		for _, k2 := range v2 {
-			e.mapElemKey()
+		for i, k2 := range v2 {
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeString(k2)
 			e.mapElemValue()
 			e.e.EncodeString(v[k2])
 		}
 	} else {
+		i = 0
 		for k2, v2 := range v {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeString(k2)
 			e.mapElemValue()
 			e.e.EncodeString(v2)
+			i++
 		}
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborIO) fastpathEncMapStringBytesR(f *encFnInfo, rv reflect.Value) {
 	fastpathETCborIO{}.EncMapStringBytesV(rv2i(rv).(map[string][]byte), e)
 }
 func (fastpathETCborIO) EncMapStringBytesV(v map[string][]byte, e *encoderCborIO) {
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
+	var i uint
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]string, len(v))
-		var i uint
 		for k := range v {
 			v2[i] = k
 			i++
 		}
 		slices.Sort(v2)
-		for _, k2 := range v2 {
-			e.mapElemKey()
+		for i, k2 := range v2 {
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeString(k2)
 			e.mapElemValue()
 			e.e.EncodeStringBytesRaw(v[k2])
 		}
 	} else {
+		i = 0
 		for k2, v2 := range v {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeString(k2)
 			e.mapElemValue()
 			e.e.EncodeStringBytesRaw(v2)
+			i++
 		}
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborIO) fastpathEncMapStringUint8R(f *encFnInfo, rv reflect.Value) {
 	fastpathETCborIO{}.EncMapStringUint8V(rv2i(rv).(map[string]uint8), e)
 }
 func (fastpathETCborIO) EncMapStringUint8V(v map[string]uint8, e *encoderCborIO) {
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
+	var i uint
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]string, len(v))
-		var i uint
 		for k := range v {
 			v2[i] = k
 			i++
 		}
 		slices.Sort(v2)
-		for _, k2 := range v2 {
-			e.mapElemKey()
+		for i, k2 := range v2 {
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeString(k2)
 			e.mapElemValue()
 			e.e.EncodeUint(uint64(v[k2]))
 		}
 	} else {
+		i = 0
 		for k2, v2 := range v {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeString(k2)
 			e.mapElemValue()
 			e.e.EncodeUint(uint64(v2))
+			i++
 		}
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborIO) fastpathEncMapStringUint64R(f *encFnInfo, rv reflect.Value) {
 	fastpathETCborIO{}.EncMapStringUint64V(rv2i(rv).(map[string]uint64), e)
 }
 func (fastpathETCborIO) EncMapStringUint64V(v map[string]uint64, e *encoderCborIO) {
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
+	var i uint
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]string, len(v))
-		var i uint
 		for k := range v {
 			v2[i] = k
 			i++
 		}
 		slices.Sort(v2)
-		for _, k2 := range v2 {
-			e.mapElemKey()
+		for i, k2 := range v2 {
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeString(k2)
 			e.mapElemValue()
 			e.e.EncodeUint(v[k2])
 		}
 	} else {
+		i = 0
 		for k2, v2 := range v {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeString(k2)
 			e.mapElemValue()
 			e.e.EncodeUint(v2)
+			i++
 		}
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborIO) fastpathEncMapStringIntR(f *encFnInfo, rv reflect.Value) {
 	fastpathETCborIO{}.EncMapStringIntV(rv2i(rv).(map[string]int), e)
 }
 func (fastpathETCborIO) EncMapStringIntV(v map[string]int, e *encoderCborIO) {
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
+	var i uint
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]string, len(v))
-		var i uint
 		for k := range v {
 			v2[i] = k
 			i++
 		}
 		slices.Sort(v2)
-		for _, k2 := range v2 {
-			e.mapElemKey()
+		for i, k2 := range v2 {
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeString(k2)
 			e.mapElemValue()
 			e.e.EncodeInt(int64(v[k2]))
 		}
 	} else {
+		i = 0
 		for k2, v2 := range v {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeString(k2)
 			e.mapElemValue()
 			e.e.EncodeInt(int64(v2))
+			i++
 		}
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborIO) fastpathEncMapStringInt32R(f *encFnInfo, rv reflect.Value) {
 	fastpathETCborIO{}.EncMapStringInt32V(rv2i(rv).(map[string]int32), e)
 }
 func (fastpathETCborIO) EncMapStringInt32V(v map[string]int32, e *encoderCborIO) {
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
+	var i uint
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]string, len(v))
-		var i uint
 		for k := range v {
 			v2[i] = k
 			i++
 		}
 		slices.Sort(v2)
-		for _, k2 := range v2 {
-			e.mapElemKey()
+		for i, k2 := range v2 {
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeString(k2)
 			e.mapElemValue()
 			e.e.EncodeInt(int64(v[k2]))
 		}
 	} else {
+		i = 0
 		for k2, v2 := range v {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeString(k2)
 			e.mapElemValue()
 			e.e.EncodeInt(int64(v2))
+			i++
 		}
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborIO) fastpathEncMapStringFloat64R(f *encFnInfo, rv reflect.Value) {
 	fastpathETCborIO{}.EncMapStringFloat64V(rv2i(rv).(map[string]float64), e)
 }
 func (fastpathETCborIO) EncMapStringFloat64V(v map[string]float64, e *encoderCborIO) {
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
+	var i uint
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]string, len(v))
-		var i uint
 		for k := range v {
 			v2[i] = k
 			i++
 		}
 		slices.Sort(v2)
-		for _, k2 := range v2 {
-			e.mapElemKey()
+		for i, k2 := range v2 {
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeString(k2)
 			e.mapElemValue()
 			e.e.EncodeFloat64(v[k2])
 		}
 	} else {
+		i = 0
 		for k2, v2 := range v {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeString(k2)
 			e.mapElemValue()
 			e.e.EncodeFloat64(v2)
+			i++
 		}
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborIO) fastpathEncMapStringBoolR(f *encFnInfo, rv reflect.Value) {
 	fastpathETCborIO{}.EncMapStringBoolV(rv2i(rv).(map[string]bool), e)
 }
 func (fastpathETCborIO) EncMapStringBoolV(v map[string]bool, e *encoderCborIO) {
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
+	var i uint
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]string, len(v))
-		var i uint
 		for k := range v {
 			v2[i] = k
 			i++
 		}
 		slices.Sort(v2)
-		for _, k2 := range v2 {
-			e.mapElemKey()
+		for i, k2 := range v2 {
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeString(k2)
 			e.mapElemValue()
 			e.e.EncodeBool(v[k2])
 		}
 	} else {
+		i = 0
 		for k2, v2 := range v {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeString(k2)
 			e.mapElemValue()
 			e.e.EncodeBool(v2)
+			i++
 		}
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborIO) fastpathEncMapUint8IntfR(f *encFnInfo, rv reflect.Value) {
 	fastpathETCborIO{}.EncMapUint8IntfV(rv2i(rv).(map[uint8]interface{}), e)
 }
 func (fastpathETCborIO) EncMapUint8IntfV(v map[uint8]interface{}, e *encoderCborIO) {
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
+	var i uint
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint8, len(v))
-		var i uint
 		for k := range v {
 			v2[i] = k
 			i++
 		}
 		slices.Sort(v2)
-		for _, k2 := range v2 {
-			e.mapElemKey()
+		for i, k2 := range v2 {
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeUint(uint64(k2))
 			e.mapElemValue()
 			e.encode(v[k2])
 		}
 	} else {
+		i = 0
 		for k2, v2 := range v {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeUint(uint64(k2))
 			e.mapElemValue()
 			e.encode(v2)
+			i++
 		}
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborIO) fastpathEncMapUint8StringR(f *encFnInfo, rv reflect.Value) {
 	fastpathETCborIO{}.EncMapUint8StringV(rv2i(rv).(map[uint8]string), e)
 }
 func (fastpathETCborIO) EncMapUint8StringV(v map[uint8]string, e *encoderCborIO) {
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
+	var i uint
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint8, len(v))
-		var i uint
 		for k := range v {
 			v2[i] = k
 			i++
 		}
 		slices.Sort(v2)
-		for _, k2 := range v2 {
-			e.mapElemKey()
+		for i, k2 := range v2 {
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeUint(uint64(k2))
 			e.mapElemValue()
 			e.e.EncodeString(v[k2])
 		}
 	} else {
+		i = 0
 		for k2, v2 := range v {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeUint(uint64(k2))
 			e.mapElemValue()
 			e.e.EncodeString(v2)
+			i++
 		}
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborIO) fastpathEncMapUint8BytesR(f *encFnInfo, rv reflect.Value) {
 	fastpathETCborIO{}.EncMapUint8BytesV(rv2i(rv).(map[uint8][]byte), e)
 }
 func (fastpathETCborIO) EncMapUint8BytesV(v map[uint8][]byte, e *encoderCborIO) {
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
+	var i uint
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint8, len(v))
-		var i uint
 		for k := range v {
 			v2[i] = k
 			i++
 		}
 		slices.Sort(v2)
-		for _, k2 := range v2 {
-			e.mapElemKey()
+		for i, k2 := range v2 {
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeUint(uint64(k2))
 			e.mapElemValue()
 			e.e.EncodeStringBytesRaw(v[k2])
 		}
 	} else {
+		i = 0
 		for k2, v2 := range v {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeUint(uint64(k2))
 			e.mapElemValue()
 			e.e.EncodeStringBytesRaw(v2)
+			i++
 		}
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborIO) fastpathEncMapUint8Uint8R(f *encFnInfo, rv reflect.Value) {
 	fastpathETCborIO{}.EncMapUint8Uint8V(rv2i(rv).(map[uint8]uint8), e)
 }
 func (fastpathETCborIO) EncMapUint8Uint8V(v map[uint8]uint8, e *encoderCborIO) {
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
+	var i uint
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint8, len(v))
-		var i uint
 		for k := range v {
 			v2[i] = k
 			i++
 		}
 		slices.Sort(v2)
-		for _, k2 := range v2 {
-			e.mapElemKey()
+		for i, k2 := range v2 {
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeUint(uint64(k2))
 			e.mapElemValue()
 			e.e.EncodeUint(uint64(v[k2]))
 		}
 	} else {
+		i = 0
 		for k2, v2 := range v {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeUint(uint64(k2))
 			e.mapElemValue()
 			e.e.EncodeUint(uint64(v2))
+			i++
 		}
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborIO) fastpathEncMapUint8Uint64R(f *encFnInfo, rv reflect.Value) {
 	fastpathETCborIO{}.EncMapUint8Uint64V(rv2i(rv).(map[uint8]uint64), e)
 }
 func (fastpathETCborIO) EncMapUint8Uint64V(v map[uint8]uint64, e *encoderCborIO) {
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
+	var i uint
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint8, len(v))
-		var i uint
 		for k := range v {
 			v2[i] = k
 			i++
 		}
 		slices.Sort(v2)
-		for _, k2 := range v2 {
-			e.mapElemKey()
+		for i, k2 := range v2 {
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeUint(uint64(k2))
 			e.mapElemValue()
 			e.e.EncodeUint(v[k2])
 		}
 	} else {
+		i = 0
 		for k2, v2 := range v {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeUint(uint64(k2))
 			e.mapElemValue()
 			e.e.EncodeUint(v2)
+			i++
 		}
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborIO) fastpathEncMapUint8IntR(f *encFnInfo, rv reflect.Value) {
 	fastpathETCborIO{}.EncMapUint8IntV(rv2i(rv).(map[uint8]int), e)
 }
 func (fastpathETCborIO) EncMapUint8IntV(v map[uint8]int, e *encoderCborIO) {
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
+	var i uint
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint8, len(v))
-		var i uint
 		for k := range v {
 			v2[i] = k
 			i++
 		}
 		slices.Sort(v2)
-		for _, k2 := range v2 {
-			e.mapElemKey()
+		for i, k2 := range v2 {
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeUint(uint64(k2))
 			e.mapElemValue()
 			e.e.EncodeInt(int64(v[k2]))
 		}
 	} else {
+		i = 0
 		for k2, v2 := range v {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeUint(uint64(k2))
 			e.mapElemValue()
 			e.e.EncodeInt(int64(v2))
+			i++
 		}
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborIO) fastpathEncMapUint8Int32R(f *encFnInfo, rv reflect.Value) {
 	fastpathETCborIO{}.EncMapUint8Int32V(rv2i(rv).(map[uint8]int32), e)
 }
 func (fastpathETCborIO) EncMapUint8Int32V(v map[uint8]int32, e *encoderCborIO) {
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
+	var i uint
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint8, len(v))
-		var i uint
 		for k := range v {
 			v2[i] = k
 			i++
 		}
 		slices.Sort(v2)
-		for _, k2 := range v2 {
-			e.mapElemKey()
+		for i, k2 := range v2 {
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeUint(uint64(k2))
 			e.mapElemValue()
 			e.e.EncodeInt(int64(v[k2]))
 		}
 	} else {
+		i = 0
 		for k2, v2 := range v {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeUint(uint64(k2))
 			e.mapElemValue()
 			e.e.EncodeInt(int64(v2))
+			i++
 		}
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborIO) fastpathEncMapUint8Float64R(f *encFnInfo, rv reflect.Value) {
 	fastpathETCborIO{}.EncMapUint8Float64V(rv2i(rv).(map[uint8]float64), e)
 }
 func (fastpathETCborIO) EncMapUint8Float64V(v map[uint8]float64, e *encoderCborIO) {
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
+	var i uint
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint8, len(v))
-		var i uint
 		for k := range v {
 			v2[i] = k
 			i++
 		}
 		slices.Sort(v2)
-		for _, k2 := range v2 {
-			e.mapElemKey()
+		for i, k2 := range v2 {
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeUint(uint64(k2))
 			e.mapElemValue()
 			e.e.EncodeFloat64(v[k2])
 		}
 	} else {
+		i = 0
 		for k2, v2 := range v {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeUint(uint64(k2))
 			e.mapElemValue()
 			e.e.EncodeFloat64(v2)
+			i++
 		}
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborIO) fastpathEncMapUint8BoolR(f *encFnInfo, rv reflect.Value) {
 	fastpathETCborIO{}.EncMapUint8BoolV(rv2i(rv).(map[uint8]bool), e)
 }
 func (fastpathETCborIO) EncMapUint8BoolV(v map[uint8]bool, e *encoderCborIO) {
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
+	var i uint
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint8, len(v))
-		var i uint
 		for k := range v {
 			v2[i] = k
 			i++
 		}
 		slices.Sort(v2)
-		for _, k2 := range v2 {
-			e.mapElemKey()
+		for i, k2 := range v2 {
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeUint(uint64(k2))
 			e.mapElemValue()
 			e.e.EncodeBool(v[k2])
 		}
 	} else {
+		i = 0
 		for k2, v2 := range v {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeUint(uint64(k2))
 			e.mapElemValue()
 			e.e.EncodeBool(v2)
+			i++
 		}
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborIO) fastpathEncMapUint64IntfR(f *encFnInfo, rv reflect.Value) {
 	fastpathETCborIO{}.EncMapUint64IntfV(rv2i(rv).(map[uint64]interface{}), e)
 }
 func (fastpathETCborIO) EncMapUint64IntfV(v map[uint64]interface{}, e *encoderCborIO) {
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
+	var i uint
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint64, len(v))
-		var i uint
 		for k := range v {
 			v2[i] = k
 			i++
 		}
 		slices.Sort(v2)
-		for _, k2 := range v2 {
-			e.mapElemKey()
+		for i, k2 := range v2 {
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeUint(k2)
 			e.mapElemValue()
 			e.encode(v[k2])
 		}
 	} else {
+		i = 0
 		for k2, v2 := range v {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeUint(k2)
 			e.mapElemValue()
 			e.encode(v2)
+			i++
 		}
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborIO) fastpathEncMapUint64StringR(f *encFnInfo, rv reflect.Value) {
 	fastpathETCborIO{}.EncMapUint64StringV(rv2i(rv).(map[uint64]string), e)
 }
 func (fastpathETCborIO) EncMapUint64StringV(v map[uint64]string, e *encoderCborIO) {
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
+	var i uint
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint64, len(v))
-		var i uint
 		for k := range v {
 			v2[i] = k
 			i++
 		}
 		slices.Sort(v2)
-		for _, k2 := range v2 {
-			e.mapElemKey()
+		for i, k2 := range v2 {
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeUint(k2)
 			e.mapElemValue()
 			e.e.EncodeString(v[k2])
 		}
 	} else {
+		i = 0
 		for k2, v2 := range v {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeUint(k2)
 			e.mapElemValue()
 			e.e.EncodeString(v2)
+			i++
 		}
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborIO) fastpathEncMapUint64BytesR(f *encFnInfo, rv reflect.Value) {
 	fastpathETCborIO{}.EncMapUint64BytesV(rv2i(rv).(map[uint64][]byte), e)
 }
 func (fastpathETCborIO) EncMapUint64BytesV(v map[uint64][]byte, e *encoderCborIO) {
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
+	var i uint
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint64, len(v))
-		var i uint
 		for k := range v {
 			v2[i] = k
 			i++
 		}
 		slices.Sort(v2)
-		for _, k2 := range v2 {
-			e.mapElemKey()
+		for i, k2 := range v2 {
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeUint(k2)
 			e.mapElemValue()
 			e.e.EncodeStringBytesRaw(v[k2])
 		}
 	} else {
+		i = 0
 		for k2, v2 := range v {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeUint(k2)
 			e.mapElemValue()
 			e.e.EncodeStringBytesRaw(v2)
+			i++
 		}
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborIO) fastpathEncMapUint64Uint8R(f *encFnInfo, rv reflect.Value) {
 	fastpathETCborIO{}.EncMapUint64Uint8V(rv2i(rv).(map[uint64]uint8), e)
 }
 func (fastpathETCborIO) EncMapUint64Uint8V(v map[uint64]uint8, e *encoderCborIO) {
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
+	var i uint
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint64, len(v))
-		var i uint
 		for k := range v {
 			v2[i] = k
 			i++
 		}
 		slices.Sort(v2)
-		for _, k2 := range v2 {
-			e.mapElemKey()
+		for i, k2 := range v2 {
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeUint(k2)
 			e.mapElemValue()
 			e.e.EncodeUint(uint64(v[k2]))
 		}
 	} else {
+		i = 0
 		for k2, v2 := range v {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeUint(k2)
 			e.mapElemValue()
 			e.e.EncodeUint(uint64(v2))
+			i++
 		}
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborIO) fastpathEncMapUint64Uint64R(f *encFnInfo, rv reflect.Value) {
 	fastpathETCborIO{}.EncMapUint64Uint64V(rv2i(rv).(map[uint64]uint64), e)
 }
 func (fastpathETCborIO) EncMapUint64Uint64V(v map[uint64]uint64, e *encoderCborIO) {
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
+	var i uint
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint64, len(v))
-		var i uint
 		for k := range v {
 			v2[i] = k
 			i++
 		}
 		slices.Sort(v2)
-		for _, k2 := range v2 {
-			e.mapElemKey()
+		for i, k2 := range v2 {
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeUint(k2)
 			e.mapElemValue()
 			e.e.EncodeUint(v[k2])
 		}
 	} else {
+		i = 0
 		for k2, v2 := range v {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeUint(k2)
 			e.mapElemValue()
 			e.e.EncodeUint(v2)
+			i++
 		}
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborIO) fastpathEncMapUint64IntR(f *encFnInfo, rv reflect.Value) {
 	fastpathETCborIO{}.EncMapUint64IntV(rv2i(rv).(map[uint64]int), e)
 }
 func (fastpathETCborIO) EncMapUint64IntV(v map[uint64]int, e *encoderCborIO) {
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
+	var i uint
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint64, len(v))
-		var i uint
 		for k := range v {
 			v2[i] = k
 			i++
 		}
 		slices.Sort(v2)
-		for _, k2 := range v2 {
-			e.mapElemKey()
+		for i, k2 := range v2 {
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeUint(k2)
 			e.mapElemValue()
 			e.e.EncodeInt(int64(v[k2]))
 		}
 	} else {
+		i = 0
 		for k2, v2 := range v {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeUint(k2)
 			e.mapElemValue()
 			e.e.EncodeInt(int64(v2))
+			i++
 		}
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborIO) fastpathEncMapUint64Int32R(f *encFnInfo, rv reflect.Value) {
 	fastpathETCborIO{}.EncMapUint64Int32V(rv2i(rv).(map[uint64]int32), e)
 }
 func (fastpathETCborIO) EncMapUint64Int32V(v map[uint64]int32, e *encoderCborIO) {
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
+	var i uint
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint64, len(v))
-		var i uint
 		for k := range v {
 			v2[i] = k
 			i++
 		}
 		slices.Sort(v2)
-		for _, k2 := range v2 {
-			e.mapElemKey()
+		for i, k2 := range v2 {
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeUint(k2)
 			e.mapElemValue()
 			e.e.EncodeInt(int64(v[k2]))
 		}
 	} else {
+		i = 0
 		for k2, v2 := range v {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeUint(k2)
 			e.mapElemValue()
 			e.e.EncodeInt(int64(v2))
+			i++
 		}
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborIO) fastpathEncMapUint64Float64R(f *encFnInfo, rv reflect.Value) {
 	fastpathETCborIO{}.EncMapUint64Float64V(rv2i(rv).(map[uint64]float64), e)
 }
 func (fastpathETCborIO) EncMapUint64Float64V(v map[uint64]float64, e *encoderCborIO) {
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
+	var i uint
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint64, len(v))
-		var i uint
 		for k := range v {
 			v2[i] = k
 			i++
 		}
 		slices.Sort(v2)
-		for _, k2 := range v2 {
-			e.mapElemKey()
+		for i, k2 := range v2 {
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeUint(k2)
 			e.mapElemValue()
 			e.e.EncodeFloat64(v[k2])
 		}
 	} else {
+		i = 0
 		for k2, v2 := range v {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeUint(k2)
 			e.mapElemValue()
 			e.e.EncodeFloat64(v2)
+			i++
 		}
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborIO) fastpathEncMapUint64BoolR(f *encFnInfo, rv reflect.Value) {
 	fastpathETCborIO{}.EncMapUint64BoolV(rv2i(rv).(map[uint64]bool), e)
 }
 func (fastpathETCborIO) EncMapUint64BoolV(v map[uint64]bool, e *encoderCborIO) {
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
+	var i uint
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint64, len(v))
-		var i uint
 		for k := range v {
 			v2[i] = k
 			i++
 		}
 		slices.Sort(v2)
-		for _, k2 := range v2 {
-			e.mapElemKey()
+		for i, k2 := range v2 {
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeUint(k2)
 			e.mapElemValue()
 			e.e.EncodeBool(v[k2])
 		}
 	} else {
+		i = 0
 		for k2, v2 := range v {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeUint(k2)
 			e.mapElemValue()
 			e.e.EncodeBool(v2)
+			i++
 		}
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborIO) fastpathEncMapIntIntfR(f *encFnInfo, rv reflect.Value) {
 	fastpathETCborIO{}.EncMapIntIntfV(rv2i(rv).(map[int]interface{}), e)
 }
 func (fastpathETCborIO) EncMapIntIntfV(v map[int]interface{}, e *encoderCborIO) {
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
+	var i uint
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]int, len(v))
-		var i uint
 		for k := range v {
 			v2[i] = k
 			i++
 		}
 		slices.Sort(v2)
-		for _, k2 := range v2 {
-			e.mapElemKey()
+		for i, k2 := range v2 {
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeInt(int64(k2))
 			e.mapElemValue()
 			e.encode(v[k2])
 		}
 	} else {
+		i = 0
 		for k2, v2 := range v {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeInt(int64(k2))
 			e.mapElemValue()
 			e.encode(v2)
+			i++
 		}
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborIO) fastpathEncMapIntStringR(f *encFnInfo, rv reflect.Value) {
 	fastpathETCborIO{}.EncMapIntStringV(rv2i(rv).(map[int]string), e)
 }
 func (fastpathETCborIO) EncMapIntStringV(v map[int]string, e *encoderCborIO) {
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
+	var i uint
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]int, len(v))
-		var i uint
 		for k := range v {
 			v2[i] = k
 			i++
 		}
 		slices.Sort(v2)
-		for _, k2 := range v2 {
-			e.mapElemKey()
+		for i, k2 := range v2 {
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeInt(int64(k2))
 			e.mapElemValue()
 			e.e.EncodeString(v[k2])
 		}
 	} else {
+		i = 0
 		for k2, v2 := range v {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeInt(int64(k2))
 			e.mapElemValue()
 			e.e.EncodeString(v2)
+			i++
 		}
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborIO) fastpathEncMapIntBytesR(f *encFnInfo, rv reflect.Value) {
 	fastpathETCborIO{}.EncMapIntBytesV(rv2i(rv).(map[int][]byte), e)
 }
 func (fastpathETCborIO) EncMapIntBytesV(v map[int][]byte, e *encoderCborIO) {
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
+	var i uint
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]int, len(v))
-		var i uint
 		for k := range v {
 			v2[i] = k
 			i++
 		}
 		slices.Sort(v2)
-		for _, k2 := range v2 {
-			e.mapElemKey()
+		for i, k2 := range v2 {
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeInt(int64(k2))
 			e.mapElemValue()
 			e.e.EncodeStringBytesRaw(v[k2])
 		}
 	} else {
+		i = 0
 		for k2, v2 := range v {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeInt(int64(k2))
 			e.mapElemValue()
 			e.e.EncodeStringBytesRaw(v2)
+			i++
 		}
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborIO) fastpathEncMapIntUint8R(f *encFnInfo, rv reflect.Value) {
 	fastpathETCborIO{}.EncMapIntUint8V(rv2i(rv).(map[int]uint8), e)
 }
 func (fastpathETCborIO) EncMapIntUint8V(v map[int]uint8, e *encoderCborIO) {
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
+	var i uint
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]int, len(v))
-		var i uint
 		for k := range v {
 			v2[i] = k
 			i++
 		}
 		slices.Sort(v2)
-		for _, k2 := range v2 {
-			e.mapElemKey()
+		for i, k2 := range v2 {
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeInt(int64(k2))
 			e.mapElemValue()
 			e.e.EncodeUint(uint64(v[k2]))
 		}
 	} else {
+		i = 0
 		for k2, v2 := range v {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeInt(int64(k2))
 			e.mapElemValue()
 			e.e.EncodeUint(uint64(v2))
+			i++
 		}
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborIO) fastpathEncMapIntUint64R(f *encFnInfo, rv reflect.Value) {
 	fastpathETCborIO{}.EncMapIntUint64V(rv2i(rv).(map[int]uint64), e)
 }
 func (fastpathETCborIO) EncMapIntUint64V(v map[int]uint64, e *encoderCborIO) {
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
+	var i uint
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]int, len(v))
-		var i uint
 		for k := range v {
 			v2[i] = k
 			i++
 		}
 		slices.Sort(v2)
-		for _, k2 := range v2 {
-			e.mapElemKey()
+		for i, k2 := range v2 {
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeInt(int64(k2))
 			e.mapElemValue()
 			e.e.EncodeUint(v[k2])
 		}
 	} else {
+		i = 0
 		for k2, v2 := range v {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeInt(int64(k2))
 			e.mapElemValue()
 			e.e.EncodeUint(v2)
+			i++
 		}
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborIO) fastpathEncMapIntIntR(f *encFnInfo, rv reflect.Value) {
 	fastpathETCborIO{}.EncMapIntIntV(rv2i(rv).(map[int]int), e)
 }
 func (fastpathETCborIO) EncMapIntIntV(v map[int]int, e *encoderCborIO) {
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
+	var i uint
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]int, len(v))
-		var i uint
 		for k := range v {
 			v2[i] = k
 			i++
 		}
 		slices.Sort(v2)
-		for _, k2 := range v2 {
-			e.mapElemKey()
+		for i, k2 := range v2 {
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeInt(int64(k2))
 			e.mapElemValue()
 			e.e.EncodeInt(int64(v[k2]))
 		}
 	} else {
+		i = 0
 		for k2, v2 := range v {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeInt(int64(k2))
 			e.mapElemValue()
 			e.e.EncodeInt(int64(v2))
+			i++
 		}
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborIO) fastpathEncMapIntInt32R(f *encFnInfo, rv reflect.Value) {
 	fastpathETCborIO{}.EncMapIntInt32V(rv2i(rv).(map[int]int32), e)
 }
 func (fastpathETCborIO) EncMapIntInt32V(v map[int]int32, e *encoderCborIO) {
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
+	var i uint
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]int, len(v))
-		var i uint
 		for k := range v {
 			v2[i] = k
 			i++
 		}
 		slices.Sort(v2)
-		for _, k2 := range v2 {
-			e.mapElemKey()
+		for i, k2 := range v2 {
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeInt(int64(k2))
 			e.mapElemValue()
 			e.e.EncodeInt(int64(v[k2]))
 		}
 	} else {
+		i = 0
 		for k2, v2 := range v {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeInt(int64(k2))
 			e.mapElemValue()
 			e.e.EncodeInt(int64(v2))
+			i++
 		}
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborIO) fastpathEncMapIntFloat64R(f *encFnInfo, rv reflect.Value) {
 	fastpathETCborIO{}.EncMapIntFloat64V(rv2i(rv).(map[int]float64), e)
 }
 func (fastpathETCborIO) EncMapIntFloat64V(v map[int]float64, e *encoderCborIO) {
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
+	var i uint
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]int, len(v))
-		var i uint
 		for k := range v {
 			v2[i] = k
 			i++
 		}
 		slices.Sort(v2)
-		for _, k2 := range v2 {
-			e.mapElemKey()
+		for i, k2 := range v2 {
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeInt(int64(k2))
 			e.mapElemValue()
 			e.e.EncodeFloat64(v[k2])
 		}
 	} else {
+		i = 0
 		for k2, v2 := range v {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeInt(int64(k2))
 			e.mapElemValue()
 			e.e.EncodeFloat64(v2)
+			i++
 		}
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborIO) fastpathEncMapIntBoolR(f *encFnInfo, rv reflect.Value) {
 	fastpathETCborIO{}.EncMapIntBoolV(rv2i(rv).(map[int]bool), e)
 }
 func (fastpathETCborIO) EncMapIntBoolV(v map[int]bool, e *encoderCborIO) {
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
+	var i uint
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]int, len(v))
-		var i uint
 		for k := range v {
 			v2[i] = k
 			i++
 		}
 		slices.Sort(v2)
-		for _, k2 := range v2 {
-			e.mapElemKey()
+		for i, k2 := range v2 {
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeInt(int64(k2))
 			e.mapElemValue()
 			e.e.EncodeBool(v[k2])
 		}
 	} else {
+		i = 0
 		for k2, v2 := range v {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeInt(int64(k2))
 			e.mapElemValue()
 			e.e.EncodeBool(v2)
+			i++
 		}
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborIO) fastpathEncMapInt32IntfR(f *encFnInfo, rv reflect.Value) {
 	fastpathETCborIO{}.EncMapInt32IntfV(rv2i(rv).(map[int32]interface{}), e)
 }
 func (fastpathETCborIO) EncMapInt32IntfV(v map[int32]interface{}, e *encoderCborIO) {
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
+	var i uint
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]int32, len(v))
-		var i uint
 		for k := range v {
 			v2[i] = k
 			i++
 		}
 		slices.Sort(v2)
-		for _, k2 := range v2 {
-			e.mapElemKey()
+		for i, k2 := range v2 {
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeInt(int64(k2))
 			e.mapElemValue()
 			e.encode(v[k2])
 		}
 	} else {
+		i = 0
 		for k2, v2 := range v {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeInt(int64(k2))
 			e.mapElemValue()
 			e.encode(v2)
+			i++
 		}
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborIO) fastpathEncMapInt32StringR(f *encFnInfo, rv reflect.Value) {
 	fastpathETCborIO{}.EncMapInt32StringV(rv2i(rv).(map[int32]string), e)
 }
 func (fastpathETCborIO) EncMapInt32StringV(v map[int32]string, e *encoderCborIO) {
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
+	var i uint
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]int32, len(v))
-		var i uint
 		for k := range v {
 			v2[i] = k
 			i++
 		}
 		slices.Sort(v2)
-		for _, k2 := range v2 {
-			e.mapElemKey()
+		for i, k2 := range v2 {
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeInt(int64(k2))
 			e.mapElemValue()
 			e.e.EncodeString(v[k2])
 		}
 	} else {
+		i = 0
 		for k2, v2 := range v {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeInt(int64(k2))
 			e.mapElemValue()
 			e.e.EncodeString(v2)
+			i++
 		}
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborIO) fastpathEncMapInt32BytesR(f *encFnInfo, rv reflect.Value) {
 	fastpathETCborIO{}.EncMapInt32BytesV(rv2i(rv).(map[int32][]byte), e)
 }
 func (fastpathETCborIO) EncMapInt32BytesV(v map[int32][]byte, e *encoderCborIO) {
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
+	var i uint
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]int32, len(v))
-		var i uint
 		for k := range v {
 			v2[i] = k
 			i++
 		}
 		slices.Sort(v2)
-		for _, k2 := range v2 {
-			e.mapElemKey()
+		for i, k2 := range v2 {
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeInt(int64(k2))
 			e.mapElemValue()
 			e.e.EncodeStringBytesRaw(v[k2])
 		}
 	} else {
+		i = 0
 		for k2, v2 := range v {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeInt(int64(k2))
 			e.mapElemValue()
 			e.e.EncodeStringBytesRaw(v2)
+			i++
 		}
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborIO) fastpathEncMapInt32Uint8R(f *encFnInfo, rv reflect.Value) {
 	fastpathETCborIO{}.EncMapInt32Uint8V(rv2i(rv).(map[int32]uint8), e)
 }
 func (fastpathETCborIO) EncMapInt32Uint8V(v map[int32]uint8, e *encoderCborIO) {
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
+	var i uint
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]int32, len(v))
-		var i uint
 		for k := range v {
 			v2[i] = k
 			i++
 		}
 		slices.Sort(v2)
-		for _, k2 := range v2 {
-			e.mapElemKey()
+		for i, k2 := range v2 {
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeInt(int64(k2))
 			e.mapElemValue()
 			e.e.EncodeUint(uint64(v[k2]))
 		}
 	} else {
+		i = 0
 		for k2, v2 := range v {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeInt(int64(k2))
 			e.mapElemValue()
 			e.e.EncodeUint(uint64(v2))
+			i++
 		}
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborIO) fastpathEncMapInt32Uint64R(f *encFnInfo, rv reflect.Value) {
 	fastpathETCborIO{}.EncMapInt32Uint64V(rv2i(rv).(map[int32]uint64), e)
 }
 func (fastpathETCborIO) EncMapInt32Uint64V(v map[int32]uint64, e *encoderCborIO) {
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
+	var i uint
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]int32, len(v))
-		var i uint
 		for k := range v {
 			v2[i] = k
 			i++
 		}
 		slices.Sort(v2)
-		for _, k2 := range v2 {
-			e.mapElemKey()
+		for i, k2 := range v2 {
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeInt(int64(k2))
 			e.mapElemValue()
 			e.e.EncodeUint(v[k2])
 		}
 	} else {
+		i = 0
 		for k2, v2 := range v {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeInt(int64(k2))
 			e.mapElemValue()
 			e.e.EncodeUint(v2)
+			i++
 		}
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborIO) fastpathEncMapInt32IntR(f *encFnInfo, rv reflect.Value) {
 	fastpathETCborIO{}.EncMapInt32IntV(rv2i(rv).(map[int32]int), e)
 }
 func (fastpathETCborIO) EncMapInt32IntV(v map[int32]int, e *encoderCborIO) {
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
+	var i uint
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]int32, len(v))
-		var i uint
 		for k := range v {
 			v2[i] = k
 			i++
 		}
 		slices.Sort(v2)
-		for _, k2 := range v2 {
-			e.mapElemKey()
+		for i, k2 := range v2 {
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeInt(int64(k2))
 			e.mapElemValue()
 			e.e.EncodeInt(int64(v[k2]))
 		}
 	} else {
+		i = 0
 		for k2, v2 := range v {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeInt(int64(k2))
 			e.mapElemValue()
 			e.e.EncodeInt(int64(v2))
+			i++
 		}
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborIO) fastpathEncMapInt32Int32R(f *encFnInfo, rv reflect.Value) {
 	fastpathETCborIO{}.EncMapInt32Int32V(rv2i(rv).(map[int32]int32), e)
 }
 func (fastpathETCborIO) EncMapInt32Int32V(v map[int32]int32, e *encoderCborIO) {
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
+	var i uint
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]int32, len(v))
-		var i uint
 		for k := range v {
 			v2[i] = k
 			i++
 		}
 		slices.Sort(v2)
-		for _, k2 := range v2 {
-			e.mapElemKey()
+		for i, k2 := range v2 {
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeInt(int64(k2))
 			e.mapElemValue()
 			e.e.EncodeInt(int64(v[k2]))
 		}
 	} else {
+		i = 0
 		for k2, v2 := range v {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeInt(int64(k2))
 			e.mapElemValue()
 			e.e.EncodeInt(int64(v2))
+			i++
 		}
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborIO) fastpathEncMapInt32Float64R(f *encFnInfo, rv reflect.Value) {
 	fastpathETCborIO{}.EncMapInt32Float64V(rv2i(rv).(map[int32]float64), e)
 }
 func (fastpathETCborIO) EncMapInt32Float64V(v map[int32]float64, e *encoderCborIO) {
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
+	var i uint
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]int32, len(v))
-		var i uint
 		for k := range v {
 			v2[i] = k
 			i++
 		}
 		slices.Sort(v2)
-		for _, k2 := range v2 {
-			e.mapElemKey()
+		for i, k2 := range v2 {
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeInt(int64(k2))
 			e.mapElemValue()
 			e.e.EncodeFloat64(v[k2])
 		}
 	} else {
+		i = 0
 		for k2, v2 := range v {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeInt(int64(k2))
 			e.mapElemValue()
 			e.e.EncodeFloat64(v2)
+			i++
 		}
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 func (e *encoderCborIO) fastpathEncMapInt32BoolR(f *encFnInfo, rv reflect.Value) {
 	fastpathETCborIO{}.EncMapInt32BoolV(rv2i(rv).(map[int32]bool), e)
 }
 func (fastpathETCborIO) EncMapInt32BoolV(v map[int32]bool, e *encoderCborIO) {
+	if len(v) == 0 {
+		e.e.WriteMapEmpty()
+		return
+	}
+	var i uint
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]int32, len(v))
-		var i uint
 		for k := range v {
 			v2[i] = k
 			i++
 		}
 		slices.Sort(v2)
-		for _, k2 := range v2 {
-			e.mapElemKey()
+		for i, k2 := range v2 {
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeInt(int64(k2))
 			e.mapElemValue()
 			e.e.EncodeBool(v[k2])
 		}
 	} else {
+		i = 0
 		for k2, v2 := range v {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeInt(int64(k2))
 			e.mapElemValue()
 			e.e.EncodeBool(v2)
+			i++
 		}
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 
 func (helperDecDriverCborIO) fastpathDecodeTypeSwitch(iv interface{}, d *decoderCborIO) bool {
@@ -10097,7 +11111,7 @@ func (fastpathDTCborIO) DecMapStringIntfL(v map[string]interface{}, containerLen
 	var mv interface{}
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-		d.mapElemKey()
+		d.mapElemKey(j == 0)
 		mk = d.string(d.d.DecodeStringAsBytes())
 		d.mapElemValue()
 		if mapGet {
@@ -10148,7 +11162,7 @@ func (fastpathDTCborIO) DecMapStringStringL(v map[string]string, containerLen in
 	var mv string
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-		d.mapElemKey()
+		d.mapElemKey(j == 0)
 		mk = d.string(d.d.DecodeStringAsBytes())
 		d.mapElemValue()
 		mv = d.string(d.d.DecodeStringAsBytes())
@@ -10195,7 +11209,7 @@ func (fastpathDTCborIO) DecMapStringBytesL(v map[string][]byte, containerLen int
 	var mv []byte
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-		d.mapElemKey()
+		d.mapElemKey(j == 0)
 		mk = d.string(d.d.DecodeStringAsBytes())
 		d.mapElemValue()
 		if mapGet {
@@ -10246,7 +11260,7 @@ func (fastpathDTCborIO) DecMapStringUint8L(v map[string]uint8, containerLen int,
 	var mv uint8
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-		d.mapElemKey()
+		d.mapElemKey(j == 0)
 		mk = d.string(d.d.DecodeStringAsBytes())
 		d.mapElemValue()
 		mv = uint8(chkOvf.UintV(d.d.DecodeUint64(), 8))
@@ -10292,7 +11306,7 @@ func (fastpathDTCborIO) DecMapStringUint64L(v map[string]uint64, containerLen in
 	var mv uint64
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-		d.mapElemKey()
+		d.mapElemKey(j == 0)
 		mk = d.string(d.d.DecodeStringAsBytes())
 		d.mapElemValue()
 		mv = d.d.DecodeUint64()
@@ -10338,7 +11352,7 @@ func (fastpathDTCborIO) DecMapStringIntL(v map[string]int, containerLen int, d *
 	var mv int
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-		d.mapElemKey()
+		d.mapElemKey(j == 0)
 		mk = d.string(d.d.DecodeStringAsBytes())
 		d.mapElemValue()
 		mv = int(chkOvf.IntV(d.d.DecodeInt64(), intBitsize))
@@ -10384,7 +11398,7 @@ func (fastpathDTCborIO) DecMapStringInt32L(v map[string]int32, containerLen int,
 	var mv int32
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-		d.mapElemKey()
+		d.mapElemKey(j == 0)
 		mk = d.string(d.d.DecodeStringAsBytes())
 		d.mapElemValue()
 		mv = int32(chkOvf.IntV(d.d.DecodeInt64(), 32))
@@ -10430,7 +11444,7 @@ func (fastpathDTCborIO) DecMapStringFloat64L(v map[string]float64, containerLen 
 	var mv float64
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-		d.mapElemKey()
+		d.mapElemKey(j == 0)
 		mk = d.string(d.d.DecodeStringAsBytes())
 		d.mapElemValue()
 		mv = d.d.DecodeFloat64()
@@ -10476,7 +11490,7 @@ func (fastpathDTCborIO) DecMapStringBoolL(v map[string]bool, containerLen int, d
 	var mv bool
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-		d.mapElemKey()
+		d.mapElemKey(j == 0)
 		mk = d.string(d.d.DecodeStringAsBytes())
 		d.mapElemValue()
 		mv = d.d.DecodeBool()
@@ -10523,7 +11537,7 @@ func (fastpathDTCborIO) DecMapUint8IntfL(v map[uint8]interface{}, containerLen i
 	var mv interface{}
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-		d.mapElemKey()
+		d.mapElemKey(j == 0)
 		mk = uint8(chkOvf.UintV(d.d.DecodeUint64(), 8))
 		d.mapElemValue()
 		if mapGet {
@@ -10574,7 +11588,7 @@ func (fastpathDTCborIO) DecMapUint8StringL(v map[uint8]string, containerLen int,
 	var mv string
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-		d.mapElemKey()
+		d.mapElemKey(j == 0)
 		mk = uint8(chkOvf.UintV(d.d.DecodeUint64(), 8))
 		d.mapElemValue()
 		mv = d.string(d.d.DecodeStringAsBytes())
@@ -10621,7 +11635,7 @@ func (fastpathDTCborIO) DecMapUint8BytesL(v map[uint8][]byte, containerLen int, 
 	var mv []byte
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-		d.mapElemKey()
+		d.mapElemKey(j == 0)
 		mk = uint8(chkOvf.UintV(d.d.DecodeUint64(), 8))
 		d.mapElemValue()
 		if mapGet {
@@ -10672,7 +11686,7 @@ func (fastpathDTCborIO) DecMapUint8Uint8L(v map[uint8]uint8, containerLen int, d
 	var mv uint8
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-		d.mapElemKey()
+		d.mapElemKey(j == 0)
 		mk = uint8(chkOvf.UintV(d.d.DecodeUint64(), 8))
 		d.mapElemValue()
 		mv = uint8(chkOvf.UintV(d.d.DecodeUint64(), 8))
@@ -10718,7 +11732,7 @@ func (fastpathDTCborIO) DecMapUint8Uint64L(v map[uint8]uint64, containerLen int,
 	var mv uint64
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-		d.mapElemKey()
+		d.mapElemKey(j == 0)
 		mk = uint8(chkOvf.UintV(d.d.DecodeUint64(), 8))
 		d.mapElemValue()
 		mv = d.d.DecodeUint64()
@@ -10764,7 +11778,7 @@ func (fastpathDTCborIO) DecMapUint8IntL(v map[uint8]int, containerLen int, d *de
 	var mv int
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-		d.mapElemKey()
+		d.mapElemKey(j == 0)
 		mk = uint8(chkOvf.UintV(d.d.DecodeUint64(), 8))
 		d.mapElemValue()
 		mv = int(chkOvf.IntV(d.d.DecodeInt64(), intBitsize))
@@ -10810,7 +11824,7 @@ func (fastpathDTCborIO) DecMapUint8Int32L(v map[uint8]int32, containerLen int, d
 	var mv int32
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-		d.mapElemKey()
+		d.mapElemKey(j == 0)
 		mk = uint8(chkOvf.UintV(d.d.DecodeUint64(), 8))
 		d.mapElemValue()
 		mv = int32(chkOvf.IntV(d.d.DecodeInt64(), 32))
@@ -10856,7 +11870,7 @@ func (fastpathDTCborIO) DecMapUint8Float64L(v map[uint8]float64, containerLen in
 	var mv float64
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-		d.mapElemKey()
+		d.mapElemKey(j == 0)
 		mk = uint8(chkOvf.UintV(d.d.DecodeUint64(), 8))
 		d.mapElemValue()
 		mv = d.d.DecodeFloat64()
@@ -10902,7 +11916,7 @@ func (fastpathDTCborIO) DecMapUint8BoolL(v map[uint8]bool, containerLen int, d *
 	var mv bool
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-		d.mapElemKey()
+		d.mapElemKey(j == 0)
 		mk = uint8(chkOvf.UintV(d.d.DecodeUint64(), 8))
 		d.mapElemValue()
 		mv = d.d.DecodeBool()
@@ -10949,7 +11963,7 @@ func (fastpathDTCborIO) DecMapUint64IntfL(v map[uint64]interface{}, containerLen
 	var mv interface{}
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-		d.mapElemKey()
+		d.mapElemKey(j == 0)
 		mk = d.d.DecodeUint64()
 		d.mapElemValue()
 		if mapGet {
@@ -11000,7 +12014,7 @@ func (fastpathDTCborIO) DecMapUint64StringL(v map[uint64]string, containerLen in
 	var mv string
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-		d.mapElemKey()
+		d.mapElemKey(j == 0)
 		mk = d.d.DecodeUint64()
 		d.mapElemValue()
 		mv = d.string(d.d.DecodeStringAsBytes())
@@ -11047,7 +12061,7 @@ func (fastpathDTCborIO) DecMapUint64BytesL(v map[uint64][]byte, containerLen int
 	var mv []byte
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-		d.mapElemKey()
+		d.mapElemKey(j == 0)
 		mk = d.d.DecodeUint64()
 		d.mapElemValue()
 		if mapGet {
@@ -11098,7 +12112,7 @@ func (fastpathDTCborIO) DecMapUint64Uint8L(v map[uint64]uint8, containerLen int,
 	var mv uint8
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-		d.mapElemKey()
+		d.mapElemKey(j == 0)
 		mk = d.d.DecodeUint64()
 		d.mapElemValue()
 		mv = uint8(chkOvf.UintV(d.d.DecodeUint64(), 8))
@@ -11144,7 +12158,7 @@ func (fastpathDTCborIO) DecMapUint64Uint64L(v map[uint64]uint64, containerLen in
 	var mv uint64
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-		d.mapElemKey()
+		d.mapElemKey(j == 0)
 		mk = d.d.DecodeUint64()
 		d.mapElemValue()
 		mv = d.d.DecodeUint64()
@@ -11190,7 +12204,7 @@ func (fastpathDTCborIO) DecMapUint64IntL(v map[uint64]int, containerLen int, d *
 	var mv int
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-		d.mapElemKey()
+		d.mapElemKey(j == 0)
 		mk = d.d.DecodeUint64()
 		d.mapElemValue()
 		mv = int(chkOvf.IntV(d.d.DecodeInt64(), intBitsize))
@@ -11236,7 +12250,7 @@ func (fastpathDTCborIO) DecMapUint64Int32L(v map[uint64]int32, containerLen int,
 	var mv int32
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-		d.mapElemKey()
+		d.mapElemKey(j == 0)
 		mk = d.d.DecodeUint64()
 		d.mapElemValue()
 		mv = int32(chkOvf.IntV(d.d.DecodeInt64(), 32))
@@ -11282,7 +12296,7 @@ func (fastpathDTCborIO) DecMapUint64Float64L(v map[uint64]float64, containerLen 
 	var mv float64
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-		d.mapElemKey()
+		d.mapElemKey(j == 0)
 		mk = d.d.DecodeUint64()
 		d.mapElemValue()
 		mv = d.d.DecodeFloat64()
@@ -11328,7 +12342,7 @@ func (fastpathDTCborIO) DecMapUint64BoolL(v map[uint64]bool, containerLen int, d
 	var mv bool
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-		d.mapElemKey()
+		d.mapElemKey(j == 0)
 		mk = d.d.DecodeUint64()
 		d.mapElemValue()
 		mv = d.d.DecodeBool()
@@ -11375,7 +12389,7 @@ func (fastpathDTCborIO) DecMapIntIntfL(v map[int]interface{}, containerLen int, 
 	var mv interface{}
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-		d.mapElemKey()
+		d.mapElemKey(j == 0)
 		mk = int(chkOvf.IntV(d.d.DecodeInt64(), intBitsize))
 		d.mapElemValue()
 		if mapGet {
@@ -11426,7 +12440,7 @@ func (fastpathDTCborIO) DecMapIntStringL(v map[int]string, containerLen int, d *
 	var mv string
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-		d.mapElemKey()
+		d.mapElemKey(j == 0)
 		mk = int(chkOvf.IntV(d.d.DecodeInt64(), intBitsize))
 		d.mapElemValue()
 		mv = d.string(d.d.DecodeStringAsBytes())
@@ -11473,7 +12487,7 @@ func (fastpathDTCborIO) DecMapIntBytesL(v map[int][]byte, containerLen int, d *d
 	var mv []byte
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-		d.mapElemKey()
+		d.mapElemKey(j == 0)
 		mk = int(chkOvf.IntV(d.d.DecodeInt64(), intBitsize))
 		d.mapElemValue()
 		if mapGet {
@@ -11524,7 +12538,7 @@ func (fastpathDTCborIO) DecMapIntUint8L(v map[int]uint8, containerLen int, d *de
 	var mv uint8
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-		d.mapElemKey()
+		d.mapElemKey(j == 0)
 		mk = int(chkOvf.IntV(d.d.DecodeInt64(), intBitsize))
 		d.mapElemValue()
 		mv = uint8(chkOvf.UintV(d.d.DecodeUint64(), 8))
@@ -11570,7 +12584,7 @@ func (fastpathDTCborIO) DecMapIntUint64L(v map[int]uint64, containerLen int, d *
 	var mv uint64
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-		d.mapElemKey()
+		d.mapElemKey(j == 0)
 		mk = int(chkOvf.IntV(d.d.DecodeInt64(), intBitsize))
 		d.mapElemValue()
 		mv = d.d.DecodeUint64()
@@ -11616,7 +12630,7 @@ func (fastpathDTCborIO) DecMapIntIntL(v map[int]int, containerLen int, d *decode
 	var mv int
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-		d.mapElemKey()
+		d.mapElemKey(j == 0)
 		mk = int(chkOvf.IntV(d.d.DecodeInt64(), intBitsize))
 		d.mapElemValue()
 		mv = int(chkOvf.IntV(d.d.DecodeInt64(), intBitsize))
@@ -11662,7 +12676,7 @@ func (fastpathDTCborIO) DecMapIntInt32L(v map[int]int32, containerLen int, d *de
 	var mv int32
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-		d.mapElemKey()
+		d.mapElemKey(j == 0)
 		mk = int(chkOvf.IntV(d.d.DecodeInt64(), intBitsize))
 		d.mapElemValue()
 		mv = int32(chkOvf.IntV(d.d.DecodeInt64(), 32))
@@ -11708,7 +12722,7 @@ func (fastpathDTCborIO) DecMapIntFloat64L(v map[int]float64, containerLen int, d
 	var mv float64
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-		d.mapElemKey()
+		d.mapElemKey(j == 0)
 		mk = int(chkOvf.IntV(d.d.DecodeInt64(), intBitsize))
 		d.mapElemValue()
 		mv = d.d.DecodeFloat64()
@@ -11754,7 +12768,7 @@ func (fastpathDTCborIO) DecMapIntBoolL(v map[int]bool, containerLen int, d *deco
 	var mv bool
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-		d.mapElemKey()
+		d.mapElemKey(j == 0)
 		mk = int(chkOvf.IntV(d.d.DecodeInt64(), intBitsize))
 		d.mapElemValue()
 		mv = d.d.DecodeBool()
@@ -11801,7 +12815,7 @@ func (fastpathDTCborIO) DecMapInt32IntfL(v map[int32]interface{}, containerLen i
 	var mv interface{}
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-		d.mapElemKey()
+		d.mapElemKey(j == 0)
 		mk = int32(chkOvf.IntV(d.d.DecodeInt64(), 32))
 		d.mapElemValue()
 		if mapGet {
@@ -11852,7 +12866,7 @@ func (fastpathDTCborIO) DecMapInt32StringL(v map[int32]string, containerLen int,
 	var mv string
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-		d.mapElemKey()
+		d.mapElemKey(j == 0)
 		mk = int32(chkOvf.IntV(d.d.DecodeInt64(), 32))
 		d.mapElemValue()
 		mv = d.string(d.d.DecodeStringAsBytes())
@@ -11899,7 +12913,7 @@ func (fastpathDTCborIO) DecMapInt32BytesL(v map[int32][]byte, containerLen int, 
 	var mv []byte
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-		d.mapElemKey()
+		d.mapElemKey(j == 0)
 		mk = int32(chkOvf.IntV(d.d.DecodeInt64(), 32))
 		d.mapElemValue()
 		if mapGet {
@@ -11950,7 +12964,7 @@ func (fastpathDTCborIO) DecMapInt32Uint8L(v map[int32]uint8, containerLen int, d
 	var mv uint8
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-		d.mapElemKey()
+		d.mapElemKey(j == 0)
 		mk = int32(chkOvf.IntV(d.d.DecodeInt64(), 32))
 		d.mapElemValue()
 		mv = uint8(chkOvf.UintV(d.d.DecodeUint64(), 8))
@@ -11996,7 +13010,7 @@ func (fastpathDTCborIO) DecMapInt32Uint64L(v map[int32]uint64, containerLen int,
 	var mv uint64
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-		d.mapElemKey()
+		d.mapElemKey(j == 0)
 		mk = int32(chkOvf.IntV(d.d.DecodeInt64(), 32))
 		d.mapElemValue()
 		mv = d.d.DecodeUint64()
@@ -12042,7 +13056,7 @@ func (fastpathDTCborIO) DecMapInt32IntL(v map[int32]int, containerLen int, d *de
 	var mv int
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-		d.mapElemKey()
+		d.mapElemKey(j == 0)
 		mk = int32(chkOvf.IntV(d.d.DecodeInt64(), 32))
 		d.mapElemValue()
 		mv = int(chkOvf.IntV(d.d.DecodeInt64(), intBitsize))
@@ -12088,7 +13102,7 @@ func (fastpathDTCborIO) DecMapInt32Int32L(v map[int32]int32, containerLen int, d
 	var mv int32
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-		d.mapElemKey()
+		d.mapElemKey(j == 0)
 		mk = int32(chkOvf.IntV(d.d.DecodeInt64(), 32))
 		d.mapElemValue()
 		mv = int32(chkOvf.IntV(d.d.DecodeInt64(), 32))
@@ -12134,7 +13148,7 @@ func (fastpathDTCborIO) DecMapInt32Float64L(v map[int32]float64, containerLen in
 	var mv float64
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-		d.mapElemKey()
+		d.mapElemKey(j == 0)
 		mk = int32(chkOvf.IntV(d.d.DecodeInt64(), 32))
 		d.mapElemValue()
 		mv = d.d.DecodeFloat64()
@@ -12180,7 +13194,7 @@ func (fastpathDTCborIO) DecMapInt32BoolL(v map[int32]bool, containerLen int, d *
 	var mv bool
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-		d.mapElemKey()
+		d.mapElemKey(j == 0)
 		mk = int32(chkOvf.IntV(d.d.DecodeInt64(), 32))
 		d.mapElemValue()
 		mv = d.d.DecodeBool()

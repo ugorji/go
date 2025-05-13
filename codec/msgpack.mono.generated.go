@@ -208,110 +208,90 @@ func (e *encoderMsgpackBytes) kSeqFn(rt reflect.Type) (fn *encFnMsgpackBytes) {
 	return
 }
 
-func (e *encoderMsgpackBytes) kSliceWMbs(rv reflect.Value, ti *typeInfo) {
-	var builtin bool
-	var fn *encFnMsgpackBytes
-	var l = rvLenSlice(rv)
+func (e *encoderMsgpackBytes) kArrayWMbs(rv reflect.Value, ti *typeInfo, isSlice bool) {
+	var l int
+	if isSlice {
+		l = rvLenSlice(rv)
+	} else {
+		l = rv.Len()
+	}
 	if l == 0 {
-		e.mapStart(0)
-		goto END
+		e.e.WriteMapEmpty()
+		return
 	}
 	e.haltOnMbsOddLen(l)
 	e.mapStart(l >> 1)
-	builtin = ti.tielem.flagEncBuiltin
+
+	var fn *encFnMsgpackBytes
+	builtin := ti.tielem.flagEncBuiltin
 	if !builtin {
 		fn = e.kSeqFn(ti.elem)
 	}
-	for j := 0; j < l; j++ {
-		if j&1 == 0 {
-			e.mapElemKey()
-		} else {
-			e.mapElemValue()
-		}
-		rvv := rvSliceIndex(rv, j, ti)
+
+	j := 0
+	e.c = containerMapKey
+	e.e.WriteMapElemKey(true)
+	for {
+		rvv := rvArrayIndex(rv, j, ti, isSlice)
 		if builtin {
 			e.encode(rv2i(baseRVRV(rvv)))
 		} else {
 			e.encodeValue(rvv, fn)
 		}
-	}
-END:
-	e.mapEnd()
-}
-
-func (e *encoderMsgpackBytes) kSliceW(rv reflect.Value, ti *typeInfo) {
-	var l = rvLenSlice(rv)
-	e.arrayStart(l)
-	if l <= 0 {
-		goto END
-	}
-	if ti.tielem.flagEncBuiltin {
-		for j := 0; j < l; j++ {
-			e.arrayElem()
-			e.encode(rv2i(baseRVRV(rvSliceIndex(rv, j, ti))))
+		j++
+		if j == l {
+			break
 		}
-	} else {
-		fn := e.kSeqFn(ti.elem)
-		for j := 0; j < l; j++ {
-			e.arrayElem()
-			e.encodeValue(rvSliceIndex(rv, j, ti), fn)
-		}
-	}
-END:
-	e.arrayEnd()
-}
-
-func (e *encoderMsgpackBytes) kArrayWMbs(rv reflect.Value, ti *typeInfo) {
-	var builtin bool
-	var fn *encFnMsgpackBytes
-	var l = rv.Len()
-	if l == 0 {
-		e.mapStart(0)
-		goto END
-	}
-	e.haltOnMbsOddLen(l)
-	e.mapStart(l >> 1)
-	builtin = ti.tielem.flagEncBuiltin
-	if !builtin {
-		fn = e.kSeqFn(ti.elem)
-	}
-	for j := 0; j < l; j++ {
 		if j&1 == 0 {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(false)
 		} else {
 			e.mapElemValue()
 		}
-		rvv := rvArrayIndex(rv, j, ti)
-		if builtin {
+	}
+	e.c = 0
+	e.e.WriteMapEnd()
+
+}
+
+func (e *encoderMsgpackBytes) kArrayW(rv reflect.Value, ti *typeInfo, isSlice bool) {
+	var l int
+	if isSlice {
+		l = rvLenSlice(rv)
+	} else {
+		l = rv.Len()
+	}
+	if l <= 0 {
+		e.e.WriteArrayEmpty()
+		return
+	}
+	e.arrayStart(l)
+
+	var fn *encFnMsgpackBytes
+	if !ti.tielem.flagEncBuiltin {
+		fn = e.kSeqFn(ti.elem)
+	}
+
+	j := 0
+	e.c = containerArrayElem
+	e.e.WriteArrayElem(true)
+	for {
+		rvv := rvArrayIndex(rv, j, ti, isSlice)
+		if ti.tielem.flagEncBuiltin {
 			e.encode(rv2i(baseRVRV(rvv)))
 		} else {
 			e.encodeValue(rvv, fn)
 		}
+		j++
+		if j == l {
+			break
+		}
+		e.c = containerArrayElem
+		e.e.WriteArrayElem(false)
 	}
-END:
-	e.mapEnd()
-}
 
-func (e *encoderMsgpackBytes) kArrayW(rv reflect.Value, ti *typeInfo) {
-	var l = rv.Len()
-	e.arrayStart(l)
-	if l <= 0 {
-		goto END
-	}
-	if ti.tielem.flagEncBuiltin {
-		for j := 0; j < l; j++ {
-			e.arrayElem()
-			e.encode(rv2i(baseRVRV(rvArrayIndex(rv, j, ti))))
-		}
-	} else {
-		fn := e.kSeqFn(ti.elem)
-		for j := 0; j < l; j++ {
-			e.arrayElem()
-			e.encodeValue(rvArrayIndex(rv, j, ti), fn)
-		}
-	}
-END:
-	e.arrayEnd()
+	e.c = 0
+	e.e.WriteArrayEnd()
 }
 
 func (e *encoderMsgpackBytes) kChan(f *encFnInfo, rv reflect.Value) {
@@ -326,29 +306,29 @@ func (e *encoderMsgpackBytes) kChan(f *encFnInfo, rv reflect.Value) {
 	rv = chanToSlice(rv, rtslice, e.h.ChanRecvTimeout)
 	ti := e.h.getTypeInfo(rt2id(rtslice), rtslice)
 	if f.ti.mbs {
-		e.kSliceWMbs(rv, ti)
+		e.kArrayWMbs(rv, ti, true)
 	} else {
-		e.kSliceW(rv, ti)
+		e.kArrayW(rv, ti, true)
 	}
 }
 
 func (e *encoderMsgpackBytes) kSlice(f *encFnInfo, rv reflect.Value) {
 	if f.ti.mbs {
-		e.kSliceWMbs(rv, f.ti)
+		e.kArrayWMbs(rv, f.ti, true)
 	} else if f.ti.rtid == uint8SliceTypId || uint8TypId == rt2id(f.ti.elem) {
 		e.e.EncodeStringBytesRaw(rvGetBytes(rv))
 	} else {
-		e.kSliceW(rv, f.ti)
+		e.kArrayW(rv, f.ti, true)
 	}
 }
 
 func (e *encoderMsgpackBytes) kArray(f *encFnInfo, rv reflect.Value) {
 	if f.ti.mbs {
-		e.kArrayWMbs(rv, f.ti)
+		e.kArrayWMbs(rv, f.ti, false)
 	} else if handleBytesWithinKArray && uint8TypId == rt2id(f.ti.elem) {
 		e.e.EncodeStringBytesRaw(rvGetArrayBytes(rv, nil))
 	} else {
-		e.kArrayW(rv, f.ti)
+		e.kArrayW(rv, f.ti, false)
 	}
 }
 
@@ -419,25 +399,37 @@ func (e *encoderMsgpackBytes) kStructSimple(f *encFnInfo, rv reflect.Value) {
 
 	chkCirRef := e.h.CheckCircularRef
 	var si *structFieldInfo
+	var j int
 
 	if f.ti.toArray || e.h.StructToArray {
+		if len(tisfi) == 0 {
+			e.e.WriteArrayEmpty()
+			return
+		}
 		e.arrayStart(len(tisfi))
-		for _, si = range tisfi {
-			e.arrayElem()
+		for j, si = range tisfi {
+			e.c = containerArrayElem
+			e.e.WriteArrayElem(j == 0)
 			if si.encBuiltin {
 				e.encode(rv2i(si.fieldNoAlloc(rv, true)))
 			} else {
 				e.encodeValue(si.fieldNoAlloc(rv, !chkCirRef), nil)
 			}
 		}
-		e.arrayEnd()
+		e.c = 0
+		e.e.WriteArrayEnd()
 	} else {
+		if len(tisfi) == 0 {
+			e.e.WriteMapEmpty()
+			return
+		}
 		if e.h.Canonical {
 			tisfi = f.ti.sfi.sorted()
 		}
 		e.mapStart(len(tisfi))
-		for _, si = range tisfi {
-			e.mapElemKey()
+		for j, si = range tisfi {
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(j == 0)
 			e.e.EncodeStringNoEscape4Json(si.encName)
 			e.mapElemValue()
 			if si.encBuiltin {
@@ -446,7 +438,8 @@ func (e *encoderMsgpackBytes) kStructSimple(f *encFnInfo, rv reflect.Value) {
 				e.encodeValue(si.fieldNoAlloc(rv, !chkCirRef), nil)
 			}
 		}
-		e.mapEnd()
+		e.c = 0
+		e.e.WriteMapEnd()
 	}
 }
 
@@ -474,8 +467,11 @@ func (e *encoderMsgpackBytes) kStruct(f *encFnInfo, rv reflect.Value) {
 	recur := e.h.RecursiveEmptyCheck
 	chkCirRef := e.h.CheckCircularRef
 
+	var xlen int
+
 	var kv sfiRv
 	var j int
+	var sf encStructFieldObj
 	if toMap {
 		newlen = 0
 		if e.h.Canonical {
@@ -510,7 +506,13 @@ func (e *encoderMsgpackBytes) kStruct(f *encFnInfo, rv reflect.Value) {
 			}
 		}
 
-		e.mapStart(newlen + len(mf2s))
+		xlen = newlen + len(mf2s)
+		if xlen == 0 {
+			e.e.WriteMapEmpty()
+			goto END
+		}
+
+		e.mapStart(xlen)
 
 		if len(mf2s) != 0 && e.h.Canonical {
 			mf2w := make([]encStructFieldObj, newlen+len(mf2s))
@@ -524,29 +526,31 @@ func (e *encoderMsgpackBytes) kStruct(f *encFnInfo, rv reflect.Value) {
 				j++
 			}
 			sort.Sort((encStructFieldObjSlice)(mf2w))
-			for _, v := range mf2w {
-				e.mapElemKey()
-				if ti.keyType == valueTypeString && v.noEsc4json {
-					e.e.EncodeStringNoEscape4Json(v.key)
+			for j, sf = range mf2w {
+				e.c = containerMapKey
+				e.e.WriteMapElemKey(j == 0)
+				if ti.keyType == valueTypeString && sf.noEsc4json {
+					e.e.EncodeStringNoEscape4Json(sf.key)
 				} else {
-					e.kStructFieldKey(ti.keyType, v.key)
+					e.kStructFieldKey(ti.keyType, sf.key)
 				}
 				e.mapElemValue()
-				if v.isRv {
-					if v.builtin {
-						e.encode(rv2i(baseRVRV(v.rv)))
+				if sf.isRv {
+					if sf.builtin {
+						e.encode(rv2i(baseRVRV(sf.rv)))
 					} else {
-						e.encodeValue(v.rv, nil)
+						e.encodeValue(sf.rv, nil)
 					}
 				} else {
-					e.encode(v.intf)
+					e.encode(sf.intf)
 				}
 			}
 		} else {
 			keytyp := ti.keyType
 			for j = 0; j < newlen; j++ {
 				kv = fkvs[j]
-				e.mapElemKey()
+				e.c = containerMapKey
+				e.e.WriteMapElemKey(j == 0)
 				if ti.keyType == valueTypeString && !kv.v.encNameEscape4Json {
 					e.e.EncodeStringNoEscape4Json(kv.v.encName)
 				} else {
@@ -560,14 +564,17 @@ func (e *encoderMsgpackBytes) kStruct(f *encFnInfo, rv reflect.Value) {
 				}
 			}
 			for _, v := range mf2s {
-				e.mapElemKey()
+				e.c = containerMapKey
+				e.e.WriteMapElemKey(j == 0)
 				e.kStructFieldKey(keytyp, v.v)
 				e.mapElemValue()
 				e.encode(v.i)
+				j++
 			}
 		}
 
-		e.mapEnd()
+		e.c = 0
+		e.e.WriteMapEnd()
 	} else {
 		newlen = len(tisfi)
 		for i, si := range tisfi {
@@ -585,9 +592,15 @@ func (e *encoderMsgpackBytes) kStruct(f *encFnInfo, rv reflect.Value) {
 			fkvs[i] = kv
 		}
 
+		if newlen == 0 {
+			e.e.WriteArrayEmpty()
+			goto END
+		}
+
 		e.arrayStart(newlen)
 		for j = 0; j < newlen; j++ {
-			e.arrayElem()
+			e.c = containerArrayElem
+			e.e.WriteArrayElem(j == 0)
 			kv = fkvs[j]
 			if !kv.r.IsValid() {
 				e.e.EncodeNil()
@@ -597,19 +610,22 @@ func (e *encoderMsgpackBytes) kStruct(f *encFnInfo, rv reflect.Value) {
 				e.encodeValue(kv.r, nil)
 			}
 		}
-		e.arrayEnd()
+		e.c = 0
+		e.e.WriteArrayEnd()
 	}
+
+END:
 
 	e.slist.put(fkvs)
 }
 
 func (e *encoderMsgpackBytes) kMap(f *encFnInfo, rv reflect.Value) {
 	l := rvLenMap(rv)
-	e.mapStart(l)
 	if l == 0 {
-		e.mapEnd()
+		e.e.WriteMapEmpty()
 		return
 	}
+	e.mapStart(l)
 
 	var keyFn, valFn *encFnMsgpackBytes
 
@@ -643,7 +659,8 @@ func (e *encoderMsgpackBytes) kMap(f *encFnInfo, rv reflect.Value) {
 
 	if e.h.Canonical {
 		e.kMapCanonical(f.ti, rv, rvv, keyFn, valFn)
-		e.mapEnd()
+		e.c = 0
+		e.e.WriteMapEnd()
 		return
 	}
 
@@ -654,9 +671,10 @@ func (e *encoderMsgpackBytes) kMap(f *encFnInfo, rv reflect.Value) {
 
 	kbuiltin := f.ti.tikey.flagEncBuiltin
 	vbuiltin := f.ti.tielem.flagEncBuiltin
-	for it.Next() {
+	for j := 0; it.Next(); j++ {
 		rv = it.Key()
-		e.mapElemKey()
+		e.c = containerMapKey
+		e.e.WriteMapElemKey(j == 0)
 		if keyTypeIsString {
 			e.e.EncodeString(rvGetString(rv))
 		} else if kbuiltin {
@@ -674,7 +692,8 @@ func (e *encoderMsgpackBytes) kMap(f *encFnInfo, rv reflect.Value) {
 	}
 	it.Done()
 
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 
 func (e *encoderMsgpackBytes) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, keyFn, valFn *encFnMsgpackBytes) {
@@ -695,7 +714,8 @@ func (e *encoderMsgpackBytes) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value,
 			mks[0], mks[1] = mks[1], mks[0]
 		}
 		for i := range mks {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			if rtkeydecl {
 				e.e.EncodeBool(mks[i].Bool())
 			} else {
@@ -713,7 +733,8 @@ func (e *encoderMsgpackBytes) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value,
 		}
 		slices.SortFunc(mksv, cmpOrderedRv)
 		for i := range mksv {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			if rtkeydecl {
 				e.e.EncodeString(mksv[i].v)
 			} else {
@@ -731,7 +752,8 @@ func (e *encoderMsgpackBytes) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value,
 		}
 		slices.SortFunc(mksv, cmpOrderedRv)
 		for i := range mksv {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			if rtkeydecl {
 				e.e.EncodeUint(mksv[i].v)
 			} else {
@@ -749,7 +771,8 @@ func (e *encoderMsgpackBytes) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value,
 		}
 		slices.SortFunc(mksv, cmpOrderedRv)
 		for i := range mksv {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			if rtkeydecl {
 				e.e.EncodeInt(mksv[i].v)
 			} else {
@@ -767,7 +790,8 @@ func (e *encoderMsgpackBytes) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value,
 		}
 		slices.SortFunc(mksv, cmpOrderedRv)
 		for i := range mksv {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			if rtkeydecl {
 				e.e.EncodeFloat32(float32(mksv[i].v))
 			} else {
@@ -785,7 +809,8 @@ func (e *encoderMsgpackBytes) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value,
 		}
 		slices.SortFunc(mksv, cmpOrderedRv)
 		for i := range mksv {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			if rtkeydecl {
 				e.e.EncodeFloat64(mksv[i].v)
 			} else {
@@ -804,7 +829,8 @@ func (e *encoderMsgpackBytes) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value,
 			}
 			slices.SortFunc(mksv, cmpTimeRv)
 			for i := range mksv {
-				e.mapElemKey()
+				e.c = containerMapKey
+				e.e.WriteMapElemKey(i == 0)
 				e.e.EncodeTime(mksv[i].v)
 				e.mapElemValue()
 				e.encodeValue(mapGet(rv, mksv[i].r, rvv, kfast, visindirect, visref), valFn)
@@ -832,7 +858,8 @@ func (e *encoderMsgpackBytes) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value,
 
 		slices.SortFunc(mksbv, cmpBytesRv)
 		for j := range mksbv {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(j == 0)
 			e.e.writeBytesAsis(mksbv[j].v)
 			e.mapElemValue()
 			e.encodeValue(mapGet(rv, mksbv[j].r, rvv, kfast, visindirect, visref), valFn)
@@ -913,6 +940,17 @@ func (e *encoderMsgpackBytes) encode(iv interface{}) {
 
 	rv, ok := isNil(iv)
 	if ok {
+		if e.h.NilCollectionToZeroLength {
+			switch rv.Kind() {
+			case reflect.Slice, reflect.Chan:
+
+				e.e.WriteArrayEmpty()
+				return
+			case reflect.Map:
+				e.e.WriteMapEmpty()
+				return
+			}
+		}
 		e.e.EncodeNil()
 		return
 	}
@@ -1043,9 +1081,22 @@ TOP:
 		rvp = reflect.Value{}
 		rv = rv.Elem()
 		goto TOP
-	case reflect.Map, reflect.Slice, reflect.Chan:
+	case reflect.Map:
 		if rvIsNil(rv) {
-			e.e.EncodeNil()
+			if e.h.NilCollectionToZeroLength {
+				e.e.WriteMapEmpty()
+			} else {
+				e.e.EncodeNil()
+			}
+			goto END
+		}
+	case reflect.Slice, reflect.Chan:
+		if rvIsNil(rv) {
+			if e.h.NilCollectionToZeroLength {
+				e.e.WriteArrayEmpty()
+			} else {
+				e.e.EncodeNil()
+			}
 			goto END
 		}
 	case reflect.Invalid, reflect.Func:
@@ -1141,34 +1192,14 @@ func (e *encoderMsgpackBytes) mapStart(length int) {
 	e.c = containerMapStart
 }
 
-func (e *encoderMsgpackBytes) mapElemKey() {
-	e.e.WriteMapElemKey()
-	e.c = containerMapKey
-}
-
 func (e *encoderMsgpackBytes) mapElemValue() {
 	e.e.WriteMapElemValue()
 	e.c = containerMapValue
 }
 
-func (e *encoderMsgpackBytes) mapEnd() {
-	e.e.WriteMapEnd()
-	e.c = 0
-}
-
 func (e *encoderMsgpackBytes) arrayStart(length int) {
 	e.e.WriteArrayStart(length)
 	e.c = containerArrayStart
-}
-
-func (e *encoderMsgpackBytes) arrayElem() {
-	e.e.WriteArrayElem()
-	e.c = containerArrayElem
-}
-
-func (e *encoderMsgpackBytes) arrayEnd() {
-	e.e.WriteArrayEnd()
-	e.c = 0
 }
 
 func (e *encoderMsgpackBytes) writerEnd() {
@@ -1736,7 +1767,7 @@ func (d *decoderMsgpackBytes) kStructSimple(f *decFnInfo, rv reflect.Value) {
 		}
 		hasLen := containerLen >= 0
 		for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-			d.mapElemKey()
+			d.mapElemKey(j == 0)
 			rvkencname, att := d.d.DecodeStringAsBytes()
 
 			if d.bufio && d.h.jsonHandle {
@@ -1761,7 +1792,7 @@ func (d *decoderMsgpackBytes) kStructSimple(f *decFnInfo, rv reflect.Value) {
 		hasLen := containerLen >= 0
 
 		for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-			d.arrayElem()
+			d.arrayElem(j == 0)
 			if j < len(tisfi) {
 				d.kStructField(tisfi[j], rv)
 			} else {
@@ -1798,7 +1829,7 @@ func (d *decoderMsgpackBytes) kStruct(f *decFnInfo, rv reflect.Value) {
 		var att dBytesAttachState
 		tkt := ti.keyType
 		for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-			d.mapElemKey()
+			d.mapElemKey(j == 0)
 
 			if tkt == valueTypeString {
 				rvkencname, att = d.d.DecodeStringAsBytes()
@@ -1844,7 +1875,7 @@ func (d *decoderMsgpackBytes) kStruct(f *decFnInfo, rv reflect.Value) {
 		hasLen := containerLen >= 0
 
 		for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-			d.arrayElem()
+			d.arrayElem(j == 0)
 			if j < len(tisfi) {
 				d.kStructField(tisfi[j], rv)
 			} else {
@@ -2001,7 +2032,7 @@ func (d *decoderMsgpackBytes) kSlice(f *decFnInfo, rv reflect.Value) {
 			slh.ElemContainerState(j)
 		}
 
-		rv9 = rvSliceIndex(rv, j, f.ti)
+		rv9 = rvArrayIndex(rv, j, f.ti, true)
 		if elemReset {
 			rvSetZero(rv9)
 		}
@@ -2101,7 +2132,7 @@ func (d *decoderMsgpackBytes) kArray(f *decFnInfo, rv reflect.Value) {
 		}
 
 		slh.ElemContainerState(j)
-		rv9 = rvArrayIndex(rv, j, f.ti)
+		rv9 = rvArrayIndex(rv, j, f.ti, false)
 		if elemReset {
 			rvSetZero(rv9)
 		}
@@ -2326,7 +2357,7 @@ func (d *decoderMsgpackBytes) kMap(f *decFnInfo, rv reflect.Value) {
 			rvk = rvkn
 		}
 
-		d.mapElemKey()
+		d.mapElemKey(j == 0)
 
 		if d.d.TryNil() {
 			rvSetZero(rvk)
@@ -2736,22 +2767,16 @@ func (d *decoderMsgpackBytes) NumBytesRead() int {
 	return d.d.NumBytesRead()
 }
 
-func (d *decoderMsgpackBytes) checkBreak() (v bool) {
-
-	v = d.d.CheckBreak()
-	return
-}
-
 func (d *decoderMsgpackBytes) containerNext(j, containerLen int, hasLen bool) bool {
 
 	if hasLen {
 		return j < containerLen
 	}
-	return !d.checkBreak()
+	return !d.d.CheckBreak()
 }
 
-func (d *decoderMsgpackBytes) mapElemKey() {
-	d.d.ReadMapElemKey()
+func (d *decoderMsgpackBytes) mapElemKey(firstTime bool) {
+	d.d.ReadMapElemKey(firstTime)
 	d.c = containerMapKey
 }
 
@@ -2766,8 +2791,8 @@ func (d *decoderMsgpackBytes) mapEnd() {
 	d.c = 0
 }
 
-func (d *decoderMsgpackBytes) arrayElem() {
-	d.d.ReadArrayElem()
+func (d *decoderMsgpackBytes) arrayElem(firstTime bool) {
+	d.d.ReadArrayElem(firstTime)
 	d.c = containerArrayElem
 }
 
@@ -2821,9 +2846,9 @@ func (x decSliceHelperMsgpackBytes) End() {
 func (x decSliceHelperMsgpackBytes) ElemContainerState(index int) {
 
 	if x.Array {
-		x.d.arrayElem()
+		x.d.arrayElem(index == 0)
 	} else if index&1 == 0 {
-		x.d.mapElemKey()
+		x.d.mapElemKey(index == 0)
 	} else {
 		x.d.mapElemValue()
 	}
@@ -3263,6 +3288,14 @@ func (e *msgpackEncDriverBytes) WriteArrayStart(length int) {
 
 func (e *msgpackEncDriverBytes) WriteMapStart(length int) {
 	e.writeContainerLen(msgpackContainerMap, length)
+}
+
+func (e *msgpackEncDriverBytes) WriteArrayEmpty() {
+	e.WriteArrayStart(0)
+}
+
+func (e *msgpackEncDriverBytes) WriteMapEmpty() {
+	e.WriteMapStart(0)
 }
 
 func (e *msgpackEncDriverBytes) EncodeString(s string) {
@@ -4177,110 +4210,90 @@ func (e *encoderMsgpackIO) kSeqFn(rt reflect.Type) (fn *encFnMsgpackIO) {
 	return
 }
 
-func (e *encoderMsgpackIO) kSliceWMbs(rv reflect.Value, ti *typeInfo) {
-	var builtin bool
-	var fn *encFnMsgpackIO
-	var l = rvLenSlice(rv)
+func (e *encoderMsgpackIO) kArrayWMbs(rv reflect.Value, ti *typeInfo, isSlice bool) {
+	var l int
+	if isSlice {
+		l = rvLenSlice(rv)
+	} else {
+		l = rv.Len()
+	}
 	if l == 0 {
-		e.mapStart(0)
-		goto END
+		e.e.WriteMapEmpty()
+		return
 	}
 	e.haltOnMbsOddLen(l)
 	e.mapStart(l >> 1)
-	builtin = ti.tielem.flagEncBuiltin
+
+	var fn *encFnMsgpackIO
+	builtin := ti.tielem.flagEncBuiltin
 	if !builtin {
 		fn = e.kSeqFn(ti.elem)
 	}
-	for j := 0; j < l; j++ {
-		if j&1 == 0 {
-			e.mapElemKey()
-		} else {
-			e.mapElemValue()
-		}
-		rvv := rvSliceIndex(rv, j, ti)
+
+	j := 0
+	e.c = containerMapKey
+	e.e.WriteMapElemKey(true)
+	for {
+		rvv := rvArrayIndex(rv, j, ti, isSlice)
 		if builtin {
 			e.encode(rv2i(baseRVRV(rvv)))
 		} else {
 			e.encodeValue(rvv, fn)
 		}
-	}
-END:
-	e.mapEnd()
-}
-
-func (e *encoderMsgpackIO) kSliceW(rv reflect.Value, ti *typeInfo) {
-	var l = rvLenSlice(rv)
-	e.arrayStart(l)
-	if l <= 0 {
-		goto END
-	}
-	if ti.tielem.flagEncBuiltin {
-		for j := 0; j < l; j++ {
-			e.arrayElem()
-			e.encode(rv2i(baseRVRV(rvSliceIndex(rv, j, ti))))
+		j++
+		if j == l {
+			break
 		}
-	} else {
-		fn := e.kSeqFn(ti.elem)
-		for j := 0; j < l; j++ {
-			e.arrayElem()
-			e.encodeValue(rvSliceIndex(rv, j, ti), fn)
-		}
-	}
-END:
-	e.arrayEnd()
-}
-
-func (e *encoderMsgpackIO) kArrayWMbs(rv reflect.Value, ti *typeInfo) {
-	var builtin bool
-	var fn *encFnMsgpackIO
-	var l = rv.Len()
-	if l == 0 {
-		e.mapStart(0)
-		goto END
-	}
-	e.haltOnMbsOddLen(l)
-	e.mapStart(l >> 1)
-	builtin = ti.tielem.flagEncBuiltin
-	if !builtin {
-		fn = e.kSeqFn(ti.elem)
-	}
-	for j := 0; j < l; j++ {
 		if j&1 == 0 {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(false)
 		} else {
 			e.mapElemValue()
 		}
-		rvv := rvArrayIndex(rv, j, ti)
-		if builtin {
+	}
+	e.c = 0
+	e.e.WriteMapEnd()
+
+}
+
+func (e *encoderMsgpackIO) kArrayW(rv reflect.Value, ti *typeInfo, isSlice bool) {
+	var l int
+	if isSlice {
+		l = rvLenSlice(rv)
+	} else {
+		l = rv.Len()
+	}
+	if l <= 0 {
+		e.e.WriteArrayEmpty()
+		return
+	}
+	e.arrayStart(l)
+
+	var fn *encFnMsgpackIO
+	if !ti.tielem.flagEncBuiltin {
+		fn = e.kSeqFn(ti.elem)
+	}
+
+	j := 0
+	e.c = containerArrayElem
+	e.e.WriteArrayElem(true)
+	for {
+		rvv := rvArrayIndex(rv, j, ti, isSlice)
+		if ti.tielem.flagEncBuiltin {
 			e.encode(rv2i(baseRVRV(rvv)))
 		} else {
 			e.encodeValue(rvv, fn)
 		}
+		j++
+		if j == l {
+			break
+		}
+		e.c = containerArrayElem
+		e.e.WriteArrayElem(false)
 	}
-END:
-	e.mapEnd()
-}
 
-func (e *encoderMsgpackIO) kArrayW(rv reflect.Value, ti *typeInfo) {
-	var l = rv.Len()
-	e.arrayStart(l)
-	if l <= 0 {
-		goto END
-	}
-	if ti.tielem.flagEncBuiltin {
-		for j := 0; j < l; j++ {
-			e.arrayElem()
-			e.encode(rv2i(baseRVRV(rvArrayIndex(rv, j, ti))))
-		}
-	} else {
-		fn := e.kSeqFn(ti.elem)
-		for j := 0; j < l; j++ {
-			e.arrayElem()
-			e.encodeValue(rvArrayIndex(rv, j, ti), fn)
-		}
-	}
-END:
-	e.arrayEnd()
+	e.c = 0
+	e.e.WriteArrayEnd()
 }
 
 func (e *encoderMsgpackIO) kChan(f *encFnInfo, rv reflect.Value) {
@@ -4295,29 +4308,29 @@ func (e *encoderMsgpackIO) kChan(f *encFnInfo, rv reflect.Value) {
 	rv = chanToSlice(rv, rtslice, e.h.ChanRecvTimeout)
 	ti := e.h.getTypeInfo(rt2id(rtslice), rtslice)
 	if f.ti.mbs {
-		e.kSliceWMbs(rv, ti)
+		e.kArrayWMbs(rv, ti, true)
 	} else {
-		e.kSliceW(rv, ti)
+		e.kArrayW(rv, ti, true)
 	}
 }
 
 func (e *encoderMsgpackIO) kSlice(f *encFnInfo, rv reflect.Value) {
 	if f.ti.mbs {
-		e.kSliceWMbs(rv, f.ti)
+		e.kArrayWMbs(rv, f.ti, true)
 	} else if f.ti.rtid == uint8SliceTypId || uint8TypId == rt2id(f.ti.elem) {
 		e.e.EncodeStringBytesRaw(rvGetBytes(rv))
 	} else {
-		e.kSliceW(rv, f.ti)
+		e.kArrayW(rv, f.ti, true)
 	}
 }
 
 func (e *encoderMsgpackIO) kArray(f *encFnInfo, rv reflect.Value) {
 	if f.ti.mbs {
-		e.kArrayWMbs(rv, f.ti)
+		e.kArrayWMbs(rv, f.ti, false)
 	} else if handleBytesWithinKArray && uint8TypId == rt2id(f.ti.elem) {
 		e.e.EncodeStringBytesRaw(rvGetArrayBytes(rv, nil))
 	} else {
-		e.kArrayW(rv, f.ti)
+		e.kArrayW(rv, f.ti, false)
 	}
 }
 
@@ -4388,25 +4401,37 @@ func (e *encoderMsgpackIO) kStructSimple(f *encFnInfo, rv reflect.Value) {
 
 	chkCirRef := e.h.CheckCircularRef
 	var si *structFieldInfo
+	var j int
 
 	if f.ti.toArray || e.h.StructToArray {
+		if len(tisfi) == 0 {
+			e.e.WriteArrayEmpty()
+			return
+		}
 		e.arrayStart(len(tisfi))
-		for _, si = range tisfi {
-			e.arrayElem()
+		for j, si = range tisfi {
+			e.c = containerArrayElem
+			e.e.WriteArrayElem(j == 0)
 			if si.encBuiltin {
 				e.encode(rv2i(si.fieldNoAlloc(rv, true)))
 			} else {
 				e.encodeValue(si.fieldNoAlloc(rv, !chkCirRef), nil)
 			}
 		}
-		e.arrayEnd()
+		e.c = 0
+		e.e.WriteArrayEnd()
 	} else {
+		if len(tisfi) == 0 {
+			e.e.WriteMapEmpty()
+			return
+		}
 		if e.h.Canonical {
 			tisfi = f.ti.sfi.sorted()
 		}
 		e.mapStart(len(tisfi))
-		for _, si = range tisfi {
-			e.mapElemKey()
+		for j, si = range tisfi {
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(j == 0)
 			e.e.EncodeStringNoEscape4Json(si.encName)
 			e.mapElemValue()
 			if si.encBuiltin {
@@ -4415,7 +4440,8 @@ func (e *encoderMsgpackIO) kStructSimple(f *encFnInfo, rv reflect.Value) {
 				e.encodeValue(si.fieldNoAlloc(rv, !chkCirRef), nil)
 			}
 		}
-		e.mapEnd()
+		e.c = 0
+		e.e.WriteMapEnd()
 	}
 }
 
@@ -4443,8 +4469,11 @@ func (e *encoderMsgpackIO) kStruct(f *encFnInfo, rv reflect.Value) {
 	recur := e.h.RecursiveEmptyCheck
 	chkCirRef := e.h.CheckCircularRef
 
+	var xlen int
+
 	var kv sfiRv
 	var j int
+	var sf encStructFieldObj
 	if toMap {
 		newlen = 0
 		if e.h.Canonical {
@@ -4479,7 +4508,13 @@ func (e *encoderMsgpackIO) kStruct(f *encFnInfo, rv reflect.Value) {
 			}
 		}
 
-		e.mapStart(newlen + len(mf2s))
+		xlen = newlen + len(mf2s)
+		if xlen == 0 {
+			e.e.WriteMapEmpty()
+			goto END
+		}
+
+		e.mapStart(xlen)
 
 		if len(mf2s) != 0 && e.h.Canonical {
 			mf2w := make([]encStructFieldObj, newlen+len(mf2s))
@@ -4493,29 +4528,31 @@ func (e *encoderMsgpackIO) kStruct(f *encFnInfo, rv reflect.Value) {
 				j++
 			}
 			sort.Sort((encStructFieldObjSlice)(mf2w))
-			for _, v := range mf2w {
-				e.mapElemKey()
-				if ti.keyType == valueTypeString && v.noEsc4json {
-					e.e.EncodeStringNoEscape4Json(v.key)
+			for j, sf = range mf2w {
+				e.c = containerMapKey
+				e.e.WriteMapElemKey(j == 0)
+				if ti.keyType == valueTypeString && sf.noEsc4json {
+					e.e.EncodeStringNoEscape4Json(sf.key)
 				} else {
-					e.kStructFieldKey(ti.keyType, v.key)
+					e.kStructFieldKey(ti.keyType, sf.key)
 				}
 				e.mapElemValue()
-				if v.isRv {
-					if v.builtin {
-						e.encode(rv2i(baseRVRV(v.rv)))
+				if sf.isRv {
+					if sf.builtin {
+						e.encode(rv2i(baseRVRV(sf.rv)))
 					} else {
-						e.encodeValue(v.rv, nil)
+						e.encodeValue(sf.rv, nil)
 					}
 				} else {
-					e.encode(v.intf)
+					e.encode(sf.intf)
 				}
 			}
 		} else {
 			keytyp := ti.keyType
 			for j = 0; j < newlen; j++ {
 				kv = fkvs[j]
-				e.mapElemKey()
+				e.c = containerMapKey
+				e.e.WriteMapElemKey(j == 0)
 				if ti.keyType == valueTypeString && !kv.v.encNameEscape4Json {
 					e.e.EncodeStringNoEscape4Json(kv.v.encName)
 				} else {
@@ -4529,14 +4566,17 @@ func (e *encoderMsgpackIO) kStruct(f *encFnInfo, rv reflect.Value) {
 				}
 			}
 			for _, v := range mf2s {
-				e.mapElemKey()
+				e.c = containerMapKey
+				e.e.WriteMapElemKey(j == 0)
 				e.kStructFieldKey(keytyp, v.v)
 				e.mapElemValue()
 				e.encode(v.i)
+				j++
 			}
 		}
 
-		e.mapEnd()
+		e.c = 0
+		e.e.WriteMapEnd()
 	} else {
 		newlen = len(tisfi)
 		for i, si := range tisfi {
@@ -4554,9 +4594,15 @@ func (e *encoderMsgpackIO) kStruct(f *encFnInfo, rv reflect.Value) {
 			fkvs[i] = kv
 		}
 
+		if newlen == 0 {
+			e.e.WriteArrayEmpty()
+			goto END
+		}
+
 		e.arrayStart(newlen)
 		for j = 0; j < newlen; j++ {
-			e.arrayElem()
+			e.c = containerArrayElem
+			e.e.WriteArrayElem(j == 0)
 			kv = fkvs[j]
 			if !kv.r.IsValid() {
 				e.e.EncodeNil()
@@ -4566,19 +4612,22 @@ func (e *encoderMsgpackIO) kStruct(f *encFnInfo, rv reflect.Value) {
 				e.encodeValue(kv.r, nil)
 			}
 		}
-		e.arrayEnd()
+		e.c = 0
+		e.e.WriteArrayEnd()
 	}
+
+END:
 
 	e.slist.put(fkvs)
 }
 
 func (e *encoderMsgpackIO) kMap(f *encFnInfo, rv reflect.Value) {
 	l := rvLenMap(rv)
-	e.mapStart(l)
 	if l == 0 {
-		e.mapEnd()
+		e.e.WriteMapEmpty()
 		return
 	}
+	e.mapStart(l)
 
 	var keyFn, valFn *encFnMsgpackIO
 
@@ -4612,7 +4661,8 @@ func (e *encoderMsgpackIO) kMap(f *encFnInfo, rv reflect.Value) {
 
 	if e.h.Canonical {
 		e.kMapCanonical(f.ti, rv, rvv, keyFn, valFn)
-		e.mapEnd()
+		e.c = 0
+		e.e.WriteMapEnd()
 		return
 	}
 
@@ -4623,9 +4673,10 @@ func (e *encoderMsgpackIO) kMap(f *encFnInfo, rv reflect.Value) {
 
 	kbuiltin := f.ti.tikey.flagEncBuiltin
 	vbuiltin := f.ti.tielem.flagEncBuiltin
-	for it.Next() {
+	for j := 0; it.Next(); j++ {
 		rv = it.Key()
-		e.mapElemKey()
+		e.c = containerMapKey
+		e.e.WriteMapElemKey(j == 0)
 		if keyTypeIsString {
 			e.e.EncodeString(rvGetString(rv))
 		} else if kbuiltin {
@@ -4643,7 +4694,8 @@ func (e *encoderMsgpackIO) kMap(f *encFnInfo, rv reflect.Value) {
 	}
 	it.Done()
 
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 
 func (e *encoderMsgpackIO) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, keyFn, valFn *encFnMsgpackIO) {
@@ -4664,7 +4716,8 @@ func (e *encoderMsgpackIO) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, ke
 			mks[0], mks[1] = mks[1], mks[0]
 		}
 		for i := range mks {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			if rtkeydecl {
 				e.e.EncodeBool(mks[i].Bool())
 			} else {
@@ -4682,7 +4735,8 @@ func (e *encoderMsgpackIO) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, ke
 		}
 		slices.SortFunc(mksv, cmpOrderedRv)
 		for i := range mksv {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			if rtkeydecl {
 				e.e.EncodeString(mksv[i].v)
 			} else {
@@ -4700,7 +4754,8 @@ func (e *encoderMsgpackIO) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, ke
 		}
 		slices.SortFunc(mksv, cmpOrderedRv)
 		for i := range mksv {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			if rtkeydecl {
 				e.e.EncodeUint(mksv[i].v)
 			} else {
@@ -4718,7 +4773,8 @@ func (e *encoderMsgpackIO) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, ke
 		}
 		slices.SortFunc(mksv, cmpOrderedRv)
 		for i := range mksv {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			if rtkeydecl {
 				e.e.EncodeInt(mksv[i].v)
 			} else {
@@ -4736,7 +4792,8 @@ func (e *encoderMsgpackIO) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, ke
 		}
 		slices.SortFunc(mksv, cmpOrderedRv)
 		for i := range mksv {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			if rtkeydecl {
 				e.e.EncodeFloat32(float32(mksv[i].v))
 			} else {
@@ -4754,7 +4811,8 @@ func (e *encoderMsgpackIO) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, ke
 		}
 		slices.SortFunc(mksv, cmpOrderedRv)
 		for i := range mksv {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			if rtkeydecl {
 				e.e.EncodeFloat64(mksv[i].v)
 			} else {
@@ -4773,7 +4831,8 @@ func (e *encoderMsgpackIO) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, ke
 			}
 			slices.SortFunc(mksv, cmpTimeRv)
 			for i := range mksv {
-				e.mapElemKey()
+				e.c = containerMapKey
+				e.e.WriteMapElemKey(i == 0)
 				e.e.EncodeTime(mksv[i].v)
 				e.mapElemValue()
 				e.encodeValue(mapGet(rv, mksv[i].r, rvv, kfast, visindirect, visref), valFn)
@@ -4801,7 +4860,8 @@ func (e *encoderMsgpackIO) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, ke
 
 		slices.SortFunc(mksbv, cmpBytesRv)
 		for j := range mksbv {
-			e.mapElemKey()
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(j == 0)
 			e.e.writeBytesAsis(mksbv[j].v)
 			e.mapElemValue()
 			e.encodeValue(mapGet(rv, mksbv[j].r, rvv, kfast, visindirect, visref), valFn)
@@ -4882,6 +4942,17 @@ func (e *encoderMsgpackIO) encode(iv interface{}) {
 
 	rv, ok := isNil(iv)
 	if ok {
+		if e.h.NilCollectionToZeroLength {
+			switch rv.Kind() {
+			case reflect.Slice, reflect.Chan:
+
+				e.e.WriteArrayEmpty()
+				return
+			case reflect.Map:
+				e.e.WriteMapEmpty()
+				return
+			}
+		}
 		e.e.EncodeNil()
 		return
 	}
@@ -5012,9 +5083,22 @@ TOP:
 		rvp = reflect.Value{}
 		rv = rv.Elem()
 		goto TOP
-	case reflect.Map, reflect.Slice, reflect.Chan:
+	case reflect.Map:
 		if rvIsNil(rv) {
-			e.e.EncodeNil()
+			if e.h.NilCollectionToZeroLength {
+				e.e.WriteMapEmpty()
+			} else {
+				e.e.EncodeNil()
+			}
+			goto END
+		}
+	case reflect.Slice, reflect.Chan:
+		if rvIsNil(rv) {
+			if e.h.NilCollectionToZeroLength {
+				e.e.WriteArrayEmpty()
+			} else {
+				e.e.EncodeNil()
+			}
 			goto END
 		}
 	case reflect.Invalid, reflect.Func:
@@ -5110,34 +5194,14 @@ func (e *encoderMsgpackIO) mapStart(length int) {
 	e.c = containerMapStart
 }
 
-func (e *encoderMsgpackIO) mapElemKey() {
-	e.e.WriteMapElemKey()
-	e.c = containerMapKey
-}
-
 func (e *encoderMsgpackIO) mapElemValue() {
 	e.e.WriteMapElemValue()
 	e.c = containerMapValue
 }
 
-func (e *encoderMsgpackIO) mapEnd() {
-	e.e.WriteMapEnd()
-	e.c = 0
-}
-
 func (e *encoderMsgpackIO) arrayStart(length int) {
 	e.e.WriteArrayStart(length)
 	e.c = containerArrayStart
-}
-
-func (e *encoderMsgpackIO) arrayElem() {
-	e.e.WriteArrayElem()
-	e.c = containerArrayElem
-}
-
-func (e *encoderMsgpackIO) arrayEnd() {
-	e.e.WriteArrayEnd()
-	e.c = 0
 }
 
 func (e *encoderMsgpackIO) writerEnd() {
@@ -5705,7 +5769,7 @@ func (d *decoderMsgpackIO) kStructSimple(f *decFnInfo, rv reflect.Value) {
 		}
 		hasLen := containerLen >= 0
 		for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-			d.mapElemKey()
+			d.mapElemKey(j == 0)
 			rvkencname, att := d.d.DecodeStringAsBytes()
 
 			if d.bufio && d.h.jsonHandle {
@@ -5730,7 +5794,7 @@ func (d *decoderMsgpackIO) kStructSimple(f *decFnInfo, rv reflect.Value) {
 		hasLen := containerLen >= 0
 
 		for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-			d.arrayElem()
+			d.arrayElem(j == 0)
 			if j < len(tisfi) {
 				d.kStructField(tisfi[j], rv)
 			} else {
@@ -5767,7 +5831,7 @@ func (d *decoderMsgpackIO) kStruct(f *decFnInfo, rv reflect.Value) {
 		var att dBytesAttachState
 		tkt := ti.keyType
 		for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-			d.mapElemKey()
+			d.mapElemKey(j == 0)
 
 			if tkt == valueTypeString {
 				rvkencname, att = d.d.DecodeStringAsBytes()
@@ -5813,7 +5877,7 @@ func (d *decoderMsgpackIO) kStruct(f *decFnInfo, rv reflect.Value) {
 		hasLen := containerLen >= 0
 
 		for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-			d.arrayElem()
+			d.arrayElem(j == 0)
 			if j < len(tisfi) {
 				d.kStructField(tisfi[j], rv)
 			} else {
@@ -5970,7 +6034,7 @@ func (d *decoderMsgpackIO) kSlice(f *decFnInfo, rv reflect.Value) {
 			slh.ElemContainerState(j)
 		}
 
-		rv9 = rvSliceIndex(rv, j, f.ti)
+		rv9 = rvArrayIndex(rv, j, f.ti, true)
 		if elemReset {
 			rvSetZero(rv9)
 		}
@@ -6070,7 +6134,7 @@ func (d *decoderMsgpackIO) kArray(f *decFnInfo, rv reflect.Value) {
 		}
 
 		slh.ElemContainerState(j)
-		rv9 = rvArrayIndex(rv, j, f.ti)
+		rv9 = rvArrayIndex(rv, j, f.ti, false)
 		if elemReset {
 			rvSetZero(rv9)
 		}
@@ -6295,7 +6359,7 @@ func (d *decoderMsgpackIO) kMap(f *decFnInfo, rv reflect.Value) {
 			rvk = rvkn
 		}
 
-		d.mapElemKey()
+		d.mapElemKey(j == 0)
 
 		if d.d.TryNil() {
 			rvSetZero(rvk)
@@ -6705,22 +6769,16 @@ func (d *decoderMsgpackIO) NumBytesRead() int {
 	return d.d.NumBytesRead()
 }
 
-func (d *decoderMsgpackIO) checkBreak() (v bool) {
-
-	v = d.d.CheckBreak()
-	return
-}
-
 func (d *decoderMsgpackIO) containerNext(j, containerLen int, hasLen bool) bool {
 
 	if hasLen {
 		return j < containerLen
 	}
-	return !d.checkBreak()
+	return !d.d.CheckBreak()
 }
 
-func (d *decoderMsgpackIO) mapElemKey() {
-	d.d.ReadMapElemKey()
+func (d *decoderMsgpackIO) mapElemKey(firstTime bool) {
+	d.d.ReadMapElemKey(firstTime)
 	d.c = containerMapKey
 }
 
@@ -6735,8 +6793,8 @@ func (d *decoderMsgpackIO) mapEnd() {
 	d.c = 0
 }
 
-func (d *decoderMsgpackIO) arrayElem() {
-	d.d.ReadArrayElem()
+func (d *decoderMsgpackIO) arrayElem(firstTime bool) {
+	d.d.ReadArrayElem(firstTime)
 	d.c = containerArrayElem
 }
 
@@ -6790,9 +6848,9 @@ func (x decSliceHelperMsgpackIO) End() {
 func (x decSliceHelperMsgpackIO) ElemContainerState(index int) {
 
 	if x.Array {
-		x.d.arrayElem()
+		x.d.arrayElem(index == 0)
 	} else if index&1 == 0 {
-		x.d.mapElemKey()
+		x.d.mapElemKey(index == 0)
 	} else {
 		x.d.mapElemValue()
 	}
@@ -7232,6 +7290,14 @@ func (e *msgpackEncDriverIO) WriteArrayStart(length int) {
 
 func (e *msgpackEncDriverIO) WriteMapStart(length int) {
 	e.writeContainerLen(msgpackContainerMap, length)
+}
+
+func (e *msgpackEncDriverIO) WriteArrayEmpty() {
+	e.WriteArrayStart(0)
+}
+
+func (e *msgpackEncDriverIO) WriteMapEmpty() {
+	e.WriteMapStart(0)
 }
 
 func (e *msgpackEncDriverIO) EncodeString(s string) {
