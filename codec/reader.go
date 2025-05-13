@@ -789,8 +789,12 @@ LOOP:
 func (z *bytesDecReader) skipWhitespace() (token byte) {
 	i := z.c
 LOOP:
-	if !isWhitespaceChar(z.b[i]) {
-		token = z.b[i]
+	// setting token before check reduces inlining cost,
+	// making containerNext inlineable
+	// if !isWhitespaceChar(z.b[i]) {
+	token = z.b[i]
+	if !isWhitespaceChar(token) {
+		// token = z.b[i]
 		z.c = i + 1
 		return
 	}

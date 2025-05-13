@@ -449,7 +449,9 @@ func (e *jsonEncDriver[T]) WriteArrayStart(length int) {
 func (e *jsonEncDriver[T]) WriteArrayEnd() {
 	if e.d {
 		e.dl--
-		e.writeIndent()
+		if e.e.c != containerArrayStart {
+			e.writeIndent()
+		}
 	}
 	e.w.writen1(']')
 }

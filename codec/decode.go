@@ -2331,20 +2331,12 @@ func (d *decoder[T]) NumBytesRead() int {
 // - Read(Map|Array)Elem(Kay|Value) is only supported by json.
 // Honor these in the code, to reduce the number of interface calls (even if empty).
 
-func (d *decoder[T]) checkBreak() (v bool) {
-	// if d.cbreak {
-	// 	v = d.d.CheckBreak()
-	// }
-	v = d.d.CheckBreak()
-	return
-}
-
 func (d *decoder[T]) containerNext(j, containerLen int, hasLen bool) bool {
-	// return (hasLen && j < containerLen) || !(hasLen || slh.d.checkBreak())
+	// return (hasLen && (j < containerLen)) || (!hasLen && !d.d.CheckBreak())
 	if hasLen {
 		return j < containerLen
 	}
-	return !d.checkBreak()
+	return !d.d.CheckBreak()
 }
 
 func (d *decoderBase) mapStart(v int) int {
