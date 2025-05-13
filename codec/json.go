@@ -659,9 +659,9 @@ func (d *jsonDecDriver[T]) CheckBreak() bool {
 	return d.tok == '}' || d.tok == ']'
 }
 
-func (d *jsonDecDriver[T]) ReadArrayElem() {
+func (d *jsonDecDriver[T]) ReadArrayElem(firstTime bool) {
 	const xc uint8 = ','
-	if d.d.c != containerArrayStart {
+	if !firstTime {
 		d.advance()
 		if d.tok != xc {
 			d.readDelimError(xc)
@@ -679,9 +679,9 @@ func (d *jsonDecDriver[T]) ReadArrayEnd() {
 	d.tok = 0
 }
 
-func (d *jsonDecDriver[T]) ReadMapElemKey() {
+func (d *jsonDecDriver[T]) ReadMapElemKey(firstTime bool) {
 	const xc uint8 = ','
-	if d.d.c != containerMapStart {
+	if !firstTime {
 		d.advance()
 		if d.tok != xc {
 			d.readDelimError(xc)

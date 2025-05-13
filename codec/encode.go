@@ -1689,7 +1689,10 @@ func (e *encoder[T]) fnNoExt(t reflect.Type) *encFn[T] {
 
 // ---- container tracker methods
 // Note: We update the .c after calling the callback.
-// This way, the callback can know what the last status was.
+//
+// Callbacks ie Write(Map|Array)XXX should not use the containerState.
+// It is there for post-callback use.
+// Instead, callbacks have a parameter to tell if first time or not.
 
 func (e *encoder[T]) mapStart(length int) {
 	e.e.WriteMapStart(length)

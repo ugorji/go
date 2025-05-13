@@ -250,8 +250,8 @@ type decInit2er struct{}
 func (decInit2er) init2(dec decoderI) {}
 
 type decDriverContainerTracker interface {
-	ReadArrayElem()
-	ReadMapElemKey()
+	ReadArrayElem(firstTime bool)
+	ReadMapElemKey(firstTime bool)
 	ReadMapElemValue()
 	ReadArrayEnd()
 	ReadMapEnd()
@@ -271,14 +271,14 @@ func (x decDriverNoopNumberHelper) decFloat() (f float64, ok bool) { panic("decF
 
 type decDriverNoopContainerReader struct{}
 
-func (x decDriverNoopContainerReader) ReadArrayStart() (v int) { panic("ReadArrayStart unsupported") }
-func (x decDriverNoopContainerReader) ReadMapStart() (v int)   { panic("ReadMapStart unsupported") }
-func (x decDriverNoopContainerReader) ReadArrayEnd()           {}
-func (x decDriverNoopContainerReader) ReadMapEnd()             {}
-func (x decDriverNoopContainerReader) ReadArrayElem()          {}
-func (x decDriverNoopContainerReader) ReadMapElemKey()         {}
-func (x decDriverNoopContainerReader) ReadMapElemValue()       {}
-func (x decDriverNoopContainerReader) CheckBreak() (v bool)    { return }
+func (x decDriverNoopContainerReader) ReadArrayStart() (v int)       { panic("ReadArrayStart unsupported") }
+func (x decDriverNoopContainerReader) ReadMapStart() (v int)         { panic("ReadMapStart unsupported") }
+func (x decDriverNoopContainerReader) ReadArrayEnd()                 {}
+func (x decDriverNoopContainerReader) ReadMapEnd()                   {}
+func (x decDriverNoopContainerReader) ReadArrayElem(firstTime bool)  {}
+func (x decDriverNoopContainerReader) ReadMapElemKey(firstTime bool) {}
+func (x decDriverNoopContainerReader) ReadMapElemValue()             {}
+func (x decDriverNoopContainerReader) CheckBreak() (v bool)          { return }
 
 // ----
 
@@ -937,7 +937,7 @@ func (d *decoder[T]) kStructSimple(f *decFnInfo, rv reflect.Value) {
 		}
 		hasLen := containerLen >= 0
 		for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-			d.mapElemKey()
+			d.mapElemKey(j == 0)
 			rvkencname, att := d.d.DecodeStringAsBytes()
 			// In JSON, mapElemValue reads a colon and spaces.
 			// In bufio mode of ioDecReader, fillbuf could overwrite the read buffer
@@ -973,7 +973,7 @@ func (d *decoder[T]) kStructSimple(f *decFnInfo, rv reflect.Value) {
 		//   - if mapped elem-wise to a field, handle it
 		//   - if more stream items than can be mapped, error it
 		for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-			d.arrayElem()
+			d.arrayElem(j == 0)
 			if j < len(tisfi) {
 				d.kStructField(tisfi[j], rv)
 			} else {
@@ -1010,7 +1010,7 @@ func (d *decoder[T]) kStruct(f *decFnInfo, rv reflect.Value) {
 		var att dBytesAttachState
 		tkt := ti.keyType
 		for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-			d.mapElemKey()
+			d.mapElemKey(j == 0)
 			// use if-else since <8 branches and we need good branch prediction for string
 			if tkt == valueTypeString {
 				rvkencname, att = d.d.DecodeStringAsBytes()
@@ -1060,7 +1060,7 @@ func (d *decoder[T]) kStruct(f *decFnInfo, rv reflect.Value) {
 		// if mapped elem-wise to a field, handle it
 		// if more stream items than can be mapped, error it
 		for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
-			d.arrayElem()
+			d.arrayElem(j == 0)
 			if j < len(tisfi) {
 				d.kStructField(tisfi[j], rv)
 			} else {
@@ -1589,7 +1589,7 @@ func (d *decoder[T]) kMap(f *decFnInfo, rv reflect.Value) {
 			rvk = rvkn
 		}
 
-		d.mapElemKey()
+		d.mapElemKey(j == 0)
 
 		if d.d.TryNil() {
 			rvSetZero(rvk)
@@ -2347,8 +2347,8 @@ func (d *decoderBase) mapStart(v int) int {
 	return v
 }
 
-func (d *decoder[T]) mapElemKey() {
-	d.d.ReadMapElemKey()
+func (d *decoder[T]) mapElemKey(firstTime bool) {
+	d.d.ReadMapElemKey(firstTime)
 	d.c = containerMapKey
 }
 
@@ -2371,8 +2371,8 @@ func (d *decoderBase) arrayStart(v int) int {
 	return v
 }
 
-func (d *decoder[T]) arrayElem() {
-	d.d.ReadArrayElem()
+func (d *decoder[T]) arrayElem(firstTime bool) {
+	d.d.ReadArrayElem(firstTime)
 	d.c = containerArrayElem
 }
 
@@ -2491,9 +2491,9 @@ func (x decSliceHelper[T]) ElemContainerState(index int) {
 	// Note: if isnil, clen=0, so we never call into ElemContainerState
 
 	if x.Array {
-		x.d.arrayElem()
+		x.d.arrayElem(index == 0)
 	} else if index&1 == 0 { // index%2 == 0 {
-		x.d.mapElemKey()
+		x.d.mapElemKey(index == 0)
 	} else {
 		x.d.mapElemValue()
 	}
