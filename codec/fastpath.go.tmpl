@@ -254,10 +254,10 @@ func (fastpathET[T]) {{ .MethodNamePfx "Enc" false }}V(v []{{ .Elem }}, e *encod
 	{{ else -}}
 	e.arrayStart(len(v))
 	for j := range v {
-		e.arrayElem(j == 0)
+		e.c = containerArrayElem; e.e.WriteArrayElem(j == 0)
 		{{ encmd .Elem "v[j]"}}
 	} 
-	e.arrayEnd()
+	e.c = 0; e.e.WriteArrayEnd()
 	{{ end -}}
 }
 func (fastpathET[T]) {{ .MethodNamePfx "EncAsMap" false }}V(v []{{ .Elem }}, e *encoder[T]) {
@@ -275,13 +275,13 @@ func (fastpathET[T]) {{ .MethodNamePfx "EncAsMap" false }}V(v []{{ .Elem }}, e *
 	e.mapStart(len(v) >> 1) // e.mapStart(len(v) / 2)
 	for j := range v {
 		if j&1 == 0 { // if j%2 == 0 {
-			e.mapElemKey(j == 0)
+			e.c = containerMapKey; e.e.WriteMapElemKey(j == 0)
 		} else {
 			e.mapElemValue()
 		}
 		{{ encmd .Elem "v[j]"}}
 	}
-	e.mapEnd()
+	e.c = 0; e.e.WriteMapEnd()
 }
 {{end}}{{end}}{{end -}}
 
@@ -316,7 +316,7 @@ func (fastpathET[T]) {{ .MethodNamePfx "Enc" false }}V(v map[{{ .MapKey }}]{{ .E
 		}
 		slices.SortFunc(v2, cmpBytesIntf)
 		for j := range v2 {
-			e.mapElemKey(j == 0)
+			e.c = containerMapKey; e.e.WriteMapElemKey(j == 0)
 			e.asis(v2[j].v)
 			e.mapElemValue()
 			e.encode(v[v2[j].i])
@@ -328,7 +328,7 @@ func (fastpathET[T]) {{ .MethodNamePfx "Enc" false }}V(v map[{{ .MapKey }}]{{ .E
 		slices.Sort(v2)
 		{{/* // sort.Sort({{ sorttype .MapKey false}}(v2)) */ -}}
 		for i, k2 := range v2 {
-			e.mapElemKey(i == 0)
+			e.c = containerMapKey; e.e.WriteMapElemKey(i == 0)
 			{{if eq .MapKey "string"}} e.e.EncodeString(k2) {{else}}{{ $y := printf "%s(k2)" .MapKey }}{{if eq $x .MapKey }}{{ $y = "k2" }}{{end}}{{ encmd .MapKey $y }}{{end}}
 			e.mapElemValue()
 			{{ $y := printf "v[%s(k2)]" .MapKey }}{{if eq $x .MapKey }}{{ $y = "v[k2]" }}{{end}}{{ encmd .Elem $y }}
@@ -336,14 +336,14 @@ func (fastpathET[T]) {{ .MethodNamePfx "Enc" false }}V(v map[{{ .MapKey }}]{{ .E
 	} else {
 		i = 0
 		for k2, v2 := range v {
-			e.mapElemKey(i == 0)
+			e.c = containerMapKey; e.e.WriteMapElemKey(i == 0)
 			{{if eq .MapKey "string"}} e.e.EncodeString(k2) {{else}}{{ encmd .MapKey "k2"}}{{end}}
 			e.mapElemValue()
 			{{ encmd .Elem "v2"}}
 			i++
 		}
 	}
-	e.mapEnd()
+	e.c = 0; e.e.WriteMapEnd()
 }
 {{end}}{{end}}{{end -}}
 

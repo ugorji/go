@@ -537,7 +537,8 @@ func (e *encoder[T]) kArrayWMbs(rv reflect.Value, ti *typeInfo, isSlice bool) {
 
 	// simulate do...while, since we already handled case of 0-length
 	j := 0
-	e.mapElemKey(true)
+	e.c = containerMapKey
+	e.e.WriteMapElemKey(true)
 	for {
 		rvv := rvArrayIndex(rv, j, ti, isSlice)
 		if builtin {
@@ -550,12 +551,14 @@ func (e *encoder[T]) kArrayWMbs(rv reflect.Value, ti *typeInfo, isSlice bool) {
 			break
 		}
 		if j&1 == 0 { // j%2 == 0 {
-			e.mapElemKey(false)
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(false)
 		} else {
 			e.mapElemValue()
 		}
 	}
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 
 	// for j := 0; j < l; j++ {
 	// 	if j&1 == 0 { // j%2 == 0 {
@@ -614,7 +617,8 @@ func (e *encoder[T]) kArrayW(rv reflect.Value, ti *typeInfo, isSlice bool) {
 	}
 
 	j := 0
-	e.arrayElem(true)
+	e.c = containerArrayElem
+	e.e.WriteArrayElem(true)
 	for {
 		rvv := rvArrayIndex(rv, j, ti, isSlice)
 		if ti.tielem.flagEncBuiltin {
@@ -626,7 +630,8 @@ func (e *encoder[T]) kArrayW(rv reflect.Value, ti *typeInfo, isSlice bool) {
 		if j == l {
 			break
 		}
-		e.arrayElem(false)
+		e.c = containerArrayElem
+		e.e.WriteArrayElem(false)
 	}
 
 	// if ti.tielem.flagEncBuiltin {
@@ -642,7 +647,8 @@ func (e *encoder[T]) kArrayW(rv reflect.Value, ti *typeInfo, isSlice bool) {
 	// 	}
 	// }
 
-	e.arrayEnd()
+	e.c = 0
+	e.e.WriteArrayEnd()
 }
 
 func (e *encoder[T]) kChan(f *encFnInfo, rv reflect.Value) {
@@ -767,14 +773,16 @@ func (e *encoder[T]) kStructSimple(f *encFnInfo, rv reflect.Value) {
 		}
 		e.arrayStart(len(tisfi))
 		for j, si = range tisfi {
-			e.arrayElem(j == 0)
+			e.c = containerArrayElem
+			e.e.WriteArrayElem(j == 0)
 			if si.encBuiltin {
 				e.encode(rv2i(si.fieldNoAlloc(rv, true)))
 			} else {
 				e.encodeValue(si.fieldNoAlloc(rv, !chkCirRef), nil)
 			}
 		}
-		e.arrayEnd()
+		e.c = 0
+		e.e.WriteArrayEnd()
 	} else {
 		if len(tisfi) == 0 {
 			e.e.WriteMapEmpty()
@@ -785,7 +793,8 @@ func (e *encoder[T]) kStructSimple(f *encFnInfo, rv reflect.Value) {
 		}
 		e.mapStart(len(tisfi))
 		for j, si = range tisfi {
-			e.mapElemKey(j == 0)
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(j == 0)
 			e.e.EncodeStringNoEscape4Json(si.encName)
 			e.mapElemValue()
 			if si.encBuiltin {
@@ -794,7 +803,8 @@ func (e *encoder[T]) kStructSimple(f *encFnInfo, rv reflect.Value) {
 				e.encodeValue(si.fieldNoAlloc(rv, !chkCirRef), nil)
 			}
 		}
-		e.mapEnd()
+		e.c = 0
+		e.e.WriteMapEnd()
 	}
 }
 
@@ -889,7 +899,8 @@ func (e *encoder[T]) kStruct(f *encFnInfo, rv reflect.Value) {
 			}
 			sort.Sort((encStructFieldObjSlice)(mf2w))
 			for j, sf = range mf2w {
-				e.mapElemKey(j == 0)
+				e.c = containerMapKey
+				e.e.WriteMapElemKey(j == 0)
 				if ti.keyType == valueTypeString && sf.noEsc4json {
 					e.e.EncodeStringNoEscape4Json(sf.key)
 				} else {
@@ -910,7 +921,8 @@ func (e *encoder[T]) kStruct(f *encFnInfo, rv reflect.Value) {
 			keytyp := ti.keyType
 			for j = 0; j < newlen; j++ {
 				kv = fkvs[j]
-				e.mapElemKey(j == 0)
+				e.c = containerMapKey
+				e.e.WriteMapElemKey(j == 0)
 				if ti.keyType == valueTypeString && !kv.v.encNameEscape4Json {
 					e.e.EncodeStringNoEscape4Json(kv.v.encName)
 				} else {
@@ -924,7 +936,8 @@ func (e *encoder[T]) kStruct(f *encFnInfo, rv reflect.Value) {
 				}
 			}
 			for _, v := range mf2s {
-				e.mapElemKey(j == 0)
+				e.c = containerMapKey
+				e.e.WriteMapElemKey(j == 0)
 				e.kStructFieldKey(keytyp, v.v)
 				e.mapElemValue()
 				e.encode(v.i)
@@ -932,7 +945,8 @@ func (e *encoder[T]) kStruct(f *encFnInfo, rv reflect.Value) {
 			}
 		}
 
-		e.mapEnd()
+		e.c = 0
+		e.e.WriteMapEnd()
 	} else {
 		newlen = len(tisfi)
 		for i, si := range tisfi { // use unsorted array (to match sequence in struct)
@@ -960,7 +974,8 @@ func (e *encoder[T]) kStruct(f *encFnInfo, rv reflect.Value) {
 		// encode it all
 		e.arrayStart(newlen)
 		for j = 0; j < newlen; j++ {
-			e.arrayElem(j == 0)
+			e.c = containerArrayElem
+			e.e.WriteArrayElem(j == 0)
 			kv = fkvs[j]
 			if !kv.r.IsValid() {
 				e.e.EncodeNil()
@@ -970,7 +985,8 @@ func (e *encoder[T]) kStruct(f *encFnInfo, rv reflect.Value) {
 				e.encodeValue(kv.r, nil)
 			}
 		}
-		e.arrayEnd()
+		e.c = 0
+		e.e.WriteArrayEnd()
 	}
 
 END:
@@ -1028,7 +1044,8 @@ func (e *encoder[T]) kMap(f *encFnInfo, rv reflect.Value) {
 
 	if e.h.Canonical {
 		e.kMapCanonical(f.ti, rv, rvv, keyFn, valFn)
-		e.mapEnd()
+		e.c = 0
+		e.e.WriteMapEnd()
 		return
 	}
 
@@ -1041,7 +1058,8 @@ func (e *encoder[T]) kMap(f *encFnInfo, rv reflect.Value) {
 	vbuiltin := f.ti.tielem.flagEncBuiltin
 	for j := 0; it.Next(); j++ {
 		rv = it.Key()
-		e.mapElemKey(j == 0)
+		e.c = containerMapKey
+		e.e.WriteMapElemKey(j == 0)
 		if keyTypeIsString {
 			e.e.EncodeString(rvGetString(rv))
 		} else if kbuiltin {
@@ -1059,7 +1077,8 @@ func (e *encoder[T]) kMap(f *encFnInfo, rv reflect.Value) {
 	}
 	it.Done()
 
-	e.mapEnd()
+	e.c = 0
+	e.e.WriteMapEnd()
 }
 
 func (e *encoder[T]) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, keyFn, valFn *encFn[T]) {
@@ -1088,7 +1107,8 @@ func (e *encoder[T]) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, keyFn, v
 			mks[0], mks[1] = mks[1], mks[0]
 		}
 		for i := range mks {
-			e.mapElemKey(i == 0)
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			if rtkeydecl {
 				e.e.EncodeBool(mks[i].Bool())
 			} else {
@@ -1106,7 +1126,8 @@ func (e *encoder[T]) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, keyFn, v
 		}
 		slices.SortFunc(mksv, cmpOrderedRv)
 		for i := range mksv {
-			e.mapElemKey(i == 0)
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			if rtkeydecl {
 				e.e.EncodeString(mksv[i].v)
 			} else {
@@ -1124,7 +1145,8 @@ func (e *encoder[T]) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, keyFn, v
 		}
 		slices.SortFunc(mksv, cmpOrderedRv)
 		for i := range mksv {
-			e.mapElemKey(i == 0)
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			if rtkeydecl {
 				e.e.EncodeUint(mksv[i].v)
 			} else {
@@ -1142,7 +1164,8 @@ func (e *encoder[T]) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, keyFn, v
 		}
 		slices.SortFunc(mksv, cmpOrderedRv)
 		for i := range mksv {
-			e.mapElemKey(i == 0)
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			if rtkeydecl {
 				e.e.EncodeInt(mksv[i].v)
 			} else {
@@ -1160,7 +1183,8 @@ func (e *encoder[T]) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, keyFn, v
 		}
 		slices.SortFunc(mksv, cmpOrderedRv)
 		for i := range mksv {
-			e.mapElemKey(i == 0)
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			if rtkeydecl {
 				e.e.EncodeFloat32(float32(mksv[i].v))
 			} else {
@@ -1178,7 +1202,8 @@ func (e *encoder[T]) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, keyFn, v
 		}
 		slices.SortFunc(mksv, cmpOrderedRv)
 		for i := range mksv {
-			e.mapElemKey(i == 0)
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(i == 0)
 			if rtkeydecl {
 				e.e.EncodeFloat64(mksv[i].v)
 			} else {
@@ -1197,7 +1222,8 @@ func (e *encoder[T]) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, keyFn, v
 			}
 			slices.SortFunc(mksv, cmpTimeRv)
 			for i := range mksv {
-				e.mapElemKey(i == 0)
+				e.c = containerMapKey
+				e.e.WriteMapElemKey(i == 0)
 				e.e.EncodeTime(mksv[i].v)
 				e.mapElemValue()
 				e.encodeValue(mapGet(rv, mksv[i].r, rvv, kfast, visindirect, visref), valFn)
@@ -1227,7 +1253,8 @@ func (e *encoder[T]) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, keyFn, v
 
 		slices.SortFunc(mksbv, cmpBytesRv)
 		for j := range mksbv {
-			e.mapElemKey(j == 0)
+			e.c = containerMapKey
+			e.e.WriteMapElemKey(j == 0)
 			e.e.writeBytesAsis(mksbv[j].v)
 			e.mapElemValue()
 			e.encodeValue(mapGet(rv, mksbv[j].r, rvv, kfast, visindirect, visref), valFn)
@@ -1699,35 +1726,35 @@ func (e *encoder[T]) mapStart(length int) {
 	e.c = containerMapStart
 }
 
-func (e *encoder[T]) mapElemKey(firstTime bool) {
-	e.e.WriteMapElemKey(firstTime)
-	e.c = containerMapKey
-}
+// func (e *encoder[T]) mapElemKey(firstTime bool) {
+// 	e.e.WriteMapElemKey(firstTime)
+// 	e.c = containerMapKey
+// }
 
 func (e *encoder[T]) mapElemValue() {
 	e.e.WriteMapElemValue()
 	e.c = containerMapValue
 }
 
-func (e *encoder[T]) mapEnd() {
-	e.e.WriteMapEnd()
-	e.c = 0
-}
+// func (e *encoder[T]) mapEnd() {
+// 	e.e.WriteMapEnd()
+// 	e.c = 0
+// }
 
 func (e *encoder[T]) arrayStart(length int) {
 	e.e.WriteArrayStart(length)
 	e.c = containerArrayStart
 }
 
-func (e *encoder[T]) arrayElem(firstTime bool) {
-	e.e.WriteArrayElem(firstTime)
-	e.c = containerArrayElem
-}
+// func (e *encoder[T]) arrayElem(firstTime bool) {
+// 	e.e.WriteArrayElem(firstTime)
+// 	e.c = containerArrayElem
+// }
 
-func (e *encoder[T]) arrayEnd() {
-	e.e.WriteArrayEnd()
-	e.c = 0
-}
+// func (e *encoder[T]) arrayEnd() {
+// 	e.e.WriteArrayEnd()
+// 	e.c = 0
+// }
 
 // ----------
 
