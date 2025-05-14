@@ -7,6 +7,8 @@ import (
 	"io"
 )
 
+const maxConsecutiveEmptyWrites = 16 // 2 is sufficient, 16 is enough, 64 is optimal
+
 // encWriter abstracts writing to a byte array or to an io.Writer.
 type encWriterI interface {
 	writeb([]byte)
@@ -57,13 +59,8 @@ func (z *bufioEncWriter) resetBytes(in []byte, out *[]byte) {
 func (z *bufioEncWriter) resetIO(w io.Writer, bufsize int, blist *bytesFreeList) {
 	z.w = w
 	z.n = 0
-	if bufsize <= 0 {
-		bufsize = defEncByteBufSize
-	}
-	// bufsize must be >= 8, to accomodate writen methods (where n <= 8)
-	if bufsize <= 8 {
-		bufsize = 8
-	}
+	// use minimum bufsize of 16, matching the array z.b and accomodating writen methods (where n <= 8)
+	bufsize = max(16, bufsize) // max(byteBufSize, bufsize)
 	if cap(z.buf) < bufsize {
 		if len(z.buf) > 0 && &z.buf[0] != &z.b[0] {
 			blist.put(z.buf)
@@ -78,17 +75,19 @@ func (z *bufioEncWriter) resetIO(w io.Writer, bufsize int, blist *bytesFreeList)
 }
 
 func (z *bufioEncWriter) flushErr() (err error) {
-	n, err := z.w.Write(z.buf[:z.n])
-	z.n -= n
-	if z.n > 0 {
-		if err == nil {
-			err = io.ErrShortWrite
+	var n int
+	for i := maxConsecutiveEmptyReads; i > 0; i-- {
+		n, err = z.w.Write(z.buf[:z.n])
+		z.n -= n
+		if z.n == 0 || err != nil {
+			return
 		}
+		// at this point: z.n > 0 && err == nil
 		if n > 0 {
 			copy(z.buf, z.buf[n:z.n+n])
 		}
 	}
-	return err
+	return io.ErrShortWrite // OR io.ErrNoProgress: not enough (or no) data written
 }
 
 func (z *bufioEncWriter) flush() {
@@ -246,11 +245,6 @@ func (z *bytesEncAppender) writen8(b [8]byte) {
 	// z.b = append(z.b, b[0], b[1], b[2], b[3], b[4], b[5], b[6], b[7]) // prevents inlining encWr.writen4
 }
 
-// func (z *bytesEncAppender) endErr() error {
-// 	*(z.out) = z.b
-// 	return nil
-// }
-
 func (z *bytesEncAppender) end() {
 	*(z.out) = z.b
 }
@@ -263,13 +257,3 @@ func (z *bytesEncAppender) resetBytes(in []byte, out *[]byte) {
 func (z *bytesEncAppender) resetIO(w io.Writer, bufsize int, blist *bytesFreeList) {
 	halt.errorStr("resetIO is unsupported by bytesEncAppender")
 }
-
-// --------------------------------------------------
-
-// func (z *encWr) WriteStr(s string) {
-// 	if z.bytes {
-// 		z.wb.writestr(s)
-// 	} else {
-// 		z.wf.writestr(s)
-// 	}
-// }
