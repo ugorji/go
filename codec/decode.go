@@ -536,21 +536,7 @@ func (d *decoderBase) fauxUnionReadRawBytes(dr decDriverI, asString, rawToString
 // where the key type is string. This is because keys of a map/struct are
 // typically reused across many objects.
 //
-// MARKER 2025 change this to detach2Str later.
-// func (d *decoderBase) string(v []byte, state dBytesAttachState) (s string) {
-// 	// given that string([]byte) checks for, and optimizes for len 0 and len 1,
-// 	// just pass that along
-
-// 	if state >= dBytesAttachViewZerocopy { // !scratchBuf && d.bytes && d.zeroCopy
-// 		s = stringView(v)
-// 	} else if len(v) <= 1 || d.is == nil || d.c != containerMapKey || len(v) > internMaxStrLen {
-// 		s = string(v)
-// 	} else {
-// 		s = d.is.string(v)
-// 	}
-// 	return
-// }
-
+// This should eventually be renamed to detach2Str
 func (d *decoderBase) string(v []byte, state dBytesAttachState) (s string) {
 	// note: string([]byte) checks - and optimizes - for len 0 and len 1
 	if len(v) <= 1 {
@@ -1637,8 +1623,6 @@ func (d *decoder[T]) kMap(f *decFnInfo, rv reflect.Value) {
 		// override part of the buffer used for the string key
 		//
 		// To mitigate this, we do a special check for ioDecReader in bufio mode.
-		//
-		// MARKER 2025
 		if mapKeyStringSharesBytesBuf && d.bufio {
 			if ktypeIsString {
 				rvSetString(rvk, d.string(kstr2bs, att))

@@ -60,7 +60,7 @@ const (
 	// testRpcBufsize is now ignored, so we shouldn't wrap ReadWriteCloser from the net.Conn.
 	// Furthermore, newRpcCodec looks at the passed conn to determine whether we
 	// set a read deadline or not.
-	testWrapRpcReadWriteCloser = true // MARKER 2025 - set to false
+	testWrapRpcReadWriteCloser = false
 )
 
 // tests which check for errors will fail if testRecoverPanicToErr=false (debugging=true).

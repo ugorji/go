@@ -348,11 +348,11 @@ func TestCborSkipTags(t *testing.T) {
 
 	fnEncode := func() {
 		w.b = w.b[:0]
-		// addTagFn8To16() // without: "aAdc"
+		// addTagFn8To16()
 		// write v (Tcbortags, with 2 fields = map with 2 entries)
 		w.writen1(2 + cborBaseMap) // 2 fields = 2 entries
 		// write v.A
-		addTagFn8To16() // MARKER 2025 // without: "aAdc"
+		addTagFn8To16()
 		var s = "A"
 		w.writen1(byte(len(s)) + cborBaseString)
 		w.writestr(s)

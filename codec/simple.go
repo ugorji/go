@@ -603,8 +603,8 @@ func (d *simpleDecDriver[T]) DecodeNaked() {
 		n.v = valueTypeExt
 		l := d.decLen()
 		n.u = uint64(d.r.readn1())
-		// MARKER 2025 - is it necessary to detach this (for extensions?)
 		n.l = d.r.readx(uint(l))
+		// MARKER: not necessary to detach for extensions
 		// var useBuf bool
 		// n.l, useBuf = d.r.readxb(uint(l))
 		// n.a = d.d.attachState(useBuf)

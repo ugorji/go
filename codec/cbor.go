@@ -595,6 +595,9 @@ func (d *cborDecDriver[T]) ReadArrayStart() (length int) {
 	return d.decLen()
 }
 
+// MARKER d.d.buf is ONLY used within DecodeBytes.
+// Safe to use freely here only.
+
 func (d *cborDecDriver[T]) DecodeBytes() (bs []byte, state dBytesAttachState) {
 	if d.advanceNil() {
 		return
@@ -602,15 +605,9 @@ func (d *cborDecDriver[T]) DecodeBytes() (bs []byte, state dBytesAttachState) {
 	if d.st {
 		d.skipTags()
 	}
-	// MARKER don't use scratch buffer for indefinite bytes.
-	// always use the buffer passed.
-	// Main reason is that IndefiniteBytes cannot use the input []byte as
-	// some bytes in there are not part of the output.
 	if d.bd == cborBdIndefiniteBytes || d.bd == cborBdIndefiniteString {
 		d.bdRead = false
-		// MARKER 2025 - wonder why d.d.buf fails
-		// bs = d.decAppendIndefiniteBytes(d.d.buf[:0], d.bd>>5)
-		bs = d.decAppendIndefiniteBytes(nil, d.bd>>5)
+		bs = d.decAppendIndefiniteBytes(d.d.buf[:0], d.bd>>5)
 		d.d.buf = bs
 		state = dBytesAttachBuffer
 		return

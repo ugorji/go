@@ -255,6 +255,10 @@ const (
 	wordSizeBits = 32 << (^uint(0) >> 63) // strconv.IntSize
 	wordSize     = wordSizeBits / 8
 
+	// byteBufSize is the default size of []byte used
+	// possibly for bufioWriter, etc
+	byteBufSize = 1 << 10 // 4:16, 6:64, 8:256, 10:1024
+
 	// MARKER: determines whether to skip calling fastpath(En|De)codeTypeSwitch.
 	// Calling the fastpath switch in encode() or decode() could be redundant,
 	// as we still have to introspect it again within fnLoad
@@ -2024,8 +2028,8 @@ type typeInfo struct {
 	flagDecBuiltin bool
 
 	infoFieldOmitempty bool
-	// MARKER 2025 - fill this out (need to pad 6 bytes)
 
+	// MARKER - may need padding here (like 6 bytes - auto-handled)
 	sfi structFieldInfos
 }
 

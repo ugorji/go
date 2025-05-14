@@ -740,9 +740,8 @@ func (d *jsonDecDriver[T]) skipWhitespace() {
 }
 
 func (d *jsonDecDriver[T]) advance() {
-	// if d.tok == 0 { // MARKER 2025
 	// handles jsonReadNum returning possibly non-printable value as tok
-	if d.tok < 33 {
+	if d.tok < 33 { // d.tok == 0 {
 		d.skipWhitespace()
 	}
 }

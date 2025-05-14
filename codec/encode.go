@@ -15,10 +15,6 @@ import (
 	"time"
 )
 
-// defEncByteBufSize is the default size of []byte used
-// for bufio buffer or []byte (when nil passed)
-const defEncByteBufSize = 1 << 10 // 4:16, 6:64, 8:256, 10:1024
-
 var errEncoderNotInitialized = errors.New("encoder not initialized")
 
 var encBuiltinRtids []uintptr

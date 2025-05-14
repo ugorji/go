@@ -99,7 +99,7 @@ func doTestPostInit() {
 
 // func doTestReinit() {
 // 	// doTestInit()
-// 	// MARKER 2025 - instead, just reset them all
+// 	// instead, just reset them all
 // 	for _, h := range testHandles {
 // 		bh := testBasicHandle(h)
 // 		bh.basicHandleRuntimeState = basicHandleRuntimeState{}
@@ -209,7 +209,8 @@ func testSharedCodecDecode(bs []byte, ts interface{}, h Handle, useMust bool) (e
 }
 
 func testUpdateBasicHandleOptions(bh *BasicHandle) {
-	// bh.clearInited() // so it is reinitialized next time around // MARKER 2025 (may have to put it back)
+	// cleanInited() not needed, as we re-create the Handles on each reinit
+	// bh.clearInited() // so it is reinitialized next time around
 	// pre-fill them first
 	bh.EncodeOptions = testEncodeOptions
 	bh.DecodeOptions = testDecodeOptions

@@ -34,7 +34,7 @@ type RPCOptions struct {
 	// buffering is configured on the handle.
 	//
 	// Deprecated: Buffering should be configured at the Handle or by using a buffer Reader.
-	// Setting this has no effect anymore (2025-05-06)
+	// Setting this has no effect anymore (after v1.2.12 - authored 2025-05-06)
 	RPCNoBuffer bool
 }
 

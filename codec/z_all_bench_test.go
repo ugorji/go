@@ -118,7 +118,7 @@ func benchmarkQuickSuite(t *testing.B, name string, fns ...func(t *testing.B)) {
 	benchmarkVeryQuickSuite(t, name, fns...)
 
 	// encoded size of TestStruc is between 20K and 30K for bd=1 // consider buffer=1024 * 16 * testDepth
-	testUseIoEncDec = 1024 // (value of defEncByteBufSize): use smaller buffer, and more flushes - it's ok.
+	testUseIoEncDec = 1024 // (value of byteBufSize): use smaller buffer, and more flushes - it's ok.
 	// testDepth = depth
 	testReinit()
 	t.Run(name+"-bd"+strconv.Itoa(testDepth)+"-buf"+strconv.Itoa(testUseIoEncDec), benchmarkOneFn(fns))

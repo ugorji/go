@@ -99,6 +99,15 @@ type ioReaderByteScanner interface {
 	io.ByteScanner
 }
 
+// MARKER: why not separate bufioDecReader from ioDecReader?
+//
+// We tried, but only readn1 of bufioDecReader came close to being
+// inlined (at inline cost 82). All other methods were at inline cost >= 90.
+//
+// Consequently, there's no performance impact from having both together
+// (except a single if z.bufio branch, which is likely well predicted and happens
+// only once per call (right at the top).
+
 // ioDecReader is a decReader that reads off an io.Reader.
 type ioDecReader struct {
 	r io.Reader
@@ -145,13 +154,6 @@ func (z *ioDecReader) resetIO(r io.Reader, bufsize int, maxInitLen int, blist *b
 	z.buf = z.buf[:cap(z.buf)]
 	z.bufsize = uint(max(0, bufsize))
 	z.bufio = bufsize > 0
-
-	// - if r == nil: use eofReader
-	// - else if bufsize > 0: use bufio.Reader
-	//   - if we own it already and bufsize not change: reset it
-	//   - else new bufio.Reader
-	// - else if Reader+ByteScanner AND fixed type: use it
-	// - else: use wrapper type: ioReaderByteScannerImpl
 
 	if r == nil {
 		z.r = &eofReader
@@ -262,10 +264,11 @@ func (z *ioDecReader) fillbuf(bufsize uint) (numShift, numRead uint) {
 			}
 			return
 		}
+
 		// if z.wc == uint(len(z.buf)) {
 		// 	return
 		// }
-		// MARKER 2025 - only read one time if results returned
+		// only read one time if results returned
 		// if n > 0 && i > 2 {
 		// 	i = 2 // try max one more time (to see about getting EOF)
 		// }
@@ -287,7 +290,6 @@ func (z *ioDecReader) readb(bs []byte) {
 	var err error
 	var n int
 	if z.bufio {
-		// consume space first (note: avail := z.wc - z.rc)
 	BUFIO:
 		for z.rc == z.wc {
 			z.fillbuf(0)
@@ -341,7 +343,6 @@ func (z *ioDecReader) readn1() (b uint8) {
 	// -------- NOT BUFIO ------
 
 	var err error
-	// bufsize = 0, so no buffering except if recording
 	if z.rbr {
 		b, err = z.br.ReadByte()
 	} else {
@@ -415,8 +416,8 @@ func (z *ioDecReader) skip(n uint) {
 	if z.bufio {
 	BUFIO:
 		n2 := min(n, z.wc-z.rc)
-		// handle these in-line, so the z.buf doesn't grow too much (since we're skipping)
-		// ie by setting z.rc, fillbuf will be able to keep shifting left (unless recording)
+		// handle in-line, so z.buf doesn't grow much (since we're skipping)
+		// ie by setting z.rc, fillbuf should keep shifting left (unless recording)
 		z.rc += n2
 		z.n += n2
 		n -= n2
@@ -639,7 +640,6 @@ func (z *ioDecReader) jsonReadUntilDblQuote() (bs []byte) {
 // ---- start/stop recording ----
 
 func (z *ioDecReader) startRecording() {
-	// z.rec = v
 	z.recording = true
 	// always include last byte read
 	if z.bufio {
@@ -699,9 +699,6 @@ func (z *bytesDecReader) numread() uint {
 // However, we do it only once, and it's better than reslicing both z.b and return value.
 
 func (z *bytesDecReader) readx(n uint) (bs []byte) {
-	// x := z.c + n
-	// bs = z.b[z.c:x]
-	// z.c = x
 	bs = z.b[z.c : z.c+n]
 	z.c += n
 	return
@@ -709,7 +706,7 @@ func (z *bytesDecReader) readx(n uint) (bs []byte) {
 
 func (z *bytesDecReader) skip(n uint) {
 	if z.c+n > uint(cap(z.b)) {
-		halt.error(&outOfBoundsError{capacity: uint(cap(z.b)), requested: z.c + n})
+		halt.error(&outOfBoundsError{uint(cap(z.b)), z.c + n})
 	}
 	z.c += n
 }
@@ -756,7 +753,7 @@ func (z *bytesDecReader) jsonReadNum() (bs []byte, token byte) {
 	start := z.c - 1 // include last byte
 	i := start
 LOOP:
-	// gracefully handle end of slice, as end of stream is meaningful here
+	// gracefully handle end of slice (~= EOF)
 	if i < uint(len(z.b)) {
 		if isNumberChar(z.b[i]) {
 			i++
@@ -765,8 +762,7 @@ LOOP:
 		token = z.b[i]
 	}
 	z.c = i + 1
-	bs = z.b[start:i]
-	// bs = byteSliceOf(z.b, start, i)
+	bs = z.b[start:i] // byteSliceOf(z.b, start, i)
 	return
 }
 
@@ -791,10 +787,8 @@ func (z *bytesDecReader) skipWhitespace() (token byte) {
 LOOP:
 	// setting token before check reduces inlining cost,
 	// making containerNext inlineable
-	// if !isWhitespaceChar(z.b[i]) {
 	token = z.b[i]
 	if !isWhitespaceChar(token) {
-		// token = z.b[i]
 		z.c = i + 1
 		return
 	}
