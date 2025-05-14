@@ -291,6 +291,7 @@ func fnBenchmarkDecode(b *testing.B, encName string, ts interface{},
 }
 
 func fnBenchmarkRun(b *testing.B, fn func()) {
+	fn() // run one time first - to init things
 	if testBenchmarkWithRuntimeMetrics {
 		fnBenchmarkRunWithMetrics(b, fn)
 	} else {
@@ -317,8 +318,8 @@ func fnBenchmarkRunWithMetrics(b *testing.B, fn func()) {
 		`/cpu/classes/user:cpu-seconds`,
 	}
 	var cols = [...]string{
-		`gc0Runs`,
-		`gc0ScanBytes`,
+		`gcRuns`,
+		`gcScanBytes`,
 		`gcCpuSec`,
 		//`userRtCpuSec`,
 		`idleCpuSec`,
@@ -331,17 +332,24 @@ func fnBenchmarkRunWithMetrics(b *testing.B, fn func()) {
 	}
 
 	fnRM := func(i int) {
+		var fv float64
 		if strings.HasSuffix(cols[i], "CpuSec") {
-			b.ReportMetric(float64(s2[i].Value.Float64()-s1[i].Value.Float64()), cols[i])
+			fv = s2[i].Value.Float64() - s1[i].Value.Float64()
 		} else {
-			b.ReportMetric(float64(s2[i].Value.Uint64()-s1[i].Value.Uint64()), cols[i])
+			i1, i2 := s1[i].Value.Uint64(), s2[i].Value.Uint64()
+			// println("fnBenchmarkRunWithMetrics: i1: %d, i2: %d", i1, i2)
+			if i2 >= i1 {
+				fv = float64(i2 - i1)
+			} else {
+				fv = -float64(i1 - i2)
+			}
 		}
+		b.ReportMetric(fv, cols[i])
 	}
 
 	runtime.GC()
-
-	// runtime.ReadMemStats(&m0)
 	metrics.Read(s1[:])
+	// runtime.ReadMemStats(&m0)
 
 	for b.Loop() {
 		fn()
@@ -352,6 +360,7 @@ func fnBenchmarkRunWithMetrics(b *testing.B, fn func()) {
 	// b.ReportMetric(float64(m1.Lookups-m0.Lookups), "ptrLookups")
 	// // b.ReportMetric(float64(gcRuns)/float64(b.N), "gc_runs/op")
 
+	runtime.GC()
 	metrics.Read(s2[:])
 	for i := range len(names) {
 		fnRM(i)
