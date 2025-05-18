@@ -960,10 +960,6 @@ func (d *jsonDecDriver[T]) DecodeRawExt(re *RawExt) {
 }
 
 func (d *jsonDecDriver[T]) decBytesFromArray(bs []byte) []byte {
-	if bs != nil {
-		bs = bs[:0]
-	}
-	d.tok = 0
 	bs = append(bs, uint8(d.DecodeUint64()))
 	d.advance()
 	for d.tok != ']' {
@@ -995,6 +991,7 @@ func (d *jsonDecDriver[T]) DecodeBytes() (bs []byte, state dBytesAttachState) {
 	}
 	// check if an "array" of uint8's (see ContainerType for how to infer if an array)
 	if d.tok == '[' {
+		d.tok = 0
 		// bsOut, _ = fastpathTV.DecSliceUint8V(bs, true, d.d)
 		bs = d.decBytesFromArray(d.buf[:0])
 		d.buf = bs
@@ -1032,6 +1029,7 @@ func (d *jsonDecDriver[T]) DecodeStringAsBytes() (bs []byte, state dBytesAttachS
 	var cond bool
 	// common case - hoist outside the switch statement
 	if d.tok == '"' {
+		d.tok = 0
 		bs, cond = d.dblQuoteStringAsBytes()
 		state = d.d.attachState(cond)
 		return
@@ -1071,17 +1069,14 @@ func (d *jsonDecDriver[T]) readUnescapedString() (bs []byte) {
 }
 
 func (d *jsonDecDriver[T]) dblQuoteStringAsBytes() (buf []byte, usingBuf bool) {
-	d.tok = 0
-
 	bs, c := d.r.jsonReadAsisChars()
 	if c == '"' {
 		return bs, !d.d.bytes
 	}
+	buf = append(d.buf[:0], bs...)
 
 	checkUtf8 := d.h.ValidateUnicode
 	usingBuf = true
-	// use a local buf variable, so we don't do pointer chasing within loop
-	buf = append(d.buf[:0], bs...)
 
 	for {
 		// c is now '\'
@@ -1113,7 +1108,6 @@ func (d *jsonDecDriver[T]) dblQuoteStringAsBytes() (buf []byte, usingBuf bool) {
 		}
 
 		bs, c = d.r.jsonReadAsisChars()
-		// _ = bs[0] // bounds check hint - slice must be > 0 elements
 		buf = append(buf, bs...)
 		if c == '"' {
 			break
@@ -1125,14 +1119,13 @@ func (d *jsonDecDriver[T]) dblQuoteStringAsBytes() (buf []byte, usingBuf bool) {
 
 func (d *jsonDecDriver[T]) appendStringAsBytesSlashU() (r rune) {
 	var rr uint32
-	var csu [2]byte
-	var cs [4]byte = d.r.readn4()
+	cs := d.r.readn4()
 	if rr = jsonSlashURune(cs); rr == unicode.ReplacementChar {
 		return unicode.ReplacementChar
 	}
 	r = rune(rr)
 	if utf16.IsSurrogate(r) {
-		csu = d.r.readn2()
+		csu := d.r.readn2()
 		cs = d.r.readn4()
 		if csu[0] == '\\' && csu[1] == 'u' {
 			if rr = jsonSlashURune(cs); rr == unicode.ReplacementChar {
@@ -1196,6 +1189,7 @@ func (d *jsonDecDriver[T]) DecodeNaked() {
 		z.v = valueTypeArray // don't consume. kInterfaceNaked will call ReadArrayStart
 	case '"':
 		// if a string, and MapKeyAsString, then try to decode it as a bool or number first
+		d.tok = 0
 		bs, z.b = d.dblQuoteStringAsBytes()
 		att := d.d.attachState(z.b)
 		if jsonNakedBoolNullInQuotedStr &&
