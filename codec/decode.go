@@ -1092,7 +1092,16 @@ func (d *decoder[T]) kSlice(f *decFnInfo, rv reflect.Value) {
 		return
 	}
 
-	slh, containerLenS := d.decSliceHelperStart() // only expects valueType(Array|Map) - never Nil
+	// only expects valueType(Array|Map) - never Nil
+	var containerLenS int
+	isArray := ctyp == valueTypeArray
+	if isArray {
+		containerLenS = d.arrayStart(d.d.ReadArrayStart())
+	} else if ctyp == valueTypeMap {
+		containerLenS = d.mapStart(d.d.ReadMapStart()) * 2
+	} else {
+		halt.errorStr2("decoding into a slice, expect map/array - got ", ctyp.String())
+	}
 
 	// an array can never return a nil slice. so no need to check f.array here.
 	if containerLenS == 0 {
@@ -1103,7 +1112,11 @@ func (d *decoder[T]) kSlice(f *decFnInfo, rv reflect.Value) {
 				rvSetSliceLen(rv, 0)
 			}
 		}
-		slh.End()
+		if isArray {
+			d.arrayEnd()
+		} else {
+			d.mapEnd()
+		}
 		return
 	}
 
@@ -1124,7 +1137,7 @@ func (d *decoder[T]) kSlice(f *decFnInfo, rv reflect.Value) {
 	rvlen := rvLenSlice(rv)
 	rvcap := rvCapSlice(rv)
 	maxInitLen := d.maxInitLen()
-	hasLen := containerLenS > 0
+	hasLen := containerLenS >= 0
 	if hasLen {
 		if containerLenS > rvcap {
 			oldRvlenGtZero := rvlen > 0
@@ -1188,9 +1201,17 @@ func (d *decoder[T]) kSlice(f *decFnInfo, rv reflect.Value) {
 				fn = d.fn(rtelem)
 			}
 		}
+
+		if ctyp == valueTypeArray {
+			d.arrayElem(j == 0)
+		} else if j&1 == 0 {
+			d.mapElemKey(j == 0)
+		} else {
+			d.mapElemValue()
+		}
+
 		// if indefinite, etc, then expand the slice if necessary
 		if j >= rvlen {
-			slh.ElemContainerState(j)
 
 			// expand the slice up to the cap.
 			// Note that we did, so we have to reset it later.
@@ -1212,8 +1233,6 @@ func (d *decoder[T]) kSlice(f *decFnInfo, rv reflect.Value) {
 				rvlen = rvcap
 				rvChanged = !rvCanset
 			}
-		} else {
-			slh.ElemContainerState(j)
 		}
 
 		// we check if we can make this an addr, and do builtin
@@ -1253,7 +1272,11 @@ func (d *decoder[T]) kSlice(f *decFnInfo, rv reflect.Value) {
 			rvChanged = true
 		}
 	}
-	slh.End()
+	if isArray {
+		d.arrayEnd()
+	} else {
+		d.mapEnd()
+	}
 
 	if rvChanged { // infers rvCanset=true, so it can be reset
 		rvSetDirect(rv0, rv)
@@ -1277,11 +1300,24 @@ func (d *decoder[T]) kArray(f *decFnInfo, rv reflect.Value) {
 		return
 	}
 
-	slh, containerLenS := d.decSliceHelperStart() // only expects valueType(Array|Map) - never Nil
+	// only expects valueType(Array|Map) - never Nil
+	var containerLenS int
+	isArray := ctyp == valueTypeArray
+	if isArray {
+		containerLenS = d.arrayStart(d.d.ReadArrayStart())
+	} else if ctyp == valueTypeMap {
+		containerLenS = d.mapStart(d.d.ReadMapStart()) * 2
+	} else {
+		halt.errorStr2("decoding into a slice, expect map/array - got ", ctyp.String())
+	}
 
 	// an array can never return a nil slice. so no need to check f.array here.
 	if containerLenS == 0 {
-		slh.End()
+		if isArray {
+			d.arrayEnd()
+		} else {
+			d.mapEnd()
+		}
 		return
 	}
 
@@ -1293,7 +1329,7 @@ func (d *decoder[T]) kArray(f *decFnInfo, rv reflect.Value) {
 	var rv9 reflect.Value
 
 	rvlen := rv.Len() // same as cap
-	hasLen := containerLenS > 0
+	hasLen := containerLenS >= 0
 	if hasLen && containerLenS > rvlen {
 		halt.errorf("cannot decode into array with length: %v, less than container length: %v", any(rvlen), any(containerLenS))
 	}
@@ -1315,13 +1351,20 @@ func (d *decoder[T]) kArray(f *decFnInfo, rv reflect.Value) {
 	}
 
 	for j := 0; d.containerNext(j, containerLenS, hasLen); j++ {
+		if ctyp == valueTypeArray {
+			d.arrayElem(j == 0)
+		} else if j&1 == 0 {
+			d.mapElemKey(j == 0)
+		} else {
+			d.mapElemValue()
+		}
 		// note that you cannot expand the array if indefinite and we go past array length
 		if j >= rvlen {
-			slh.arrayCannotExpand(hasLen, rvlen, j, containerLenS)
-			return
+			d.arrayCannotExpand(rvlen, j+1)
+			d.swallow()
+			continue
 		}
 
-		slh.ElemContainerState(j)
 		rv9 = rvArrayIndex(rv, j, f.ti, false)
 		if elemReset {
 			rvSetZero(rv9)
@@ -1341,7 +1384,11 @@ func (d *decoder[T]) kArray(f *decFnInfo, rv reflect.Value) {
 			d.decodeValueNoCheckNil(rv9, fn)
 		}
 	}
-	slh.End()
+	if isArray {
+		d.arrayEnd()
+	} else {
+		d.mapEnd()
+	}
 }
 
 func (d *decoder[T]) kChan(f *decFnInfo, rv reflect.Value) {
@@ -1372,15 +1419,27 @@ func (d *decoder[T]) kChan(f *decFnInfo, rv reflect.Value) {
 
 	var rvCanset = rv.CanSet()
 
-	// only expects valueType(Array|Map - nil handled above)
-	slh, containerLenS := d.decSliceHelperStart()
+	// only expects valueType(Array|Map) - never Nil
+	var containerLenS int
+	isArray := ctyp == valueTypeArray
+	if isArray {
+		containerLenS = d.arrayStart(d.d.ReadArrayStart())
+	} else if ctyp == valueTypeMap {
+		containerLenS = d.mapStart(d.d.ReadMapStart()) * 2
+	} else {
+		halt.errorStr2("decoding into a slice, expect map/array - got ", ctyp.String())
+	}
 
 	// an array can never return a nil slice. so no need to check f.array here.
 	if containerLenS == 0 {
 		if rvCanset && rvIsNil(rv) {
 			rvSetDirect(rv, reflect.MakeChan(ti.rt, 0))
 		}
-		slh.End()
+		if isArray {
+			d.arrayEnd()
+		} else {
+			d.mapEnd()
+		}
 		return
 	}
 
@@ -1398,7 +1457,7 @@ func (d *decoder[T]) kChan(f *decFnInfo, rv reflect.Value) {
 	var rv9 reflect.Value
 
 	var rvlen int // = rv.Len()
-	hasLen := containerLenS > 0
+	hasLen := containerLenS >= 0
 	maxInitLen := d.maxInitLen()
 
 	for j := 0; d.containerNext(j, containerLenS, hasLen); j++ {
@@ -1420,7 +1479,15 @@ func (d *decoder[T]) kChan(f *decFnInfo, rv reflect.Value) {
 				fn = d.fn(rtelem)
 			}
 		}
-		slh.ElemContainerState(j)
+
+		if ctyp == valueTypeArray {
+			d.arrayElem(j == 0)
+		} else if j&1 == 0 {
+			d.mapElemKey(j == 0)
+		} else {
+			d.mapElemValue()
+		}
+
 		if rv9.IsValid() {
 			rvSetZero(rv9)
 		} else if decUseTransient && useTransient {
@@ -1433,7 +1500,11 @@ func (d *decoder[T]) kChan(f *decFnInfo, rv reflect.Value) {
 		}
 		rv.Send(rv9)
 	}
-	slh.End()
+	if isArray {
+		d.arrayEnd()
+	} else {
+		d.mapEnd()
+	}
 
 	if rvChanged { // infers rvCanset=true, so it can be reset
 		rvSetDirect(rv0, rv)
@@ -1509,7 +1580,7 @@ func (d *decoder[T]) kMap(f *decFnInfo, rv reflect.Value) {
 
 	ktypeIsString := ktypeId == stringTypId
 	ktypeIsIntf := ktypeId == intfTypId
-	hasLen := containerLen > 0
+	hasLen := containerLen >= 0
 
 	// kstrbs is used locally for the key bytes, so we can reduce allocation.
 	// When we read keys, we copy to this local bytes array, and use a stringView for lookup.
@@ -2431,71 +2502,6 @@ func (d *decoder[T]) fnNoExt(t reflect.Type) *decFn[T] {
 	return d.dh.decFnViaBH(t, d.rtidFnNoExt, d.h, d.fp, true)
 }
 
-// --------------------------------------------------
-
-// decSliceHelper assists when decoding into a slice, from a map or an array in the stream.
-// A slice can be set from a map or array in stream. This supports the MapBySlice interface.
-//
-// Note: if IsNil, do not call ElemContainerState.
-type decSliceHelper[T decDriver] struct {
-	d     *decoder[T]
-	ct    valueType
-	Array bool
-	IsNil bool
-}
-
-func (d *decoder[T]) decSliceHelperStart() (x decSliceHelper[T], clen int) {
-	x.ct = d.d.ContainerType()
-	x.d = d
-	switch x.ct {
-	case valueTypeNil:
-		x.IsNil = true
-	case valueTypeArray:
-		x.Array = true
-		clen = d.arrayStart(d.d.ReadArrayStart())
-	case valueTypeMap:
-		clen = d.mapStart(d.d.ReadMapStart())
-		clen += clen
-	default:
-		halt.errorStr2("to decode into a slice, expect map/array - got ", x.ct.String())
-	}
-	return
-}
-
-func (x decSliceHelper[T]) End() {
-	if x.IsNil {
-	} else if x.Array {
-		x.d.arrayEnd()
-	} else {
-		x.d.mapEnd()
-	}
-}
-
-func (x decSliceHelper[T]) ElemContainerState(index int) {
-	// Note: if isnil, clen=0, so we never call into ElemContainerState
-
-	if x.Array {
-		x.d.arrayElem(index == 0)
-	} else if index&1 == 0 { // index%2 == 0 {
-		x.d.mapElemKey(index == 0)
-	} else {
-		x.d.mapElemValue()
-	}
-}
-
-func (x decSliceHelper[T]) arrayCannotExpand(hasLen bool, lenv, j, containerLenS int) {
-	x.d.arrayCannotExpand(lenv, j+1)
-	// drain completely and return
-	x.ElemContainerState(j)
-	x.d.swallow()
-	j++
-	for ; x.d.containerNext(j, containerLenS, hasLen); j++ {
-		x.ElemContainerState(j)
-		x.d.swallow()
-	}
-	x.End()
-}
-
 // decNegintPosintFloatNumberHelper is used for formats that are binary
 // and have distinct ways of storing positive integers vs negative integers
 // vs floats, which are uniquely identified by the byte descriptor.
@@ -2975,4 +2981,95 @@ func oneOffDecode(sd decoderI, v interface{}, in []byte, basetype reflect.Type, 
 // 		return string(v)
 // 	}
 // 	return d.is.string(v)
+// }
+
+// // --------------------------------------------------
+
+// // decSliceHelper assists when decoding into a slice, from a map or an array in the stream.
+// // A slice can be set from a map or array in stream. This supports the MapBySlice interface.
+// //
+// // Note: if IsNil, do not call ElemContainerState.
+// type decSliceHelper[T decDriver] struct {
+// 	d     *decoder[T]
+// 	ct    valueType
+// 	Array bool
+// 	IsNil bool
+// }
+
+// func (d *decoder[T]) decSliceHelperStart() (x decSliceHelper[T], clen int) {
+// 	x.ct = d.d.ContainerType()
+// 	x.d = d
+// 	switch x.ct {
+// 	case valueTypeNil:
+// 		x.IsNil = true
+// 	case valueTypeArray:
+// 		x.Array = true
+// 		clen = d.arrayStart(d.d.ReadArrayStart())
+// 	case valueTypeMap:
+// 		clen = d.mapStart(d.d.ReadMapStart())
+// 		clen += clen
+// 	default:
+// 		halt.errorStr2("to decode into a slice, expect map/array - got ", x.ct.String())
+// 	}
+// 	return
+// }
+
+// func (x decSliceHelper[T]) End() {
+// 	if x.IsNil {
+// 	} else if x.Array {
+// 		x.d.arrayEnd()
+// 	} else {
+// 		x.d.mapEnd()
+// 	}
+// }
+
+// func (x decSliceHelper[T]) ElemContainerState(index int) {
+// 	// Note: if isnil, clen=0, so we never call into ElemContainerState
+// 	if x.Array {
+// 		x.d.arrayElem(index == 0)
+// 	} else if index&1 == 0 { // index%2 == 0 {
+// 		x.d.mapElemKey(index == 0)
+// 	} else {
+// 		x.d.mapElemValue()
+// 	}
+// }
+
+// // func (x decSliceHelper[T]) arrayCannotExpand(hasLen bool, lenv, j, containerLenS int) {
+// // 	x.d.arrayCannotExpand(lenv, j+1)
+// // 	// drain completely and return
+// // 	x.ElemContainerState(j)
+// // 	x.d.swallow()
+// // 	j++
+// // 	for ; x.d.containerNext(j, containerLenS, hasLen); j++ {
+// // 		x.ElemContainerState(j)
+// // 		x.d.swallow()
+// // 	}
+// // 	x.End()
+// // }
+
+// func (x decSliceHelper[T]) arrayCannotExpand(hasLen bool, lenv, j, containerLenS int) {
+// 	x.d.arrayCannotExpand(lenv, j+1)
+// 	x.d.drainSeq(x.ct == valueTypeArray, hasLen, containerLenS, j)
+// }
+
+// func (d *decoder[T]) drainSeq(isArray, hasLen bool, containerLenS, j int) {
+// 	// drain completely and return
+// LOOP:
+// 	if isArray {
+// 		d.arrayElem(j == 0)
+// 	} else if j&1 == 0 {
+// 		d.mapElemKey(j == 0)
+// 	} else {
+// 		d.mapElemValue()
+// 	}
+// 	d.swallow()
+// 	j++
+// 	if d.containerNext(j, containerLenS, hasLen) {
+// 		goto LOOP
+// 	}
+// 	if isArray {
+// 		d.arrayEnd()
+// 	} else {
+// 		d.mapEnd()
+// 	}
 // }

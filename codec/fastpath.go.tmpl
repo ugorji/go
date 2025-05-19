@@ -449,103 +449,110 @@ func (f fastpathDT[T]) {{ .MethodNamePfx "Dec" false }}X(vp *[]{{ .Elem }}, d *d
 	if v, changed := f.{{ .MethodNamePfx "Dec" false }}Y(*vp, d); changed { *vp = v }
 }
 func (fastpathDT[T]) {{ .MethodNamePfx "Dec" false }}Y(v []{{ .Elem }}, d *decoder[T]) (v2 []{{ .Elem }}, changed bool) {
+	ctyp := d.d.ContainerType()
+	if ctyp == valueTypeNil {
+		return nil, v != nil
+	}
 	{{ if eq .Elem "uint8" "byte" -}}
-	switch d.d.ContainerType() {
-	case valueTypeNil, valueTypeMap:
-		break
-	default:
+	if ctyp != valueTypeMap {
 		v2 = d.decodeBytesInto(v[:len(v):len(v)])
-		changed = !(len(v2) > 0 && len(v2) == len(v) && &v2[0] == &v[0]) // not same slice
-		return
+		return v2, !(len(v2) > 0 && len(v2) == len(v) && &v2[0] == &v[0]) // not same slice
+	}
+	containerLenS := d.mapStart(d.d.ReadMapStart()) * 2
+	{{ else -}}
+	var containerLenS int
+	isArray := ctyp == valueTypeArray
+	if isArray {
+		containerLenS = d.arrayStart(d.d.ReadArrayStart())
+	} else if ctyp == valueTypeMap {
+		containerLenS = d.mapStart(d.d.ReadMapStart()) * 2
+	} else {
+		halt.errorStr2("decoding into a slice, expect map/array - got ", ctyp.String())
 	}
 	{{ end -}}
-	slh, containerLenS := d.decSliceHelperStart()
-	if slh.IsNil {
-		if v == nil { return }
-		return nil, true
-	}
-	if containerLenS == 0 {
-		if v == nil { v = []{{ .Elem }}{} } else if len(v) != 0 { v = v[:0] }
-		slh.End()
-		return v, true
-	}
-	hasLen := containerLenS > 0
-	var xlen int 
-	if hasLen {
-		if containerLenS > cap(v) {
-			xlen = int(decInferLen(containerLenS, d.maxInitLen(), {{ .Size }}))
-			if xlen <= cap(v) {
-				v = v[:uint(xlen)]
-			} else {
-				v = make([]{{ .Elem }}, uint(xlen))
-			}
-			changed = true 
-		} else if containerLenS != len(v) {
-			v = v[:containerLenS]
-			changed = true
-		}
-	}
+	hasLen := containerLenS >= 0
 	var j int
-    for j = 0; d.containerNext(j, containerLenS, hasLen); j++ {
-		if j == 0 && len(v) == 0 { // means hasLen == false
-			xlen = int(decInferLen(containerLenS, d.maxInitLen(), {{ .Size }})) {{/* xlen = decDefSliceCap */}}
-			v = make([]{{ .Elem }}, uint(xlen))
-			changed = true
+ 	fnv := func(dst []{{ .Elem }}) { v, changed = dst, true }
+	for ; d.containerNext(j, containerLenS, hasLen); j++ {
+		if j == 0 {
+			if containerLenS == len(v) {
+			} else if containerLenS < 0 || containerLenS > cap(v) {
+				if xlen := int(decInferLen(containerLenS, d.maxInitLen(), {{ .Size }})); xlen <= cap(v) {
+					fnv(v[:uint(xlen)])
+				} else {
+					v2 = make([]{{ .Elem }}, uint(xlen))
+					copy(v2, v)
+					fnv(v2)
+				}
+			} else {
+				fnv(v[:containerLenS])
+			}
 		}
-		{{/* // if indefinite, etc, then expand the slice if necessary */ -}}
-		if j >= len(v) {
-			v = append(v, {{ zerocmd .Elem }})
-			changed = true
-		} 
-		slh.ElemContainerState(j)
+		{{ if eq .Elem "uint8" "byte" }}{{ else -}}
+		if isArray { d.arrayElem(j == 0) } else
+		{{ end -}}
+		if j&1 == 0 { d.mapElemKey(j == 0) } else { d.mapElemValue() }
+		if j >= len(v) { // if indefinite, json, etc, then expand the slice (if necessary)
+			fnv(append(v, {{ zerocmd .Elem }}))
+		}
 		{{ if eq .Elem "interface{}" }}d.decode(&v[uint(j)]){{ else }}v[uint(j)] = {{ decmd .Elem false }}{{ end }}
 	}
 	if j < len(v) {
-		v = v[:uint(j)]
-		changed = true
+		fnv(v[:uint(j)])
 	} else if j == 0 && v == nil {
-		v = []{{ .Elem }}{}
-		changed = true
-	}
-	slh.End()
+		fnv([]{{ .Elem }}{})
+	} 
+	{{ if eq .Elem "uint8" "byte" -}}
+	d.mapEnd()
+	{{ else -}}
+	if isArray { d.arrayEnd() } else { d.mapEnd() }
+	{{ end -}}
 	return v, changed
 }
 func (fastpathDT[T]) {{ .MethodNamePfx "Dec" false }}N(v []{{ .Elem }}, d *decoder[T]) {
+	ctyp := d.d.ContainerType()
+	if ctyp == valueTypeNil {
+		return
+	}
 	{{ if eq .Elem "uint8" "byte" -}}
-	switch d.d.ContainerType() {
-	case valueTypeNil, valueTypeMap:
-		break
-	default:
+	if ctyp != valueTypeMap {
 		v2 := d.decodeBytesInto(v[:len(v):len(v)])
 		if !(len(v2) > 0 && len(v2) == len(v) && &v2[0] == &v[0]) { // not same slice
 			copy(v, v2)
 		}
 		return
 	}
+	containerLenS := d.mapStart(d.d.ReadMapStart()) * 2
+	{{ else -}}
+	var containerLenS int
+	isArray := ctyp == valueTypeArray
+	if isArray {
+		containerLenS = d.arrayStart(d.d.ReadArrayStart())
+	} else if ctyp == valueTypeMap {
+		containerLenS = d.mapStart(d.d.ReadMapStart()) * 2
+	} else {
+		halt.errorStr2("decoding into a slice, expect map/array - got ", ctyp.String())
+	}
 	{{ end -}}
-	slh, containerLenS := d.decSliceHelperStart()
-	if slh.IsNil {
-		return
-	}
-	if containerLenS == 0 {
-		slh.End()
-		return
-	}
-	hasLen := containerLenS > 0
+	hasLen := containerLenS >= 0
     for j := 0; d.containerNext(j, containerLenS, hasLen); j++ {
 		{{/* // if indefinite, etc, then expand the slice if necessary */ -}}
-		if j >= len(v) {
-			slh.arrayCannotExpand(hasLen, len(v), j, containerLenS)
-			return
-		} 
-		slh.ElemContainerState(j)
-		{{ if eq .Elem "interface{}" -}}
-		d.decode(&v[uint(j)])
-		{{- else -}}
-		v[uint(j)] = {{ decmd .Elem false }}
-		{{- end }}
+		{{ if not (eq .Elem "uint8" "byte") -}}
+		if isArray { d.arrayElem(j == 0) } else
+		{{ end -}}
+		if j&1 == 0 { d.mapElemKey(j == 0) } else { d.mapElemValue() }
+		if j < len(v) {
+			{{ if eq .Elem "interface{}" }}d.decode(&v[uint(j)]){{ else }}v[uint(j)] = {{ decmd .Elem false }}{{ end }}
+		} else {
+			d.arrayCannotExpand(len(v), j+1)
+			d.swallow()
+		}
 	}
-	slh.End()
+	{{ if eq .Elem "uint8" "byte" -}}
+	d.mapEnd()
+	{{ else -}}
+	if isArray { d.arrayEnd() } else { d.mapEnd() }
+	{{ end -}}
 }
 {{end}}{{end}}{{end -}}
 
@@ -608,7 +615,7 @@ func (fastpathDT[T]) {{ .MethodNamePfx "Dec" false }}L(v map[{{ .MapKey }}]{{ .E
     {{end -}}
     var mk {{ .MapKey }}
 	var mv {{ .Elem }}
-	hasLen := containerLen > 0
+	hasLen := containerLen >= 0
     for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
 		d.mapElemKey(j == 0)
 		{{ if eq .MapKey "interface{}" }}mk = nil 
