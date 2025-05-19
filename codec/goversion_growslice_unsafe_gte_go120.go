@@ -6,7 +6,8 @@
 package codec
 
 import (
-	_ "reflect" // needed for go linkname(s)
+	// _ "reflect" // needed for go linkname(s)
+	_ "runtime" // needed for go linkname(s)
 	"unsafe"
 )
 
