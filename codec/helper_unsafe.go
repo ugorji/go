@@ -557,7 +557,7 @@ func (x *structFieldInfos) load(source, sorted []*structFieldInfo) {
 	x.s = s.Data
 }
 
-func (x *structFieldInfos) count() int { return x.length }
+// func (x *structFieldInfos) count() int { return x.length }
 
 // func (x *structFieldInfos) sorted() (v []*structFieldInfo) {
 // 	s := (*unsafeSlice)(unsafe.Pointer(&v))

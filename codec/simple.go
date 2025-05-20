@@ -743,6 +743,7 @@ func (d *simpleDecDriver[T]) nextValueBytesBdReadR() {
 // The full spec will be published soon.
 type SimpleHandle struct {
 	binaryEncodingType
+	notJsonType
 	BasicHandle
 
 	// EncZeroValuesAsNil says to encode zero values for numbers, bool, string, etc as nil

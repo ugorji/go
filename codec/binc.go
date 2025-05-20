@@ -1099,9 +1099,10 @@ func (d *bincDecDriver[T]) nextValueBytesBdReadR() {
 //
 // Note that these EXCEPTIONS are temporary and full support is possible and may happen soon.
 type BincHandle struct {
-	BasicHandle
 	binaryEncodingType
+	notJsonType
 	// noElemSeparators
+	BasicHandle
 
 	// AsSymbols defines what should be encoded as symbols.
 	//

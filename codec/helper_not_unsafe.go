@@ -371,7 +371,7 @@ func (x *structFieldInfos) load(source, sorted []*structFieldInfo) {
 	x.s = sorted
 }
 
-func (x *structFieldInfos) count() int                     { return len(x.c) }
+// func (x *structFieldInfos) count() int                     { return len(x.c) }
 func (x *structFieldInfos) source() (v []*structFieldInfo) { return x.c }
 func (x *structFieldInfos) sorted() (v []*structFieldInfo) { return x.s }
 

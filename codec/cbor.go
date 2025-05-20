@@ -927,6 +927,7 @@ func (d *cborDecDriver[T]) nextValueBytesBdReadR() {
 //   - Encoded Text (e.g. URL, regexp, base64, MIME Message), etc.
 type CborHandle struct {
 	binaryEncodingType
+	notJsonType
 	// noElemSeparators
 	BasicHandle
 

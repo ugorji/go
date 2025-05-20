@@ -1304,12 +1304,10 @@ type extFailWrapper struct {
 type binaryEncodingType struct{}
 
 func (binaryEncodingType) isBinary() bool { return true }
-func (binaryEncodingType) isJson() bool   { return false }
 
 type textEncodingType struct{}
 
 func (textEncodingType) isBinary() bool { return false }
-func (textEncodingType) isJson() bool   { return false }
 
 type notJsonType struct{}
 

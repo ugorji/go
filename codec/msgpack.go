@@ -1071,6 +1071,7 @@ func (d *msgpackDecDriver[T]) decodeExtV(verifyTag bool, xtagIn uint64) (xbs []b
 // MsgpackHandle is a Handle for the Msgpack Schema-Free Encoding Format.
 type MsgpackHandle struct {
 	binaryEncodingType
+	notJsonType
 	BasicHandle
 
 	// NoFixedNum says to output all signed integers as 2-bytes, never as 1-byte fixednum.
