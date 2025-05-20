@@ -295,16 +295,6 @@ const (
 	rkindChan   = rkind(reflect.Chan)
 )
 
-type mapKeyFastKind uint8
-
-const (
-	mapKeyFastKind32 = iota + 1
-	mapKeyFastKind32ptr
-	mapKeyFastKind64
-	mapKeyFastKind64ptr
-	mapKeyFastKindStr
-)
-
 var (
 	// use a global mutex to ensure each Handle is initialized.
 	// We do this, so we don't have to store the basicHandle mutex
@@ -343,8 +333,6 @@ var (
 
 	// scalarBitset sets bit for all kinds which are scalars/primitives and thus immutable
 	scalarBitset bitset32
-
-	mapKeyFastKindVals [32]mapKeyFastKind
 
 	// codecgen is set to true by codecgen, so that tests, etc can use this information as needed.
 	codecgen bool
@@ -389,30 +377,6 @@ var poolForTypeInfoLoad = sync.Pool{
 }
 
 func init() {
-	xx := func(f mapKeyFastKind, k ...reflect.Kind) {
-		for _, v := range k {
-			mapKeyFastKindVals[byte(v)&31] = f // 'v % 32' equal to 'v & 31'
-		}
-	}
-
-	var f mapKeyFastKind
-
-	f = mapKeyFastKind64
-	if wordSizeBits == 32 {
-		f = mapKeyFastKind32
-	}
-	xx(f, reflect.Int, reflect.Uint, reflect.Uintptr)
-
-	f = mapKeyFastKind64ptr
-	if wordSizeBits == 32 {
-		f = mapKeyFastKind32ptr
-	}
-	xx(f, reflect.Ptr)
-
-	xx(mapKeyFastKindStr, reflect.String)
-	xx(mapKeyFastKind32, reflect.Uint32, reflect.Int32, reflect.Float32)
-	xx(mapKeyFastKind64, reflect.Uint64, reflect.Int64, reflect.Float64)
-
 	numBoolBitset.
 		set(byte(reflect.Bool)).
 		set(byte(reflect.Int)).
@@ -2817,10 +2781,6 @@ func usableByteSlice(bs []byte, slen int) (out []byte, changed bool) {
 		return make([]byte, slen), true
 	}
 	return make([]byte, maxCap), true
-}
-
-func mapKeyFastKindFor(k reflect.Kind) mapKeyFastKind {
-	return mapKeyFastKindVals[k&31]
 }
 
 func makeExt(ext interface{}) Ext {

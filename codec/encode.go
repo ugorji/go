@@ -1087,9 +1087,11 @@ func (e *encoder[T]) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, keyFn, v
 
 	mks := rv.MapKeys()
 	rtkeyKind := rtkey.Kind()
-	kfast := mapKeyFastKindFor(rtkeyKind)
-	visindirect := mapStoresElemIndirect(uintptr(ti.elemsize))
-	visref := refBitset.isset(ti.elemkind)
+	mparams := getMapReqParams(ti)
+
+	// kfast := mapKeyFastKindFor(rtkeyKind)
+	// visindirect := mapStoresElemIndirect(uintptr(ti.elemsize))
+	// visref := refBitset.isset(ti.elemkind)
 
 	switch rtkeyKind {
 	case reflect.Bool:
@@ -1111,7 +1113,7 @@ func (e *encoder[T]) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, keyFn, v
 				e.encodeValueNonNil(mks[i], keyFn)
 			}
 			e.mapElemValue()
-			e.encodeValue(mapGet(rv, mks[i], rvv, kfast, visindirect, visref), valFn)
+			e.encodeValue(mapGet(rv, mks[i], rvv, mparams), valFn)
 		}
 	case reflect.String:
 		mksv := make([]orderedRv[string], len(mks))
@@ -1130,7 +1132,7 @@ func (e *encoder[T]) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, keyFn, v
 				e.encodeValueNonNil(mksv[i].r, keyFn)
 			}
 			e.mapElemValue()
-			e.encodeValue(mapGet(rv, mksv[i].r, rvv, kfast, visindirect, visref), valFn)
+			e.encodeValue(mapGet(rv, mksv[i].r, rvv, mparams), valFn)
 		}
 	case reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uint, reflect.Uintptr:
 		mksv := make([]orderedRv[uint64], len(mks))
@@ -1149,7 +1151,7 @@ func (e *encoder[T]) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, keyFn, v
 				e.encodeValueNonNil(mksv[i].r, keyFn)
 			}
 			e.mapElemValue()
-			e.encodeValue(mapGet(rv, mksv[i].r, rvv, kfast, visindirect, visref), valFn)
+			e.encodeValue(mapGet(rv, mksv[i].r, rvv, mparams), valFn)
 		}
 	case reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Int:
 		mksv := make([]orderedRv[int64], len(mks))
@@ -1168,7 +1170,7 @@ func (e *encoder[T]) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, keyFn, v
 				e.encodeValueNonNil(mksv[i].r, keyFn)
 			}
 			e.mapElemValue()
-			e.encodeValue(mapGet(rv, mksv[i].r, rvv, kfast, visindirect, visref), valFn)
+			e.encodeValue(mapGet(rv, mksv[i].r, rvv, mparams), valFn)
 		}
 	case reflect.Float32:
 		mksv := make([]orderedRv[float64], len(mks))
@@ -1187,7 +1189,7 @@ func (e *encoder[T]) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, keyFn, v
 				e.encodeValueNonNil(mksv[i].r, keyFn)
 			}
 			e.mapElemValue()
-			e.encodeValue(mapGet(rv, mksv[i].r, rvv, kfast, visindirect, visref), valFn)
+			e.encodeValue(mapGet(rv, mksv[i].r, rvv, mparams), valFn)
 		}
 	case reflect.Float64:
 		mksv := make([]orderedRv[float64], len(mks))
@@ -1206,7 +1208,7 @@ func (e *encoder[T]) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, keyFn, v
 				e.encodeValueNonNil(mksv[i].r, keyFn)
 			}
 			e.mapElemValue()
-			e.encodeValue(mapGet(rv, mksv[i].r, rvv, kfast, visindirect, visref), valFn)
+			e.encodeValue(mapGet(rv, mksv[i].r, rvv, mparams), valFn)
 		}
 	default:
 		if rtkey == timeTyp {
@@ -1222,7 +1224,7 @@ func (e *encoder[T]) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, keyFn, v
 				e.e.WriteMapElemKey(i == 0)
 				e.e.EncodeTime(mksv[i].v)
 				e.mapElemValue()
-				e.encodeValue(mapGet(rv, mksv[i].r, rvv, kfast, visindirect, visref), valFn)
+				e.encodeValue(mapGet(rv, mksv[i].r, rvv, mparams), valFn)
 			}
 			break
 		}
@@ -1253,7 +1255,7 @@ func (e *encoder[T]) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, keyFn, v
 			e.e.WriteMapElemKey(j == 0)
 			e.e.writeBytesAsis(mksbv[j].v)
 			e.mapElemValue()
-			e.encodeValue(mapGet(rv, mksbv[j].r, rvv, kfast, visindirect, visref), valFn)
+			e.encodeValue(mapGet(rv, mksbv[j].r, rvv, mparams), valFn)
 		}
 		e.blist.put(mksv)
 		if !byteSliceSameData(bs0, mksv) {

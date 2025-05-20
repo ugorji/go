@@ -21,6 +21,10 @@ const safeMode = true
 const transientSizeMax = 0
 const transientValueHasStringSlice = true
 
+type mapReqParams struct{}
+
+func getMapReqParams(ti *typeInfo) (r mapReqParams) { return }
+
 // func str4byte(b byte) string {
 // 	// return str256[b:][:1] // does 2 bounds checks
 // 	return str256[b : b+1]
@@ -693,13 +697,11 @@ func rvLenMap(rv reflect.Value) int {
 
 // ------------ map range and map indexing ----------
 
-func mapStoresElemIndirect(elemsize uintptr) bool { return false }
-
-func mapSet(m, k, v reflect.Value, keyFastKind mapKeyFastKind, _, _ bool) {
+func mapSet(m, k, v reflect.Value, _ mapReqParams) {
 	m.SetMapIndex(k, v)
 }
 
-func mapGet(m, k, v reflect.Value, keyFastKind mapKeyFastKind, _, _ bool) (vv reflect.Value) {
+func mapGet(m, k, v reflect.Value, _ mapReqParams) (vv reflect.Value) {
 	return m.MapIndex(k)
 }
 

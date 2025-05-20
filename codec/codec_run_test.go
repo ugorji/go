@@ -3950,15 +3950,23 @@ func TestMapRangeIndex(t *testing.T) {
 	fnTestMapIndex := func(mi ...interface{}) {
 		for _, m0 := range mi {
 			m := reflect.ValueOf(m0)
-			mkt := m.Type().Key()
-			mvt := m.Type().Elem()
-			kfast := mapKeyFastKindFor(mkt.Kind())
+			mt := m.Type()
+			mkt := mt.Key()
+			mvt := mt.Elem()
+			// fake a typeInfo with all info required for getMapReqParams call
+			ti := &typeInfo{
+				elemsize: uint32(mvt.Size()),
+				elemkind: uint8(mvt.Kind()),
+				keykind:  uint8(mkt.Kind()),
+			}
+			mparams := getMapReqParams(ti)
+			// kfast := mapKeyFastKindFor(mkt.Kind())
+			// visindirect := mapStoresElemIndirect(mvt.Size())
+			// visref := refBitset.isset(byte(mvt.Kind()))
 			rvv := mapAddrLoopvarRV(mvt, mvt.Kind())
-			visindirect := mapStoresElemIndirect(mvt.Size())
-			visref := refBitset.isset(byte(mvt.Kind()))
 
 			for _, k := range m.MapKeys() {
-				mg := mapGet(m, k, rvv, kfast, visindirect, visref).Interface()
+				mg := mapGet(m, k, rvv, mparams).Interface()
 				testDeepEqualErr(m.MapIndex(k).Interface(), mg, t, "map-index-eq")
 			}
 		}

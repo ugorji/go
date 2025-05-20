@@ -1529,9 +1529,10 @@ func (d *decoder[T]) kMap(f *decFnInfo, rv reflect.Value) {
 	ktypeId := rt2id(ktype)
 	vtypeKind := reflect.Kind(ti.elemkind)
 	ktypeKind := reflect.Kind(ti.keykind)
-	kfast := mapKeyFastKindFor(ktypeKind)
-	visindirect := mapStoresElemIndirect(uintptr(ti.elemsize))
-	visref := refBitset.isset(ti.elemkind)
+	mparams := getMapReqParams(ti)
+	// kfast := mapKeyFastKindFor(ktypeKind)
+	// visindirect := mapStoresElemIndirect(uintptr(ti.elemsize))
+	// visref := refBitset.isset(ti.elemkind)
 
 	vtypePtr := vtypeKind == reflect.Ptr
 	ktypePtr := ktypeKind == reflect.Ptr
@@ -1717,7 +1718,7 @@ func (d *decoder[T]) kMap(f *decFnInfo, rv reflect.Value) {
 			if !rvvz.IsValid() {
 				rvvz = rvZeroK(vtype, vtypeKind)
 			}
-			mapSet(rv, rvk, rvvz, kfast, visindirect, visref)
+			mapSet(rv, rvk, rvvz, mparams)
 			continue
 		}
 
@@ -1732,7 +1733,7 @@ func (d *decoder[T]) kMap(f *decFnInfo, rv reflect.Value) {
 		} else if !doMapGet {
 			goto NEW_RVV
 		} else {
-			rvv = mapGet(rv, rvk, rvva, kfast, visindirect, visref)
+			rvv = mapGet(rv, rvk, rvva, mparams)
 			if !rvv.IsValid() || (rvvCanNil && rvIsNil(rvv)) {
 				goto NEW_RVV
 			}
@@ -1793,7 +1794,7 @@ func (d *decoder[T]) kMap(f *decFnInfo, rv reflect.Value) {
 			d.decodeValueNoCheckNil(rvv, valFn)
 		}
 		if doMapSet {
-			mapSet(rv, rvk, rvv, kfast, visindirect, visref)
+			mapSet(rv, rvk, rvv, mparams)
 		}
 	}
 
