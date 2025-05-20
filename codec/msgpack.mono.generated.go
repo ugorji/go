@@ -48,12 +48,6 @@ type decoderMsgpackBytes struct {
 	d  msgpackDecDriverBytes
 	decoderBase
 }
-type decSliceHelperMsgpackBytes struct {
-	d     *decoderMsgpackBytes
-	ct    valueType
-	Array bool
-	IsNil bool
-}
 type msgpackEncDriverBytes struct {
 	noBuiltInTypes
 	encDriverNoopContainerWriter
@@ -703,9 +697,7 @@ func (e *encoderMsgpackBytes) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value,
 
 	mks := rv.MapKeys()
 	rtkeyKind := rtkey.Kind()
-	kfast := mapKeyFastKindFor(rtkeyKind)
-	visindirect := mapStoresElemIndirect(uintptr(ti.elemsize))
-	visref := refBitset.isset(ti.elemkind)
+	mparams := getMapReqParams(ti)
 
 	switch rtkeyKind {
 	case reflect.Bool:
@@ -722,7 +714,7 @@ func (e *encoderMsgpackBytes) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value,
 				e.encodeValueNonNil(mks[i], keyFn)
 			}
 			e.mapElemValue()
-			e.encodeValue(mapGet(rv, mks[i], rvv, kfast, visindirect, visref), valFn)
+			e.encodeValue(mapGet(rv, mks[i], rvv, mparams), valFn)
 		}
 	case reflect.String:
 		mksv := make([]orderedRv[string], len(mks))
@@ -741,7 +733,7 @@ func (e *encoderMsgpackBytes) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value,
 				e.encodeValueNonNil(mksv[i].r, keyFn)
 			}
 			e.mapElemValue()
-			e.encodeValue(mapGet(rv, mksv[i].r, rvv, kfast, visindirect, visref), valFn)
+			e.encodeValue(mapGet(rv, mksv[i].r, rvv, mparams), valFn)
 		}
 	case reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uint, reflect.Uintptr:
 		mksv := make([]orderedRv[uint64], len(mks))
@@ -760,7 +752,7 @@ func (e *encoderMsgpackBytes) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value,
 				e.encodeValueNonNil(mksv[i].r, keyFn)
 			}
 			e.mapElemValue()
-			e.encodeValue(mapGet(rv, mksv[i].r, rvv, kfast, visindirect, visref), valFn)
+			e.encodeValue(mapGet(rv, mksv[i].r, rvv, mparams), valFn)
 		}
 	case reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Int:
 		mksv := make([]orderedRv[int64], len(mks))
@@ -779,7 +771,7 @@ func (e *encoderMsgpackBytes) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value,
 				e.encodeValueNonNil(mksv[i].r, keyFn)
 			}
 			e.mapElemValue()
-			e.encodeValue(mapGet(rv, mksv[i].r, rvv, kfast, visindirect, visref), valFn)
+			e.encodeValue(mapGet(rv, mksv[i].r, rvv, mparams), valFn)
 		}
 	case reflect.Float32:
 		mksv := make([]orderedRv[float64], len(mks))
@@ -798,7 +790,7 @@ func (e *encoderMsgpackBytes) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value,
 				e.encodeValueNonNil(mksv[i].r, keyFn)
 			}
 			e.mapElemValue()
-			e.encodeValue(mapGet(rv, mksv[i].r, rvv, kfast, visindirect, visref), valFn)
+			e.encodeValue(mapGet(rv, mksv[i].r, rvv, mparams), valFn)
 		}
 	case reflect.Float64:
 		mksv := make([]orderedRv[float64], len(mks))
@@ -817,7 +809,7 @@ func (e *encoderMsgpackBytes) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value,
 				e.encodeValueNonNil(mksv[i].r, keyFn)
 			}
 			e.mapElemValue()
-			e.encodeValue(mapGet(rv, mksv[i].r, rvv, kfast, visindirect, visref), valFn)
+			e.encodeValue(mapGet(rv, mksv[i].r, rvv, mparams), valFn)
 		}
 	default:
 		if rtkey == timeTyp {
@@ -833,7 +825,7 @@ func (e *encoderMsgpackBytes) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value,
 				e.e.WriteMapElemKey(i == 0)
 				e.e.EncodeTime(mksv[i].v)
 				e.mapElemValue()
-				e.encodeValue(mapGet(rv, mksv[i].r, rvv, kfast, visindirect, visref), valFn)
+				e.encodeValue(mapGet(rv, mksv[i].r, rvv, mparams), valFn)
 			}
 			break
 		}
@@ -862,7 +854,7 @@ func (e *encoderMsgpackBytes) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value,
 			e.e.WriteMapElemKey(j == 0)
 			e.e.writeBytesAsis(mksbv[j].v)
 			e.mapElemValue()
-			e.encodeValue(mapGet(rv, mksbv[j].r, rvv, kfast, visindirect, visref), valFn)
+			e.encodeValue(mapGet(rv, mksbv[j].r, rvv, mparams), valFn)
 		}
 		e.blist.put(mksv)
 		if !byteSliceSameData(bs0, mksv) {
@@ -933,26 +925,34 @@ func (e *encoderMsgpackBytes) mustEncode(v interface{}) {
 
 func (e *encoderMsgpackBytes) encode(iv interface{}) {
 
-	if iv == nil {
+	if isNil(iv) {
 		e.e.EncodeNil()
 		return
 	}
 
-	rv, ok := isNil(iv)
-	if ok {
-		if e.h.NilCollectionToZeroLength {
-			switch rv.Kind() {
-			case reflect.Slice, reflect.Chan:
-
-				e.e.WriteArrayEmpty()
-				return
-			case reflect.Map:
-				e.e.WriteMapEmpty()
-				return
-			}
+	rv := reflect.ValueOf(iv)
+TOP:
+	if isnilBitset.isset(byte(rv.Kind())) {
+		if rv.Kind() == reflect.Ptr {
+			rv = rv.Elem()
+			iv = rv2i(rv)
+			goto TOP
 		}
-		e.e.EncodeNil()
-		return
+		if rvIsNil(rv) {
+			if e.h.NilCollectionToZeroLength {
+				switch rv.Kind() {
+				case reflect.Slice, reflect.Chan:
+
+					e.e.WriteArrayEmpty()
+					return
+				case reflect.Map:
+					e.e.WriteMapEmpty()
+					return
+				}
+			}
+			e.e.EncodeNil()
+			return
+		}
 	}
 
 	switch v := iv.(type) {
@@ -1000,50 +1000,6 @@ func (e *encoderMsgpackBytes) encode(iv interface{}) {
 		e.e.EncodeTime(v)
 	case []byte:
 		e.e.EncodeStringBytesRaw(v)
-	case *Raw:
-		e.rawBytes(*v)
-	case *string:
-		e.e.EncodeString(*v)
-	case *bool:
-		e.e.EncodeBool(*v)
-	case *int:
-		e.e.EncodeInt(int64(*v))
-	case *int8:
-		e.e.EncodeInt(int64(*v))
-	case *int16:
-		e.e.EncodeInt(int64(*v))
-	case *int32:
-		e.e.EncodeInt(int64(*v))
-	case *int64:
-		e.e.EncodeInt(*v)
-	case *uint:
-		e.e.EncodeUint(uint64(*v))
-	case *uint8:
-		e.e.EncodeUint(uint64(*v))
-	case *uint16:
-		e.e.EncodeUint(uint64(*v))
-	case *uint32:
-		e.e.EncodeUint(uint64(*v))
-	case *uint64:
-		e.e.EncodeUint(*v)
-	case *uintptr:
-		e.e.EncodeUint(uint64(*v))
-	case *float32:
-		e.e.EncodeFloat32(*v)
-	case *float64:
-		e.e.EncodeFloat64(*v)
-	case *complex64:
-		e.encodeComplex64(*v)
-	case *complex128:
-		e.encodeComplex128(*v)
-	case *time.Time:
-		e.e.EncodeTime(*v)
-	case *[]byte:
-		if *v == nil {
-			e.e.EncodeNil()
-		} else {
-			e.e.EncodeStringBytesRaw(*v)
-		}
 	default:
 
 		if skipFastpathTypeSwitchInDirectCall || !e.dh.fastpathEncodeTypeSwitch(iv, e) {
@@ -1510,7 +1466,7 @@ func (d *decoderMsgpackBytes) raw(_ *decFnInfo, rv reflect.Value) {
 }
 
 func (d *decoderMsgpackBytes) kString(_ *decFnInfo, rv reflect.Value) {
-	rvSetString(rv, d.string(d.d.DecodeStringAsBytes()))
+	rvSetString(rv, d.detach2Str(d.d.DecodeStringAsBytes()))
 }
 
 func (d *decoderMsgpackBytes) kBool(_ *decFnInfo, rv reflect.Value) {
@@ -1589,6 +1545,7 @@ func (d *decoderMsgpackBytes) kInterfaceNaked(f *decFnInfo) (rvn reflect.Value) 
 	if decFailNonEmptyIntf && f.ti.numMeth > 0 {
 		halt.errorf("cannot decode non-nil codec value into nil %v (%v methods)", f.ti.rt, f.ti.numMeth)
 	}
+
 	switch n.v {
 	case valueTypeMap:
 		mtid := d.mtid
@@ -1613,7 +1570,7 @@ func (d *decoderMsgpackBytes) kInterfaceNaked(f *decFnInfo) (rvn reflect.Value) 
 			rvn = rvn.Elem()
 		} else {
 
-			rvn = makeMapReflect(d.h.MapType, 0)
+			rvn = rvZeroAddrK(d.h.MapType, reflect.Map)
 			d.decodeValue(rvn, nil)
 		}
 	case valueTypeArray:
@@ -1917,7 +1874,15 @@ func (d *decoderMsgpackBytes) kSlice(f *decFnInfo, rv reflect.Value) {
 		return
 	}
 
-	slh, containerLenS := d.decSliceHelperStart()
+	var containerLenS int
+	isArray := ctyp == valueTypeArray
+	if isArray {
+		containerLenS = d.arrayStart(d.d.ReadArrayStart())
+	} else if ctyp == valueTypeMap {
+		containerLenS = d.mapStart(d.d.ReadMapStart()) * 2
+	} else {
+		halt.errorStr2("decoding into a slice, expect map/array - got ", ctyp.String())
+	}
 
 	if containerLenS == 0 {
 		if rvCanset {
@@ -1927,7 +1892,11 @@ func (d *decoderMsgpackBytes) kSlice(f *decFnInfo, rv reflect.Value) {
 				rvSetSliceLen(rv, 0)
 			}
 		}
-		slh.End()
+		if isArray {
+			d.arrayEnd()
+		} else {
+			d.mapEnd()
+		}
 		return
 	}
 
@@ -1948,7 +1917,7 @@ func (d *decoderMsgpackBytes) kSlice(f *decFnInfo, rv reflect.Value) {
 	rvlen := rvLenSlice(rv)
 	rvcap := rvCapSlice(rv)
 	maxInitLen := d.maxInitLen()
-	hasLen := containerLenS > 0
+	hasLen := containerLenS >= 0
 	if hasLen {
 		if containerLenS > rvcap {
 			oldRvlenGtZero := rvlen > 0
@@ -2008,8 +1977,15 @@ func (d *decoderMsgpackBytes) kSlice(f *decFnInfo, rv reflect.Value) {
 			}
 		}
 
+		if ctyp == valueTypeArray {
+			d.arrayElem(j == 0)
+		} else if j&1 == 0 {
+			d.mapElemKey(j == 0)
+		} else {
+			d.mapElemValue()
+		}
+
 		if j >= rvlen {
-			slh.ElemContainerState(j)
 
 			if rvlen < rvcap {
 				rvlen = rvcap
@@ -2028,8 +2004,6 @@ func (d *decoderMsgpackBytes) kSlice(f *decFnInfo, rv reflect.Value) {
 				rvlen = rvcap
 				rvChanged = !rvCanset
 			}
-		} else {
-			slh.ElemContainerState(j)
 		}
 
 		rv9 = rvArrayIndex(rv, j, f.ti, true)
@@ -2065,7 +2039,11 @@ func (d *decoderMsgpackBytes) kSlice(f *decFnInfo, rv reflect.Value) {
 			rvChanged = true
 		}
 	}
-	slh.End()
+	if isArray {
+		d.arrayEnd()
+	} else {
+		d.mapEnd()
+	}
 
 	if rvChanged {
 		rvSetDirect(rv0, rv)
@@ -2089,10 +2067,22 @@ func (d *decoderMsgpackBytes) kArray(f *decFnInfo, rv reflect.Value) {
 		return
 	}
 
-	slh, containerLenS := d.decSliceHelperStart()
+	var containerLenS int
+	isArray := ctyp == valueTypeArray
+	if isArray {
+		containerLenS = d.arrayStart(d.d.ReadArrayStart())
+	} else if ctyp == valueTypeMap {
+		containerLenS = d.mapStart(d.d.ReadMapStart()) * 2
+	} else {
+		halt.errorStr2("decoding into a slice, expect map/array - got ", ctyp.String())
+	}
 
 	if containerLenS == 0 {
-		slh.End()
+		if isArray {
+			d.arrayEnd()
+		} else {
+			d.mapEnd()
+		}
 		return
 	}
 
@@ -2104,7 +2094,7 @@ func (d *decoderMsgpackBytes) kArray(f *decFnInfo, rv reflect.Value) {
 	var rv9 reflect.Value
 
 	rvlen := rv.Len()
-	hasLen := containerLenS > 0
+	hasLen := containerLenS >= 0
 	if hasLen && containerLenS > rvlen {
 		halt.errorf("cannot decode into array with length: %v, less than container length: %v", any(rvlen), any(containerLenS))
 	}
@@ -2125,13 +2115,20 @@ func (d *decoderMsgpackBytes) kArray(f *decFnInfo, rv reflect.Value) {
 	}
 
 	for j := 0; d.containerNext(j, containerLenS, hasLen); j++ {
-
-		if j >= rvlen {
-			slh.arrayCannotExpand(hasLen, rvlen, j, containerLenS)
-			return
+		if ctyp == valueTypeArray {
+			d.arrayElem(j == 0)
+		} else if j&1 == 0 {
+			d.mapElemKey(j == 0)
+		} else {
+			d.mapElemValue()
 		}
 
-		slh.ElemContainerState(j)
+		if j >= rvlen {
+			d.arrayCannotExpand(rvlen, j+1)
+			d.swallow()
+			continue
+		}
+
 		rv9 = rvArrayIndex(rv, j, f.ti, false)
 		if elemReset {
 			rvSetZero(rv9)
@@ -2151,7 +2148,11 @@ func (d *decoderMsgpackBytes) kArray(f *decFnInfo, rv reflect.Value) {
 			d.decodeValueNoCheckNil(rv9, fn)
 		}
 	}
-	slh.End()
+	if isArray {
+		d.arrayEnd()
+	} else {
+		d.mapEnd()
+	}
 }
 
 func (d *decoderMsgpackBytes) kChan(f *decFnInfo, rv reflect.Value) {
@@ -2180,13 +2181,25 @@ func (d *decoderMsgpackBytes) kChan(f *decFnInfo, rv reflect.Value) {
 
 	var rvCanset = rv.CanSet()
 
-	slh, containerLenS := d.decSliceHelperStart()
+	var containerLenS int
+	isArray := ctyp == valueTypeArray
+	if isArray {
+		containerLenS = d.arrayStart(d.d.ReadArrayStart())
+	} else if ctyp == valueTypeMap {
+		containerLenS = d.mapStart(d.d.ReadMapStart()) * 2
+	} else {
+		halt.errorStr2("decoding into a slice, expect map/array - got ", ctyp.String())
+	}
 
 	if containerLenS == 0 {
 		if rvCanset && rvIsNil(rv) {
 			rvSetDirect(rv, reflect.MakeChan(ti.rt, 0))
 		}
-		slh.End()
+		if isArray {
+			d.arrayEnd()
+		} else {
+			d.mapEnd()
+		}
 		return
 	}
 
@@ -2204,7 +2217,7 @@ func (d *decoderMsgpackBytes) kChan(f *decFnInfo, rv reflect.Value) {
 	var rv9 reflect.Value
 
 	var rvlen int
-	hasLen := containerLenS > 0
+	hasLen := containerLenS >= 0
 	maxInitLen := d.maxInitLen()
 
 	for j := 0; d.containerNext(j, containerLenS, hasLen); j++ {
@@ -2226,7 +2239,15 @@ func (d *decoderMsgpackBytes) kChan(f *decFnInfo, rv reflect.Value) {
 				fn = d.fn(rtelem)
 			}
 		}
-		slh.ElemContainerState(j)
+
+		if ctyp == valueTypeArray {
+			d.arrayElem(j == 0)
+		} else if j&1 == 0 {
+			d.mapElemKey(j == 0)
+		} else {
+			d.mapElemValue()
+		}
+
 		if rv9.IsValid() {
 			rvSetZero(rv9)
 		} else if decUseTransient && useTransient {
@@ -2239,7 +2260,11 @@ func (d *decoderMsgpackBytes) kChan(f *decFnInfo, rv reflect.Value) {
 		}
 		rv.Send(rv9)
 	}
-	slh.End()
+	if isArray {
+		d.arrayEnd()
+	} else {
+		d.mapEnd()
+	}
 
 	if rvChanged {
 		rvSetDirect(rv0, rv)
@@ -2264,9 +2289,7 @@ func (d *decoderMsgpackBytes) kMap(f *decFnInfo, rv reflect.Value) {
 	ktypeId := rt2id(ktype)
 	vtypeKind := reflect.Kind(ti.elemkind)
 	ktypeKind := reflect.Kind(ti.keykind)
-	kfast := mapKeyFastKindFor(ktypeKind)
-	visindirect := mapStoresElemIndirect(uintptr(ti.elemsize))
-	visref := refBitset.isset(ti.elemkind)
+	mparams := getMapReqParams(ti)
 
 	vtypePtr := vtypeKind == reflect.Ptr
 	ktypePtr := ktypeKind == reflect.Ptr
@@ -2307,7 +2330,7 @@ func (d *decoderMsgpackBytes) kMap(f *decFnInfo, rv reflect.Value) {
 
 	ktypeIsString := ktypeId == stringTypId
 	ktypeIsIntf := ktypeId == intfTypId
-	hasLen := containerLen > 0
+	hasLen := containerLen >= 0
 
 	var kstr2bs []byte
 	var kstr string
@@ -2393,9 +2416,9 @@ func (d *decoderMsgpackBytes) kMap(f *decFnInfo, rv reflect.Value) {
 
 		if mapKeyStringSharesBytesBuf && d.bufio {
 			if ktypeIsString {
-				rvSetString(rvk, d.string(kstr2bs, att))
+				rvSetString(rvk, d.detach2Str(kstr2bs, att))
 			} else {
-				rvSetIntf(rvk, rv4istr(d.string(kstr2bs, att)))
+				rvSetIntf(rvk, rv4istr(d.detach2Str(kstr2bs, att)))
 			}
 			mapKeyStringSharesBytesBuf = false
 		}
@@ -2405,16 +2428,16 @@ func (d *decoderMsgpackBytes) kMap(f *decFnInfo, rv reflect.Value) {
 		if d.d.TryNil() {
 			if mapKeyStringSharesBytesBuf {
 				if ktypeIsString {
-					rvSetString(rvk, d.string(kstr2bs, att))
+					rvSetString(rvk, d.detach2Str(kstr2bs, att))
 				} else {
-					rvSetIntf(rvk, rv4istr(d.string(kstr2bs, att)))
+					rvSetIntf(rvk, rv4istr(d.detach2Str(kstr2bs, att)))
 				}
 			}
 
 			if !rvvz.IsValid() {
 				rvvz = rvZeroK(vtype, vtypeKind)
 			}
-			mapSet(rv, rvk, rvvz, kfast, visindirect, visref)
+			mapSet(rv, rvk, rvvz, mparams)
 			continue
 		}
 
@@ -2425,7 +2448,7 @@ func (d *decoderMsgpackBytes) kMap(f *decFnInfo, rv reflect.Value) {
 		} else if !doMapGet {
 			goto NEW_RVV
 		} else {
-			rvv = mapGet(rv, rvk, rvva, kfast, visindirect, visref)
+			rvv = mapGet(rv, rvk, rvva, mparams)
 			if !rvv.IsValid() || (rvvCanNil && rvIsNil(rvv)) {
 				goto NEW_RVV
 			}
@@ -2468,9 +2491,9 @@ func (d *decoderMsgpackBytes) kMap(f *decFnInfo, rv reflect.Value) {
 	DECODE_VALUE_NO_CHECK_NIL:
 		if doMapSet && mapKeyStringSharesBytesBuf {
 			if ktypeIsString {
-				rvSetString(rvk, d.string(kstr2bs, att))
+				rvSetString(rvk, d.detach2Str(kstr2bs, att))
 			} else {
-				rvSetIntf(rvk, rv4istr(d.string(kstr2bs, att)))
+				rvSetIntf(rvk, rv4istr(d.detach2Str(kstr2bs, att)))
 			}
 		}
 		if vbuiltin {
@@ -2486,7 +2509,7 @@ func (d *decoderMsgpackBytes) kMap(f *decFnInfo, rv reflect.Value) {
 			d.decodeValueNoCheckNil(rvv, valFn)
 		}
 		if doMapSet {
-			mapSet(rv, rvk, rvv, kfast, visindirect, visref)
+			mapSet(rv, rvk, rvv, mparams)
 		}
 	}
 
@@ -2624,7 +2647,7 @@ func (d *decoderMsgpackBytes) decode(iv interface{}) {
 		}
 		d.decodeValue(v, nil)
 	case *string:
-		*v = d.string(d.d.DecodeStringAsBytes())
+		*v = d.detach2Str(d.d.DecodeStringAsBytes())
 	case *bool:
 		*v = d.d.DecodeBool()
 	case *int:
@@ -2814,57 +2837,6 @@ func (d *decoderMsgpackBytes) fn(t reflect.Type) *decFnMsgpackBytes {
 
 func (d *decoderMsgpackBytes) fnNoExt(t reflect.Type) *decFnMsgpackBytes {
 	return d.dh.decFnViaBH(t, d.rtidFnNoExt, d.h, d.fp, true)
-}
-
-func (d *decoderMsgpackBytes) decSliceHelperStart() (x decSliceHelperMsgpackBytes, clen int) {
-	x.ct = d.d.ContainerType()
-	x.d = d
-	switch x.ct {
-	case valueTypeNil:
-		x.IsNil = true
-	case valueTypeArray:
-		x.Array = true
-		clen = d.arrayStart(d.d.ReadArrayStart())
-	case valueTypeMap:
-		clen = d.mapStart(d.d.ReadMapStart())
-		clen += clen
-	default:
-		halt.errorStr2("to decode into a slice, expect map/array - got ", x.ct.String())
-	}
-	return
-}
-
-func (x decSliceHelperMsgpackBytes) End() {
-	if x.IsNil {
-	} else if x.Array {
-		x.d.arrayEnd()
-	} else {
-		x.d.mapEnd()
-	}
-}
-
-func (x decSliceHelperMsgpackBytes) ElemContainerState(index int) {
-
-	if x.Array {
-		x.d.arrayElem(index == 0)
-	} else if index&1 == 0 {
-		x.d.mapElemKey(index == 0)
-	} else {
-		x.d.mapElemValue()
-	}
-}
-
-func (x decSliceHelperMsgpackBytes) arrayCannotExpand(hasLen bool, lenv, j, containerLenS int) {
-	x.d.arrayCannotExpand(lenv, j+1)
-
-	x.ElemContainerState(j)
-	x.d.swallow()
-	j++
-	for ; x.d.containerNext(j, containerLenS, hasLen); j++ {
-		x.ElemContainerState(j)
-		x.d.swallow()
-	}
-	x.End()
 }
 
 func (helperDecDriverMsgpackBytes) newDecoderBytes(in []byte, h Handle) *decoderMsgpackBytes {
@@ -4050,12 +4022,6 @@ type decoderMsgpackIO struct {
 	d  msgpackDecDriverIO
 	decoderBase
 }
-type decSliceHelperMsgpackIO struct {
-	d     *decoderMsgpackIO
-	ct    valueType
-	Array bool
-	IsNil bool
-}
 type msgpackEncDriverIO struct {
 	noBuiltInTypes
 	encDriverNoopContainerWriter
@@ -4705,9 +4671,7 @@ func (e *encoderMsgpackIO) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, ke
 
 	mks := rv.MapKeys()
 	rtkeyKind := rtkey.Kind()
-	kfast := mapKeyFastKindFor(rtkeyKind)
-	visindirect := mapStoresElemIndirect(uintptr(ti.elemsize))
-	visref := refBitset.isset(ti.elemkind)
+	mparams := getMapReqParams(ti)
 
 	switch rtkeyKind {
 	case reflect.Bool:
@@ -4724,7 +4688,7 @@ func (e *encoderMsgpackIO) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, ke
 				e.encodeValueNonNil(mks[i], keyFn)
 			}
 			e.mapElemValue()
-			e.encodeValue(mapGet(rv, mks[i], rvv, kfast, visindirect, visref), valFn)
+			e.encodeValue(mapGet(rv, mks[i], rvv, mparams), valFn)
 		}
 	case reflect.String:
 		mksv := make([]orderedRv[string], len(mks))
@@ -4743,7 +4707,7 @@ func (e *encoderMsgpackIO) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, ke
 				e.encodeValueNonNil(mksv[i].r, keyFn)
 			}
 			e.mapElemValue()
-			e.encodeValue(mapGet(rv, mksv[i].r, rvv, kfast, visindirect, visref), valFn)
+			e.encodeValue(mapGet(rv, mksv[i].r, rvv, mparams), valFn)
 		}
 	case reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uint, reflect.Uintptr:
 		mksv := make([]orderedRv[uint64], len(mks))
@@ -4762,7 +4726,7 @@ func (e *encoderMsgpackIO) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, ke
 				e.encodeValueNonNil(mksv[i].r, keyFn)
 			}
 			e.mapElemValue()
-			e.encodeValue(mapGet(rv, mksv[i].r, rvv, kfast, visindirect, visref), valFn)
+			e.encodeValue(mapGet(rv, mksv[i].r, rvv, mparams), valFn)
 		}
 	case reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Int:
 		mksv := make([]orderedRv[int64], len(mks))
@@ -4781,7 +4745,7 @@ func (e *encoderMsgpackIO) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, ke
 				e.encodeValueNonNil(mksv[i].r, keyFn)
 			}
 			e.mapElemValue()
-			e.encodeValue(mapGet(rv, mksv[i].r, rvv, kfast, visindirect, visref), valFn)
+			e.encodeValue(mapGet(rv, mksv[i].r, rvv, mparams), valFn)
 		}
 	case reflect.Float32:
 		mksv := make([]orderedRv[float64], len(mks))
@@ -4800,7 +4764,7 @@ func (e *encoderMsgpackIO) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, ke
 				e.encodeValueNonNil(mksv[i].r, keyFn)
 			}
 			e.mapElemValue()
-			e.encodeValue(mapGet(rv, mksv[i].r, rvv, kfast, visindirect, visref), valFn)
+			e.encodeValue(mapGet(rv, mksv[i].r, rvv, mparams), valFn)
 		}
 	case reflect.Float64:
 		mksv := make([]orderedRv[float64], len(mks))
@@ -4819,7 +4783,7 @@ func (e *encoderMsgpackIO) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, ke
 				e.encodeValueNonNil(mksv[i].r, keyFn)
 			}
 			e.mapElemValue()
-			e.encodeValue(mapGet(rv, mksv[i].r, rvv, kfast, visindirect, visref), valFn)
+			e.encodeValue(mapGet(rv, mksv[i].r, rvv, mparams), valFn)
 		}
 	default:
 		if rtkey == timeTyp {
@@ -4835,7 +4799,7 @@ func (e *encoderMsgpackIO) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, ke
 				e.e.WriteMapElemKey(i == 0)
 				e.e.EncodeTime(mksv[i].v)
 				e.mapElemValue()
-				e.encodeValue(mapGet(rv, mksv[i].r, rvv, kfast, visindirect, visref), valFn)
+				e.encodeValue(mapGet(rv, mksv[i].r, rvv, mparams), valFn)
 			}
 			break
 		}
@@ -4864,7 +4828,7 @@ func (e *encoderMsgpackIO) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, ke
 			e.e.WriteMapElemKey(j == 0)
 			e.e.writeBytesAsis(mksbv[j].v)
 			e.mapElemValue()
-			e.encodeValue(mapGet(rv, mksbv[j].r, rvv, kfast, visindirect, visref), valFn)
+			e.encodeValue(mapGet(rv, mksbv[j].r, rvv, mparams), valFn)
 		}
 		e.blist.put(mksv)
 		if !byteSliceSameData(bs0, mksv) {
@@ -4935,26 +4899,34 @@ func (e *encoderMsgpackIO) mustEncode(v interface{}) {
 
 func (e *encoderMsgpackIO) encode(iv interface{}) {
 
-	if iv == nil {
+	if isNil(iv) {
 		e.e.EncodeNil()
 		return
 	}
 
-	rv, ok := isNil(iv)
-	if ok {
-		if e.h.NilCollectionToZeroLength {
-			switch rv.Kind() {
-			case reflect.Slice, reflect.Chan:
-
-				e.e.WriteArrayEmpty()
-				return
-			case reflect.Map:
-				e.e.WriteMapEmpty()
-				return
-			}
+	rv := reflect.ValueOf(iv)
+TOP:
+	if isnilBitset.isset(byte(rv.Kind())) {
+		if rv.Kind() == reflect.Ptr {
+			rv = rv.Elem()
+			iv = rv2i(rv)
+			goto TOP
 		}
-		e.e.EncodeNil()
-		return
+		if rvIsNil(rv) {
+			if e.h.NilCollectionToZeroLength {
+				switch rv.Kind() {
+				case reflect.Slice, reflect.Chan:
+
+					e.e.WriteArrayEmpty()
+					return
+				case reflect.Map:
+					e.e.WriteMapEmpty()
+					return
+				}
+			}
+			e.e.EncodeNil()
+			return
+		}
 	}
 
 	switch v := iv.(type) {
@@ -5002,50 +4974,6 @@ func (e *encoderMsgpackIO) encode(iv interface{}) {
 		e.e.EncodeTime(v)
 	case []byte:
 		e.e.EncodeStringBytesRaw(v)
-	case *Raw:
-		e.rawBytes(*v)
-	case *string:
-		e.e.EncodeString(*v)
-	case *bool:
-		e.e.EncodeBool(*v)
-	case *int:
-		e.e.EncodeInt(int64(*v))
-	case *int8:
-		e.e.EncodeInt(int64(*v))
-	case *int16:
-		e.e.EncodeInt(int64(*v))
-	case *int32:
-		e.e.EncodeInt(int64(*v))
-	case *int64:
-		e.e.EncodeInt(*v)
-	case *uint:
-		e.e.EncodeUint(uint64(*v))
-	case *uint8:
-		e.e.EncodeUint(uint64(*v))
-	case *uint16:
-		e.e.EncodeUint(uint64(*v))
-	case *uint32:
-		e.e.EncodeUint(uint64(*v))
-	case *uint64:
-		e.e.EncodeUint(*v)
-	case *uintptr:
-		e.e.EncodeUint(uint64(*v))
-	case *float32:
-		e.e.EncodeFloat32(*v)
-	case *float64:
-		e.e.EncodeFloat64(*v)
-	case *complex64:
-		e.encodeComplex64(*v)
-	case *complex128:
-		e.encodeComplex128(*v)
-	case *time.Time:
-		e.e.EncodeTime(*v)
-	case *[]byte:
-		if *v == nil {
-			e.e.EncodeNil()
-		} else {
-			e.e.EncodeStringBytesRaw(*v)
-		}
 	default:
 
 		if skipFastpathTypeSwitchInDirectCall || !e.dh.fastpathEncodeTypeSwitch(iv, e) {
@@ -5512,7 +5440,7 @@ func (d *decoderMsgpackIO) raw(_ *decFnInfo, rv reflect.Value) {
 }
 
 func (d *decoderMsgpackIO) kString(_ *decFnInfo, rv reflect.Value) {
-	rvSetString(rv, d.string(d.d.DecodeStringAsBytes()))
+	rvSetString(rv, d.detach2Str(d.d.DecodeStringAsBytes()))
 }
 
 func (d *decoderMsgpackIO) kBool(_ *decFnInfo, rv reflect.Value) {
@@ -5591,6 +5519,7 @@ func (d *decoderMsgpackIO) kInterfaceNaked(f *decFnInfo) (rvn reflect.Value) {
 	if decFailNonEmptyIntf && f.ti.numMeth > 0 {
 		halt.errorf("cannot decode non-nil codec value into nil %v (%v methods)", f.ti.rt, f.ti.numMeth)
 	}
+
 	switch n.v {
 	case valueTypeMap:
 		mtid := d.mtid
@@ -5615,7 +5544,7 @@ func (d *decoderMsgpackIO) kInterfaceNaked(f *decFnInfo) (rvn reflect.Value) {
 			rvn = rvn.Elem()
 		} else {
 
-			rvn = makeMapReflect(d.h.MapType, 0)
+			rvn = rvZeroAddrK(d.h.MapType, reflect.Map)
 			d.decodeValue(rvn, nil)
 		}
 	case valueTypeArray:
@@ -5919,7 +5848,15 @@ func (d *decoderMsgpackIO) kSlice(f *decFnInfo, rv reflect.Value) {
 		return
 	}
 
-	slh, containerLenS := d.decSliceHelperStart()
+	var containerLenS int
+	isArray := ctyp == valueTypeArray
+	if isArray {
+		containerLenS = d.arrayStart(d.d.ReadArrayStart())
+	} else if ctyp == valueTypeMap {
+		containerLenS = d.mapStart(d.d.ReadMapStart()) * 2
+	} else {
+		halt.errorStr2("decoding into a slice, expect map/array - got ", ctyp.String())
+	}
 
 	if containerLenS == 0 {
 		if rvCanset {
@@ -5929,7 +5866,11 @@ func (d *decoderMsgpackIO) kSlice(f *decFnInfo, rv reflect.Value) {
 				rvSetSliceLen(rv, 0)
 			}
 		}
-		slh.End()
+		if isArray {
+			d.arrayEnd()
+		} else {
+			d.mapEnd()
+		}
 		return
 	}
 
@@ -5950,7 +5891,7 @@ func (d *decoderMsgpackIO) kSlice(f *decFnInfo, rv reflect.Value) {
 	rvlen := rvLenSlice(rv)
 	rvcap := rvCapSlice(rv)
 	maxInitLen := d.maxInitLen()
-	hasLen := containerLenS > 0
+	hasLen := containerLenS >= 0
 	if hasLen {
 		if containerLenS > rvcap {
 			oldRvlenGtZero := rvlen > 0
@@ -6010,8 +5951,15 @@ func (d *decoderMsgpackIO) kSlice(f *decFnInfo, rv reflect.Value) {
 			}
 		}
 
+		if ctyp == valueTypeArray {
+			d.arrayElem(j == 0)
+		} else if j&1 == 0 {
+			d.mapElemKey(j == 0)
+		} else {
+			d.mapElemValue()
+		}
+
 		if j >= rvlen {
-			slh.ElemContainerState(j)
 
 			if rvlen < rvcap {
 				rvlen = rvcap
@@ -6030,8 +5978,6 @@ func (d *decoderMsgpackIO) kSlice(f *decFnInfo, rv reflect.Value) {
 				rvlen = rvcap
 				rvChanged = !rvCanset
 			}
-		} else {
-			slh.ElemContainerState(j)
 		}
 
 		rv9 = rvArrayIndex(rv, j, f.ti, true)
@@ -6067,7 +6013,11 @@ func (d *decoderMsgpackIO) kSlice(f *decFnInfo, rv reflect.Value) {
 			rvChanged = true
 		}
 	}
-	slh.End()
+	if isArray {
+		d.arrayEnd()
+	} else {
+		d.mapEnd()
+	}
 
 	if rvChanged {
 		rvSetDirect(rv0, rv)
@@ -6091,10 +6041,22 @@ func (d *decoderMsgpackIO) kArray(f *decFnInfo, rv reflect.Value) {
 		return
 	}
 
-	slh, containerLenS := d.decSliceHelperStart()
+	var containerLenS int
+	isArray := ctyp == valueTypeArray
+	if isArray {
+		containerLenS = d.arrayStart(d.d.ReadArrayStart())
+	} else if ctyp == valueTypeMap {
+		containerLenS = d.mapStart(d.d.ReadMapStart()) * 2
+	} else {
+		halt.errorStr2("decoding into a slice, expect map/array - got ", ctyp.String())
+	}
 
 	if containerLenS == 0 {
-		slh.End()
+		if isArray {
+			d.arrayEnd()
+		} else {
+			d.mapEnd()
+		}
 		return
 	}
 
@@ -6106,7 +6068,7 @@ func (d *decoderMsgpackIO) kArray(f *decFnInfo, rv reflect.Value) {
 	var rv9 reflect.Value
 
 	rvlen := rv.Len()
-	hasLen := containerLenS > 0
+	hasLen := containerLenS >= 0
 	if hasLen && containerLenS > rvlen {
 		halt.errorf("cannot decode into array with length: %v, less than container length: %v", any(rvlen), any(containerLenS))
 	}
@@ -6127,13 +6089,20 @@ func (d *decoderMsgpackIO) kArray(f *decFnInfo, rv reflect.Value) {
 	}
 
 	for j := 0; d.containerNext(j, containerLenS, hasLen); j++ {
-
-		if j >= rvlen {
-			slh.arrayCannotExpand(hasLen, rvlen, j, containerLenS)
-			return
+		if ctyp == valueTypeArray {
+			d.arrayElem(j == 0)
+		} else if j&1 == 0 {
+			d.mapElemKey(j == 0)
+		} else {
+			d.mapElemValue()
 		}
 
-		slh.ElemContainerState(j)
+		if j >= rvlen {
+			d.arrayCannotExpand(rvlen, j+1)
+			d.swallow()
+			continue
+		}
+
 		rv9 = rvArrayIndex(rv, j, f.ti, false)
 		if elemReset {
 			rvSetZero(rv9)
@@ -6153,7 +6122,11 @@ func (d *decoderMsgpackIO) kArray(f *decFnInfo, rv reflect.Value) {
 			d.decodeValueNoCheckNil(rv9, fn)
 		}
 	}
-	slh.End()
+	if isArray {
+		d.arrayEnd()
+	} else {
+		d.mapEnd()
+	}
 }
 
 func (d *decoderMsgpackIO) kChan(f *decFnInfo, rv reflect.Value) {
@@ -6182,13 +6155,25 @@ func (d *decoderMsgpackIO) kChan(f *decFnInfo, rv reflect.Value) {
 
 	var rvCanset = rv.CanSet()
 
-	slh, containerLenS := d.decSliceHelperStart()
+	var containerLenS int
+	isArray := ctyp == valueTypeArray
+	if isArray {
+		containerLenS = d.arrayStart(d.d.ReadArrayStart())
+	} else if ctyp == valueTypeMap {
+		containerLenS = d.mapStart(d.d.ReadMapStart()) * 2
+	} else {
+		halt.errorStr2("decoding into a slice, expect map/array - got ", ctyp.String())
+	}
 
 	if containerLenS == 0 {
 		if rvCanset && rvIsNil(rv) {
 			rvSetDirect(rv, reflect.MakeChan(ti.rt, 0))
 		}
-		slh.End()
+		if isArray {
+			d.arrayEnd()
+		} else {
+			d.mapEnd()
+		}
 		return
 	}
 
@@ -6206,7 +6191,7 @@ func (d *decoderMsgpackIO) kChan(f *decFnInfo, rv reflect.Value) {
 	var rv9 reflect.Value
 
 	var rvlen int
-	hasLen := containerLenS > 0
+	hasLen := containerLenS >= 0
 	maxInitLen := d.maxInitLen()
 
 	for j := 0; d.containerNext(j, containerLenS, hasLen); j++ {
@@ -6228,7 +6213,15 @@ func (d *decoderMsgpackIO) kChan(f *decFnInfo, rv reflect.Value) {
 				fn = d.fn(rtelem)
 			}
 		}
-		slh.ElemContainerState(j)
+
+		if ctyp == valueTypeArray {
+			d.arrayElem(j == 0)
+		} else if j&1 == 0 {
+			d.mapElemKey(j == 0)
+		} else {
+			d.mapElemValue()
+		}
+
 		if rv9.IsValid() {
 			rvSetZero(rv9)
 		} else if decUseTransient && useTransient {
@@ -6241,7 +6234,11 @@ func (d *decoderMsgpackIO) kChan(f *decFnInfo, rv reflect.Value) {
 		}
 		rv.Send(rv9)
 	}
-	slh.End()
+	if isArray {
+		d.arrayEnd()
+	} else {
+		d.mapEnd()
+	}
 
 	if rvChanged {
 		rvSetDirect(rv0, rv)
@@ -6266,9 +6263,7 @@ func (d *decoderMsgpackIO) kMap(f *decFnInfo, rv reflect.Value) {
 	ktypeId := rt2id(ktype)
 	vtypeKind := reflect.Kind(ti.elemkind)
 	ktypeKind := reflect.Kind(ti.keykind)
-	kfast := mapKeyFastKindFor(ktypeKind)
-	visindirect := mapStoresElemIndirect(uintptr(ti.elemsize))
-	visref := refBitset.isset(ti.elemkind)
+	mparams := getMapReqParams(ti)
 
 	vtypePtr := vtypeKind == reflect.Ptr
 	ktypePtr := ktypeKind == reflect.Ptr
@@ -6309,7 +6304,7 @@ func (d *decoderMsgpackIO) kMap(f *decFnInfo, rv reflect.Value) {
 
 	ktypeIsString := ktypeId == stringTypId
 	ktypeIsIntf := ktypeId == intfTypId
-	hasLen := containerLen > 0
+	hasLen := containerLen >= 0
 
 	var kstr2bs []byte
 	var kstr string
@@ -6395,9 +6390,9 @@ func (d *decoderMsgpackIO) kMap(f *decFnInfo, rv reflect.Value) {
 
 		if mapKeyStringSharesBytesBuf && d.bufio {
 			if ktypeIsString {
-				rvSetString(rvk, d.string(kstr2bs, att))
+				rvSetString(rvk, d.detach2Str(kstr2bs, att))
 			} else {
-				rvSetIntf(rvk, rv4istr(d.string(kstr2bs, att)))
+				rvSetIntf(rvk, rv4istr(d.detach2Str(kstr2bs, att)))
 			}
 			mapKeyStringSharesBytesBuf = false
 		}
@@ -6407,16 +6402,16 @@ func (d *decoderMsgpackIO) kMap(f *decFnInfo, rv reflect.Value) {
 		if d.d.TryNil() {
 			if mapKeyStringSharesBytesBuf {
 				if ktypeIsString {
-					rvSetString(rvk, d.string(kstr2bs, att))
+					rvSetString(rvk, d.detach2Str(kstr2bs, att))
 				} else {
-					rvSetIntf(rvk, rv4istr(d.string(kstr2bs, att)))
+					rvSetIntf(rvk, rv4istr(d.detach2Str(kstr2bs, att)))
 				}
 			}
 
 			if !rvvz.IsValid() {
 				rvvz = rvZeroK(vtype, vtypeKind)
 			}
-			mapSet(rv, rvk, rvvz, kfast, visindirect, visref)
+			mapSet(rv, rvk, rvvz, mparams)
 			continue
 		}
 
@@ -6427,7 +6422,7 @@ func (d *decoderMsgpackIO) kMap(f *decFnInfo, rv reflect.Value) {
 		} else if !doMapGet {
 			goto NEW_RVV
 		} else {
-			rvv = mapGet(rv, rvk, rvva, kfast, visindirect, visref)
+			rvv = mapGet(rv, rvk, rvva, mparams)
 			if !rvv.IsValid() || (rvvCanNil && rvIsNil(rvv)) {
 				goto NEW_RVV
 			}
@@ -6470,9 +6465,9 @@ func (d *decoderMsgpackIO) kMap(f *decFnInfo, rv reflect.Value) {
 	DECODE_VALUE_NO_CHECK_NIL:
 		if doMapSet && mapKeyStringSharesBytesBuf {
 			if ktypeIsString {
-				rvSetString(rvk, d.string(kstr2bs, att))
+				rvSetString(rvk, d.detach2Str(kstr2bs, att))
 			} else {
-				rvSetIntf(rvk, rv4istr(d.string(kstr2bs, att)))
+				rvSetIntf(rvk, rv4istr(d.detach2Str(kstr2bs, att)))
 			}
 		}
 		if vbuiltin {
@@ -6488,7 +6483,7 @@ func (d *decoderMsgpackIO) kMap(f *decFnInfo, rv reflect.Value) {
 			d.decodeValueNoCheckNil(rvv, valFn)
 		}
 		if doMapSet {
-			mapSet(rv, rvk, rvv, kfast, visindirect, visref)
+			mapSet(rv, rvk, rvv, mparams)
 		}
 	}
 
@@ -6626,7 +6621,7 @@ func (d *decoderMsgpackIO) decode(iv interface{}) {
 		}
 		d.decodeValue(v, nil)
 	case *string:
-		*v = d.string(d.d.DecodeStringAsBytes())
+		*v = d.detach2Str(d.d.DecodeStringAsBytes())
 	case *bool:
 		*v = d.d.DecodeBool()
 	case *int:
@@ -6816,57 +6811,6 @@ func (d *decoderMsgpackIO) fn(t reflect.Type) *decFnMsgpackIO {
 
 func (d *decoderMsgpackIO) fnNoExt(t reflect.Type) *decFnMsgpackIO {
 	return d.dh.decFnViaBH(t, d.rtidFnNoExt, d.h, d.fp, true)
-}
-
-func (d *decoderMsgpackIO) decSliceHelperStart() (x decSliceHelperMsgpackIO, clen int) {
-	x.ct = d.d.ContainerType()
-	x.d = d
-	switch x.ct {
-	case valueTypeNil:
-		x.IsNil = true
-	case valueTypeArray:
-		x.Array = true
-		clen = d.arrayStart(d.d.ReadArrayStart())
-	case valueTypeMap:
-		clen = d.mapStart(d.d.ReadMapStart())
-		clen += clen
-	default:
-		halt.errorStr2("to decode into a slice, expect map/array - got ", x.ct.String())
-	}
-	return
-}
-
-func (x decSliceHelperMsgpackIO) End() {
-	if x.IsNil {
-	} else if x.Array {
-		x.d.arrayEnd()
-	} else {
-		x.d.mapEnd()
-	}
-}
-
-func (x decSliceHelperMsgpackIO) ElemContainerState(index int) {
-
-	if x.Array {
-		x.d.arrayElem(index == 0)
-	} else if index&1 == 0 {
-		x.d.mapElemKey(index == 0)
-	} else {
-		x.d.mapElemValue()
-	}
-}
-
-func (x decSliceHelperMsgpackIO) arrayCannotExpand(hasLen bool, lenv, j, containerLenS int) {
-	x.d.arrayCannotExpand(lenv, j+1)
-
-	x.ElemContainerState(j)
-	x.d.swallow()
-	j++
-	for ; x.d.containerNext(j, containerLenS, hasLen); j++ {
-		x.ElemContainerState(j)
-		x.d.swallow()
-	}
-	x.End()
 }
 
 func (helperDecDriverMsgpackIO) newDecoderBytes(in []byte, h Handle) *decoderMsgpackIO {

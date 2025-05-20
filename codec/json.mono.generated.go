@@ -52,12 +52,6 @@ type decoderJsonBytes struct {
 	d  jsonDecDriverBytes
 	decoderBase
 }
-type decSliceHelperJsonBytes struct {
-	d     *decoderJsonBytes
-	ct    valueType
-	Array bool
-	IsNil bool
-}
 type jsonEncDriverBytes struct {
 	noBuiltInTypes
 	h *JsonHandle
@@ -714,9 +708,7 @@ func (e *encoderJsonBytes) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, ke
 
 	mks := rv.MapKeys()
 	rtkeyKind := rtkey.Kind()
-	kfast := mapKeyFastKindFor(rtkeyKind)
-	visindirect := mapStoresElemIndirect(uintptr(ti.elemsize))
-	visref := refBitset.isset(ti.elemkind)
+	mparams := getMapReqParams(ti)
 
 	switch rtkeyKind {
 	case reflect.Bool:
@@ -733,7 +725,7 @@ func (e *encoderJsonBytes) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, ke
 				e.encodeValueNonNil(mks[i], keyFn)
 			}
 			e.mapElemValue()
-			e.encodeValue(mapGet(rv, mks[i], rvv, kfast, visindirect, visref), valFn)
+			e.encodeValue(mapGet(rv, mks[i], rvv, mparams), valFn)
 		}
 	case reflect.String:
 		mksv := make([]orderedRv[string], len(mks))
@@ -752,7 +744,7 @@ func (e *encoderJsonBytes) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, ke
 				e.encodeValueNonNil(mksv[i].r, keyFn)
 			}
 			e.mapElemValue()
-			e.encodeValue(mapGet(rv, mksv[i].r, rvv, kfast, visindirect, visref), valFn)
+			e.encodeValue(mapGet(rv, mksv[i].r, rvv, mparams), valFn)
 		}
 	case reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uint, reflect.Uintptr:
 		mksv := make([]orderedRv[uint64], len(mks))
@@ -771,7 +763,7 @@ func (e *encoderJsonBytes) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, ke
 				e.encodeValueNonNil(mksv[i].r, keyFn)
 			}
 			e.mapElemValue()
-			e.encodeValue(mapGet(rv, mksv[i].r, rvv, kfast, visindirect, visref), valFn)
+			e.encodeValue(mapGet(rv, mksv[i].r, rvv, mparams), valFn)
 		}
 	case reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Int:
 		mksv := make([]orderedRv[int64], len(mks))
@@ -790,7 +782,7 @@ func (e *encoderJsonBytes) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, ke
 				e.encodeValueNonNil(mksv[i].r, keyFn)
 			}
 			e.mapElemValue()
-			e.encodeValue(mapGet(rv, mksv[i].r, rvv, kfast, visindirect, visref), valFn)
+			e.encodeValue(mapGet(rv, mksv[i].r, rvv, mparams), valFn)
 		}
 	case reflect.Float32:
 		mksv := make([]orderedRv[float64], len(mks))
@@ -809,7 +801,7 @@ func (e *encoderJsonBytes) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, ke
 				e.encodeValueNonNil(mksv[i].r, keyFn)
 			}
 			e.mapElemValue()
-			e.encodeValue(mapGet(rv, mksv[i].r, rvv, kfast, visindirect, visref), valFn)
+			e.encodeValue(mapGet(rv, mksv[i].r, rvv, mparams), valFn)
 		}
 	case reflect.Float64:
 		mksv := make([]orderedRv[float64], len(mks))
@@ -828,7 +820,7 @@ func (e *encoderJsonBytes) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, ke
 				e.encodeValueNonNil(mksv[i].r, keyFn)
 			}
 			e.mapElemValue()
-			e.encodeValue(mapGet(rv, mksv[i].r, rvv, kfast, visindirect, visref), valFn)
+			e.encodeValue(mapGet(rv, mksv[i].r, rvv, mparams), valFn)
 		}
 	default:
 		if rtkey == timeTyp {
@@ -844,7 +836,7 @@ func (e *encoderJsonBytes) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, ke
 				e.e.WriteMapElemKey(i == 0)
 				e.e.EncodeTime(mksv[i].v)
 				e.mapElemValue()
-				e.encodeValue(mapGet(rv, mksv[i].r, rvv, kfast, visindirect, visref), valFn)
+				e.encodeValue(mapGet(rv, mksv[i].r, rvv, mparams), valFn)
 			}
 			break
 		}
@@ -873,7 +865,7 @@ func (e *encoderJsonBytes) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, ke
 			e.e.WriteMapElemKey(j == 0)
 			e.e.writeBytesAsis(mksbv[j].v)
 			e.mapElemValue()
-			e.encodeValue(mapGet(rv, mksbv[j].r, rvv, kfast, visindirect, visref), valFn)
+			e.encodeValue(mapGet(rv, mksbv[j].r, rvv, mparams), valFn)
 		}
 		e.blist.put(mksv)
 		if !byteSliceSameData(bs0, mksv) {
@@ -944,26 +936,34 @@ func (e *encoderJsonBytes) mustEncode(v interface{}) {
 
 func (e *encoderJsonBytes) encode(iv interface{}) {
 
-	if iv == nil {
+	if isNil(iv) {
 		e.e.EncodeNil()
 		return
 	}
 
-	rv, ok := isNil(iv)
-	if ok {
-		if e.h.NilCollectionToZeroLength {
-			switch rv.Kind() {
-			case reflect.Slice, reflect.Chan:
-
-				e.e.WriteArrayEmpty()
-				return
-			case reflect.Map:
-				e.e.WriteMapEmpty()
-				return
-			}
+	rv := reflect.ValueOf(iv)
+TOP:
+	if isnilBitset.isset(byte(rv.Kind())) {
+		if rv.Kind() == reflect.Ptr {
+			rv = rv.Elem()
+			iv = rv2i(rv)
+			goto TOP
 		}
-		e.e.EncodeNil()
-		return
+		if rvIsNil(rv) {
+			if e.h.NilCollectionToZeroLength {
+				switch rv.Kind() {
+				case reflect.Slice, reflect.Chan:
+
+					e.e.WriteArrayEmpty()
+					return
+				case reflect.Map:
+					e.e.WriteMapEmpty()
+					return
+				}
+			}
+			e.e.EncodeNil()
+			return
+		}
 	}
 
 	switch v := iv.(type) {
@@ -1011,50 +1011,6 @@ func (e *encoderJsonBytes) encode(iv interface{}) {
 		e.e.EncodeTime(v)
 	case []byte:
 		e.e.EncodeStringBytesRaw(v)
-	case *Raw:
-		e.rawBytes(*v)
-	case *string:
-		e.e.EncodeString(*v)
-	case *bool:
-		e.e.EncodeBool(*v)
-	case *int:
-		e.e.EncodeInt(int64(*v))
-	case *int8:
-		e.e.EncodeInt(int64(*v))
-	case *int16:
-		e.e.EncodeInt(int64(*v))
-	case *int32:
-		e.e.EncodeInt(int64(*v))
-	case *int64:
-		e.e.EncodeInt(*v)
-	case *uint:
-		e.e.EncodeUint(uint64(*v))
-	case *uint8:
-		e.e.EncodeUint(uint64(*v))
-	case *uint16:
-		e.e.EncodeUint(uint64(*v))
-	case *uint32:
-		e.e.EncodeUint(uint64(*v))
-	case *uint64:
-		e.e.EncodeUint(*v)
-	case *uintptr:
-		e.e.EncodeUint(uint64(*v))
-	case *float32:
-		e.e.EncodeFloat32(*v)
-	case *float64:
-		e.e.EncodeFloat64(*v)
-	case *complex64:
-		e.encodeComplex64(*v)
-	case *complex128:
-		e.encodeComplex128(*v)
-	case *time.Time:
-		e.e.EncodeTime(*v)
-	case *[]byte:
-		if *v == nil {
-			e.e.EncodeNil()
-		} else {
-			e.e.EncodeStringBytesRaw(*v)
-		}
 	default:
 
 		if skipFastpathTypeSwitchInDirectCall || !e.dh.fastpathEncodeTypeSwitch(iv, e) {
@@ -1521,7 +1477,7 @@ func (d *decoderJsonBytes) raw(_ *decFnInfo, rv reflect.Value) {
 }
 
 func (d *decoderJsonBytes) kString(_ *decFnInfo, rv reflect.Value) {
-	rvSetString(rv, d.string(d.d.DecodeStringAsBytes()))
+	rvSetString(rv, d.detach2Str(d.d.DecodeStringAsBytes()))
 }
 
 func (d *decoderJsonBytes) kBool(_ *decFnInfo, rv reflect.Value) {
@@ -1600,6 +1556,7 @@ func (d *decoderJsonBytes) kInterfaceNaked(f *decFnInfo) (rvn reflect.Value) {
 	if decFailNonEmptyIntf && f.ti.numMeth > 0 {
 		halt.errorf("cannot decode non-nil codec value into nil %v (%v methods)", f.ti.rt, f.ti.numMeth)
 	}
+
 	switch n.v {
 	case valueTypeMap:
 		mtid := d.mtid
@@ -1624,7 +1581,7 @@ func (d *decoderJsonBytes) kInterfaceNaked(f *decFnInfo) (rvn reflect.Value) {
 			rvn = rvn.Elem()
 		} else {
 
-			rvn = makeMapReflect(d.h.MapType, 0)
+			rvn = rvZeroAddrK(d.h.MapType, reflect.Map)
 			d.decodeValue(rvn, nil)
 		}
 	case valueTypeArray:
@@ -1928,7 +1885,15 @@ func (d *decoderJsonBytes) kSlice(f *decFnInfo, rv reflect.Value) {
 		return
 	}
 
-	slh, containerLenS := d.decSliceHelperStart()
+	var containerLenS int
+	isArray := ctyp == valueTypeArray
+	if isArray {
+		containerLenS = d.arrayStart(d.d.ReadArrayStart())
+	} else if ctyp == valueTypeMap {
+		containerLenS = d.mapStart(d.d.ReadMapStart()) * 2
+	} else {
+		halt.errorStr2("decoding into a slice, expect map/array - got ", ctyp.String())
+	}
 
 	if containerLenS == 0 {
 		if rvCanset {
@@ -1938,7 +1903,11 @@ func (d *decoderJsonBytes) kSlice(f *decFnInfo, rv reflect.Value) {
 				rvSetSliceLen(rv, 0)
 			}
 		}
-		slh.End()
+		if isArray {
+			d.arrayEnd()
+		} else {
+			d.mapEnd()
+		}
 		return
 	}
 
@@ -1959,7 +1928,7 @@ func (d *decoderJsonBytes) kSlice(f *decFnInfo, rv reflect.Value) {
 	rvlen := rvLenSlice(rv)
 	rvcap := rvCapSlice(rv)
 	maxInitLen := d.maxInitLen()
-	hasLen := containerLenS > 0
+	hasLen := containerLenS >= 0
 	if hasLen {
 		if containerLenS > rvcap {
 			oldRvlenGtZero := rvlen > 0
@@ -2019,8 +1988,15 @@ func (d *decoderJsonBytes) kSlice(f *decFnInfo, rv reflect.Value) {
 			}
 		}
 
+		if ctyp == valueTypeArray {
+			d.arrayElem(j == 0)
+		} else if j&1 == 0 {
+			d.mapElemKey(j == 0)
+		} else {
+			d.mapElemValue()
+		}
+
 		if j >= rvlen {
-			slh.ElemContainerState(j)
 
 			if rvlen < rvcap {
 				rvlen = rvcap
@@ -2039,8 +2015,6 @@ func (d *decoderJsonBytes) kSlice(f *decFnInfo, rv reflect.Value) {
 				rvlen = rvcap
 				rvChanged = !rvCanset
 			}
-		} else {
-			slh.ElemContainerState(j)
 		}
 
 		rv9 = rvArrayIndex(rv, j, f.ti, true)
@@ -2076,7 +2050,11 @@ func (d *decoderJsonBytes) kSlice(f *decFnInfo, rv reflect.Value) {
 			rvChanged = true
 		}
 	}
-	slh.End()
+	if isArray {
+		d.arrayEnd()
+	} else {
+		d.mapEnd()
+	}
 
 	if rvChanged {
 		rvSetDirect(rv0, rv)
@@ -2100,10 +2078,22 @@ func (d *decoderJsonBytes) kArray(f *decFnInfo, rv reflect.Value) {
 		return
 	}
 
-	slh, containerLenS := d.decSliceHelperStart()
+	var containerLenS int
+	isArray := ctyp == valueTypeArray
+	if isArray {
+		containerLenS = d.arrayStart(d.d.ReadArrayStart())
+	} else if ctyp == valueTypeMap {
+		containerLenS = d.mapStart(d.d.ReadMapStart()) * 2
+	} else {
+		halt.errorStr2("decoding into a slice, expect map/array - got ", ctyp.String())
+	}
 
 	if containerLenS == 0 {
-		slh.End()
+		if isArray {
+			d.arrayEnd()
+		} else {
+			d.mapEnd()
+		}
 		return
 	}
 
@@ -2115,7 +2105,7 @@ func (d *decoderJsonBytes) kArray(f *decFnInfo, rv reflect.Value) {
 	var rv9 reflect.Value
 
 	rvlen := rv.Len()
-	hasLen := containerLenS > 0
+	hasLen := containerLenS >= 0
 	if hasLen && containerLenS > rvlen {
 		halt.errorf("cannot decode into array with length: %v, less than container length: %v", any(rvlen), any(containerLenS))
 	}
@@ -2136,13 +2126,20 @@ func (d *decoderJsonBytes) kArray(f *decFnInfo, rv reflect.Value) {
 	}
 
 	for j := 0; d.containerNext(j, containerLenS, hasLen); j++ {
-
-		if j >= rvlen {
-			slh.arrayCannotExpand(hasLen, rvlen, j, containerLenS)
-			return
+		if ctyp == valueTypeArray {
+			d.arrayElem(j == 0)
+		} else if j&1 == 0 {
+			d.mapElemKey(j == 0)
+		} else {
+			d.mapElemValue()
 		}
 
-		slh.ElemContainerState(j)
+		if j >= rvlen {
+			d.arrayCannotExpand(rvlen, j+1)
+			d.swallow()
+			continue
+		}
+
 		rv9 = rvArrayIndex(rv, j, f.ti, false)
 		if elemReset {
 			rvSetZero(rv9)
@@ -2162,7 +2159,11 @@ func (d *decoderJsonBytes) kArray(f *decFnInfo, rv reflect.Value) {
 			d.decodeValueNoCheckNil(rv9, fn)
 		}
 	}
-	slh.End()
+	if isArray {
+		d.arrayEnd()
+	} else {
+		d.mapEnd()
+	}
 }
 
 func (d *decoderJsonBytes) kChan(f *decFnInfo, rv reflect.Value) {
@@ -2191,13 +2192,25 @@ func (d *decoderJsonBytes) kChan(f *decFnInfo, rv reflect.Value) {
 
 	var rvCanset = rv.CanSet()
 
-	slh, containerLenS := d.decSliceHelperStart()
+	var containerLenS int
+	isArray := ctyp == valueTypeArray
+	if isArray {
+		containerLenS = d.arrayStart(d.d.ReadArrayStart())
+	} else if ctyp == valueTypeMap {
+		containerLenS = d.mapStart(d.d.ReadMapStart()) * 2
+	} else {
+		halt.errorStr2("decoding into a slice, expect map/array - got ", ctyp.String())
+	}
 
 	if containerLenS == 0 {
 		if rvCanset && rvIsNil(rv) {
 			rvSetDirect(rv, reflect.MakeChan(ti.rt, 0))
 		}
-		slh.End()
+		if isArray {
+			d.arrayEnd()
+		} else {
+			d.mapEnd()
+		}
 		return
 	}
 
@@ -2215,7 +2228,7 @@ func (d *decoderJsonBytes) kChan(f *decFnInfo, rv reflect.Value) {
 	var rv9 reflect.Value
 
 	var rvlen int
-	hasLen := containerLenS > 0
+	hasLen := containerLenS >= 0
 	maxInitLen := d.maxInitLen()
 
 	for j := 0; d.containerNext(j, containerLenS, hasLen); j++ {
@@ -2237,7 +2250,15 @@ func (d *decoderJsonBytes) kChan(f *decFnInfo, rv reflect.Value) {
 				fn = d.fn(rtelem)
 			}
 		}
-		slh.ElemContainerState(j)
+
+		if ctyp == valueTypeArray {
+			d.arrayElem(j == 0)
+		} else if j&1 == 0 {
+			d.mapElemKey(j == 0)
+		} else {
+			d.mapElemValue()
+		}
+
 		if rv9.IsValid() {
 			rvSetZero(rv9)
 		} else if decUseTransient && useTransient {
@@ -2250,7 +2271,11 @@ func (d *decoderJsonBytes) kChan(f *decFnInfo, rv reflect.Value) {
 		}
 		rv.Send(rv9)
 	}
-	slh.End()
+	if isArray {
+		d.arrayEnd()
+	} else {
+		d.mapEnd()
+	}
 
 	if rvChanged {
 		rvSetDirect(rv0, rv)
@@ -2275,9 +2300,7 @@ func (d *decoderJsonBytes) kMap(f *decFnInfo, rv reflect.Value) {
 	ktypeId := rt2id(ktype)
 	vtypeKind := reflect.Kind(ti.elemkind)
 	ktypeKind := reflect.Kind(ti.keykind)
-	kfast := mapKeyFastKindFor(ktypeKind)
-	visindirect := mapStoresElemIndirect(uintptr(ti.elemsize))
-	visref := refBitset.isset(ti.elemkind)
+	mparams := getMapReqParams(ti)
 
 	vtypePtr := vtypeKind == reflect.Ptr
 	ktypePtr := ktypeKind == reflect.Ptr
@@ -2318,7 +2341,7 @@ func (d *decoderJsonBytes) kMap(f *decFnInfo, rv reflect.Value) {
 
 	ktypeIsString := ktypeId == stringTypId
 	ktypeIsIntf := ktypeId == intfTypId
-	hasLen := containerLen > 0
+	hasLen := containerLen >= 0
 
 	var kstr2bs []byte
 	var kstr string
@@ -2404,9 +2427,9 @@ func (d *decoderJsonBytes) kMap(f *decFnInfo, rv reflect.Value) {
 
 		if mapKeyStringSharesBytesBuf && d.bufio {
 			if ktypeIsString {
-				rvSetString(rvk, d.string(kstr2bs, att))
+				rvSetString(rvk, d.detach2Str(kstr2bs, att))
 			} else {
-				rvSetIntf(rvk, rv4istr(d.string(kstr2bs, att)))
+				rvSetIntf(rvk, rv4istr(d.detach2Str(kstr2bs, att)))
 			}
 			mapKeyStringSharesBytesBuf = false
 		}
@@ -2416,16 +2439,16 @@ func (d *decoderJsonBytes) kMap(f *decFnInfo, rv reflect.Value) {
 		if d.d.TryNil() {
 			if mapKeyStringSharesBytesBuf {
 				if ktypeIsString {
-					rvSetString(rvk, d.string(kstr2bs, att))
+					rvSetString(rvk, d.detach2Str(kstr2bs, att))
 				} else {
-					rvSetIntf(rvk, rv4istr(d.string(kstr2bs, att)))
+					rvSetIntf(rvk, rv4istr(d.detach2Str(kstr2bs, att)))
 				}
 			}
 
 			if !rvvz.IsValid() {
 				rvvz = rvZeroK(vtype, vtypeKind)
 			}
-			mapSet(rv, rvk, rvvz, kfast, visindirect, visref)
+			mapSet(rv, rvk, rvvz, mparams)
 			continue
 		}
 
@@ -2436,7 +2459,7 @@ func (d *decoderJsonBytes) kMap(f *decFnInfo, rv reflect.Value) {
 		} else if !doMapGet {
 			goto NEW_RVV
 		} else {
-			rvv = mapGet(rv, rvk, rvva, kfast, visindirect, visref)
+			rvv = mapGet(rv, rvk, rvva, mparams)
 			if !rvv.IsValid() || (rvvCanNil && rvIsNil(rvv)) {
 				goto NEW_RVV
 			}
@@ -2479,9 +2502,9 @@ func (d *decoderJsonBytes) kMap(f *decFnInfo, rv reflect.Value) {
 	DECODE_VALUE_NO_CHECK_NIL:
 		if doMapSet && mapKeyStringSharesBytesBuf {
 			if ktypeIsString {
-				rvSetString(rvk, d.string(kstr2bs, att))
+				rvSetString(rvk, d.detach2Str(kstr2bs, att))
 			} else {
-				rvSetIntf(rvk, rv4istr(d.string(kstr2bs, att)))
+				rvSetIntf(rvk, rv4istr(d.detach2Str(kstr2bs, att)))
 			}
 		}
 		if vbuiltin {
@@ -2497,7 +2520,7 @@ func (d *decoderJsonBytes) kMap(f *decFnInfo, rv reflect.Value) {
 			d.decodeValueNoCheckNil(rvv, valFn)
 		}
 		if doMapSet {
-			mapSet(rv, rvk, rvv, kfast, visindirect, visref)
+			mapSet(rv, rvk, rvv, mparams)
 		}
 	}
 
@@ -2635,7 +2658,7 @@ func (d *decoderJsonBytes) decode(iv interface{}) {
 		}
 		d.decodeValue(v, nil)
 	case *string:
-		*v = d.string(d.d.DecodeStringAsBytes())
+		*v = d.detach2Str(d.d.DecodeStringAsBytes())
 	case *bool:
 		*v = d.d.DecodeBool()
 	case *int:
@@ -2825,57 +2848,6 @@ func (d *decoderJsonBytes) fn(t reflect.Type) *decFnJsonBytes {
 
 func (d *decoderJsonBytes) fnNoExt(t reflect.Type) *decFnJsonBytes {
 	return d.dh.decFnViaBH(t, d.rtidFnNoExt, d.h, d.fp, true)
-}
-
-func (d *decoderJsonBytes) decSliceHelperStart() (x decSliceHelperJsonBytes, clen int) {
-	x.ct = d.d.ContainerType()
-	x.d = d
-	switch x.ct {
-	case valueTypeNil:
-		x.IsNil = true
-	case valueTypeArray:
-		x.Array = true
-		clen = d.arrayStart(d.d.ReadArrayStart())
-	case valueTypeMap:
-		clen = d.mapStart(d.d.ReadMapStart())
-		clen += clen
-	default:
-		halt.errorStr2("to decode into a slice, expect map/array - got ", x.ct.String())
-	}
-	return
-}
-
-func (x decSliceHelperJsonBytes) End() {
-	if x.IsNil {
-	} else if x.Array {
-		x.d.arrayEnd()
-	} else {
-		x.d.mapEnd()
-	}
-}
-
-func (x decSliceHelperJsonBytes) ElemContainerState(index int) {
-
-	if x.Array {
-		x.d.arrayElem(index == 0)
-	} else if index&1 == 0 {
-		x.d.mapElemKey(index == 0)
-	} else {
-		x.d.mapElemValue()
-	}
-}
-
-func (x decSliceHelperJsonBytes) arrayCannotExpand(hasLen bool, lenv, j, containerLenS int) {
-	x.d.arrayCannotExpand(lenv, j+1)
-
-	x.ElemContainerState(j)
-	x.d.swallow()
-	j++
-	for ; x.d.containerNext(j, containerLenS, hasLen); j++ {
-		x.ElemContainerState(j)
-		x.d.swallow()
-	}
-	x.End()
 }
 
 func (helperDecDriverJsonBytes) newDecoderBytes(in []byte, h Handle) *decoderJsonBytes {
@@ -3745,10 +3717,6 @@ func (d *jsonDecDriverBytes) DecodeRawExt(re *RawExt) {
 }
 
 func (d *jsonDecDriverBytes) decBytesFromArray(bs []byte) []byte {
-	if bs != nil {
-		bs = bs[:0]
-	}
-	d.tok = 0
 	bs = append(bs, uint8(d.DecodeUint64()))
 	d.advance()
 	for d.tok != ']' {
@@ -3780,6 +3748,7 @@ func (d *jsonDecDriverBytes) DecodeBytes() (bs []byte, state dBytesAttachState) 
 	}
 
 	if d.tok == '[' {
+		d.tok = 0
 
 		bs = d.decBytesFromArray(d.buf[:0])
 		d.buf = bs
@@ -3814,6 +3783,7 @@ func (d *jsonDecDriverBytes) DecodeStringAsBytes() (bs []byte, state dBytesAttac
 	var cond bool
 
 	if d.tok == '"' {
+		d.tok = 0
 		bs, cond = d.dblQuoteStringAsBytes()
 		state = d.d.attachState(cond)
 		return
@@ -3853,17 +3823,14 @@ func (d *jsonDecDriverBytes) readUnescapedString() (bs []byte) {
 }
 
 func (d *jsonDecDriverBytes) dblQuoteStringAsBytes() (buf []byte, usingBuf bool) {
-	d.tok = 0
-
 	bs, c := d.r.jsonReadAsisChars()
 	if c == '"' {
 		return bs, !d.d.bytes
 	}
+	buf = append(d.buf[:0], bs...)
 
 	checkUtf8 := d.h.ValidateUnicode
 	usingBuf = true
-
-	buf = append(d.buf[:0], bs...)
 
 	for {
 
@@ -3895,7 +3862,6 @@ func (d *jsonDecDriverBytes) dblQuoteStringAsBytes() (buf []byte, usingBuf bool)
 		}
 
 		bs, c = d.r.jsonReadAsisChars()
-
 		buf = append(buf, bs...)
 		if c == '"' {
 			break
@@ -3907,14 +3873,13 @@ func (d *jsonDecDriverBytes) dblQuoteStringAsBytes() (buf []byte, usingBuf bool)
 
 func (d *jsonDecDriverBytes) appendStringAsBytesSlashU() (r rune) {
 	var rr uint32
-	var csu [2]byte
-	var cs [4]byte = d.r.readn4()
+	cs := d.r.readn4()
 	if rr = jsonSlashURune(cs); rr == unicode.ReplacementChar {
 		return unicode.ReplacementChar
 	}
 	r = rune(rr)
 	if utf16.IsSurrogate(r) {
-		csu = d.r.readn2()
+		csu := d.r.readn2()
 		cs = d.r.readn4()
 		if csu[0] == '\\' && csu[1] == 'u' {
 			if rr = jsonSlashURune(cs); rr == unicode.ReplacementChar {
@@ -3950,6 +3915,7 @@ func (d *jsonDecDriverBytes) DecodeNaked() {
 		z.v = valueTypeArray
 	case '"':
 
+		d.tok = 0
 		bs, z.b = d.dblQuoteStringAsBytes()
 		att := d.d.attachState(z.b)
 		if jsonNakedBoolNullInQuotedStr &&
@@ -3966,12 +3932,12 @@ func (d *jsonDecDriverBytes) DecodeNaked() {
 
 				if err := jsonNakedNum(z, bs, d.h.PreferFloat, d.h.SignedInteger); err != nil {
 					z.v = valueTypeString
-					z.s = d.d.string(bs, att)
+					z.s = d.d.detach2Str(bs, att)
 				}
 			}
 		} else {
 			z.v = valueTypeString
-			z.s = d.d.string(bs, att)
+			z.s = d.d.detach2Str(bs, att)
 		}
 	default:
 		bs, d.tok = d.r.jsonReadNum()
@@ -4106,12 +4072,6 @@ type decoderJsonIO struct {
 	fp *fastpathDsJsonIO
 	d  jsonDecDriverIO
 	decoderBase
-}
-type decSliceHelperJsonIO struct {
-	d     *decoderJsonIO
-	ct    valueType
-	Array bool
-	IsNil bool
 }
 type jsonEncDriverIO struct {
 	noBuiltInTypes
@@ -4769,9 +4729,7 @@ func (e *encoderJsonIO) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, keyFn
 
 	mks := rv.MapKeys()
 	rtkeyKind := rtkey.Kind()
-	kfast := mapKeyFastKindFor(rtkeyKind)
-	visindirect := mapStoresElemIndirect(uintptr(ti.elemsize))
-	visref := refBitset.isset(ti.elemkind)
+	mparams := getMapReqParams(ti)
 
 	switch rtkeyKind {
 	case reflect.Bool:
@@ -4788,7 +4746,7 @@ func (e *encoderJsonIO) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, keyFn
 				e.encodeValueNonNil(mks[i], keyFn)
 			}
 			e.mapElemValue()
-			e.encodeValue(mapGet(rv, mks[i], rvv, kfast, visindirect, visref), valFn)
+			e.encodeValue(mapGet(rv, mks[i], rvv, mparams), valFn)
 		}
 	case reflect.String:
 		mksv := make([]orderedRv[string], len(mks))
@@ -4807,7 +4765,7 @@ func (e *encoderJsonIO) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, keyFn
 				e.encodeValueNonNil(mksv[i].r, keyFn)
 			}
 			e.mapElemValue()
-			e.encodeValue(mapGet(rv, mksv[i].r, rvv, kfast, visindirect, visref), valFn)
+			e.encodeValue(mapGet(rv, mksv[i].r, rvv, mparams), valFn)
 		}
 	case reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uint, reflect.Uintptr:
 		mksv := make([]orderedRv[uint64], len(mks))
@@ -4826,7 +4784,7 @@ func (e *encoderJsonIO) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, keyFn
 				e.encodeValueNonNil(mksv[i].r, keyFn)
 			}
 			e.mapElemValue()
-			e.encodeValue(mapGet(rv, mksv[i].r, rvv, kfast, visindirect, visref), valFn)
+			e.encodeValue(mapGet(rv, mksv[i].r, rvv, mparams), valFn)
 		}
 	case reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Int:
 		mksv := make([]orderedRv[int64], len(mks))
@@ -4845,7 +4803,7 @@ func (e *encoderJsonIO) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, keyFn
 				e.encodeValueNonNil(mksv[i].r, keyFn)
 			}
 			e.mapElemValue()
-			e.encodeValue(mapGet(rv, mksv[i].r, rvv, kfast, visindirect, visref), valFn)
+			e.encodeValue(mapGet(rv, mksv[i].r, rvv, mparams), valFn)
 		}
 	case reflect.Float32:
 		mksv := make([]orderedRv[float64], len(mks))
@@ -4864,7 +4822,7 @@ func (e *encoderJsonIO) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, keyFn
 				e.encodeValueNonNil(mksv[i].r, keyFn)
 			}
 			e.mapElemValue()
-			e.encodeValue(mapGet(rv, mksv[i].r, rvv, kfast, visindirect, visref), valFn)
+			e.encodeValue(mapGet(rv, mksv[i].r, rvv, mparams), valFn)
 		}
 	case reflect.Float64:
 		mksv := make([]orderedRv[float64], len(mks))
@@ -4883,7 +4841,7 @@ func (e *encoderJsonIO) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, keyFn
 				e.encodeValueNonNil(mksv[i].r, keyFn)
 			}
 			e.mapElemValue()
-			e.encodeValue(mapGet(rv, mksv[i].r, rvv, kfast, visindirect, visref), valFn)
+			e.encodeValue(mapGet(rv, mksv[i].r, rvv, mparams), valFn)
 		}
 	default:
 		if rtkey == timeTyp {
@@ -4899,7 +4857,7 @@ func (e *encoderJsonIO) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, keyFn
 				e.e.WriteMapElemKey(i == 0)
 				e.e.EncodeTime(mksv[i].v)
 				e.mapElemValue()
-				e.encodeValue(mapGet(rv, mksv[i].r, rvv, kfast, visindirect, visref), valFn)
+				e.encodeValue(mapGet(rv, mksv[i].r, rvv, mparams), valFn)
 			}
 			break
 		}
@@ -4928,7 +4886,7 @@ func (e *encoderJsonIO) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, keyFn
 			e.e.WriteMapElemKey(j == 0)
 			e.e.writeBytesAsis(mksbv[j].v)
 			e.mapElemValue()
-			e.encodeValue(mapGet(rv, mksbv[j].r, rvv, kfast, visindirect, visref), valFn)
+			e.encodeValue(mapGet(rv, mksbv[j].r, rvv, mparams), valFn)
 		}
 		e.blist.put(mksv)
 		if !byteSliceSameData(bs0, mksv) {
@@ -4999,26 +4957,34 @@ func (e *encoderJsonIO) mustEncode(v interface{}) {
 
 func (e *encoderJsonIO) encode(iv interface{}) {
 
-	if iv == nil {
+	if isNil(iv) {
 		e.e.EncodeNil()
 		return
 	}
 
-	rv, ok := isNil(iv)
-	if ok {
-		if e.h.NilCollectionToZeroLength {
-			switch rv.Kind() {
-			case reflect.Slice, reflect.Chan:
-
-				e.e.WriteArrayEmpty()
-				return
-			case reflect.Map:
-				e.e.WriteMapEmpty()
-				return
-			}
+	rv := reflect.ValueOf(iv)
+TOP:
+	if isnilBitset.isset(byte(rv.Kind())) {
+		if rv.Kind() == reflect.Ptr {
+			rv = rv.Elem()
+			iv = rv2i(rv)
+			goto TOP
 		}
-		e.e.EncodeNil()
-		return
+		if rvIsNil(rv) {
+			if e.h.NilCollectionToZeroLength {
+				switch rv.Kind() {
+				case reflect.Slice, reflect.Chan:
+
+					e.e.WriteArrayEmpty()
+					return
+				case reflect.Map:
+					e.e.WriteMapEmpty()
+					return
+				}
+			}
+			e.e.EncodeNil()
+			return
+		}
 	}
 
 	switch v := iv.(type) {
@@ -5066,50 +5032,6 @@ func (e *encoderJsonIO) encode(iv interface{}) {
 		e.e.EncodeTime(v)
 	case []byte:
 		e.e.EncodeStringBytesRaw(v)
-	case *Raw:
-		e.rawBytes(*v)
-	case *string:
-		e.e.EncodeString(*v)
-	case *bool:
-		e.e.EncodeBool(*v)
-	case *int:
-		e.e.EncodeInt(int64(*v))
-	case *int8:
-		e.e.EncodeInt(int64(*v))
-	case *int16:
-		e.e.EncodeInt(int64(*v))
-	case *int32:
-		e.e.EncodeInt(int64(*v))
-	case *int64:
-		e.e.EncodeInt(*v)
-	case *uint:
-		e.e.EncodeUint(uint64(*v))
-	case *uint8:
-		e.e.EncodeUint(uint64(*v))
-	case *uint16:
-		e.e.EncodeUint(uint64(*v))
-	case *uint32:
-		e.e.EncodeUint(uint64(*v))
-	case *uint64:
-		e.e.EncodeUint(*v)
-	case *uintptr:
-		e.e.EncodeUint(uint64(*v))
-	case *float32:
-		e.e.EncodeFloat32(*v)
-	case *float64:
-		e.e.EncodeFloat64(*v)
-	case *complex64:
-		e.encodeComplex64(*v)
-	case *complex128:
-		e.encodeComplex128(*v)
-	case *time.Time:
-		e.e.EncodeTime(*v)
-	case *[]byte:
-		if *v == nil {
-			e.e.EncodeNil()
-		} else {
-			e.e.EncodeStringBytesRaw(*v)
-		}
 	default:
 
 		if skipFastpathTypeSwitchInDirectCall || !e.dh.fastpathEncodeTypeSwitch(iv, e) {
@@ -5576,7 +5498,7 @@ func (d *decoderJsonIO) raw(_ *decFnInfo, rv reflect.Value) {
 }
 
 func (d *decoderJsonIO) kString(_ *decFnInfo, rv reflect.Value) {
-	rvSetString(rv, d.string(d.d.DecodeStringAsBytes()))
+	rvSetString(rv, d.detach2Str(d.d.DecodeStringAsBytes()))
 }
 
 func (d *decoderJsonIO) kBool(_ *decFnInfo, rv reflect.Value) {
@@ -5655,6 +5577,7 @@ func (d *decoderJsonIO) kInterfaceNaked(f *decFnInfo) (rvn reflect.Value) {
 	if decFailNonEmptyIntf && f.ti.numMeth > 0 {
 		halt.errorf("cannot decode non-nil codec value into nil %v (%v methods)", f.ti.rt, f.ti.numMeth)
 	}
+
 	switch n.v {
 	case valueTypeMap:
 		mtid := d.mtid
@@ -5679,7 +5602,7 @@ func (d *decoderJsonIO) kInterfaceNaked(f *decFnInfo) (rvn reflect.Value) {
 			rvn = rvn.Elem()
 		} else {
 
-			rvn = makeMapReflect(d.h.MapType, 0)
+			rvn = rvZeroAddrK(d.h.MapType, reflect.Map)
 			d.decodeValue(rvn, nil)
 		}
 	case valueTypeArray:
@@ -5983,7 +5906,15 @@ func (d *decoderJsonIO) kSlice(f *decFnInfo, rv reflect.Value) {
 		return
 	}
 
-	slh, containerLenS := d.decSliceHelperStart()
+	var containerLenS int
+	isArray := ctyp == valueTypeArray
+	if isArray {
+		containerLenS = d.arrayStart(d.d.ReadArrayStart())
+	} else if ctyp == valueTypeMap {
+		containerLenS = d.mapStart(d.d.ReadMapStart()) * 2
+	} else {
+		halt.errorStr2("decoding into a slice, expect map/array - got ", ctyp.String())
+	}
 
 	if containerLenS == 0 {
 		if rvCanset {
@@ -5993,7 +5924,11 @@ func (d *decoderJsonIO) kSlice(f *decFnInfo, rv reflect.Value) {
 				rvSetSliceLen(rv, 0)
 			}
 		}
-		slh.End()
+		if isArray {
+			d.arrayEnd()
+		} else {
+			d.mapEnd()
+		}
 		return
 	}
 
@@ -6014,7 +5949,7 @@ func (d *decoderJsonIO) kSlice(f *decFnInfo, rv reflect.Value) {
 	rvlen := rvLenSlice(rv)
 	rvcap := rvCapSlice(rv)
 	maxInitLen := d.maxInitLen()
-	hasLen := containerLenS > 0
+	hasLen := containerLenS >= 0
 	if hasLen {
 		if containerLenS > rvcap {
 			oldRvlenGtZero := rvlen > 0
@@ -6074,8 +6009,15 @@ func (d *decoderJsonIO) kSlice(f *decFnInfo, rv reflect.Value) {
 			}
 		}
 
+		if ctyp == valueTypeArray {
+			d.arrayElem(j == 0)
+		} else if j&1 == 0 {
+			d.mapElemKey(j == 0)
+		} else {
+			d.mapElemValue()
+		}
+
 		if j >= rvlen {
-			slh.ElemContainerState(j)
 
 			if rvlen < rvcap {
 				rvlen = rvcap
@@ -6094,8 +6036,6 @@ func (d *decoderJsonIO) kSlice(f *decFnInfo, rv reflect.Value) {
 				rvlen = rvcap
 				rvChanged = !rvCanset
 			}
-		} else {
-			slh.ElemContainerState(j)
 		}
 
 		rv9 = rvArrayIndex(rv, j, f.ti, true)
@@ -6131,7 +6071,11 @@ func (d *decoderJsonIO) kSlice(f *decFnInfo, rv reflect.Value) {
 			rvChanged = true
 		}
 	}
-	slh.End()
+	if isArray {
+		d.arrayEnd()
+	} else {
+		d.mapEnd()
+	}
 
 	if rvChanged {
 		rvSetDirect(rv0, rv)
@@ -6155,10 +6099,22 @@ func (d *decoderJsonIO) kArray(f *decFnInfo, rv reflect.Value) {
 		return
 	}
 
-	slh, containerLenS := d.decSliceHelperStart()
+	var containerLenS int
+	isArray := ctyp == valueTypeArray
+	if isArray {
+		containerLenS = d.arrayStart(d.d.ReadArrayStart())
+	} else if ctyp == valueTypeMap {
+		containerLenS = d.mapStart(d.d.ReadMapStart()) * 2
+	} else {
+		halt.errorStr2("decoding into a slice, expect map/array - got ", ctyp.String())
+	}
 
 	if containerLenS == 0 {
-		slh.End()
+		if isArray {
+			d.arrayEnd()
+		} else {
+			d.mapEnd()
+		}
 		return
 	}
 
@@ -6170,7 +6126,7 @@ func (d *decoderJsonIO) kArray(f *decFnInfo, rv reflect.Value) {
 	var rv9 reflect.Value
 
 	rvlen := rv.Len()
-	hasLen := containerLenS > 0
+	hasLen := containerLenS >= 0
 	if hasLen && containerLenS > rvlen {
 		halt.errorf("cannot decode into array with length: %v, less than container length: %v", any(rvlen), any(containerLenS))
 	}
@@ -6191,13 +6147,20 @@ func (d *decoderJsonIO) kArray(f *decFnInfo, rv reflect.Value) {
 	}
 
 	for j := 0; d.containerNext(j, containerLenS, hasLen); j++ {
-
-		if j >= rvlen {
-			slh.arrayCannotExpand(hasLen, rvlen, j, containerLenS)
-			return
+		if ctyp == valueTypeArray {
+			d.arrayElem(j == 0)
+		} else if j&1 == 0 {
+			d.mapElemKey(j == 0)
+		} else {
+			d.mapElemValue()
 		}
 
-		slh.ElemContainerState(j)
+		if j >= rvlen {
+			d.arrayCannotExpand(rvlen, j+1)
+			d.swallow()
+			continue
+		}
+
 		rv9 = rvArrayIndex(rv, j, f.ti, false)
 		if elemReset {
 			rvSetZero(rv9)
@@ -6217,7 +6180,11 @@ func (d *decoderJsonIO) kArray(f *decFnInfo, rv reflect.Value) {
 			d.decodeValueNoCheckNil(rv9, fn)
 		}
 	}
-	slh.End()
+	if isArray {
+		d.arrayEnd()
+	} else {
+		d.mapEnd()
+	}
 }
 
 func (d *decoderJsonIO) kChan(f *decFnInfo, rv reflect.Value) {
@@ -6246,13 +6213,25 @@ func (d *decoderJsonIO) kChan(f *decFnInfo, rv reflect.Value) {
 
 	var rvCanset = rv.CanSet()
 
-	slh, containerLenS := d.decSliceHelperStart()
+	var containerLenS int
+	isArray := ctyp == valueTypeArray
+	if isArray {
+		containerLenS = d.arrayStart(d.d.ReadArrayStart())
+	} else if ctyp == valueTypeMap {
+		containerLenS = d.mapStart(d.d.ReadMapStart()) * 2
+	} else {
+		halt.errorStr2("decoding into a slice, expect map/array - got ", ctyp.String())
+	}
 
 	if containerLenS == 0 {
 		if rvCanset && rvIsNil(rv) {
 			rvSetDirect(rv, reflect.MakeChan(ti.rt, 0))
 		}
-		slh.End()
+		if isArray {
+			d.arrayEnd()
+		} else {
+			d.mapEnd()
+		}
 		return
 	}
 
@@ -6270,7 +6249,7 @@ func (d *decoderJsonIO) kChan(f *decFnInfo, rv reflect.Value) {
 	var rv9 reflect.Value
 
 	var rvlen int
-	hasLen := containerLenS > 0
+	hasLen := containerLenS >= 0
 	maxInitLen := d.maxInitLen()
 
 	for j := 0; d.containerNext(j, containerLenS, hasLen); j++ {
@@ -6292,7 +6271,15 @@ func (d *decoderJsonIO) kChan(f *decFnInfo, rv reflect.Value) {
 				fn = d.fn(rtelem)
 			}
 		}
-		slh.ElemContainerState(j)
+
+		if ctyp == valueTypeArray {
+			d.arrayElem(j == 0)
+		} else if j&1 == 0 {
+			d.mapElemKey(j == 0)
+		} else {
+			d.mapElemValue()
+		}
+
 		if rv9.IsValid() {
 			rvSetZero(rv9)
 		} else if decUseTransient && useTransient {
@@ -6305,7 +6292,11 @@ func (d *decoderJsonIO) kChan(f *decFnInfo, rv reflect.Value) {
 		}
 		rv.Send(rv9)
 	}
-	slh.End()
+	if isArray {
+		d.arrayEnd()
+	} else {
+		d.mapEnd()
+	}
 
 	if rvChanged {
 		rvSetDirect(rv0, rv)
@@ -6330,9 +6321,7 @@ func (d *decoderJsonIO) kMap(f *decFnInfo, rv reflect.Value) {
 	ktypeId := rt2id(ktype)
 	vtypeKind := reflect.Kind(ti.elemkind)
 	ktypeKind := reflect.Kind(ti.keykind)
-	kfast := mapKeyFastKindFor(ktypeKind)
-	visindirect := mapStoresElemIndirect(uintptr(ti.elemsize))
-	visref := refBitset.isset(ti.elemkind)
+	mparams := getMapReqParams(ti)
 
 	vtypePtr := vtypeKind == reflect.Ptr
 	ktypePtr := ktypeKind == reflect.Ptr
@@ -6373,7 +6362,7 @@ func (d *decoderJsonIO) kMap(f *decFnInfo, rv reflect.Value) {
 
 	ktypeIsString := ktypeId == stringTypId
 	ktypeIsIntf := ktypeId == intfTypId
-	hasLen := containerLen > 0
+	hasLen := containerLen >= 0
 
 	var kstr2bs []byte
 	var kstr string
@@ -6459,9 +6448,9 @@ func (d *decoderJsonIO) kMap(f *decFnInfo, rv reflect.Value) {
 
 		if mapKeyStringSharesBytesBuf && d.bufio {
 			if ktypeIsString {
-				rvSetString(rvk, d.string(kstr2bs, att))
+				rvSetString(rvk, d.detach2Str(kstr2bs, att))
 			} else {
-				rvSetIntf(rvk, rv4istr(d.string(kstr2bs, att)))
+				rvSetIntf(rvk, rv4istr(d.detach2Str(kstr2bs, att)))
 			}
 			mapKeyStringSharesBytesBuf = false
 		}
@@ -6471,16 +6460,16 @@ func (d *decoderJsonIO) kMap(f *decFnInfo, rv reflect.Value) {
 		if d.d.TryNil() {
 			if mapKeyStringSharesBytesBuf {
 				if ktypeIsString {
-					rvSetString(rvk, d.string(kstr2bs, att))
+					rvSetString(rvk, d.detach2Str(kstr2bs, att))
 				} else {
-					rvSetIntf(rvk, rv4istr(d.string(kstr2bs, att)))
+					rvSetIntf(rvk, rv4istr(d.detach2Str(kstr2bs, att)))
 				}
 			}
 
 			if !rvvz.IsValid() {
 				rvvz = rvZeroK(vtype, vtypeKind)
 			}
-			mapSet(rv, rvk, rvvz, kfast, visindirect, visref)
+			mapSet(rv, rvk, rvvz, mparams)
 			continue
 		}
 
@@ -6491,7 +6480,7 @@ func (d *decoderJsonIO) kMap(f *decFnInfo, rv reflect.Value) {
 		} else if !doMapGet {
 			goto NEW_RVV
 		} else {
-			rvv = mapGet(rv, rvk, rvva, kfast, visindirect, visref)
+			rvv = mapGet(rv, rvk, rvva, mparams)
 			if !rvv.IsValid() || (rvvCanNil && rvIsNil(rvv)) {
 				goto NEW_RVV
 			}
@@ -6534,9 +6523,9 @@ func (d *decoderJsonIO) kMap(f *decFnInfo, rv reflect.Value) {
 	DECODE_VALUE_NO_CHECK_NIL:
 		if doMapSet && mapKeyStringSharesBytesBuf {
 			if ktypeIsString {
-				rvSetString(rvk, d.string(kstr2bs, att))
+				rvSetString(rvk, d.detach2Str(kstr2bs, att))
 			} else {
-				rvSetIntf(rvk, rv4istr(d.string(kstr2bs, att)))
+				rvSetIntf(rvk, rv4istr(d.detach2Str(kstr2bs, att)))
 			}
 		}
 		if vbuiltin {
@@ -6552,7 +6541,7 @@ func (d *decoderJsonIO) kMap(f *decFnInfo, rv reflect.Value) {
 			d.decodeValueNoCheckNil(rvv, valFn)
 		}
 		if doMapSet {
-			mapSet(rv, rvk, rvv, kfast, visindirect, visref)
+			mapSet(rv, rvk, rvv, mparams)
 		}
 	}
 
@@ -6690,7 +6679,7 @@ func (d *decoderJsonIO) decode(iv interface{}) {
 		}
 		d.decodeValue(v, nil)
 	case *string:
-		*v = d.string(d.d.DecodeStringAsBytes())
+		*v = d.detach2Str(d.d.DecodeStringAsBytes())
 	case *bool:
 		*v = d.d.DecodeBool()
 	case *int:
@@ -6880,57 +6869,6 @@ func (d *decoderJsonIO) fn(t reflect.Type) *decFnJsonIO {
 
 func (d *decoderJsonIO) fnNoExt(t reflect.Type) *decFnJsonIO {
 	return d.dh.decFnViaBH(t, d.rtidFnNoExt, d.h, d.fp, true)
-}
-
-func (d *decoderJsonIO) decSliceHelperStart() (x decSliceHelperJsonIO, clen int) {
-	x.ct = d.d.ContainerType()
-	x.d = d
-	switch x.ct {
-	case valueTypeNil:
-		x.IsNil = true
-	case valueTypeArray:
-		x.Array = true
-		clen = d.arrayStart(d.d.ReadArrayStart())
-	case valueTypeMap:
-		clen = d.mapStart(d.d.ReadMapStart())
-		clen += clen
-	default:
-		halt.errorStr2("to decode into a slice, expect map/array - got ", x.ct.String())
-	}
-	return
-}
-
-func (x decSliceHelperJsonIO) End() {
-	if x.IsNil {
-	} else if x.Array {
-		x.d.arrayEnd()
-	} else {
-		x.d.mapEnd()
-	}
-}
-
-func (x decSliceHelperJsonIO) ElemContainerState(index int) {
-
-	if x.Array {
-		x.d.arrayElem(index == 0)
-	} else if index&1 == 0 {
-		x.d.mapElemKey(index == 0)
-	} else {
-		x.d.mapElemValue()
-	}
-}
-
-func (x decSliceHelperJsonIO) arrayCannotExpand(hasLen bool, lenv, j, containerLenS int) {
-	x.d.arrayCannotExpand(lenv, j+1)
-
-	x.ElemContainerState(j)
-	x.d.swallow()
-	j++
-	for ; x.d.containerNext(j, containerLenS, hasLen); j++ {
-		x.ElemContainerState(j)
-		x.d.swallow()
-	}
-	x.End()
 }
 
 func (helperDecDriverJsonIO) newDecoderBytes(in []byte, h Handle) *decoderJsonIO {
@@ -7800,10 +7738,6 @@ func (d *jsonDecDriverIO) DecodeRawExt(re *RawExt) {
 }
 
 func (d *jsonDecDriverIO) decBytesFromArray(bs []byte) []byte {
-	if bs != nil {
-		bs = bs[:0]
-	}
-	d.tok = 0
 	bs = append(bs, uint8(d.DecodeUint64()))
 	d.advance()
 	for d.tok != ']' {
@@ -7835,6 +7769,7 @@ func (d *jsonDecDriverIO) DecodeBytes() (bs []byte, state dBytesAttachState) {
 	}
 
 	if d.tok == '[' {
+		d.tok = 0
 
 		bs = d.decBytesFromArray(d.buf[:0])
 		d.buf = bs
@@ -7869,6 +7804,7 @@ func (d *jsonDecDriverIO) DecodeStringAsBytes() (bs []byte, state dBytesAttachSt
 	var cond bool
 
 	if d.tok == '"' {
+		d.tok = 0
 		bs, cond = d.dblQuoteStringAsBytes()
 		state = d.d.attachState(cond)
 		return
@@ -7908,17 +7844,14 @@ func (d *jsonDecDriverIO) readUnescapedString() (bs []byte) {
 }
 
 func (d *jsonDecDriverIO) dblQuoteStringAsBytes() (buf []byte, usingBuf bool) {
-	d.tok = 0
-
 	bs, c := d.r.jsonReadAsisChars()
 	if c == '"' {
 		return bs, !d.d.bytes
 	}
+	buf = append(d.buf[:0], bs...)
 
 	checkUtf8 := d.h.ValidateUnicode
 	usingBuf = true
-
-	buf = append(d.buf[:0], bs...)
 
 	for {
 
@@ -7950,7 +7883,6 @@ func (d *jsonDecDriverIO) dblQuoteStringAsBytes() (buf []byte, usingBuf bool) {
 		}
 
 		bs, c = d.r.jsonReadAsisChars()
-
 		buf = append(buf, bs...)
 		if c == '"' {
 			break
@@ -7962,14 +7894,13 @@ func (d *jsonDecDriverIO) dblQuoteStringAsBytes() (buf []byte, usingBuf bool) {
 
 func (d *jsonDecDriverIO) appendStringAsBytesSlashU() (r rune) {
 	var rr uint32
-	var csu [2]byte
-	var cs [4]byte = d.r.readn4()
+	cs := d.r.readn4()
 	if rr = jsonSlashURune(cs); rr == unicode.ReplacementChar {
 		return unicode.ReplacementChar
 	}
 	r = rune(rr)
 	if utf16.IsSurrogate(r) {
-		csu = d.r.readn2()
+		csu := d.r.readn2()
 		cs = d.r.readn4()
 		if csu[0] == '\\' && csu[1] == 'u' {
 			if rr = jsonSlashURune(cs); rr == unicode.ReplacementChar {
@@ -8005,6 +7936,7 @@ func (d *jsonDecDriverIO) DecodeNaked() {
 		z.v = valueTypeArray
 	case '"':
 
+		d.tok = 0
 		bs, z.b = d.dblQuoteStringAsBytes()
 		att := d.d.attachState(z.b)
 		if jsonNakedBoolNullInQuotedStr &&
@@ -8021,12 +7953,12 @@ func (d *jsonDecDriverIO) DecodeNaked() {
 
 				if err := jsonNakedNum(z, bs, d.h.PreferFloat, d.h.SignedInteger); err != nil {
 					z.v = valueTypeString
-					z.s = d.d.string(bs, att)
+					z.s = d.d.detach2Str(bs, att)
 				}
 			}
 		} else {
 			z.v = valueTypeString
-			z.s = d.d.string(bs, att)
+			z.s = d.d.detach2Str(bs, att)
 		}
 	default:
 		bs, d.tok = d.r.jsonReadNum()
