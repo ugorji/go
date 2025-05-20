@@ -243,25 +243,10 @@ func byteSliceSameData(v1 []byte, v2 []byte) bool {
 	return (*unsafeSlice)(unsafe.Pointer(&v1)).Data == (*unsafeSlice)(unsafe.Pointer(&v2)).Data
 }
 
-// isNil says whether the value v is nil.
-// This applies to references like map/ptr/unsafepointer/chan/func,
-// and non-reference values like interface/slice.
-//
-// Note: rv is guaranteed valid iff isnil = false
-func isNil(v interface{}) (rv reflect.Value, isnil bool) {
-	var ui = (*unsafeIntf)(unsafe.Pointer(&v))
-	isnil = ui.ptr == nil
-	if !isnil {
-		rv, isnil = unsafeIsNilIntfOrSlice(ui, v)
-	}
-	return
-}
-
-func unsafeIsNilIntfOrSlice(ui *unsafeIntf, v interface{}) (rv reflect.Value, isnil bool) {
-	rv = reflect.ValueOf(v) // reflect.ValueOf is currently not inline'able - so call it directly
-	tk := rv.Kind()
-	isnil = (tk == reflect.Interface || tk == reflect.Slice) && *(*unsafe.Pointer)(ui.ptr) == nil
-	return
+// isNil checks whether, without much effort, it can quickly check
+// if an interface is nil
+func isNil(v interface{}) bool {
+	return ((*unsafeIntf)(unsafe.Pointer(&v))).ptr == nil
 }
 
 func ptrToLowLevel[T any](ptr *T) unsafe.Pointer {
@@ -324,6 +309,7 @@ func rvPtrIsNil(rv reflect.Value) bool {
 	return rvIsNil(rv)
 }
 
+// checks if a nil'able value is nil
 func rvIsNil(rv reflect.Value) bool {
 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
 	if urv.flag&unsafeFlagIndir == 0 {
@@ -1412,3 +1398,24 @@ func typedmemmove(typ unsafe.Pointer, dst, src unsafe.Pointer)
 //go:linkname typedmemclr reflect.typedmemclr
 //go:noescape
 func typedmemclr(typ unsafe.Pointer, dst unsafe.Pointer)
+
+// // isNil says whether the value v is nil.
+// // This applies to references like map/ptr/unsafepointer/chan/func,
+// // and non-reference values like interface/slice.
+// //
+// // Note: rv is guaranteed valid iff isnil = false
+// func isNil(v interface{}) (rv reflect.Value, isnil bool) {
+// 	var ui = (*unsafeIntf)(unsafe.Pointer(&v))
+// 	isnil = ui.ptr == nil
+// 	if !isnil {
+// 		rv, isnil = unsafeIsNilIntfOrSlice(ui, v)
+// 	}
+// 	return
+// }
+//
+// func unsafeIsNilIntfOrSlice(ui *unsafeIntf, v interface{}) (rv reflect.Value, isnil bool) {
+// 	rv = reflect.ValueOf(v) // reflect.ValueOf is currently not inline'able - so call it directly
+// 	tk := rv.Kind()
+// 	isnil = (tk == reflect.Interface || tk == reflect.Slice) && *(*unsafe.Pointer)(ui.ptr) == nil
+// 	return
+// }

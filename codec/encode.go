@@ -1427,26 +1427,39 @@ func (e *encoder[T]) encode(iv interface{}) {
 	// MARKER: a switch with only concrete types can be optimized.
 	// consequently, we deal with nil and interfaces outside the switch.
 
-	if iv == nil {
+	if isNil(iv) {
 		e.e.EncodeNil()
 		return
 	}
 
-	rv, ok := isNil(iv)
-	if ok {
-		if e.h.NilCollectionToZeroLength {
-			switch rv.Kind() {
-			case reflect.Slice, reflect.Chan:
-				// if !f.ti.mbs {
-				e.e.WriteArrayEmpty()
-				return
-			case reflect.Map:
-				e.e.WriteMapEmpty()
-				return
-			}
+	// for performance, we will ensure that only non-pointers are
+	// handled within this block.
+	// - if any pointer, dereference is
+	// - if any nil value, handle it
+
+	rv := reflect.ValueOf(iv)
+TOP:
+	if isnilBitset.isset(byte(rv.Kind())) {
+		if rv.Kind() == reflect.Ptr {
+			rv = rv.Elem()
+			iv = rv2i(rv)
+			goto TOP
 		}
-		e.e.EncodeNil()
-		return
+		if rvIsNil(rv) {
+			if e.h.NilCollectionToZeroLength {
+				switch rv.Kind() {
+				case reflect.Slice, reflect.Chan:
+					// if !f.ti.mbs {
+					e.e.WriteArrayEmpty()
+					return
+				case reflect.Map:
+					e.e.WriteMapEmpty()
+					return
+				}
+			}
+			e.e.EncodeNil()
+			return
+		}
 	}
 
 	switch v := iv.(type) {
@@ -1495,50 +1508,6 @@ func (e *encoder[T]) encode(iv interface{}) {
 		e.e.EncodeTime(v)
 	case []byte:
 		e.e.EncodeStringBytesRaw(v)
-	case *Raw:
-		e.rawBytes(*v)
-	case *string:
-		e.e.EncodeString(*v)
-	case *bool:
-		e.e.EncodeBool(*v)
-	case *int:
-		e.e.EncodeInt(int64(*v))
-	case *int8:
-		e.e.EncodeInt(int64(*v))
-	case *int16:
-		e.e.EncodeInt(int64(*v))
-	case *int32:
-		e.e.EncodeInt(int64(*v))
-	case *int64:
-		e.e.EncodeInt(*v)
-	case *uint:
-		e.e.EncodeUint(uint64(*v))
-	case *uint8:
-		e.e.EncodeUint(uint64(*v))
-	case *uint16:
-		e.e.EncodeUint(uint64(*v))
-	case *uint32:
-		e.e.EncodeUint(uint64(*v))
-	case *uint64:
-		e.e.EncodeUint(*v)
-	case *uintptr:
-		e.e.EncodeUint(uint64(*v))
-	case *float32:
-		e.e.EncodeFloat32(*v)
-	case *float64:
-		e.e.EncodeFloat64(*v)
-	case *complex64:
-		e.encodeComplex64(*v)
-	case *complex128:
-		e.encodeComplex128(*v)
-	case *time.Time:
-		e.e.EncodeTime(*v)
-	case *[]byte:
-		if *v == nil {
-			e.e.EncodeNil()
-		} else {
-			e.e.EncodeStringBytesRaw(*v)
-		}
 	default:
 		// we can't check non-predefined types, as they might be a Selfer or extension.
 		if skipFastpathTypeSwitchInDirectCall || !e.dh.fastpathEncodeTypeSwitch(iv, e) {

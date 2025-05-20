@@ -2065,11 +2065,11 @@ func (d *decoder[T]) nextValueBytes() []byte {
 // }
 
 func setZero(iv interface{}) {
-	if iv == nil {
+	if isNil(iv) {
 		return
 	}
-	rv, ok := isNil(iv)
-	if ok {
+	rv := reflect.ValueOf(iv)
+	if isnilBitset.isset(byte(rv.Kind())) && rvIsNil(rv) {
 		return
 	}
 	// var canDecode bool

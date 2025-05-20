@@ -58,12 +58,8 @@ func byteSliceSameData(v1 []byte, v2 []byte) bool {
 	return cap(v1) != 0 && cap(v2) != 0 && &(v1[:1][0]) == &(v2[:1][0])
 }
 
-func isNil(v interface{}) (rv reflect.Value, isnil bool) {
-	rv = reflect.ValueOf(v)
-	if isnilBitset.isset(byte(rv.Kind())) {
-		isnil = rv.IsNil()
-	}
-	return
+func isNil(v interface{}) bool {
+	return v == nil
 }
 
 func ptrToLowLevel(v interface{}) interface{} {

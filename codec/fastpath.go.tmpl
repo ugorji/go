@@ -186,30 +186,14 @@ func (helperDecDriver[T]) fastpathDList() *fastpathDs[T] {
 func (helperEncDriver[T]) fastpathEncodeTypeSwitch(iv interface{}, e *encoder[T]) bool {
 	var ft fastpathET[T]
 	switch v := iv.(type) {
-{{range .Values}}{{if not .Primitive}}{{if not .MapKey -}}
+		{{range .Values}}{{if not .Primitive}}{{if not .MapKey -}}
 	case []{{ .Elem }}:
 		ft.{{ .MethodNamePfx "Enc" false }}V(v, e)
-	case *[]{{ .Elem }}:
-		if *v != nil {
-			ft.{{ .MethodNamePfx "Enc" false }}V(*v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteArrayEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
 {{end}}{{end}}{{end -}}
 
 {{range .Values}}{{if not .Primitive}}{{if .MapKey -}}
 	case map[{{ .MapKey }}]{{ .Elem }}:
 		ft.{{ .MethodNamePfx "Enc" false }}V(v, e)
-	case *map[{{ .MapKey }}]{{ .Elem }}:
-		if *v != nil {
-			ft.{{ .MethodNamePfx "Enc" false }}V(*v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteMapEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
 {{end}}{{end}}{{end -}}
 
 	default:
@@ -231,35 +215,32 @@ func (e *encoder[T]) {{ .MethodNamePfx "fastpathEnc" false }}R(f *encFnInfo, rv 
 	}
 	if f.ti.mbs {
 		ft.{{ .MethodNamePfx "EncAsMap" false }}V(v, e)
-	} else {
-		ft.{{ .MethodNamePfx "Enc" false }}V(v, e)
+		return
 	}
+	ft.{{ .MethodNamePfx "Enc" false }}V(v, e)
 }
 func (fastpathET[T]) {{ .MethodNamePfx "Enc" false }}V(v []{{ .Elem }}, e *encoder[T]) {
-	{{/* if v == nil { e.e.EncodeNil(); return } */ -}}
 	{{ if eq .Elem "uint8" "byte" -}}
 	e.e.EncodeStringBytesRaw(v)
 	{{ else -}}
+	if len(v) == 0 {
+		e.c = 0; e.e.WriteArrayEmpty()
+		return
+	}
 	e.arrayStart(len(v))
 	for j := range v {
 		e.c = containerArrayElem; e.e.WriteArrayElem(j == 0)
 		{{ encmd .Elem "v[j]"}}
-	} 
+	}
 	e.c = 0; e.e.WriteArrayEnd()
 	{{ end -}}
 }
 func (fastpathET[T]) {{ .MethodNamePfx "EncAsMap" false }}V(v []{{ .Elem }}, e *encoder[T]) {
-	{{/* if v == nil { e.e.EncodeNil() } else */ -}}
-	e.haltOnMbsOddLen(len(v))
 	if len(v) == 0 {
-		e.e.WriteMapEmpty()
+		e.c = 0; e.e.WriteMapEmpty()
 		return
 	}
-	{{/*
-	if len(v)&1 != 0 { // similar to &1==1 or %2 == 1
-		halt.errorInt(fastpathMapBySliceErrMsg, len(v))
-	}
-	*/ -}}
+	e.haltOnMbsOddLen(len(v))
 	e.mapStart(len(v) >> 1) // e.mapStart(len(v) / 2)
 	for j := range v {
 		if j&1 == 0 { // if j%2 == 0 {
@@ -271,6 +252,7 @@ func (fastpathET[T]) {{ .MethodNamePfx "EncAsMap" false }}V(v []{{ .Elem }}, e *
 	}
 	e.c = 0; e.e.WriteMapEnd()
 }
+
 {{end}}{{end}}{{end -}}
 
 {{range .Values}}{{if not .Primitive}}{{if .MapKey -}}
@@ -356,29 +338,24 @@ func (helperDecDriver[T]) fastpathDecodeTypeSwitch(iv interface{}, d *decoder[T]
 // maps only change if nil, and in that case, there's no point copying
 */ -}}
 	case map[{{ .MapKey }}]{{ .Elem }}:
-		containerLen = d.mapStart(d.d.ReadMapStart())
-		if containerLen != containerLenNil {
+		if containerLen = d.mapStart(d.d.ReadMapStart()); containerLen != containerLenNil {
 			if containerLen != 0 {
 				ft.{{ .MethodNamePfx "Dec" false }}L(v, containerLen, d)
 			}
 			d.mapEnd()
 		}
 	case *map[{{ .MapKey }}]{{ .Elem }}:
-		{{/*
-		containerLen = d.mapStart(d.d.ReadMapStart())
-		if containerLen == 0 {
-			d.mapEnd()
-		} else if containerLen == containerLenNil {
+		if containerLen = d.mapStart(d.d.ReadMapStart()); containerLen == containerLenNil {
 			*v = nil
 		} else {
 			if *v == nil {
 				*v = make(map[{{ .MapKey }}]{{ .Elem }}, decInferLen(containerLen, d.maxInitLen(), {{ .Size }}))
 			}
-			ft.{{ .MethodNamePfx "Dec" false }}L(*v, containerLen, d)
+			if containerLen != 0 {
+				ft.{{ .MethodNamePfx "Dec" false }}L(*v, containerLen, d)
+			}
+			d.mapEnd()
 		}
-		// consider delegating fully to X - encoding *map is uncommon, so ok to pay small function call cost
-		*/ -}}
-		ft.{{ .MethodNamePfx "Dec" false }}X(v, d)
 {{end}}{{end}}{{end -}}
 	default:
 		_ = v // workaround https://github.com/golang/go/issues/12927 seen in go1.4
@@ -418,26 +395,20 @@ func (d *decoder[T]) {{ .MethodNamePfx "fastpathDec" false }}R(f *decFnInfo, rv 
     // seqTypeArray=true means that we are not getting a pointer, so no need to check that.
     if f.seq != seqTypeArray && rv.Kind() == reflect.Ptr {
     */ -}}
-	var v  []{{ .Elem }}
 	switch rv.Kind() {
 	case reflect.Ptr:
-		vp := rv2i(rv).(*[]{{ .Elem }})
-		var changed bool
-		if v, changed = ft.{{ .MethodNamePfx "Dec" false }}Y(*vp, d); changed {
-			*vp = v
+		v := rv2i(rv).(*[]{{ .Elem }})
+		if vv, changed := ft.{{ .MethodNamePfx "Dec" false }}Y(*v, d); changed {
+			*v = vv
 		}
 	case reflect.Array:
+		var v []{{ .Elem }}
 		rvGetSlice4Array(rv, &v)
 		ft.{{ .MethodNamePfx "Dec" false }}N(v, d)
 	default:
 		ft.{{ .MethodNamePfx "Dec" false }}N(rv2i(rv).([]{{ .Elem }}), d)
 	}
 }
-{{/* // used within codecgen, which is no longer supported
-func (f fastpathDT[T]) {{ .MethodNamePfx "Dec" false }}X(vp *[]{{ .Elem }}, d *decoder[T]) {
-	if v, changed := f.{{ .MethodNamePfx "Dec" false }}Y(*vp, d); changed { *vp = v }
-}
-*/ -}}
 func (fastpathDT[T]) {{ .MethodNamePfx "Dec" false }}Y(v []{{ .Elem }}, d *decoder[T]) (v2 []{{ .Elem }}, changed bool) {
 	ctyp := d.d.ContainerType()
 	if ctyp == valueTypeNil {
@@ -551,21 +522,10 @@ func (fastpathDT[T]) {{ .MethodNamePfx "Dec" false }}N(v []{{ .Elem }}, d *decod
 Maps can change if they are
 - addressable (from a ptr)
 - settable (e.g. contained in an interface{})
-
-Also, these methods are called by decodeValue directly, after handling a TryNil.
-Consequently, there's no need to check for containerLenNil here.
 */ -}}
 func (d *decoder[T]) {{ .MethodNamePfx "fastpathDec" false }}R(f *decFnInfo, rv reflect.Value) {
 	var ft fastpathDT[T]
 	containerLen := d.mapStart(d.d.ReadMapStart())
-    {{/*
-	if containerLen == containerLenNil {
-		if rv.Kind() == reflect.Ptr {
-			*(rv2i(rv).(*map[{{ .MapKey }}]{{ .Elem }})) = nil
-		}
-        return
-	}
-    */ -}}
 	if rv.Kind() == reflect.Ptr {
 		vp, _ := rv2i(rv).(*map[{{ .MapKey }}]{{ .Elem }})
 		if *vp == nil {
@@ -579,22 +539,7 @@ func (d *decoder[T]) {{ .MethodNamePfx "fastpathDec" false }}R(f *decFnInfo, rv 
 	}
 	d.mapEnd()
 }
-func (f fastpathDT[T]) {{ .MethodNamePfx "Dec" false }}X(vp *map[{{ .MapKey }}]{{ .Elem }}, d *decoder[T]) {
-	containerLen := d.mapStart(d.d.ReadMapStart())
-	if containerLen == containerLenNil {
-		*vp = nil
-		return
-	}
-	if *vp == nil {
-		*vp = make(map[{{ .MapKey }}]{{ .Elem }}, decInferLen(containerLen, d.maxInitLen(), {{ .Size }}))
-	}
-	if containerLen != 0 {
-		f.{{ .MethodNamePfx "Dec" false }}L(*vp, containerLen, d)
-	}
-	d.mapEnd()
-}
 func (fastpathDT[T]) {{ .MethodNamePfx "Dec" false }}L(v map[{{ .MapKey }}]{{ .Elem }}, containerLen int, d *decoder[T]) {
-	{{/* No need to check if containerLen == containerLenNil, as that is checked by R and L above  */ -}}
 	if v == nil {
 		halt.errorInt("cannot decode into nil map[{{ .MapKey }}]{{ .Elem }} given stream length: ", int64(containerLen))
         {{/* d.swallowMapContents(containerLen); return */ -}}
@@ -633,3 +578,76 @@ func (fastpathDT[T]) {{ .MethodNamePfx "Dec" false }}L(v map[{{ .MapKey }}]{{ .E
 	}
 }
 {{end}}{{end}}{{end}}
+
+{{- /*
+
+// -- -- fast path type switch
+func (helperEncDriver[T]) fastpathEncodeTypeSwitch(iv interface{}, e *encoder[T]) bool {
+	var ft fastpathET[T]
+	switch v := iv.(type) {
+		{{range .Values}}{{if not .Primitive}}{{if not .MapKey -}}
+	case []{{ .Elem }}:
+		if v != nil {
+			ft.{{ .MethodNamePfx "Enc" false }}V(v, e)
+		} else if e.h.NilCollectionToZeroLength {
+			e.e.WriteArrayEmpty()
+		} else {
+			e.e.EncodeNil()
+		}
+	case *[]{{ .Elem }}:
+		if *v != nil {
+			ft.{{ .MethodNamePfx "Enc" false }}V(*v, e)
+		} else if e.h.NilCollectionToZeroLength {
+			e.e.WriteArrayEmpty()
+		} else {
+			e.e.EncodeNil()
+		}
+{{end}}{{end}}{{end -}}
+
+{{range .Values}}{{if not .Primitive}}{{if .MapKey -}}
+	case map[{{ .MapKey }}]{{ .Elem }}:
+		if v != nil {
+			ft.{{ .MethodNamePfx "Enc" false }}V(v, e)
+		} else if e.h.NilCollectionToZeroLength {
+			e.e.WriteMapEmpty()
+		} else {
+			e.e.EncodeNil()
+		}
+	case *map[{{ .MapKey }}]{{ .Elem }}:
+		if *v != nil {
+			ft.{{ .MethodNamePfx "Enc" false }}V(*v, e)
+		} else if e.h.NilCollectionToZeroLength {
+			e.e.WriteMapEmpty()
+		} else {
+			e.e.EncodeNil()
+		}
+{{end}}{{end}}{{end -}}
+
+	default:
+		_ = v // workaround https://github.com/golang/go/issues/12927 seen in go1.4
+		return false
+	}
+	return true
+}
+
+// used within codecgen, which is no longer supported
+func (f fastpathDT[T]) {{ .MethodNamePfx "Dec" false }}X(vp *[]{{ .Elem }}, d *decoder[T]) {
+	if v, changed := f.{{ .MethodNamePfx "Dec" false }}Y(*vp, d); changed { *vp = v }
+}
+
+func (f fastpathDT[T]) {{ .MethodNamePfx "Dec" false }}X(vp *map[{{ .MapKey }}]{{ .Elem }}, d *decoder[T]) {
+	containerLen := d.mapStart(d.d.ReadMapStart())
+	if containerLen == containerLenNil {
+		*vp = nil
+		return
+	}
+	if *vp == nil {
+		*vp = make(map[{{ .MapKey }}]{{ .Elem }}, decInferLen(containerLen, d.maxInitLen(), {{ .Size }}))
+	}
+	if containerLen != 0 {
+		f.{{ .MethodNamePfx "Dec" false }}L(*vp, containerLen, d)
+	}
+	d.mapEnd()
+}
+
+*/ -}}
