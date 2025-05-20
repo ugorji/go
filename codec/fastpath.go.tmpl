@@ -33,10 +33,10 @@ package codec
 
 {{/*
 fastpathEncMapStringUint64R  (called by fastpath...switch)
-EncMapStringUint64V (called by codecgen)
+EncMapStringUint64V (... also called by codecgen)
 
 fastpathEncSliceBoolR: (called by fastpath...switch) (checks f.ti.mbs and calls one of them below)
-EncSliceBoolV  (also called by codecgen)
+EncSliceBoolV  (... also called by codecgen)
 EncAsMapSliceBoolV (delegate when mapbyslice=true)
 
 fastpathDecSliceIntfR (called by fastpath...switch) (calls Y or N below depending on if it can be updated)
@@ -184,32 +184,18 @@ func (helperDecDriver[T]) fastpathDList() *fastpathDs[T] {
 
 // -- -- fast path type switch
 func (helperEncDriver[T]) fastpathEncodeTypeSwitch(iv interface{}, e *encoder[T]) bool {
-	fnNilMap := func() {
-		if e.h.NilCollectionToZeroLength {
-			e.e.WriteMapEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
-	}
-	
-	fnNilSeq := func() {
-		if e.h.NilCollectionToZeroLength {
-			e.e.WriteArrayEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
-	}
-		
 	var ft fastpathET[T]
 	switch v := iv.(type) {
 {{range .Values}}{{if not .Primitive}}{{if not .MapKey -}}
 	case []{{ .Elem }}:
 		ft.{{ .MethodNamePfx "Enc" false }}V(v, e)
 	case *[]{{ .Elem }}:
-		if *v == nil {
-			fnNilSeq()
-		} else {
+		if *v != nil {
 			ft.{{ .MethodNamePfx "Enc" false }}V(*v, e)
+		} else if e.h.NilCollectionToZeroLength {
+			e.e.WriteArrayEmpty()
+		} else {
+			e.e.EncodeNil()
 		}
 {{end}}{{end}}{{end -}}
 
@@ -217,10 +203,12 @@ func (helperEncDriver[T]) fastpathEncodeTypeSwitch(iv interface{}, e *encoder[T]
 	case map[{{ .MapKey }}]{{ .Elem }}:
 		ft.{{ .MethodNamePfx "Enc" false }}V(v, e)
 	case *map[{{ .MapKey }}]{{ .Elem }}:
-		if *v == nil {
-			fnNilMap()
-		} else {
+		if *v != nil {
 			ft.{{ .MethodNamePfx "Enc" false }}V(*v, e)
+		} else if e.h.NilCollectionToZeroLength {
+			e.e.WriteMapEmpty()
+		} else {
+			e.e.EncodeNil()
 		}
 {{end}}{{end}}{{end -}}
 
@@ -445,9 +433,11 @@ func (d *decoder[T]) {{ .MethodNamePfx "fastpathDec" false }}R(f *decFnInfo, rv 
 		ft.{{ .MethodNamePfx "Dec" false }}N(rv2i(rv).([]{{ .Elem }}), d)
 	}
 }
+{{/* // No longer needed
 func (f fastpathDT[T]) {{ .MethodNamePfx "Dec" false }}X(vp *[]{{ .Elem }}, d *decoder[T]) {
 	if v, changed := f.{{ .MethodNamePfx "Dec" false }}Y(*vp, d); changed { *vp = v }
 }
+*/ -}}
 func (fastpathDT[T]) {{ .MethodNamePfx "Dec" false }}Y(v []{{ .Elem }}, d *decoder[T]) (v2 []{{ .Elem }}, changed bool) {
 	ctyp := d.d.ContainerType()
 	if ctyp == valueTypeNil {
