@@ -433,7 +433,7 @@ func (d *decoder[T]) {{ .MethodNamePfx "fastpathDec" false }}R(f *decFnInfo, rv 
 		ft.{{ .MethodNamePfx "Dec" false }}N(rv2i(rv).([]{{ .Elem }}), d)
 	}
 }
-{{/* // No longer needed
+{{/* // used within codecgen, which is no longer supported
 func (f fastpathDT[T]) {{ .MethodNamePfx "Dec" false }}X(vp *[]{{ .Elem }}, d *decoder[T]) {
 	if v, changed := f.{{ .MethodNamePfx "Dec" false }}Y(*vp, d); changed { *vp = v }
 }
@@ -482,7 +482,7 @@ func (fastpathDT[T]) {{ .MethodNamePfx "Dec" false }}Y(v []{{ .Elem }}, d *decod
 		if isArray { d.arrayElem(j == 0) } else
 		{{ end -}}
 		if j&1 == 0 { d.mapElemKey(j == 0) } else { d.mapElemValue() }
-		if j >= len(v) { // if indefinite, json, etc, then expand the slice (if necessary)
+		if j >= len(v) { {{- /* // if indefinite, json, etc, then expand the slice (if necessary) */}}
 			fnv(append(v, {{ zerocmd .Elem }}))
 		}
 		{{ if eq .Elem "interface{}" }}d.decode(&v[uint(j)]){{ else }}v[uint(j)] = {{ decmd .Elem false }}{{ end }}
@@ -597,34 +597,39 @@ func (fastpathDT[T]) {{ .MethodNamePfx "Dec" false }}L(v map[{{ .MapKey }}]{{ .E
 	{{/* No need to check if containerLen == containerLenNil, as that is checked by R and L above  */ -}}
 	if v == nil {
 		halt.errorInt("cannot decode into nil map[{{ .MapKey }}]{{ .Elem }} given stream length: ", int64(containerLen))
-        {{/* d.swallowMapContents(containerLen) */ -}}
-		return
-	}
-	{{if eq .Elem "interface{}" }}mapGet := !d.h.MapValueReset && !d.h.InterfaceReset
-    {{else if eq .Elem "bytes" "[]byte" }}mapGet := !d.h.MapValueReset
-    {{end -}}
+        {{/* d.swallowMapContents(containerLen); return */ -}}
+	}	
+	{{if eq .MapKey "interface{}" -}}
     var mk {{ .MapKey }}
+	{{end -}}
+	{{ if eq .Elem "interface{}" "[]byte" "bytes" -}}
 	var mv {{ .Elem }}
+	mapGet := !d.h.MapValueReset
+	{{- if eq .Elem "interface{}" -}}
+	&& !d.h.InterfaceReset
+	{{- end}}
+	{{end -}}
 	hasLen := containerLen >= 0
     for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
 		d.mapElemKey(j == 0)
-		{{ if eq .MapKey "interface{}" }}mk = nil 
+		{{ if eq .MapKey "interface{}" -}}
+		mk = nil 
 		d.decode(&mk)
 		if bv, bok := mk.([]byte); bok {
 			mk = d.stringZC(bv) {{/* // maps cannot have []byte as key. switch to string. */}}
-		}{{ else }}mk = {{ decmd .MapKey true }}{{ end }}
+		}{{ else }}mk := {{ decmd .MapKey true }}{{ end }}
 		d.mapElemValue()
 		{{ if eq .Elem "interface{}" "[]byte" "bytes" -}}
 		if mapGet { mv = v[mk] } else { mv = nil }
 		{{ end -}}
 		{{ if eq .Elem "interface{}" -}}
 		d.decode(&mv)
-		{{ else if eq .Elem "[]byte" "bytes" -}}
-		mv = d.decodeBytesInto(mv)
-		{{ else -}}
-		mv = {{ decmd .Elem false }}
-		{{ end -}}
 		v[mk] = mv
+		{{ else if eq .Elem "[]byte" "bytes" -}}
+		v[mk] = d.decodeBytesInto(mv)
+		{{ else -}}
+		v[mk] = {{ decmd .Elem false }}
+		{{ end -}}
 	}
 }
 {{end}}{{end}}{{end}}
