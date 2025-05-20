@@ -217,7 +217,7 @@ func genTmplDecCommandAsString(s string, mapkey bool) string {
 		// 	return "d.stringZC(d.d.DecodeStringAsBytes())"
 		// }
 		// return "string(d.d.DecodeStringAsBytes())"
-		return "d.string(d.d.DecodeStringAsBytes())"
+		return "d.detach2Str(d.d.DecodeStringAsBytes())"
 	case "[]byte", "[]uint8", "bytes":
 		// return "bytesOk(d.d.DecodeBytes())"
 		return "d.decodeBytesInto(v[uint(j)])"

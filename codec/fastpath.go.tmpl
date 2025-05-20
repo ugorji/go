@@ -561,7 +561,7 @@ func (fastpathDT[T]) {{ .MethodNamePfx "Dec" false }}L(v map[{{ .MapKey }}]{{ .E
 		mk = nil 
 		d.decode(&mk)
 		if bv, bok := mk.([]byte); bok {
-			mk = d.stringZC(bv) {{/* // maps cannot have []byte as key. switch to string. */}}
+			mk = d.detach2Str(bv) {{/* // maps cannot have []byte as key. switch to string. */}}
 		}{{ else }}mk := {{ decmd .MapKey true }}{{ end }}
 		d.mapElemValue()
 		{{ if eq .Elem "interface{}" "[]byte" "bytes" -}}

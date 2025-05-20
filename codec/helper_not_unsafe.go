@@ -716,12 +716,8 @@ func mapAddrLoopvarRV(t reflect.Type, k reflect.Kind) (r reflect.Value) {
 // }
 
 func (d *decoderBase) bytes2Str(in []byte, att dBytesAttachState) (s string, mutable bool) {
-	return d.string(in, att), false
+	return d.detach2Str(in, att), false
 }
-
-// func (d *decoderBase) detach2Str(in []byte, usingBuf bool) string {
-// 	return d.string(in)
-// }
 
 // ---------- structFieldInfo optimized ---------------
 
