@@ -739,7 +739,7 @@ func (d *cborDecDriver[T]) DecodeNaked() {
 		d.d.fauxUnionReadRawBytes(d, false, d.h.RawToString) //, d.h.ZeroCopy)
 	case cborMajorString:
 		n.v = valueTypeString
-		n.s = d.d.string(d.DecodeStringAsBytes())
+		n.s = d.d.detach2Str(d.DecodeStringAsBytes())
 	case cborMajorArray:
 		n.v = valueTypeArray
 		decodeFurther = true

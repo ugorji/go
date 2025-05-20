@@ -1207,12 +1207,12 @@ func (d *jsonDecDriver[T]) DecodeNaked() {
 				// check if a number: float, int or uint
 				if err := jsonNakedNum(z, bs, d.h.PreferFloat, d.h.SignedInteger); err != nil {
 					z.v = valueTypeString
-					z.s = d.d.string(bs, att)
+					z.s = d.d.detach2Str(bs, att)
 				}
 			}
 		} else {
 			z.v = valueTypeString
-			z.s = d.d.string(bs, att)
+			z.s = d.d.detach2Str(bs, att)
 		}
 	default: // number
 		bs, d.tok = d.r.jsonReadNum()

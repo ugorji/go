@@ -940,12 +940,12 @@ func (d *bincDecDriver[T]) DecodeNaked() {
 		n.f = d.decFloatVal()
 	case bincVdString:
 		n.v = valueTypeString
-		n.s = d.d.string(d.DecodeStringAsBytes())
+		n.s = d.d.detach2Str(d.DecodeStringAsBytes())
 	case bincVdByteArray:
 		d.d.fauxUnionReadRawBytes(d, false, d.h.RawToString) //, d.h.ZeroCopy)
 	case bincVdSymbol:
 		n.v = valueTypeSymbol
-		n.s = d.d.string(d.DecodeStringAsBytes())
+		n.s = d.d.detach2Str(d.DecodeStringAsBytes())
 	case bincVdTimestamp:
 		n.v = valueTypeTime
 		tt, err := bincDecodeTime(d.r.readx(uint(d.vs)))

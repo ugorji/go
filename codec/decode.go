@@ -520,7 +520,7 @@ func (d *decoderBase) fauxUnionReadRawBytes(dr decDriverI, asString, rawToString
 	d.n.l, d.n.a = dr.DecodeBytes()
 	if asString || rawToString {
 		d.n.v = valueTypeString
-		d.n.s = d.string(d.n.l, d.n.a)
+		d.n.s = d.detach2Str(d.n.l, d.n.a)
 	} else {
 		d.n.v = valueTypeBytes
 		d.n.l = d.detach2Bytes(d.n.l, nil, d.n.a)
@@ -535,9 +535,7 @@ func (d *decoderBase) fauxUnionReadRawBytes(dr decDriverI, asString, rawToString
 // This should mostly be used for map keys, struct field names, etc
 // where the key type is string. This is because keys of a map/struct are
 // typically reused across many objects.
-//
-// This should eventually be renamed to detach2Str
-func (d *decoderBase) string(v []byte, state dBytesAttachState) (s string) {
+func (d *decoderBase) detach2Str(v []byte, state dBytesAttachState) (s string) {
 	// note: string([]byte) checks - and optimizes - for len 0 and len 1
 	if len(v) <= 1 {
 		s = string(v)
@@ -639,7 +637,7 @@ func (d *decoder[T]) raw(_ *decFnInfo, rv reflect.Value) {
 }
 
 func (d *decoder[T]) kString(_ *decFnInfo, rv reflect.Value) {
-	rvSetString(rv, d.string(d.d.DecodeStringAsBytes()))
+	rvSetString(rv, d.detach2Str(d.d.DecodeStringAsBytes()))
 }
 
 func (d *decoder[T]) kBool(_ *decFnInfo, rv reflect.Value) {
@@ -1701,9 +1699,9 @@ func (d *decoder[T]) kMap(f *decFnInfo, rv reflect.Value) {
 		// To mitigate this, we do a special check for ioDecReader in bufio mode.
 		if mapKeyStringSharesBytesBuf && d.bufio {
 			if ktypeIsString {
-				rvSetString(rvk, d.string(kstr2bs, att))
+				rvSetString(rvk, d.detach2Str(kstr2bs, att))
 			} else { // ktypeIsIntf
-				rvSetIntf(rvk, rv4istr(d.string(kstr2bs, att)))
+				rvSetIntf(rvk, rv4istr(d.detach2Str(kstr2bs, att)))
 			}
 			mapKeyStringSharesBytesBuf = false
 		}
@@ -1713,9 +1711,9 @@ func (d *decoder[T]) kMap(f *decFnInfo, rv reflect.Value) {
 		if d.d.TryNil() {
 			if mapKeyStringSharesBytesBuf {
 				if ktypeIsString {
-					rvSetString(rvk, d.string(kstr2bs, att))
+					rvSetString(rvk, d.detach2Str(kstr2bs, att))
 				} else { // ktypeIsIntf
-					rvSetIntf(rvk, rv4istr(d.string(kstr2bs, att)))
+					rvSetIntf(rvk, rv4istr(d.detach2Str(kstr2bs, att)))
 				}
 			}
 			// since a map, we have to set zero value if needed
@@ -1780,9 +1778,9 @@ func (d *decoder[T]) kMap(f *decFnInfo, rv reflect.Value) {
 	DECODE_VALUE_NO_CHECK_NIL:
 		if doMapSet && mapKeyStringSharesBytesBuf {
 			if ktypeIsString {
-				rvSetString(rvk, d.string(kstr2bs, att))
+				rvSetString(rvk, d.detach2Str(kstr2bs, att))
 			} else { // ktypeIsIntf
-				rvSetIntf(rvk, rv4istr(d.string(kstr2bs, att)))
+				rvSetIntf(rvk, rv4istr(d.detach2Str(kstr2bs, att)))
 			}
 		}
 		if vbuiltin {
@@ -2177,7 +2175,7 @@ func (d *decoder[T]) decode(iv interface{}) {
 		}
 		d.decodeValue(v, nil)
 	case *string:
-		*v = d.string(d.d.DecodeStringAsBytes())
+		*v = d.detach2Str(d.d.DecodeStringAsBytes())
 	case *bool:
 		*v = d.d.DecodeBool()
 	case *int:
