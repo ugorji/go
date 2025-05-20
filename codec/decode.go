@@ -727,6 +727,10 @@ func (d *decoder[T]) kInterfaceNaked(f *decFnInfo) (rvn reflect.Value) {
 	if decFailNonEmptyIntf && f.ti.numMeth > 0 {
 		halt.errorf("cannot decode non-nil codec value into nil %v (%v methods)", f.ti.rt, f.ti.numMeth)
 	}
+
+	// We generally make a pointer to the container here, and pass along,
+	// so that they will be initialized later when we know the length of the collection.
+
 	switch n.v {
 	case valueTypeMap:
 		mtid := d.mtid
@@ -750,10 +754,10 @@ func (d *decoder[T]) kInterfaceNaked(f *decFnInfo) (rvn reflect.Value) {
 			d.decode(rv2i(rvn))
 			rvn = rvn.Elem()
 		} else {
-			// made map is fully initialized for direct modification.
-			// There's no need to make a pointer to it first.
-			// rvn = rvZeroAddrK(d.h.MapType, reflect.Map)
-			rvn = makeMapReflect(d.h.MapType, 0)
+			// // made map is fully initialized for direct modification.
+			// // There's no need to make a pointer to it first.
+			// rvn = makeMapReflect(d.h.MapType, 0)
+			rvn = rvZeroAddrK(d.h.MapType, reflect.Map)
 			d.decodeValue(rvn, nil)
 		}
 	case valueTypeArray:
