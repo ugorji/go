@@ -225,7 +225,7 @@ const (
 	// if debugLogging is false, debugf calls will be a No-op.
 	//
 	// It is generally set to false
-	debugLogging = false
+	debugLogging = true // MARKER 2025
 
 	// containerLenUnknown is length returned from Read(Map|Array)Len
 	// when a format doesn't know apiori.
