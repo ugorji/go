@@ -763,6 +763,7 @@ func (d *bincDecDriver[T]) DecodeStringAsBytes() (bs []byte, state dBytesAttachS
 	case bincVdString, bincVdByteArray:
 		slen = d.decLen()
 		bs, cond = d.r.readxb(uint(slen))
+		state = d.d.attachState(cond)
 	case bincVdSymbol:
 		// zerocopy doesn't apply for symbols,
 		// as the values must be stored in a table for later use.
@@ -796,6 +797,7 @@ func (d *bincDecDriver[T]) DecodeStringAsBytes() (bs []byte, state dBytesAttachS
 			bs = d.d.detach2Bytes(bs, nil, d.d.attachState(cond))
 			d.s[symbol] = bs
 		}
+		state = dBytesDetach
 	default:
 		halt.errorf("string/bytes - %s %x-%x/%s", msgBadDesc, d.vd, d.vs, bincdesc(d.vd, d.vs))
 	}
