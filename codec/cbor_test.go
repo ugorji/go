@@ -303,7 +303,8 @@ func TestCborHalfFloat(t *testing.T) {
 }
 
 func TestCborSkipTags(t *testing.T) {
-	defer testSetup(t, nil)()
+	var hh Handle = testCborH
+	defer testSetup2(t, &hh)()
 	type Tcbortags struct {
 		A string
 		M map[string]interface{}

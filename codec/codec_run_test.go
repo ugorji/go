@@ -19,8 +19,12 @@ package codec
 //   which MUST not call testSetup itself.
 //   doTestXXX or TestXXX may call it.
 
-// if we are testing in parallel,
-// then we don't want to share much state: testBytesFreeList, etc.
+// For a test to be a candidate for running in parallel with other tests,
+// - do not share much state: testBytesFreeList, etc
+// - do not modify Handle state within the test
+// If not honored, then use 'defer testSetup2' instead of 'defer testSetup'
+// in first line of tests. Without this, tests will fail randomly because
+// of Handles shared across the tests being mutated.
 
 // Note:
 // - this file should not depend on any types specific to a given format.
@@ -496,21 +500,26 @@ func (x testUintToBytesExt) UpdateExt(v interface{}, src interface{}) {
 
 func testSetupNoop() {}
 
+// test setup with allowParallel=true
 func testSetup(t *testing.T, h *Handle) (fn func()) {
 	return testSetupWithChecks(t, h, true)
 }
 
+// test setup with allowParallel=false
 func testSetup2(t *testing.T, h *Handle) (fn func()) {
 	return testSetupWithChecks(t, h, false)
 }
 
-// testSetup will ensure testInitAll is run, and then
+// test setup will run any test init code, and then
 // return a function that should be deferred to run at the end
 // of the test.
 //
+// It explicitly will call t.Parallel() if allowParallel=true
+// and testUseParallel=true.
+//
 // This function can track how much time a test took,
 // or recover from panic's and fail the test appropriately.
-func testSetupWithChecks(t *testing.T, h *Handle, allowParallel bool) (fn func()) {
+func testSetupWithChecks(t *testing.T, _ *Handle, allowParallel bool) (fn func()) {
 	// testOnce.Do(testInitAll)
 	if allowParallel && testUseParallel {
 		t.Parallel()
@@ -1815,13 +1824,13 @@ func doTestAllErrWriter(t *testing.T, hh ...Handle) {
 	if !testRecoverPanicToErr {
 		t.Skip(testSkipIfNotRecoverPanicToErrMsg)
 	}
-	defer testSetup(t, nil)()
 	for _, h := range hh {
 		__doTestErrWriter(t, h)
 	}
 }
 
 func __doTestErrWriter(t *testing.T, h Handle) {
+	defer testSetup(t, &h)()
 	name := h.Name()
 	var ew testErrWriter
 	w := bufio.NewWriterSize(&ew, 4)
@@ -2926,14 +2935,18 @@ func doTestIntfMapping(t *testing.T, h Handle) {
 }
 
 func doTestOmitempty(t *testing.T, h Handle) {
-	defer testSetup(t, &h)()
+	defer testSetup2(t, &h)()
+	// debugf("doTestOmitempty: h: %s", hlGREEN, h.Name())
 	name := h.Name()
 	bh := testBasicHandle(h)
-	if bh.StructToArray {
-		t.Skipf("skipping OmitEmpty test when StructToArray=true")
-	}
-	defer func(b bool) { bh.SignedInteger = b }(bh.SignedInteger)
+	// if bh.StructToArray {
+	// 	t.Skipf("skipping OmitEmpty test when StructToArray=true")
+	// }
+	defer func(b1, b2 bool) {
+		bh.SignedInteger, bh.StructToArray = b1, b2
+	}(bh.SignedInteger, bh.StructToArray)
 	bh.SignedInteger = false
+	bh.StructToArray = false
 	type T1 struct {
 		A int  `codec:"a"`
 		B *int `codec:"b,omitempty"`
@@ -2945,7 +2958,12 @@ func doTestOmitempty(t *testing.T, h Handle) {
 	var v1 T1
 	var v2 T2
 	b1 := testMarshalErr(v1, h, t, name+"-omitempty")
+	// debugf("b1: %v", hlYELLOW, b1)
+
 	b2 := testMarshalErr(v2, h, t, name+"-no-omitempty-trunc")
+	// debugf("b1: %v", hlBLUE, b1)
+	// debugf("b2: %v", hlRED, b2)
+
 	testDeepEqualErr(b1, b2, t, name+"-omitempty-cmp")
 	testReleaseBytes(b1)
 	testReleaseBytes(b2)
