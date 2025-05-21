@@ -539,7 +539,7 @@ func (d *decoderBase) detach2Str(v []byte, state dBytesAttachState) (s string) {
 	// note: string([]byte) checks - and optimizes - for len 0 and len 1
 	if len(v) <= 1 {
 		s = string(v)
-	} else if state >= dBytesAttachViewZerocopy { // !scratchBuf && d.bytes && d.zeroCopy
+	} else if state >= dBytesAttachViewZerocopy { // !scratchBuf && d.bytes && d.h.ZeroCopy
 		s = stringView(v)
 	} else if d.is == nil || d.c != containerMapKey || len(v) > internMaxStrLen {
 		s = string(v)
