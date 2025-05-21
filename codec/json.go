@@ -292,6 +292,9 @@ func (e *jsonEncDriver[T]) EncodeFloat32(f float32) {
 }
 
 func jsonEncodeUint(neg, quotes bool, u uint64, b *[48]byte) []byte {
+	// MARKER: use setByteAt/byteAt to elide the bounds-checks
+	// when we are sure that we don't go beyond the bounds.
+
 	// copied mostly from std library: strconv
 	// this should only be called on 64bit OS.
 
