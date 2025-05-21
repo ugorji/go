@@ -479,7 +479,7 @@ func TestCodecSuite(t *testing.T) {
 	testGroupResetFlags()
 
 	// ---
-	fnJsonReset := func(ml int, d int8, hca, mkas bool) func() {
+	defer func(ml int, d int8, hca, mkas bool) func() {
 		return func() {
 			testMaxInitLen = ml
 			testJsonH.Indent = d
@@ -501,10 +501,8 @@ func TestCodecSuite(t *testing.T) {
 	testReinit()
 	fnRun("json-tabs-initLen10", testJsonGroup)
 
-	fnJsonReset()
-
 	// ---
-	oldSymbols := testBincH.AsSymbols
+	defer func(v uint8) { testBincH.AsSymbols = v }(testBincH.AsSymbols)
 
 	testBincH.AsSymbols = 2 // AsSymbolNone
 	testReinit()
@@ -514,9 +512,8 @@ func TestCodecSuite(t *testing.T) {
 	testReinit()
 	fnRun("binc-all-symbols", testBincGroup)
 
-	testBincH.AsSymbols = oldSymbols
-
 	// ---
+	defer func(v bool) { testSimpleH.EncZeroValuesAsNil = v }(testSimpleH.EncZeroValuesAsNil)
 	oldEncZeroValuesAsNil := testSimpleH.EncZeroValuesAsNil
 	testSimpleH.EncZeroValuesAsNil = !testSimpleH.EncZeroValuesAsNil
 	testReinit()
@@ -524,6 +521,8 @@ func TestCodecSuite(t *testing.T) {
 	testSimpleH.EncZeroValuesAsNil = oldEncZeroValuesAsNil
 
 	// ---
+	defer func(j int, b bool) { testUseIoEncDec, testRPCOptions.RPCNoBuffer = j, b }(testUseIoEncDec, testRPCOptions.RPCNoBuffer)
+
 	testUseIoEncDec = 16
 	testRPCOptions.RPCNoBuffer = false
 	testReinit()
