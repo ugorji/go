@@ -88,7 +88,7 @@ func benchmarkSuite(t *testing.B, fns ...func(t *testing.B)) {
 
 	testUseIoEncDec = 1024
 	testReinit()
-	t.Run("use-bufio-!bytes", f)
+	t.Run("use-bufio-1024..", f)
 
 	benchmarkGroupReset()
 
