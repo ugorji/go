@@ -668,7 +668,7 @@ func (d *cborDecDriver[T]) decodeTime(xtag uint64) (t time.Time) {
 	switch xtag {
 	case 0:
 		var err error
-		t, err = time.Parse(time.RFC3339, stringView(bytesOk(d.DecodeStringAsBytes())))
+		t, err = time.Parse(time.RFC3339, stringView(bytesOKs(d.DecodeStringAsBytes())))
 		halt.onerror(err)
 	case 1:
 		f1, f2 := math.Modf(d.DecodeFloat64())

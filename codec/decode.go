@@ -614,7 +614,7 @@ func (d *decoder[T]) binaryUnmarshal(_ *decFnInfo, rv reflect.Value) {
 
 func (d *decoder[T]) textUnmarshal(_ *decFnInfo, rv reflect.Value) {
 	tm := rv2i(rv).(encoding.TextUnmarshaler)
-	fnerr := tm.UnmarshalText(bytesOk(d.d.DecodeStringAsBytes()))
+	fnerr := tm.UnmarshalText(bytesOKs(d.d.DecodeStringAsBytes()))
 	halt.onerror(fnerr)
 }
 
