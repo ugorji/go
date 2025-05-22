@@ -167,29 +167,27 @@ func (z *ioDecReader) numread() uint {
 	return z.n
 }
 
-func (z *ioDecReader) readn2() (bs [2]byte) {
-	z.readb(bs[:])
-	return
+func (z *ioDecReader) readn2() [2]byte {
+	return ([2]byte)(z.readx(2))
+	// using readb forced return bs onto heap, unnecessarily
+	// z.readb(bs[:])
+	// return
 }
 
-func (z *ioDecReader) readn3() (bs [3]byte) {
-	z.readb(bs[:])
-	return
+func (z *ioDecReader) readn3() [3]byte {
+	return ([3]byte)(z.readx(3))
 }
 
-func (z *ioDecReader) readn4() (bs [4]byte) {
-	z.readb(bs[:])
-	return
+func (z *ioDecReader) readn4() [4]byte {
+	return ([4]byte)(z.readx(4))
 }
 
-func (z *ioDecReader) readn8() (bs [8]byte) {
-	z.readb(bs[:])
-	return
+func (z *ioDecReader) readn8() [8]byte {
+	return ([8]byte)(z.readx(8))
 }
 
 func (z *ioDecReader) readx(n uint) (bs []byte) {
-	bs, _ = z.readxb(n)
-	return
+	return bytesOK(z.readxb(n))
 }
 
 func (z *ioDecReader) readErr() (err error) {
@@ -216,7 +214,6 @@ func (z *ioDecReader) fillbuf(bufsize uint) (numShift, numRead uint) {
 	bufsize = max(bufsize, z.bufsize)
 
 	// Slide existing data to beginning.
-	const inflight = true // always true, so just always use this check
 	if z.recording {
 		numShift = z.recc // recc is always <= rc
 	} else {
@@ -233,18 +230,18 @@ func (z *ioDecReader) fillbuf(bufsize uint) (numShift, numRead uint) {
 	}
 	// add enough to allow u to read up to bufsize again iff
 	// - buf is fully written
-	// - inflight and < 50% bufsize available for writing into buffer
-	if cap(z.buf) > len(z.buf) {
-		z.buf = z.buf[:cap(z.buf)]
-	}
-
-	if uint(len(z.buf)) == z.wc ||
-		(inflight && (uint(len(z.buf))-z.wc) < (bufsize/2)) {
-		buf := z.blist.get(int(bufsize + z.wc))
-		buf = buf[:cap(buf)] // make([]byte, bufsize+z.wc)
-		copy(buf, z.buf[:z.wc])
-		z.blist.put(z.buf)
-		z.buf = buf
+	// - NOTE: don't pre-allocate more until needed
+	if uint(len(z.buf)) == z.wc {
+		if bufsize+z.wc < uint(cap(z.buf)) {
+			z.buf = z.buf[:uint(cap(z.buf))]
+		} else {
+			bufsize = max(uint(cap(z.buf)*3/2), bufsize+z.wc)
+			buf := z.blist.get(int(bufsize))
+			buf = buf[:cap(buf)]
+			copy(buf, z.buf[:z.wc])
+			z.blist.put(z.buf)
+			z.buf = buf
+		}
 	}
 	// Read new data: try a limited number of times.
 	// if n == 0: try up to maxConsecutiveEmptyReads
