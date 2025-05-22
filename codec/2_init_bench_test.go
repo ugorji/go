@@ -84,28 +84,37 @@ func benchInit() {
 	// if bytesLen < approxSize {
 	// 	bytesLen = approxSize
 	// }
-	if !testBenchmarkNoConfig {
-		// benchmark comparisons use zerocopy (easyjson, json-iterator, etc).
-		// use zerocopy for the benchmarks, for best performance, and better comparison to others.
-		testJsonH.ZeroCopy = true
-		testCborH.ZeroCopy = true
-		testMsgpackH.ZeroCopy = true
-		testSimpleH.ZeroCopy = true
-		testBincH.ZeroCopy = true
-
-		// std-lib encoging/json does the following, which we will do for codec in these benchmarks.
-		// - sets into a map without getting what's there first.
-		// - sets into an interface value regardless of what was in there
-		// - sets slice to zero len first, then appends (equivalent to ignoring slice contents)
-
-		testJsonH.MapValueReset = true
-		testJsonH.InterfaceReset = true
-		testJsonH.SliceElementReset = true
-	}
+	benchUpdateHandles()
 }
 
 func benchReinit() {
-	benchCheckers = nil
+	benchUpdateHandles()
+}
+
+func benchUpdateHandles() {
+	// benchCheckers = nil
+	if testBenchmarkNoConfig {
+		return
+	}
+
+	// benchmark comparisons use zerocopy (easyjson, json-iterator, etc).
+	// use zerocopy for the benchmarks, for best performance, and better comparison to others.
+	testJsonH.ZeroCopy = true
+	testCborH.ZeroCopy = true
+	testMsgpackH.ZeroCopy = true
+	testSimpleH.ZeroCopy = true
+	testBincH.ZeroCopy = true
+
+	// std-lib encoging/json does the following, which we will do for codec in these benchmarks.
+	// - sets into a map without getting what's there first.
+	// - sets into an interface value regardless of what was in there
+	// - sets slice to zero len first, then appends (equivalent to ignoring slice contents)
+
+	testJsonH.MapValueReset = true
+	testJsonH.InterfaceReset = true
+	testJsonH.SliceElementReset = true
+
+	testMsgpackH.WriteExt = true
 }
 
 func benchmarkDivider() {
