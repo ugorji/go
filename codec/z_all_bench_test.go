@@ -14,38 +14,10 @@ import (
 )
 
 func init() {
-	testPostInitFns = append(testPostInitFns, benchmarkGroupInitAll)
+	// testPostInitFns = append(testPostInitFns, benchmarkGroupInitAll)
 }
 
-// var benchmarkGroupOnce sync.Once
-
-var benchmarkGroupSave struct {
-	testUseIoEncDec int
-	testUseReset    bool
-
-	testDepth            int
-	testMapStringKeyOnly bool
-	testZeroCopy         bool
-}
-
-func benchmarkGroupInitAll() {
-	// testInitAll() // calls flag.Parse
-	benchmarkGroupSave.testUseIoEncDec = testUseIoEncDec
-	benchmarkGroupSave.testUseReset = testUseReset
-
-	benchmarkGroupSave.testDepth = testDepth
-	benchmarkGroupSave.testMapStringKeyOnly = testMapStringKeyOnly
-	benchmarkGroupSave.testZeroCopy = testZeroCopy
-}
-
-func benchmarkGroupReset() {
-	testUseIoEncDec = benchmarkGroupSave.testUseIoEncDec
-	testUseReset = benchmarkGroupSave.testUseReset
-
-	testDepth = benchmarkGroupSave.testDepth
-	testMapStringKeyOnly = benchmarkGroupSave.testMapStringKeyOnly
-	testZeroCopy = benchmarkGroupSave.testZeroCopy
-}
+// func benchmarkGroupInitAll() {}
 
 func benchmarkOneFn(fns []func(*testing.B)) func(*testing.B) {
 	switch len(fns) {
@@ -63,7 +35,6 @@ func benchmarkOneFn(fns []func(*testing.B)) func(*testing.B) {
 }
 
 func benchmarkSuiteNoop(b *testing.B) {
-	// testOnce.Do(testInitAll)
 	// b.ResetTimer()
 	// for i := 0; i < b.N; i++ {
 	for b.Loop() {
@@ -72,50 +43,35 @@ func benchmarkSuiteNoop(b *testing.B) {
 }
 
 func benchmarkSuite(t *testing.B, fns ...func(t *testing.B)) {
-	// benchmarkGroupOnce.Do(benchmarkGroupInitAll)
+	defer func(v int) { testUseIoEncDec = v }(testUseIoEncDec)
 
 	f := benchmarkOneFn(fns)
 	// find . -name "*_test.go" | xargs grep -e 'flag.' | cut -d '&' -f 2 | cut -d ',' -f 1 | grep -e '^bench'
 
 	testReinit()
 
-	benchmarkGroupReset()
-	testUseIoEncDec = -1
-	testUseReset = false
-	testReinit()
-	t.Run("use-bytes........", f)
-
-	benchmarkGroupReset()
-	testUseReset = true
 	testUseIoEncDec = -1
 	testReinit()
-	t.Run("use-bytes-reset..", f)
+	t.Run("use-bytes.......", f)
 
-	benchmarkGroupReset()
 	testUseIoEncDec = 1024
-	testUseReset = false
 	testReinit()
-	t.Run("use-io-1024-reset", f)
-
-	benchmarkGroupReset()
+	t.Run("use-io-1024-....", f)
 }
 
 func benchmarkVeryQuickSuite(t *testing.B, name string, fns ...func(t *testing.B)) {
+	defer func(v int) { testUseIoEncDec = v }(testUseIoEncDec)
 	benchmarkDivider()
-	// benchmarkGroupOnce.Do(benchmarkGroupInitAll)
-	benchmarkGroupReset()
-
-	// bd=1 2 | ti=-1, 1024 |
 
 	testUseIoEncDec = -1
 	// testDepth = depth
 	testReinit()
 
 	t.Run(name+"-bd"+strconv.Itoa(testDepth)+"........", benchmarkOneFn(fns))
-	benchmarkGroupReset()
 }
 
 func benchmarkQuickSuite(t *testing.B, name string, fns ...func(t *testing.B)) {
+	defer func(v int) { testUseIoEncDec = v }(testUseIoEncDec)
 	benchmarkVeryQuickSuite(t, name, fns...)
 
 	// encoded size of TestStruc is between 20K and 30K for bd=1 // consider buffer=1024 * 16 * testDepth
@@ -128,8 +84,6 @@ func benchmarkQuickSuite(t *testing.B, name string, fns ...func(t *testing.B)) {
 	// testDepth = depth
 	testReinit()
 	t.Run(name+"-bd"+strconv.Itoa(testDepth)+"-io.....", benchmarkOneFn(fns))
-
-	benchmarkGroupReset()
 }
 
 /*
