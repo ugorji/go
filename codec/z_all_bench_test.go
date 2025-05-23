@@ -80,21 +80,22 @@ func benchmarkSuite(t *testing.B, fns ...func(t *testing.B)) {
 	testReinit()
 
 	benchmarkGroupReset()
-
+	testUseIoEncDec = -1
+	testUseReset = false
 	testReinit()
-	t.Run("options-false...", f)
+	t.Run("use-bytes........", f)
 
 	benchmarkGroupReset()
-
-	testUseIoEncDec = 1024
-	testReinit()
-	t.Run("use-bufio-1024..", f)
-
-	benchmarkGroupReset()
-
 	testUseReset = true
+	testUseIoEncDec = -1
 	testReinit()
-	t.Run("reset-enc-dec...", f)
+	t.Run("use-bytes-reset..", f)
+
+	benchmarkGroupReset()
+	testUseIoEncDec = 1024
+	testUseReset = false
+	testReinit()
+	t.Run("use-io-1024-reset", f)
 
 	benchmarkGroupReset()
 }
