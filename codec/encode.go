@@ -1427,39 +1427,48 @@ func (e *encoder[T]) encode(iv interface{}) {
 	// MARKER: a switch with only concrete types can be optimized.
 	// consequently, we deal with nil and interfaces outside the switch.
 
-	if isNil(iv) {
+	if isNil(iv) { // fast isNil check (e.g. for nil intf or nil pointers)
 		e.e.EncodeNil()
 		return
 	}
 
-	// for performance, we will ensure that only non-pointers are
-	// handled within this block.
-	// - if any pointer, dereference is
-	// - if any nil value, handle it
+	// per convention, callbacks expect non-nil values. Thus, we MUST handle:
+	// - any pointer: dereference is
+	// - any nil value: handle it
+	// - then seek and delegate to appropriate callback
 
+	var ciPushes int
 	rv := reflect.ValueOf(iv)
-TOP:
-	if isnilBitset.isset(byte(rv.Kind())) {
-		if rv.Kind() == reflect.Ptr {
-			rv = rv.Elem()
-			iv = rv2i(rv)
-			goto TOP
-		}
-		if rvIsNil(rv) {
-			if e.h.NilCollectionToZeroLength {
-				switch rv.Kind() {
-				case reflect.Slice, reflect.Chan:
-					// if !f.ti.mbs {
-					e.e.WriteArrayEmpty()
-					return
-				case reflect.Map:
-					e.e.WriteMapEmpty()
-					return
-				}
-			}
+	rvk := rv.Kind()
+	for rvk == reflect.Ptr || rvk == reflect.Interface {
+		isptr := rvk == reflect.Ptr
+		rv = rv.Elem()
+		rvk = rv.Kind()
+		if rvk == reflect.Invalid { // eg a nil pointer e.g. (*int)(nil)
 			e.e.EncodeNil()
 			return
 		}
+		if isptr && e.h.CheckCircularRef && e.ci.canPushElemKind(rvk) {
+			e.ci.push(iv) // parent rv's interface
+			ciPushes++
+		}
+		iv = rv2i(rv)
+	}
+
+	if isnilBitset.isset(byte(rvk)) && rvIsNil(rv) {
+		if e.h.NilCollectionToZeroLength {
+			switch rvk {
+			case reflect.Slice, reflect.Chan:
+				// if !f.ti.mbs {
+				e.e.WriteArrayEmpty()
+				return
+			case reflect.Map:
+				e.e.WriteMapEmpty()
+				return
+			}
+		}
+		e.e.EncodeNil()
+		return
 	}
 
 	switch v := iv.(type) {
@@ -1511,8 +1520,11 @@ TOP:
 	default:
 		// we can't check non-predefined types, as they might be a Selfer or extension.
 		if skipFastpathTypeSwitchInDirectCall || !e.dh.fastpathEncodeTypeSwitch(iv, e) {
-			e.encodeValue(rv, nil)
+			e.encodeValueNonNil(rv, e.fn(rv.Type()))
 		}
+	}
+	if ciPushes > 0 {
+		e.ci.pop(ciPushes)
 	}
 }
 
@@ -1526,9 +1538,9 @@ func (e *encoder[T]) encodeValue(rv reflect.Value, fn *encFn[T]) {
 	// MARKER: We check if value is nil here, so that the kXXX method do not have to.
 
 	var ciPushes int
-	if e.h.CheckCircularRef {
-		ciPushes = e.ci.pushRV(rv)
-	}
+	// if e.h.CheckCircularRef {
+	// 	ciPushes = e.ci.pushRV(rv)
+	// }
 
 	var rvp reflect.Value
 	var rvpValid bool
@@ -1539,9 +1551,14 @@ TOP:
 			e.e.EncodeNil()
 			goto END
 		}
+
 		rvpValid = true
 		rvp = rv
 		rv = rv.Elem()
+		if e.h.CheckCircularRef && e.ci.canPushElemKind(rv.Kind()) {
+			e.ci.push(rv2i(rvp))
+			ciPushes++
+		}
 		goto TOP
 	case reflect.Interface:
 		if rvIsNil(rv) {

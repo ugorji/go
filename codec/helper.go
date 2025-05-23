@@ -516,22 +516,31 @@ func (ci *circularRefChecker) push(v interface{}) {
 	*ci = append(*ci, v)
 }
 
-func (ci *circularRefChecker) pushRV(v reflect.Value) (num int) {
-	// only push comparable values if a pointer to a container (struct, slice, array, map)
-
-TOP:
-	if v.Kind() == reflect.Pointer {
-		switch v.Type().Elem().Kind() {
-		case reflect.Struct, reflect.Slice, reflect.Array, reflect.Map:
-			ci.push(rv2i(v))
-			num++
-		case reflect.Pointer:
-			v = v.Elem()
-			goto TOP
-		}
+func (_ *circularRefChecker) canPushElemKind(elemKind reflect.Kind) bool {
+	switch elemKind {
+	case reflect.Struct, reflect.Slice, reflect.Array, reflect.Map:
+		return true
 	}
-	return
+	return false
 }
+
+// // pushRV expects to get a Pointer value, and pushes it on
+// func (ci *circularRefChecker) pushRV(v reflect.Value) (num int) {
+// 	// only push comparable values if a pointer to a container
+// 	// - (struct, slice, array, map)
+// TOP:
+// 	switch v.Type().Elem().Kind() {
+// 	case reflect.Struct, reflect.Slice, reflect.Array, reflect.Map:
+// 		ci.push(rv2i(v))
+// 		num++
+// 	case reflect.Pointer:
+// 		v = v.Elem()
+// 		if v.Kind() == reflect.Pointer {
+// 			goto TOP
+// 		}
+// 	}
+// 	return
+// }
 
 func (ci *circularRefChecker) pop(num int) {
 	*ci = (*ci)[:len(*ci)-num]
