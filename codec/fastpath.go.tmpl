@@ -188,12 +188,24 @@ func (helperEncDriver[T]) fastpathEncodeTypeSwitch(iv interface{}, e *encoder[T]
 	switch v := iv.(type) {
 		{{range .Values}}{{if not .Primitive}}{{if not .MapKey -}}
 	case []{{ .Elem }}:
-		ft.{{ .MethodNamePfx "Enc" false }}V(v, e)
+		if v != nil {
+			ft.{{ .MethodNamePfx "Enc" false }}V(v, e)
+		} else if e.h.NilCollectionToZeroLength {
+			e.e.WriteArrayEmpty()
+		} else {
+			e.e.EncodeNil()
+		}
 {{end}}{{end}}{{end -}}
 
 {{range .Values}}{{if not .Primitive}}{{if .MapKey -}}
 	case map[{{ .MapKey }}]{{ .Elem }}:
-		ft.{{ .MethodNamePfx "Enc" false }}V(v, e)
+		if v != nil {
+			ft.{{ .MethodNamePfx "Enc" false }}V(v, e)
+		} else if e.h.NilCollectionToZeroLength {
+			e.e.WriteMapEmpty()
+		} else {
+			e.e.EncodeNil()
+		}
 {{end}}{{end}}{{end -}}
 
 	default:
@@ -416,8 +428,9 @@ func (fastpathDT[T]) {{ .MethodNamePfx "Dec" false }}Y(v []{{ .Elem }}, d *decod
 	}
 	{{ if eq .Elem "uint8" "byte" -}}
 	if ctyp != valueTypeMap {
-		v2 = d.decodeBytesInto(v[:len(v):len(v)])
-		return v2, !(len(v2) > 0 && len(v2) == len(v) && &v2[0] == &v[0]) // not same slice
+		var dbi dBytesIntoState
+		v2, dbi = d.decodeBytesInto(v[:len(v):len(v)], false)
+		return v2, dbi != dBytesIntoParamOut
 	}
 	containerLenS := d.mapStart(d.d.ReadMapStart()) * 2
 	{{ else -}}
@@ -477,10 +490,7 @@ func (fastpathDT[T]) {{ .MethodNamePfx "Dec" false }}N(v []{{ .Elem }}, d *decod
 	}
 	{{ if eq .Elem "uint8" "byte" -}}
 	if ctyp != valueTypeMap {
-		v2 := d.decodeBytesInto(v[:len(v):len(v)])
-		if !(len(v2) > 0 && len(v2) == len(v) && &v2[0] == &v[0]) { // not same slice
-			copy(v, v2)
-		}
+		d.decodeBytesInto(v[:len(v):len(v)], true)
 		return
 	}
 	containerLenS := d.mapStart(d.d.ReadMapStart()) * 2
@@ -571,7 +581,7 @@ func (fastpathDT[T]) {{ .MethodNamePfx "Dec" false }}L(v map[{{ .MapKey }}]{{ .E
 		d.decode(&mv)
 		v[mk] = mv
 		{{ else if eq .Elem "[]byte" "bytes" -}}
-		v[mk] = d.decodeBytesInto(mv)
+		v[mk], _ = d.decodeBytesInto(mv, false)
 		{{ else -}}
 		v[mk] = {{ decmd .Elem false }}
 		{{ end -}}

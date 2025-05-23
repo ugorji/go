@@ -2632,10 +2632,6 @@ func implIntf(rt, iTyp reflect.Type) (base bool, indir bool) {
 	return
 }
 
-func bytesOKs(bs []byte, _ dBytesAttachState) []byte {
-	return bs
-}
-
 func bytesOK(bs []byte, _ bool) []byte {
 	return bs
 }

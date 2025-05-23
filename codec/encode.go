@@ -1427,46 +1427,8 @@ func (e *encoder[T]) encode(iv interface{}) {
 	// MARKER: a switch with only concrete types can be optimized.
 	// consequently, we deal with nil and interfaces outside the switch.
 
-	if isNil(iv) { // fast isNil check (e.g. for nil intf or nil pointers)
-		e.e.EncodeNil()
-		return
-	}
-
-	// per convention, callbacks expect non-nil values. Thus, we MUST handle:
-	// - any pointer: dereference is
-	// - any nil value: handle it
-	// - then seek and delegate to appropriate callback
-
-	var ciPushes int
-	rv := reflect.ValueOf(iv)
-	rvk := rv.Kind()
-	for rvk == reflect.Ptr || rvk == reflect.Interface {
-		isptr := rvk == reflect.Ptr
-		rv = rv.Elem()
-		rvk = rv.Kind()
-		if rvk == reflect.Invalid { // eg a nil pointer e.g. (*int)(nil)
-			e.e.EncodeNil()
-			return
-		}
-		if isptr && e.h.CheckCircularRef && e.ci.canPushElemKind(rvk) {
-			e.ci.push(iv) // parent rv's interface
-			ciPushes++
-		}
-		iv = rv2i(rv)
-	}
-
-	if isnilBitset.isset(byte(rvk)) && rvIsNil(rv) {
-		if e.h.NilCollectionToZeroLength {
-			switch rvk {
-			case reflect.Slice, reflect.Chan:
-				// if !f.ti.mbs {
-				e.e.WriteArrayEmpty()
-				return
-			case reflect.Map:
-				e.e.WriteMapEmpty()
-				return
-			}
-		}
+	rv, isnil := isNil(iv, true)
+	if isnil { // fast isNil check (e.g. for nil intf or nil pointers)
 		e.e.EncodeNil()
 		return
 	}
@@ -1516,15 +1478,21 @@ func (e *encoder[T]) encode(iv interface{}) {
 	case time.Time:
 		e.e.EncodeTime(v)
 	case []byte:
-		e.e.EncodeStringBytesRaw(v)
+		if v != nil {
+			e.e.EncodeStringBytesRaw(v)
+		} else if e.h.NilCollectionToZeroLength {
+			e.e.WriteArrayEmpty()
+		} else {
+			e.e.EncodeNil()
+		}
 	default:
 		// we can't check non-predefined types, as they might be a Selfer or extension.
 		if skipFastpathTypeSwitchInDirectCall || !e.dh.fastpathEncodeTypeSwitch(iv, e) {
-			e.encodeValueNonNil(rv, e.fn(rv.Type()))
+			if !rv.IsValid() {
+				rv = reflect.ValueOf(iv)
+			}
+			e.encodeValue(rv, nil)
 		}
-	}
-	if ciPushes > 0 {
-		e.ci.pop(ciPushes)
 	}
 }
 

@@ -220,7 +220,7 @@ func genTmplDecCommandAsString(s string, mapkey bool) string {
 		return "d.detach2Str(d.d.DecodeStringAsBytes())"
 	case "[]byte", "[]uint8", "bytes":
 		// return "bytesOk(d.d.DecodeBytes())"
-		return "d.decodeBytesInto(v[uint(j)])"
+		return "bytesOKdbi(d.decodeBytesInto(v[uint(j)], false))"
 	case "float32":
 		return "float32(d.d.DecodeFloat32())"
 	case "float64":
@@ -232,7 +232,7 @@ func genTmplDecCommandAsString(s string, mapkey bool) string {
 	case "bool":
 		return "d.d.DecodeBool()"
 	default:
-		halt.onerror(errors.New("gen internal: unknown type for decode: " + s))
+		halt.error(errors.New("gen internal: unknown type for decode: " + s))
 	}
 	return ""
 }
@@ -538,7 +538,7 @@ func genTmplSortType(s string, elem bool) string {
 			return v + "Slice"
 		}
 	}
-	halt.onerror(errors.New("sorttype: unexpected type: " + s))
+	halt.error(errors.New("sorttype: unexpected type: " + s))
 }
 
 func genStripVendor(s string) string {
@@ -779,7 +779,7 @@ func (x *genRunner) newFastpathGenV(t reflect.Type) (v genFastpathV) {
 		v.MapKey = x.genTypeName(tk)
 		v.Size = int(te.Size() + tk.Size())
 	default:
-		halt.onerror(errGenUnexpectedTypeFastpath)
+		halt.error(errGenUnexpectedTypeFastpath)
 	}
 	return
 }

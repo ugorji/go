@@ -65,6 +65,15 @@ const (
 	dBytesDetach                               // (!bytes && !buf)
 )
 
+type dBytesIntoState uint8
+
+const (
+	dBytesIntoNoChange dBytesIntoState = iota
+	dBytesIntoParamOut
+	dBytesIntoParamOutSlice
+	dBytesIntoNew
+)
+
 func (x dBytesAttachState) String() string {
 	switch x {
 	case dBytesAttachInvalid:
@@ -523,7 +532,7 @@ func (d *decoderBase) fauxUnionReadRawBytes(dr decDriverI, asString, rawToString
 		d.n.s = d.detach2Str(d.n.l, d.n.a)
 	} else {
 		d.n.v = valueTypeBytes
-		d.n.l = d.detach2Bytes(d.n.l, nil, d.n.a)
+		d.n.l = d.detach2Bytes(d.n.l, d.n.a)
 	}
 }
 
@@ -549,18 +558,29 @@ func (d *decoderBase) detach2Str(v []byte, state dBytesAttachState) (s string) {
 	return
 }
 
-func (d *decoderBase) detach2Bytes(in, out []byte, state dBytesAttachState) []byte {
+func (d *decoderBase) tmpCopyBytes(in []byte) (out []byte) {
+	if len(d.b) > len(in) {
+		out = d.b[:len(in)]
+	} else {
+		out = make([]byte, len(in))
+	}
+	copy(out, in)
+	return
+}
+
+func (d *decoderBase) detach2Bytes(in []byte, state dBytesAttachState) (out []byte) {
 	if cap(in) == 0 || state >= dBytesAttachViewZerocopy {
 		return in
 	}
 	if len(in) == 0 {
 		return zeroByteSlice
 	}
-	if cap(out) >= len(in) {
-		out = out[:len(in)]
-	} else {
-		out = make([]byte, len(in))
-	}
+	out = make([]byte, len(in))
+	// if cap(out) >= len(in) {
+	// 	out = out[:len(in)]
+	// } else {
+	// 	out = make([]byte, len(in))
+	// }
 	copy(out, in)
 	return out
 }
@@ -936,8 +956,8 @@ func (d *decoder[T]) kStructSimple(f *decFnInfo, rv reflect.Value) {
 			// Note: ioDecReader (non-bufio) and bytesDecReader do not have
 			// this issue (as no fillbuf exists where bytes might be returned from).
 
-			if d.bufio && d.h.jsonHandle {
-				rvkencname = d.detach2Bytes(rvkencname, d.b[:], att)
+			if d.bufio && d.h.jsonHandle && att < dBytesAttachViewZerocopy {
+				rvkencname = d.tmpCopyBytes(rvkencname)
 			}
 			d.mapElemValue()
 			if si := ti.siForEncName(rvkencname); si != nil {
@@ -1003,8 +1023,8 @@ func (d *decoder[T]) kStruct(f *decFnInfo, rv reflect.Value) {
 			if tkt == valueTypeString {
 				rvkencname, att = d.d.DecodeStringAsBytes()
 				// In JSON, mapElemValue reads a colon and spaces, which could overwrite read buffer.
-				if d.bufio && d.h.jsonHandle {
-					rvkencname = d.detach2Bytes(rvkencname, d.b[:], att)
+				if d.bufio && d.h.jsonHandle && att < dBytesAttachViewZerocopy {
+					rvkencname = d.tmpCopyBytes(rvkencname)
 				}
 			} else if tkt == valueTypeInt {
 				rvkencname = strconv.AppendInt(d.b[:0], d.d.DecodeInt64(), 10)
@@ -1078,18 +1098,14 @@ func (d *decoder[T]) kSlice(f *decFnInfo, rv reflect.Value) {
 			halt.errorf("bytes/string in stream must decode into slice/array of bytes, not %v", ti.rt)
 		}
 		rvbs := rvGetBytes(rv)
-		if !rvCanset {
-			// not addressable byte slice, so do not decode into it past the length
-			rvbs = rvbs[:len(rvbs):len(rvbs)]
-		}
-		bs2 := d.decodeBytesInto(rvbs)
-		// if !(len(bs2) == len(rvbs) && byteSliceSameData(rvbs, bs2)) {
-		if !(len(bs2) > 0 && len(bs2) == len(rvbs) && &bs2[0] == &rvbs[0]) {
-			if rvCanset {
+		if rvCanset {
+			bs2, bst := d.decodeBytesInto(rvbs, false)
+			if bst != dBytesIntoParamOut {
 				rvSetBytes(rv, bs2)
-			} else if len(rvbs) > 0 && len(bs2) > 0 {
-				copy(rvbs, bs2)
 			}
+		} else {
+			// not addressable byte slice, so do not decode into it past the length
+			d.decodeBytesInto(rvbs[:len(rvbs):len(rvbs)], true)
 		}
 		return
 	}
@@ -1295,10 +1311,7 @@ func (d *decoder[T]) kArray(f *decFnInfo, rv reflect.Value) {
 			halt.errorf("bytes/string in stream can decode into array of bytes, but not %v", ti.rt)
 		}
 		rvbs := rvGetArrayBytes(rv, nil)
-		bs2 := d.decodeBytesInto(rvbs)
-		if !byteSliceSameData(rvbs, bs2) && len(rvbs) > 0 && len(bs2) > 0 {
-			copy(rvbs, bs2)
-		}
+		d.decodeBytesInto(rvbs, true)
 		return
 	}
 
@@ -2063,10 +2076,13 @@ func (d *decoder[T]) nextValueBytes() []byte {
 // }
 
 func setZero(iv interface{}) {
-	if isNil(iv) {
+	rv, isnil := isNil(iv, true)
+	if isnil {
 		return
 	}
-	rv := reflect.ValueOf(iv)
+	if !rv.IsValid() {
+		rv = reflect.ValueOf(iv)
+	}
 	if isnilBitset.isset(byte(rv.Kind())) && rvIsNil(rv) {
 		return
 	}
@@ -2162,18 +2178,14 @@ func (d *decoder[T]) decode(iv interface{}) {
 	// a switch with only concrete types can be optimized.
 	// consequently, we deal with nil and interfaces outside the switch.
 
-	if iv == nil {
+	rv, ok := isNil(iv, true) // handle nil pointers also
+	if ok {
 		halt.onerror(errCannotDecodeIntoNil)
 	}
 
 	switch v := iv.(type) {
 	// case nil:
 	// case Selfer:
-	case reflect.Value:
-		if x, _ := isDecodeable(v); !x {
-			d.haltAsNotDecodeable(v)
-		}
-		d.decodeValue(v, nil)
 	case *string:
 		*v = d.detach2Str(d.d.DecodeStringAsBytes())
 	case *bool:
@@ -2209,13 +2221,10 @@ func (d *decoder[T]) decode(iv interface{}) {
 	case *complex128:
 		*v = complex(d.d.DecodeFloat64(), 0)
 	case *[]byte:
-		*v = d.decodeBytesInto(*v)
+		*v, _ = d.decodeBytesInto(*v, false)
 	case []byte:
 		// not addressable byte slice, so do not decode into it past the length
-		b := d.decodeBytesInto(v[:len(v):len(v)])
-		if !(len(b) > 0 && len(b) == len(v) && &b[0] == &v[0]) { // not same slice
-			copy(v, b)
-		}
+		d.decodeBytesInto(v[:len(v):len(v)], true)
 	case *time.Time:
 		*v = d.d.DecodeTime()
 	case *Raw:
@@ -2224,14 +2233,22 @@ func (d *decoder[T]) decode(iv interface{}) {
 	case *interface{}:
 		d.decodeValue(rv4iptr(v), nil)
 
+	case reflect.Value:
+		if ok, _ = isDecodeable(v); !ok {
+			d.haltAsNotDecodeable(v)
+		}
+		d.decodeValue(v, nil)
+
 	default:
 		// we can't check non-predefined types, as they might be a Selfer or extension.
 		if skipFastpathTypeSwitchInDirectCall || !d.dh.fastpathDecodeTypeSwitch(iv, d) {
-			v := reflect.ValueOf(iv)
-			if x, _ := isDecodeable(v); !x {
-				d.haltAsNotDecodeable(v)
+			if !rv.IsValid() {
+				rv = reflect.ValueOf(iv)
 			}
-			d.decodeValue(v, nil)
+			if ok, _ = isDecodeable(rv); !ok {
+				d.haltAsNotDecodeable(rv)
+			}
+			d.decodeValue(rv, nil)
 		}
 	}
 }
@@ -2341,9 +2358,31 @@ func (d *decoderBase) depthDecr() {
 // decodeBytesInto is a convenience delegate function to decDriver.DecodeBytes.
 // It ensures that `in` is not a nil byte, before calling decDriver.DecodeBytes,
 // as decDriver.DecodeBytes treats a nil as a hint to use its internal scratch buffer.
-func (d *decoder[T]) decodeBytesInto(in []byte) (v []byte) {
+func (d *decoder[T]) decodeBytesInto(out []byte, mustFit bool) (v []byte, state dBytesIntoState) {
 	v, att := d.d.DecodeBytes()
-	return d.detach2Bytes(v, in, att)
+	if cap(v) == 0 || (att >= dBytesAttachViewZerocopy && !mustFit) {
+		// no need to detach (since mustFit=false)
+		// including v has no capacity (covers v == nil and []byte{})
+		return
+	}
+	if len(v) == 0 {
+		v = zeroByteSlice // cannot be re-sliced/appended to
+		return
+	}
+	if len(out) == len(v) {
+		state = dBytesIntoParamOut
+	} else if cap(out) >= len(v) {
+		out = out[:len(v)]
+		state = dBytesIntoParamOutSlice
+	} else if mustFit {
+		halt.errorf("bytes capacity insufficient for decoded bytes: got/expected: %d/%d", len(v), len(out))
+	} else {
+		out = make([]byte, len(v))
+		state = dBytesIntoNew
+	}
+	copy(out, v)
+	v = out
+	return
 }
 
 func (d *decoder[T]) rawBytes() (v []byte) {
@@ -2948,6 +2987,14 @@ func oneOffDecode(sd decoderI, v interface{}, in []byte, basetype reflect.Type, 
 	sd.decodeAs(v, basetype, ext)
 	// d.sideDecoder(xbs)
 	// d.sideDecode(rv, basetype)
+}
+
+func bytesOKdbi(v []byte, _ dBytesIntoState) []byte {
+	return v
+}
+
+func bytesOKs(bs []byte, _ dBytesAttachState) []byte {
+	return bs
 }
 
 // ----

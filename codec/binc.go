@@ -794,7 +794,7 @@ func (d *bincDecDriver[T]) DecodeStringAsBytes() (bs []byte, state dBytesAttachS
 			// As we are using symbols, do not store any part of
 			// the parameter bs in the map, as it might be a shared buffer.
 			bs, cond = d.r.readxb(uint(slen))
-			bs = d.d.detach2Bytes(bs, nil, d.d.attachState(cond))
+			bs = d.d.detach2Bytes(bs, d.d.attachState(cond))
 			d.s[symbol] = bs
 		}
 		state = dBytesDetach

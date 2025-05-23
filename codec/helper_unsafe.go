@@ -243,10 +243,12 @@ func byteSliceSameData(v1 []byte, v2 []byte) bool {
 	return (*unsafeSlice)(unsafe.Pointer(&v1)).Data == (*unsafeSlice)(unsafe.Pointer(&v2)).Data
 }
 
-// isNil checks whether, without much effort, it can quickly check
-// if an interface is nil
-func isNil(v interface{}) bool {
-	return ((*unsafeIntf)(unsafe.Pointer(&v))).ptr == nil
+// isNil checks - without much effort - if an interface is nil.
+//
+// returned rv is not guaranteed to be valid (e.g. if v == nil)
+func isNil(v interface{}, checkPtr bool) (rv reflect.Value, b bool) {
+	b = ((*unsafeIntf)(unsafe.Pointer(&v))).ptr == nil
+	return
 }
 
 func ptrToLowLevel[T any](ptr *T) unsafe.Pointer {
