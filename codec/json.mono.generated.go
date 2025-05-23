@@ -1454,7 +1454,7 @@ func (d *decoderJsonBytes) binaryUnmarshal(_ *decFnInfo, rv reflect.Value) {
 
 func (d *decoderJsonBytes) textUnmarshal(_ *decFnInfo, rv reflect.Value) {
 	tm := rv2i(rv).(encoding.TextUnmarshaler)
-	fnerr := tm.UnmarshalText(bytesOk(d.d.DecodeStringAsBytes()))
+	fnerr := tm.UnmarshalText(bytesOKs(d.d.DecodeStringAsBytes()))
 	halt.onerror(fnerr)
 }
 
@@ -3102,15 +3102,15 @@ func (e *jsonEncDriverBytes) writeIndent() {
 	x := int(e.di) * int(e.dl)
 	if e.di < 0 {
 		x = -x
-		for x > jsonSpacesOrTabsLen {
+		for x > len(jsonTabs) {
 			e.w.writeb(jsonTabs[:])
-			x -= jsonSpacesOrTabsLen
+			x -= len(jsonTabs)
 		}
 		e.w.writeb(jsonTabs[:x])
 	} else {
-		for x > jsonSpacesOrTabsLen {
+		for x > len(jsonSpaces) {
 			e.w.writeb(jsonSpaces[:])
-			x -= jsonSpacesOrTabsLen
+			x -= len(jsonSpaces)
 		}
 		e.w.writeb(jsonSpaces[:x])
 	}
@@ -5475,7 +5475,7 @@ func (d *decoderJsonIO) binaryUnmarshal(_ *decFnInfo, rv reflect.Value) {
 
 func (d *decoderJsonIO) textUnmarshal(_ *decFnInfo, rv reflect.Value) {
 	tm := rv2i(rv).(encoding.TextUnmarshaler)
-	fnerr := tm.UnmarshalText(bytesOk(d.d.DecodeStringAsBytes()))
+	fnerr := tm.UnmarshalText(bytesOKs(d.d.DecodeStringAsBytes()))
 	halt.onerror(fnerr)
 }
 
@@ -7123,15 +7123,15 @@ func (e *jsonEncDriverIO) writeIndent() {
 	x := int(e.di) * int(e.dl)
 	if e.di < 0 {
 		x = -x
-		for x > jsonSpacesOrTabsLen {
+		for x > len(jsonTabs) {
 			e.w.writeb(jsonTabs[:])
-			x -= jsonSpacesOrTabsLen
+			x -= len(jsonTabs)
 		}
 		e.w.writeb(jsonTabs[:x])
 	} else {
-		for x > jsonSpacesOrTabsLen {
+		for x > len(jsonSpaces) {
 			e.w.writeb(jsonSpaces[:])
-			x -= jsonSpacesOrTabsLen
+			x -= len(jsonSpaces)
 		}
 		e.w.writeb(jsonSpaces[:x])
 	}

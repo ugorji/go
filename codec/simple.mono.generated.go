@@ -1442,7 +1442,7 @@ func (d *decoderSimpleBytes) binaryUnmarshal(_ *decFnInfo, rv reflect.Value) {
 
 func (d *decoderSimpleBytes) textUnmarshal(_ *decFnInfo, rv reflect.Value) {
 	tm := rv2i(rv).(encoding.TextUnmarshaler)
-	fnerr := tm.UnmarshalText(bytesOk(d.d.DecodeStringAsBytes()))
+	fnerr := tm.UnmarshalText(bytesOKs(d.d.DecodeStringAsBytes()))
 	halt.onerror(fnerr)
 }
 
@@ -5159,7 +5159,7 @@ func (d *decoderSimpleIO) binaryUnmarshal(_ *decFnInfo, rv reflect.Value) {
 
 func (d *decoderSimpleIO) textUnmarshal(_ *decFnInfo, rv reflect.Value) {
 	tm := rv2i(rv).(encoding.TextUnmarshaler)
-	fnerr := tm.UnmarshalText(bytesOk(d.d.DecodeStringAsBytes()))
+	fnerr := tm.UnmarshalText(bytesOKs(d.d.DecodeStringAsBytes()))
 	halt.onerror(fnerr)
 }
 

@@ -1442,7 +1442,7 @@ func (d *decoderBincBytes) binaryUnmarshal(_ *decFnInfo, rv reflect.Value) {
 
 func (d *decoderBincBytes) textUnmarshal(_ *decFnInfo, rv reflect.Value) {
 	tm := rv2i(rv).(encoding.TextUnmarshaler)
-	fnerr := tm.UnmarshalText(bytesOk(d.d.DecodeStringAsBytes()))
+	fnerr := tm.UnmarshalText(bytesOKs(d.d.DecodeStringAsBytes()))
 	halt.onerror(fnerr)
 }
 
@@ -3675,6 +3675,7 @@ func (d *bincDecDriverBytes) DecodeStringAsBytes() (bs []byte, state dBytesAttac
 	case bincVdString, bincVdByteArray:
 		slen = d.decLen()
 		bs, cond = d.r.readxb(uint(slen))
+		state = d.d.attachState(cond)
 	case bincVdSymbol:
 
 		var symbol uint16
@@ -3706,6 +3707,7 @@ func (d *bincDecDriverBytes) DecodeStringAsBytes() (bs []byte, state dBytesAttac
 			bs = d.d.detach2Bytes(bs, nil, d.d.attachState(cond))
 			d.s[symbol] = bs
 		}
+		state = dBytesDetach
 	default:
 		halt.errorf("string/bytes - %s %x-%x/%s", msgBadDesc, d.vd, d.vs, bincdesc(d.vd, d.vs))
 	}
@@ -5470,7 +5472,7 @@ func (d *decoderBincIO) binaryUnmarshal(_ *decFnInfo, rv reflect.Value) {
 
 func (d *decoderBincIO) textUnmarshal(_ *decFnInfo, rv reflect.Value) {
 	tm := rv2i(rv).(encoding.TextUnmarshaler)
-	fnerr := tm.UnmarshalText(bytesOk(d.d.DecodeStringAsBytes()))
+	fnerr := tm.UnmarshalText(bytesOKs(d.d.DecodeStringAsBytes()))
 	halt.onerror(fnerr)
 }
 
@@ -7703,6 +7705,7 @@ func (d *bincDecDriverIO) DecodeStringAsBytes() (bs []byte, state dBytesAttachSt
 	case bincVdString, bincVdByteArray:
 		slen = d.decLen()
 		bs, cond = d.r.readxb(uint(slen))
+		state = d.d.attachState(cond)
 	case bincVdSymbol:
 
 		var symbol uint16
@@ -7734,6 +7737,7 @@ func (d *bincDecDriverIO) DecodeStringAsBytes() (bs []byte, state dBytesAttachSt
 			bs = d.d.detach2Bytes(bs, nil, d.d.attachState(cond))
 			d.s[symbol] = bs
 		}
+		state = dBytesDetach
 	default:
 		halt.errorf("string/bytes - %s %x-%x/%s", msgBadDesc, d.vd, d.vs, bincdesc(d.vd, d.vs))
 	}

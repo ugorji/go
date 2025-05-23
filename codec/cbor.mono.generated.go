@@ -1444,7 +1444,7 @@ func (d *decoderCborBytes) binaryUnmarshal(_ *decFnInfo, rv reflect.Value) {
 
 func (d *decoderCborBytes) textUnmarshal(_ *decFnInfo, rv reflect.Value) {
 	tm := rv2i(rv).(encoding.TextUnmarshaler)
-	fnerr := tm.UnmarshalText(bytesOk(d.d.DecodeStringAsBytes()))
+	fnerr := tm.UnmarshalText(bytesOKs(d.d.DecodeStringAsBytes()))
 	halt.onerror(fnerr)
 }
 
@@ -3593,7 +3593,7 @@ func (d *cborDecDriverBytes) decodeTime(xtag uint64) (t time.Time) {
 	switch xtag {
 	case 0:
 		var err error
-		t, err = time.Parse(time.RFC3339, stringView(bytesOk(d.DecodeStringAsBytes())))
+		t, err = time.Parse(time.RFC3339, stringView(bytesOKs(d.DecodeStringAsBytes())))
 		halt.onerror(err)
 	case 1:
 		f1, f2 := math.Modf(d.DecodeFloat64())
@@ -5323,7 +5323,7 @@ func (d *decoderCborIO) binaryUnmarshal(_ *decFnInfo, rv reflect.Value) {
 
 func (d *decoderCborIO) textUnmarshal(_ *decFnInfo, rv reflect.Value) {
 	tm := rv2i(rv).(encoding.TextUnmarshaler)
-	fnerr := tm.UnmarshalText(bytesOk(d.d.DecodeStringAsBytes()))
+	fnerr := tm.UnmarshalText(bytesOKs(d.d.DecodeStringAsBytes()))
 	halt.onerror(fnerr)
 }
 
@@ -7472,7 +7472,7 @@ func (d *cborDecDriverIO) decodeTime(xtag uint64) (t time.Time) {
 	switch xtag {
 	case 0:
 		var err error
-		t, err = time.Parse(time.RFC3339, stringView(bytesOk(d.DecodeStringAsBytes())))
+		t, err = time.Parse(time.RFC3339, stringView(bytesOKs(d.DecodeStringAsBytes())))
 		halt.onerror(err)
 	case 1:
 		f1, f2 := math.Modf(d.DecodeFloat64())
