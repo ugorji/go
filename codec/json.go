@@ -86,21 +86,21 @@ const (
 	// to control whether we detect quoted values of bools and null where a map key is expected,
 	// and treat as nil, true or false.
 	jsonNakedBoolNullInQuotedStr = true
-
-	jsonSpacesOrTabsLen = 128
 )
 
 var (
 	// jsonTabs and jsonSpaces are used as caches for indents
-	jsonTabs, jsonSpaces [jsonSpacesOrTabsLen]byte
+	jsonTabs   [32]byte
+	jsonSpaces [128]byte
 )
 
 func init() {
-	for i := byte(0); i < jsonSpacesOrTabsLen; i++ {
-		jsonSpaces[i] = ' '
+	for i := 0; i < len(jsonTabs); i++ {
 		jsonTabs[i] = '\t'
 	}
-
+	for i := 0; i < len(jsonSpaces); i++ {
+		jsonSpaces[i] = ' '
+	}
 }
 
 // ----------------
@@ -154,15 +154,15 @@ func (e *jsonEncDriver[T]) writeIndent() {
 	x := int(e.di) * int(e.dl)
 	if e.di < 0 {
 		x = -x
-		for x > jsonSpacesOrTabsLen {
+		for x > len(jsonTabs) {
 			e.w.writeb(jsonTabs[:])
-			x -= jsonSpacesOrTabsLen
+			x -= len(jsonTabs)
 		}
 		e.w.writeb(jsonTabs[:x])
 	} else {
-		for x > jsonSpacesOrTabsLen {
+		for x > len(jsonSpaces) {
 			e.w.writeb(jsonSpaces[:])
-			x -= jsonSpacesOrTabsLen
+			x -= len(jsonSpaces)
 		}
 		e.w.writeb(jsonSpaces[:x])
 	}

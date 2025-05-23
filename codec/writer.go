@@ -143,6 +143,7 @@ func (z *bufioEncWriter) writen1(b1 byte) {
 	// z.buf[z.n] = b1
 	z.n++
 }
+
 func (z *bufioEncWriter) writen2(b1, b2 byte) {
 	if 2 > len(z.buf)-z.n {
 		z.flush()
