@@ -26,7 +26,7 @@ func TestGH417(t *testing.T) {
 		Map2: map[string]string{},
 	}
 
-	for range numMapEntries {
+	for i := 0; i < numMapEntries; i++ {
 		key1 := make([]byte, 10)
 		rand.Read(key1)
 
@@ -37,7 +37,7 @@ func TestGH417(t *testing.T) {
 	}
 
 	var wg sync.WaitGroup
-	for range numGoroutines {
+	for i := 0; i < numGoroutines; i++ {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()

@@ -1640,9 +1640,11 @@ type structFieldInfo struct {
 func (n *structFieldInfo) fieldAlloc(v reflect.Value) reflect.Value {
 	// return n.path.field(v, true, true)
 	// return n.field(v, true, true)
+	var j, nd uint8
 	for i := range n.parents {
 		v = n.parents[i].rvField(v)
-		for range n.parents[i].numderef {
+		nd = n.parents[i].numderef
+		for j = 0; j < nd; j++ {
 			if rvPtrIsNil(v) {
 				rvSetDirect(v, reflect.New(v.Type().Elem()))
 			}
@@ -1650,7 +1652,8 @@ func (n *structFieldInfo) fieldAlloc(v reflect.Value) reflect.Value {
 		}
 	}
 	v = n.node.rvField(v)
-	for range n.node.numderef {
+	nd = n.node.numderef
+	for j = 0; j < nd; j++ {
 		if rvPtrIsNil(v) {
 			rvSetDirect(v, reflect.New(v.Type().Elem()))
 		}
@@ -1662,9 +1665,11 @@ func (n *structFieldInfo) fieldAlloc(v reflect.Value) reflect.Value {
 func (n *structFieldInfo) fieldNoAlloc(v reflect.Value, base bool) (rv reflect.Value) {
 	// return n.path.field(v, false, base)
 	// return n.field(v, false, base)
+	var j, nd uint8
 	for i := range n.parents {
 		v = n.parents[i].rvField(v)
-		for range n.parents[i].numderef {
+		nd = n.parents[i].numderef
+		for j = 0; j < nd; j++ {
 			if rvPtrIsNil(v) {
 				return reflect.Value{}
 			}
@@ -1673,7 +1678,8 @@ func (n *structFieldInfo) fieldNoAlloc(v reflect.Value, base bool) (rv reflect.V
 	}
 	v = n.node.rvField(v)
 	rv = v
-	for range n.node.numderef {
+	nd = n.node.numderef
+	for j = 0; j < nd; j++ {
 		if rvPtrIsNil(v) {
 			return reflect.Value{}
 		}
@@ -1783,7 +1789,7 @@ func (x *uint8To32TrieNode) expandKids() (r *uint8To32TrieNode) {
 
 func (x *uint8To32TrieNode) put(v uint8) (r *uint8To32TrieNode) {
 	kids := x.getKids()
-	for i := range len(kids) {
+	for i := range kids {
 		if kids[i].key == v {
 			return &kids[i]
 		}
@@ -1795,8 +1801,8 @@ func (x *uint8To32TrieNode) put(v uint8) (r *uint8To32TrieNode) {
 }
 
 func (x *uint8To32TrieNode) puts(s string, v uint32) (r *uint8To32TrieNode) {
-	for i := range len(s) {
-		x = x.put(s[i])
+	for _, c := range []byte(s) {
+		x = x.put(c)
 	}
 	x.value = v
 	x.valid = true
@@ -2118,30 +2124,6 @@ func isCanTransient(t reflect.Type, inclStrSlice bool) (v bool) {
 	}
 	return
 }
-
-// func isCanTransient(t reflect.Type) (v bool) {
-// 	k := t.Kind()
-// 	if numBoolStrSliceBitset.isset(byte(k)) || k == reflect.String {
-// 		v = true
-// 	} else if k == reflect.Slice {
-// 		v = numBoolBitset.isset(byte(t.Elem().Kind()))
-// 	} else if k == reflect.Array {
-// 		elem := t.Elem()
-// 		v = isCanTransient(elem)
-// 	} else if k == reflect.Struct {
-// 		v = true
-// 		for j, jlen := 0, t.NumField(); j < jlen; j++ {
-// 			f := t.Field(j)
-// 			if !isCanTransient(f.Type) {
-// 				v = false
-// 				return
-// 			}
-// 		}
-// 	} else {
-// 		v = false
-// 	}
-// 	return
-// }
 
 type rtid2ti struct {
 	rtid uintptr
@@ -3027,11 +3009,6 @@ func (v panicHdl) errorUint(prefix string, p1 uint64) {
 func (v panicHdl) errorFloat(prefix string, p1 float64) {
 	panic(stringView(strconv.AppendFloat(panicHdlBytes(prefix), p1, 'G', -1, 64)))
 }
-
-// func (v panicHdl) errorInt(prefix string, p1 int) {
-// 	panic(stringView(strconv.AppendInt(panicHdlBytes(prefix), int64(p1), 10)))
-// 	// v.errorInt64(prefix, int64(p1))
-// }
 
 // MARKER
 // consider adding //go:noinline to errorf and maybe other methods

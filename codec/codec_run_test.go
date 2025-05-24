@@ -87,8 +87,8 @@ func (x testFieldIntrospect) getrr(rv reflect.Value, name string) reflect.Value 
 
 	var cv reflect.Value
 	var anons []reflect.Value
-	// for i := 0; i < t.NumField(); i++ {
-	for i := range t.NumField() {
+	numf := t.NumField()
+	for i := 0; i < numf; i++ {
 		tf := t.Field(i)
 		if tf.Name == name {
 			return rv.Field(i)
