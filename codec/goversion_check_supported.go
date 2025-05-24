@@ -1,14 +1,20 @@
 // Copyright (c) 2012-2020 Ugorji Nwoke. All rights reserved.
 // Use of this source code is governed by a MIT license found in the LICENSE file.
 
-//go:build !go1.18
+//go:build !go1.21
 
 package codec
 
 import "errors"
 
-// From v1.3, this codec package will only work for go1.18 and above, as it now needs generics.
+// Moving forward, this codec package will support at least the last 4 major Go releases.
+//
+// As of early summer 2025, codec will support go 1.21, 1.22, 1.23, 1.24 releases of go.
+// This allows use of the followin:
+//   - stabilized generics
+//   - min/max/clear
+//   - slice->array conversion
 
 func init() {
-	panic(errors.New("codec: go 1.17 and below are not supported (generics needed)"))
+	panic(errors.New("codec: supports go 1.21 and above only"))
 }
