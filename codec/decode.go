@@ -133,17 +133,6 @@ var (
 	errMaxDepthExceeded             = errors.New("maximum decoding depth exceeded")
 )
 
-// // decByteState tracks where the []byte returned by the last call
-// // to DecodeBytes or DecodeStringAsByte came from
-// type decByteState uint8
-
-// const (
-// 	decByteStateNone     decByteState = iota
-// 	decByteStateZerocopy              // view into []byte that we are decoding from
-// 	decByteStateReuseBuf              // view into transient buffer used internally by decDriver
-// 	// decByteStateNewAlloc
-// )
-
 type decNotDecodeableReason uint8
 
 const (
@@ -558,14 +547,27 @@ func (d *decoderBase) detach2Str(v []byte, state dBytesAttachState) (s string) {
 	return
 }
 
-func (d *decoderBase) tmpCopyBytes(in []byte) (out []byte) {
-	if len(d.b) > len(in) {
-		out = d.b[:len(in)]
-	} else {
-		out = make([]byte, len(in))
+func (d *decoderBase) usableStructFieldNameBytes(buf, v []byte, state dBytesAttachState) (out []byte) {
+	// In JSON, mapElemValue reads a colon and spaces.
+	// In bufio mode of ioDecReader, fillbuf could overwrite the read buffer
+	// which readXXX() calls return sub-slices from.
+	//
+	// Consequently, we detach the bytes in this special case.
+	//
+	// Note: ioDecReader (non-bufio) and bytesDecReader do not have
+	// this issue (as no fillbuf exists where bytes might be returned from).
+	if d.bufio && d.h.jsonHandle && state < dBytesAttachViewZerocopy {
+		if cap(buf) > len(v) {
+			out = buf[:len(v)]
+		} else if len(d.b) > len(v) {
+			out = d.b[:len(v)]
+		} else {
+			out = make([]byte, len(v), max(64, len(v)))
+		}
+		copy(out, v)
+		return
 	}
-	copy(out, in)
-	return
+	return v
 }
 
 func (d *decoderBase) detach2Bytes(in []byte, state dBytesAttachState) (out []byte) {
@@ -576,11 +578,6 @@ func (d *decoderBase) detach2Bytes(in []byte, state dBytesAttachState) (out []by
 		return zeroByteSlice
 	}
 	out = make([]byte, len(in))
-	// if cap(out) >= len(in) {
-	// 	out = out[:len(in)]
-	// } else {
-	// 	out = make([]byte, len(in))
-	// }
 	copy(out, in)
 	return out
 }
@@ -944,21 +941,11 @@ func (d *decoder[T]) kStructSimple(f *decFnInfo, rv reflect.Value) {
 			return
 		}
 		hasLen := containerLen >= 0
+		var rvkencname []byte
 		for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
 			d.mapElemKey(j == 0)
-			rvkencname, att := d.d.DecodeStringAsBytes()
-			// In JSON, mapElemValue reads a colon and spaces.
-			// In bufio mode of ioDecReader, fillbuf could overwrite the read buffer
-			// which readXXX() calls return sub-slices from.
-			//
-			// Consequently, we detach the bytes in this special case.
-			//
-			// Note: ioDecReader (non-bufio) and bytesDecReader do not have
-			// this issue (as no fillbuf exists where bytes might be returned from).
-
-			if d.bufio && d.h.jsonHandle && att < dBytesAttachViewZerocopy {
-				rvkencname = d.tmpCopyBytes(rvkencname)
-			}
+			sab, att := d.d.DecodeStringAsBytes()
+			rvkencname = d.usableStructFieldNameBytes(rvkencname, sab, att)
 			d.mapElemValue()
 			if si := ti.siForEncName(rvkencname); si != nil {
 				d.kStructField(si, rv)
@@ -1011,21 +998,14 @@ func (d *decoder[T]) kStruct(f *decFnInfo, rv reflect.Value) {
 		}
 		hasLen := containerLen >= 0
 		var name2 []byte
-		if mf != nil {
-			name2 = make([]byte, 0, 16)
-		}
 		var rvkencname []byte
-		var att dBytesAttachState
 		tkt := ti.keyType
 		for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
 			d.mapElemKey(j == 0)
 			// use if-else since <8 branches and we need good branch prediction for string
 			if tkt == valueTypeString {
-				rvkencname, att = d.d.DecodeStringAsBytes()
-				// In JSON, mapElemValue reads a colon and spaces, which could overwrite read buffer.
-				if d.bufio && d.h.jsonHandle && att < dBytesAttachViewZerocopy {
-					rvkencname = d.tmpCopyBytes(rvkencname)
-				}
+				sab, att := d.d.DecodeStringAsBytes()
+				rvkencname = d.usableStructFieldNameBytes(rvkencname, sab, att)
 			} else if tkt == valueTypeInt {
 				rvkencname = strconv.AppendInt(d.b[:0], d.d.DecodeInt64(), 10)
 			} else if tkt == valueTypeUint {
@@ -1037,8 +1017,7 @@ func (d *decoder[T]) kStruct(f *decFnInfo, rv reflect.Value) {
 			}
 
 			d.mapElemValue()
-			si := ti.siForEncName(rvkencname)
-			if si != nil {
+			if si := ti.siForEncName(rvkencname); si != nil {
 				d.kStructField(si, rv)
 			} else if mf != nil {
 				// store rvkencname in new []byte, as it previously shares Decoder.b, which is used in decode
@@ -1505,7 +1484,7 @@ func (d *decoder[T]) kChan(f *decFnInfo, rv reflect.Value) {
 
 		if rv9.IsValid() {
 			rvSetZero(rv9)
-		} else if decUseTransient && useTransient {
+		} else if useTransient {
 			rv9 = d.perType.TransientAddrK(ti.elem, reflect.Kind(ti.elemkind))
 		} else {
 			rv9 = rvZeroAddrK(ti.elem, reflect.Kind(ti.elemkind))
@@ -1553,7 +1532,8 @@ func (d *decoder[T]) kMap(f *decFnInfo, rv reflect.Value) {
 	ktypePtr := ktypeKind == reflect.Ptr
 
 	vTransient := decUseTransient && !vtypePtr && ti.tielem.flagCanTransient
-	kTransient := decUseTransient && !ktypePtr && ti.tikey.flagCanTransient
+	// keys are transient iff values are transient first
+	kTransient := vTransient && !ktypePtr && ti.tikey.flagCanTransient
 
 	var vtypeElem reflect.Type
 
@@ -1598,15 +1578,6 @@ func (d *decoder[T]) kMap(f *decFnInfo, rv reflect.Value) {
 	ktypeIsIntf := ktypeId == intfTypId
 	hasLen := containerLen >= 0
 
-	// kstrbs is used locally for the key bytes, so we can reduce allocation.
-	// When we read keys, we copy to this local bytes array, and use a stringView for lookup.
-	// We only convert it into a true string if we have to do a set on the map.
-
-	// Since kstr2bs will usually escape to the heap, declaring a [64]byte array may be wasteful.
-	// It is only valuable if we are sure that it is declared on the stack.
-	// var kstrarr [64]byte // most keys are less than 32 bytes, and even more less than 64
-	// var kstrbs = kstrarr[:0]
-	// var kstrbs []byte
 	var kstr2bs []byte
 	var kstr string
 
@@ -1635,7 +1606,7 @@ func (d *decoder[T]) kMap(f *decFnInfo, rv reflect.Value) {
 		if j == 0 {
 			// if vtypekind is a scalar and thus value will be decoded using TransientAddrK,
 			// then it is ok to use TransientAddr2K for the map key.
-			if decUseTransient && vTransient && kTransient {
+			if kTransient {
 				rvk = d.perType.TransientAddr2K(ktype, ktypeKind)
 			} else {
 				rvk = rvZeroAddrK(ktype, ktypeKind)
@@ -1644,7 +1615,7 @@ func (d *decoder[T]) kMap(f *decFnInfo, rv reflect.Value) {
 				rvkn = rvk
 			}
 			if !rvvMut {
-				if decUseTransient && vTransient {
+				if vTransient {
 					rvvn = d.perType.TransientAddrK(vtype, vtypeKind)
 				} else {
 					rvvn = rvZeroAddrK(vtype, vtypeKind)
@@ -1668,11 +1639,6 @@ func (d *decoder[T]) kMap(f *decFnInfo, rv reflect.Value) {
 			rvSetZero(rvk)
 		} else if ktypeIsString {
 			kstr2bs, att = d.d.DecodeStringAsBytes()
-			// if len(kstr2bs) == 1 {
-			// 	kstr = str4byte(kstr2bs[0])
-			// } else if len(kstr2bs) != 0 {
-			// 	kstr, mapKeyStringSharesBytesBuf = d.bytes2Str(kstr2bs, att)
-			// }
 			kstr, mapKeyStringSharesBytesBuf = d.bytes2Str(kstr2bs, att)
 			rvSetString(rvk, kstr)
 		} else {
@@ -1692,11 +1658,6 @@ func (d *decoder[T]) kMap(f *decFnInfo, rv reflect.Value) {
 			if ktypeIsIntf {
 				if rvk2 := rvk.Elem(); rvk2.IsValid() && rvk2.Type() == uint8SliceTyp {
 					kstr2bs = rvGetBytes(rvk2)
-					// if len(kstr2bs) == 1 {
-					// 	kstr = str4byte(kstr2bs[0])
-					// } else if len(kstr2bs) != 0 {
-					// 	kstr, mapKeyStringSharesBytesBuf = d.bytes2Str(kstr2bs, dBytesAttachView)
-					// }
 					kstr, mapKeyStringSharesBytesBuf = d.bytes2Str(kstr2bs, dBytesAttachView)
 					rvSetIntf(rvk, rv4istr(kstr))
 				}
@@ -1707,7 +1668,7 @@ func (d *decoder[T]) kMap(f *decFnInfo, rv reflect.Value) {
 		// TryNil will try to read from the stream and check if a nil marker.
 		//
 		// When using ioDecReader (specifically in bufio mode), this TryNil call could
-		// override part of the buffer used for the string key
+		// override part of the buffer used for the string key.
 		//
 		// To mitigate this, we do a special check for ioDecReader in bufio mode.
 		if mapKeyStringSharesBytesBuf && d.bufio {
@@ -1768,7 +1729,7 @@ func (d *decoder[T]) kMap(f *decFnInfo, rv reflect.Value) {
 				rvv = rvvn
 			default:
 				// make addressable (so you can set the slice/array elements, etc)
-				if decUseTransient && vTransient {
+				if vTransient {
 					rvvn = d.perType.TransientAddrK(vtype, vtypeKind)
 				} else {
 					rvvn = rvZeroAddrK(vtype, vtypeKind)
@@ -1782,7 +1743,7 @@ func (d *decoder[T]) kMap(f *decFnInfo, rv reflect.Value) {
 	NEW_RVV:
 		if vtypePtr {
 			rvv = reflect.New(vtypeElem) // non-nil in stream, so allocate value
-		} else if decUseTransient && vTransient {
+		} else if vTransient {
 			rvv = d.perType.TransientAddrK(vtype, vtypeKind)
 		} else {
 			rvv = rvZeroAddrK(vtype, vtypeKind)
@@ -2527,10 +2488,8 @@ func (d *decoder[T]) interfaceExtConvertAndDecode(v interface{}, ext InterfaceEx
 }
 
 func (d *decoderBase) oneShotAddrRV(rvt reflect.Type, rvk reflect.Kind) reflect.Value {
-	if decUseTransient &&
-		(numBoolStrSliceBitset.isset(byte(rvk)) ||
-			((rvk == reflect.Struct || rvk == reflect.Array) &&
-				d.h.getTypeInfo(rt2id(rvt), rvt).flagCanTransient)) {
+	// MARKER: is this slow for calling oneShot?
+	if decUseTransient && d.h.getTypeInfo4RT(baseRT(rvt)).flagCanTransient {
 		return d.perType.TransientAddrK(rvt, rvk)
 	}
 	return rvZeroAddrK(rvt, rvk)

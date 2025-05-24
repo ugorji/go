@@ -222,6 +222,7 @@ const (
 	//
 	// It is generally set to false
 	debugging = false
+
 	// if debugLogging is false, debugf calls will be a No-op.
 	//
 	// It is generally set to false
@@ -1138,8 +1139,13 @@ func (x *BasicHandle) typeInfos() *TypeInfos {
 	return defTypeInfos
 }
 
+// getTypeInfo expects a non-pointer
 func (x *BasicHandle) getTypeInfo(rtid uintptr, rt reflect.Type) (pti *typeInfo) {
 	return x.typeInfos().get(rtid, rt)
+}
+
+func (x *BasicHandle) getTypeInfo4RT(rt reflect.Type) (pti *typeInfo) {
+	return x.typeInfos().get(rt2id(rt), rt)
 }
 
 // type handle interface {
@@ -2077,63 +2083,65 @@ func (ti *typeInfo) init(x []structFieldInfo, n int) {
 	// ti.sfi.byName = m
 }
 
-// Handling flagCanTransient
+// isCanTransient returns whether this type can be transient.
+//
+// # Handling flagCanTransient
 //
 // We support transient optimization if the kind of the type is
-// a number, bool, string, or slice (of number/bool).
-// In addition, we also support if the kind is struct or array,
-// and the type does not contain any pointers recursively).
+// - a number, bool, string
+// - slice (of number/bool)
+// - struct with no reference values (pointers, interface, etc) recursively
+// - array with no reference values (pointers, interface, etc) recursively
 //
-// Noteworthy that all reference types (string, slice, func, map, ptr, interface, etc) have pointers.
+// NOTE: all reference types (string, slice, func, map, ptr, interface, etc) have pointers.
 //
 // If using transient for a type with a pointer, there is the potential for data corruption
 // when GC tries to follow a "transient" pointer which may become a non-pointer soon after.
-//
-
-func transientBitsetFlags() *bitset32 {
-	if transientValueHasStringSlice {
-		return &numBoolStrSliceBitset
+func isCanTransient(t reflect.Type, inclStrSlice bool) (v bool) {
+	k := t.Kind()
+	bset := &numBoolBitset
+	if inclStrSlice {
+		bset = &numBoolStrSliceBitset
 	}
-	return &numBoolBitset
-}
-
-func isCanTransient(t reflect.Type, k reflect.Kind) (v bool) {
-	var bs = transientBitsetFlags()
-	if bs.isset(byte(k)) {
+	if bset.isset(byte(k)) {
 		v = true
-	} else if k == reflect.Slice {
-		elem := t.Elem()
-		v = numBoolBitset.isset(byte(elem.Kind()))
 	} else if k == reflect.Array {
-		elem := t.Elem()
-		v = isCanTransient(elem, elem.Kind())
+		v = isCanTransient(t.Elem(), false)
 	} else if k == reflect.Struct {
 		v = true
 		for j, jlen := 0, t.NumField(); j < jlen; j++ {
 			f := t.Field(j)
-			if !isCanTransient(f.Type, f.Type.Kind()) {
-				v = false
-				return
+			if !isCanTransient(f.Type, false) {
+				return false
 			}
 		}
-	} else {
-		v = false
 	}
 	return
 }
 
-func (ti *typeInfo) doSetFlagCanTransient() {
-	if transientSizeMax > 0 {
-		ti.flagCanTransient = ti.size <= transientSizeMax
-	} else {
-		ti.flagCanTransient = true
-	}
-	if ti.flagCanTransient {
-		if !transientBitsetFlags().isset(ti.kind) {
-			ti.flagCanTransient = isCanTransient(ti.rt, reflect.Kind(ti.kind))
-		}
-	}
-}
+// func isCanTransient(t reflect.Type) (v bool) {
+// 	k := t.Kind()
+// 	if numBoolStrSliceBitset.isset(byte(k)) || k == reflect.String {
+// 		v = true
+// 	} else if k == reflect.Slice {
+// 		v = numBoolBitset.isset(byte(t.Elem().Kind()))
+// 	} else if k == reflect.Array {
+// 		elem := t.Elem()
+// 		v = isCanTransient(elem)
+// 	} else if k == reflect.Struct {
+// 		v = true
+// 		for j, jlen := 0, t.NumField(); j < jlen; j++ {
+// 			f := t.Field(j)
+// 			if !isCanTransient(f.Type) {
+// 				v = false
+// 				return
+// 			}
+// 		}
+// 	} else {
+// 		v = false
+// 	}
+// 	return
+// }
 
 type rtid2ti struct {
 	rtid uintptr
@@ -2291,7 +2299,7 @@ func (x *TypeInfos) load(rt reflect.Type) (pti *typeInfo) {
 	// bset(b1, &ti.flagComparable)
 	ti.flagComparable = b1
 
-	ti.doSetFlagCanTransient()
+	ti.flagCanTransient = isTransientType4Size(ti.size) && isCanTransient(ti.rt, true)
 
 	var tt reflect.Type
 	switch rk {

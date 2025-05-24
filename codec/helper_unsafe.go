@@ -104,7 +104,9 @@ const (
 const transientSizeMax = 64
 
 // should struct/array support internal strings and slices?
-const transientValueHasStringSlice = false
+// const transientValueHasStringSlice = false
+
+func isTransientType4Size(size uint32) bool { return size <= transientSizeMax }
 
 type unsafeString struct {
 	Data unsafe.Pointer
@@ -169,9 +171,7 @@ type perType struct {
 	elems [2]unsafePerTypeElem
 }
 
-type decPerType struct {
-	perType
-}
+type decPerType = perType
 
 type encPerType struct{}
 

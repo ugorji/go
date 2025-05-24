@@ -18,8 +18,15 @@ import (
 
 const safeMode = true
 
-const transientSizeMax = 0
-const transientValueHasStringSlice = true
+// const transientSizeMax = 0
+// const transientValueHasStringSlice = true
+
+func isTransientType4Size(size uint32) bool { return true }
+
+// func isCanTransient(t reflect.Type, _ bool) (v bool) {
+// 	return numBoolStrSliceBitset.isset(byte(t.Kind()))
+// 	// arrays and structs are not supported
+// }
 
 type mapReqParams struct{}
 
@@ -286,13 +293,9 @@ type perType struct {
 	v []perTypeElem
 }
 
-type decPerType struct {
-	perType
-}
+type decPerType = perType
 
-type encPerType struct {
-	perType
-}
+type encPerType = perType
 
 func (x *perType) elem(t reflect.Type) *perTypeElem {
 	rtid := rt2id(t)
