@@ -464,15 +464,8 @@ type decoderBase struct {
 	str  bool // is slicetype a known type?
 	jsms bool // is json handle, and MapKeyAsString
 
-	// be   bool // is binary encoding
-	// js   bool // is json handle
-	// cbor bool // is cbor handle
-	// cbreak bool // is a check breaker
-
 	bytes bool // uses a bytes reader
 	bufio bool // uses a ioDecReader with buffer size > 0
-
-	// zeroCopy bool
 
 	// ---- cpu cache line boundary?
 	// ---- writable fields during execution --- *try* to keep in sep cache line
@@ -2014,8 +2007,7 @@ func (d *decoder[T]) mustDecode(v interface{}) {
 //
 // Deprecated: Pooled resources are not used with a Decoder.
 // This method is kept for compatibility reasons only.
-func (d *decoder[T]) Release() {
-}
+func (d *decoder[T]) Release() {}
 
 func (d *decoder[T]) swallow() {
 	d.d.nextValueBytes()
@@ -2024,18 +2016,6 @@ func (d *decoder[T]) swallow() {
 func (d *decoder[T]) nextValueBytes() []byte {
 	return d.d.nextValueBytes()
 }
-
-// func (d *decoder[T]) swallowErr() (err error) {
-// 	if !debugging {
-// 		defer func() {
-// 			if x := recover(); x != nil {
-// 				panicValToErr(d, x, &err)
-// 			}
-// 		}()
-// 	}
-// 	d.swallow()
-// 	return
-// }
 
 func setZero(iv interface{}) {
 	rv, isnil := isNil(iv, true)
@@ -2313,10 +2293,6 @@ func (d *decoderBase) depthDecr() {
 	d.depth--
 }
 
-// func (d *decoder[T]) zerocopy() bool {
-// 	return d.bytes && d.h.ZeroCopy
-// }
-
 // decodeBytesInto is a convenience delegate function to decDriver.DecodeBytes.
 // It ensures that `in` is not a nil byte, before calling decDriver.DecodeBytes,
 // as decDriver.DecodeBytes treats a nil as a hint to use its internal scratch buffer.
@@ -2367,15 +2343,6 @@ func (d *decoder[T]) wrapErr(v error, err *error) {
 func (d *decoder[T]) NumBytesRead() int {
 	return d.d.NumBytesRead()
 }
-
-// // decodeFloat32 will delegate to an appropriate DecodeFloat32 implementation (if exists),
-// // else if will call DecodeFloat64 and ensure the value doesn't overflow.
-// //
-// // Note that we return float64 to reduce unnecessary conversions
-// func (d *decoder[T]) decodeFloat32() float32 {
-// 	d.d.DecodeFloat32() // custom implementation for 32-bit
-// 	return float32(chkOvf.Float32V(d.d.DecodeFloat64()))
-// }
 
 // ---- container tracking
 // Note: We update the .c after calling the callback.
@@ -2489,7 +2456,7 @@ func (d *decoder[T]) interfaceExtConvertAndDecode(v interface{}, ext InterfaceEx
 }
 
 func (d *decoderBase) oneShotAddrRV(rvt reflect.Type, rvk reflect.Kind) reflect.Value {
-	// MARKER: is this slow for calling oneShot?
+	// MARKER 2025: is this slow for calling oneShot?
 	if decUseTransient && d.h.getTypeInfo4RT(baseRT(rvt)).flagCanTransient {
 		return d.perType.TransientAddrK(rvt, rvk)
 	}
@@ -2667,8 +2634,6 @@ func NewDecoderBytes(in []byte, h Handle) *Decoder {
 func NewDecoderString(s string, h Handle) *Decoder {
 	return NewDecoderBytes(bytesView(s), h)
 }
-
-// ----
 
 // ----
 
@@ -3082,4 +3047,29 @@ func bytesOKs(bs []byte, _ dBytesAttachState) []byte {
 // 	} else {
 // 		d.mapEnd()
 // 	}
+// }
+
+// func (d *decoder[T]) swallowErr() (err error) {
+// 	if !debugging {
+// 		defer func() {
+// 			if x := recover(); x != nil {
+// 				panicValToErr(d, x, &err)
+// 			}
+// 		}()
+// 	}
+// 	d.swallow()
+// 	return
+// }
+
+// func (d *decoder[T]) zerocopy() bool {
+// 	return d.bytes && d.h.ZeroCopy
+// }
+
+// // decodeFloat32 will delegate to an appropriate DecodeFloat32 implementation (if exists),
+// // else if will call DecodeFloat64 and ensure the value doesn't overflow.
+// //
+// // Note that we return float64 to reduce unnecessary conversions
+// func (d *decoder[T]) decodeFloat32() float32 {
+// 	d.d.DecodeFloat32() // custom implementation for 32-bit
+// 	return float32(chkOvf.Float32V(d.d.DecodeFloat64()))
 // }

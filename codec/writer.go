@@ -238,6 +238,8 @@ func (z *bytesEncAppender) resetIO(w io.Writer, bufsize int, blist *bytesFreeLis
 	halt.errorStr("resetIO is unsupported by bytesEncAppender")
 }
 
+// ----
+
 // // flesh out these writes, to hopefully force full stenciling/monomorphization
 // // unfortunately, even with this, the go generics implementation
 // // still used a dynamic dispatch, and not static (calling stenciled method)

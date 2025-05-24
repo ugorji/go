@@ -192,10 +192,6 @@ func (encPerType) AddressableRO(v reflect.Value) reflect.Value {
 	return rvAddressableReadonly(v)
 }
 
-// func str4byte(b byte) string {
-// 	return unsafe.String((*byte)(unsafe.Add(unsafe.Pointer(unsafe.StringData(str256)), b)), 1)
-// }
-
 // byteAt returns the byte given an index which is guaranteed
 // to be within the bounds of the slice i.e. we defensively
 // already verified that the index is less than the length of the slice.
@@ -208,19 +204,6 @@ func setByteAt(b []byte, index uint, val byte) {
 	// b[index] = val
 	*(*byte)(unsafe.Pointer(uintptr((*unsafeSlice)(unsafe.Pointer(&b)).Data) + uintptr(index))) = val
 }
-
-// func byteSliceOf(b []byte, start, end uint) []byte {
-// 	s := (*unsafeSlice)(unsafe.Pointer(&b))
-// 	s.Data = unsafe.Pointer(uintptr(s.Data) + uintptr(start))
-// 	s.Len = int(end - start)
-// 	s.Cap -= int(start)
-// 	return b
-// }
-
-// func byteSliceWithLen(b []byte, length uint) []byte {
-// 	(*unsafeSlice)(unsafe.Pointer(&b)).Len = int(length)
-// 	return b
-// }
 
 // stringView returns a view of the []byte as a string.
 // In unsafe mode, it doesn't incur allocation and copying caused by conversion.
@@ -321,10 +304,6 @@ func rvIsNil(rv reflect.Value) bool {
 	// OR kind is slice/interface
 	return *(*unsafe.Pointer)(urv.ptr) == nil
 }
-
-// func rvIsNonNilPtr(rv reflect.Value) bool {
-// 	return rv.Kind() == reflect.Ptr && !rvIsNil(rv)
-// }
 
 func rvSetSliceLen(rv reflect.Value, length int) {
 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
@@ -558,16 +537,6 @@ func (x *structFieldInfos) load(source, sorted []*structFieldInfo) {
 	s = (*unsafeSlice)(unsafe.Pointer(&sorted))
 	x.s = s.Data
 }
-
-// func (x *structFieldInfos) count() int { return x.length }
-
-// func (x *structFieldInfos) sorted() (v []*structFieldInfo) {
-// 	s := (*unsafeSlice)(unsafe.Pointer(&v))
-// 	s.Data = x.sorted0
-// 	s.Len = x.length
-// 	s.Cap = s.Len
-// 	return
-// }
 
 func (x *structFieldInfos) source() (v []*structFieldInfo) {
 	*(*unsafeSlice)(unsafe.Pointer(&v)) = unsafeSlice{x.c, x.length, x.length}
@@ -871,20 +840,6 @@ func rvCapSlice(rv reflect.Value) int {
 	return (*unsafeSlice)(urv.ptr).Cap
 }
 
-// func rvArrayIndex(rv reflect.Value, i int, ti *typeInfo) (v reflect.Value) {
-// 	return rv.Index(i)
-// }
-
-// func rvArrayIndex(rv reflect.Value, i int, ti *typeInfo) (v reflect.Value) {
-// 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-// 	uv := (*unsafeReflectValue)(unsafe.Pointer(&v))
-// 	uv.ptr = unsafe.Pointer(uintptr(urv.ptr) + uintptr(int(ti.elemsize)*i))
-// 	uv.typ = ((*unsafeIntf)(unsafe.Pointer(&ti.elem))).ptr
-// 	// uv.flag = urv.flag&(unsafeFlagIndir|unsafeFlagAddr) | uintptr(ti.elemkind)
-// 	uv.flag = uintptr(ti.elemkind) | unsafeFlagIndir | unsafeFlagAddr
-// 	return
-// }
-
 // if scratch is nil, then return a writable view (assuming canAddr=true)
 func rvGetArrayBytes(rv reflect.Value, _ []byte) (bs []byte) {
 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
@@ -1028,32 +983,6 @@ func rvLenMap(rv reflect.Value) int {
 	return len_map(rvRefPtr((*unsafeReflectValue)(unsafe.Pointer(&rv))))
 }
 
-// copy is an intrinsic, which may use asm if length is small,
-// or make a runtime call to runtime.memmove if length is large.
-// Performance suffers when you always call runtime.memmove function.
-//
-// Consequently, there's no value in a copybytes call - just call copy() directly
-
-// func copybytes(to, from []byte) (n int) {
-// 	n = (*unsafeSlice)(unsafe.Pointer(&from)).Len
-// 	memmove(
-// 		(*unsafeSlice)(unsafe.Pointer(&to)).Data,
-// 		(*unsafeSlice)(unsafe.Pointer(&from)).Data,
-// 		uintptr(n),
-// 	)
-// 	return
-// }
-
-// func copybytestr(to []byte, from string) (n int) {
-// 	n = (*unsafeSlice)(unsafe.Pointer(&from)).Len
-// 	memmove(
-// 		(*unsafeSlice)(unsafe.Pointer(&to)).Data,
-// 		(*unsafeSlice)(unsafe.Pointer(&from)).Data,
-// 		uintptr(n),
-// 	)
-// 	return
-// }
-
 // Note: it is hard to find len(...) of an array type,
 // as that is a field in the arrayType representing the array, and hard to introspect.
 //
@@ -1183,13 +1112,6 @@ func unsafeMapKVPtr(urv *unsafeReflectValue) unsafe.Pointer {
 	return urv.ptr
 }
 
-// func mapDelete(m, k reflect.Value) {
-// 	var urv = (*unsafeReflectValue)(unsafe.Pointer(&k))
-// 	var kptr = unsafeMapKVPtr(urv)
-// 	urv = (*unsafeReflectValue)(unsafe.Pointer(&m))
-// 	mapdelete(urv.typ, rv2ptr(urv), kptr)
-// }
-
 // return an addressable reflect value that can be used in mapRange and mapGet operations.
 //
 // all calls to mapGet or mapRange will call here to get an addressable reflect.Value.
@@ -1215,58 +1137,9 @@ func makeMapReflect(typ reflect.Type, size int) (rv reflect.Value) {
 	return
 }
 
-// ---------- ENCODER optimized ---------------
-
-// ---------- DECODER optimized ---------------
-
-// func (d *decoderBase) zerocopystate() bool {
-// 	return d.bytes && d.zeroCopy
-// }
-
-// func (d *decoderBase) stringZC(v []byte) (s string) {
-// 	if d.zerocopystate() {
-// 		return stringView(v)
-// 	}
-// 	return d.string(v)
-// }
-
-// func (d *decoderBase) stringZC(v []byte, scratchBuf bool) (s string) {
-// 	// This method is called a lot. Inlining helps with performance.
-// 	//
-// 	// MARKER: TUNED BELOW TO force inlining
-// 	// - inlined d.string(...)
-// 	// - remove if len(v) == 0 { check
-// 	// - used double indexing to eliminate inline cost of the addition (v[0]:v[0]+1)
-
-// 	// if len(v) == 0 {
-// 	// } else if len(v) == 1 {
-// 	if len(v) == 1 {
-// 		// s = str4byte(v[0]) // str256[v[0]:][:1] // str256[v[0] : v[0]+1]
-// 		s = unsafe.String((*byte)(unsafe.Add(unsafe.Pointer(unsafe.StringData(str256)), v[0])), 1)
-// 	} else if !scratchBuf && d.bytes && d.zeroCopy {
-// 		s = stringView(v)
-// 	} else if d.is == nil || d.c != containerMapKey || len(v) > internMaxStrLen {
-// 		s = string(v)
-// 	} else {
-// 		s = d.is.string(v)
-// 	}
-// 	return
-// }
-
 func (d *decoderBase) bytes2Str(in []byte, state dBytesAttachState) (s string, mutable bool) {
 	return stringView(in), state <= dBytesAttachBuffer
 }
-
-// func (d *decoderBase) detach2Str(in []byte, usingBuf bool) string {
-// 	if d.isAttachedBytes(usingBuf) {
-// 		return d.string(in)
-// 	}
-// 	return stringView(in)
-// }
-
-// func (d *decoder[T]) jsondriver() *jsonDecDriver {
-// 	return (*jsonDecDriver)((*unsafeIntf)(unsafe.Pointer(&d.d)).ptr)
-// }
 
 // ---------- structFieldInfo optimized ---------------
 
@@ -1290,18 +1163,6 @@ func (n *structFieldInfoNode) rvField(v reflect.Value) (rv reflect.Value) {
 
 	return
 }
-
-// func (n *structFieldInfoNode) rvFieldAddr(v reflect.Value) (rv reflect.Value) {
-// 	// we already know this is exported, and maybe embedded (based on what si says)
-// 	uv := (*unsafeReflectValue)(unsafe.Pointer(&v))
-// 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-// 	// clear flagEmbedRO if necessary, and inherit permission bits from v
-// 	urv.flag = uv.flag&(unsafeFlagStickyRO|unsafeFlagIndir|unsafeFlagAddr) | uintptr(n.kind)
-// 	urv.flag = (urv.flag & unsafeFlagRO) | uintptr(reflect.Ptr)
-// 	urv.typ = ((*unsafeIntf)(unsafe.Pointer(&n.ptrTyp))).ptr
-// 	urv.ptr = unsafe.Pointer(uintptr(uv.ptr) + uintptr(n.offset))
-// 	return
-// }
 
 // runtime chan and map are designed such that the first field is the count.
 // len builtin uses this to get the length of a chan/map easily.
@@ -1347,10 +1208,6 @@ func unsafeNew(typ unsafe.Pointer) unsafe.Pointer {
 // failing with "error: undefined reference" error.
 // however, runtime.{mallocgc, newarray} are supported, so use that instead.
 
-// //go:linkname memmove runtime.memmove
-// //go:noescape
-// func memmove(to, from unsafe.Pointer, n uintptr)
-
 //go:linkname mallocgc runtime.mallocgc
 //go:noescape
 func mallocgc(size uintptr, typ unsafe.Pointer, needzero bool) unsafe.Pointer
@@ -1366,10 +1223,6 @@ func mapiterinit(typ unsafe.Pointer, m unsafe.Pointer, it unsafe.Pointer)
 //go:linkname mapiternext runtime.mapiternext
 //go:noescape
 func mapiternext(it unsafe.Pointer) (key unsafe.Pointer)
-
-// //go:linkname mapdelete runtime.mapdelete
-// //go:noescape
-// func mapdelete(typ unsafe.Pointer, m unsafe.Pointer, key unsafe.Pointer)
 
 //go:linkname mapassign runtime.mapassign
 //go:noescape
@@ -1401,6 +1254,18 @@ func typedmemmove(typ unsafe.Pointer, dst, src unsafe.Pointer)
 //go:noescape
 func typedmemclr(typ unsafe.Pointer, dst unsafe.Pointer)
 
+// ---- go:linknames ----
+
+// //go:linkname memmove runtime.memmove
+// //go:noescape
+// func memmove(to, from unsafe.Pointer, n uintptr)
+
+// //go:linkname mapdelete runtime.mapdelete
+// //go:noescape
+// func mapdelete(typ unsafe.Pointer, m unsafe.Pointer, key unsafe.Pointer)
+
+// ---- others ----
+
 // // isNil says whether the value v is nil.
 // // This applies to references like map/ptr/unsafepointer/chan/func,
 // // and non-reference values like interface/slice.
@@ -1419,5 +1284,146 @@ func typedmemclr(typ unsafe.Pointer, dst unsafe.Pointer)
 // 	rv = reflect.ValueOf(v) // reflect.ValueOf is currently not inline'able - so call it directly
 // 	tk := rv.Kind()
 // 	isnil = (tk == reflect.Interface || tk == reflect.Slice) && *(*unsafe.Pointer)(ui.ptr) == nil
+// 	return
+// }
+
+// func str4byte(b byte) string {
+// 	return unsafe.String((*byte)(unsafe.Add(unsafe.Pointer(unsafe.StringData(str256)), b)), 1)
+// }
+
+// func byteSliceOf(b []byte, start, end uint) []byte {
+// 	s := (*unsafeSlice)(unsafe.Pointer(&b))
+// 	s.Data = unsafe.Pointer(uintptr(s.Data) + uintptr(start))
+// 	s.Len = int(end - start)
+// 	s.Cap -= int(start)
+// 	return b
+// }
+
+// func byteSliceWithLen(b []byte, length uint) []byte {
+// 	(*unsafeSlice)(unsafe.Pointer(&b)).Len = int(length)
+// 	return b
+// }
+
+// func rvIsNonNilPtr(rv reflect.Value) bool {
+// 	return rv.Kind() == reflect.Ptr && !rvIsNil(rv)
+// }
+
+// func (x *structFieldInfos) count() int { return x.length }
+
+// func (x *structFieldInfos) sorted() (v []*structFieldInfo) {
+// 	s := (*unsafeSlice)(unsafe.Pointer(&v))
+// 	s.Data = x.sorted0
+// 	s.Len = x.length
+// 	s.Cap = s.Len
+// 	return
+// }
+
+// func rvArrayIndex(rv reflect.Value, i int, ti *typeInfo) (v reflect.Value) {
+// 	return rv.Index(i)
+// }
+
+// func rvArrayIndex(rv reflect.Value, i int, ti *typeInfo) (v reflect.Value) {
+// 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
+// 	uv := (*unsafeReflectValue)(unsafe.Pointer(&v))
+// 	uv.ptr = unsafe.Pointer(uintptr(urv.ptr) + uintptr(int(ti.elemsize)*i))
+// 	uv.typ = ((*unsafeIntf)(unsafe.Pointer(&ti.elem))).ptr
+// 	// uv.flag = urv.flag&(unsafeFlagIndir|unsafeFlagAddr) | uintptr(ti.elemkind)
+// 	uv.flag = uintptr(ti.elemkind) | unsafeFlagIndir | unsafeFlagAddr
+// 	return
+// }
+
+// copy is an intrinsic, which may use asm if length is small,
+// or make a runtime call to runtime.memmove if length is large.
+// Performance suffers when you always call runtime.memmove function.
+//
+// Consequently, there's no value in a copybytes call - just call copy() directly
+
+// func copybytes(to, from []byte) (n int) {
+// 	n = (*unsafeSlice)(unsafe.Pointer(&from)).Len
+// 	memmove(
+// 		(*unsafeSlice)(unsafe.Pointer(&to)).Data,
+// 		(*unsafeSlice)(unsafe.Pointer(&from)).Data,
+// 		uintptr(n),
+// 	)
+// 	return
+// }
+
+// func copybytestr(to []byte, from string) (n int) {
+// 	n = (*unsafeSlice)(unsafe.Pointer(&from)).Len
+// 	memmove(
+// 		(*unsafeSlice)(unsafe.Pointer(&to)).Data,
+// 		(*unsafeSlice)(unsafe.Pointer(&from)).Data,
+// 		uintptr(n),
+// 	)
+// 	return
+// }
+
+// func mapDelete(m, k reflect.Value) {
+// 	var urv = (*unsafeReflectValue)(unsafe.Pointer(&k))
+// 	var kptr = unsafeMapKVPtr(urv)
+// 	urv = (*unsafeReflectValue)(unsafe.Pointer(&m))
+// 	mapdelete(urv.typ, rv2ptr(urv), kptr)
+// }
+
+// ---------- ENCODER optimized ---------------
+
+// ---------- DECODER optimized ---------------
+
+// func (d *decoderBase) zerocopystate() bool {
+// 	return d.bytes && d.zeroCopy
+// }
+
+// func (d *decoderBase) stringZC(v []byte) (s string) {
+// 	if d.zerocopystate() {
+// 		return stringView(v)
+// 	}
+// 	return d.string(v)
+// }
+
+// func (d *decoderBase) stringZC(v []byte, scratchBuf bool) (s string) {
+// 	// This method is called a lot. Inlining helps with performance.
+// 	//
+// 	// MARKER: TUNED BELOW TO force inlining
+// 	// - inlined d.string(...)
+// 	// - remove if len(v) == 0 { check
+// 	// - used double indexing to eliminate inline cost of the addition (v[0]:v[0]+1)
+
+// 	// if len(v) == 0 {
+// 	// } else if len(v) == 1 {
+// 	if len(v) == 1 {
+// 		// s = str4byte(v[0]) // str256[v[0]:][:1] // str256[v[0] : v[0]+1]
+// 		s = unsafe.String((*byte)(unsafe.Add(unsafe.Pointer(unsafe.StringData(str256)), v[0])), 1)
+// 	} else if !scratchBuf && d.bytes && d.zeroCopy {
+// 		s = stringView(v)
+// 	} else if d.is == nil || d.c != containerMapKey || len(v) > internMaxStrLen {
+// 		s = string(v)
+// 	} else {
+// 		s = d.is.string(v)
+// 	}
+// 	return
+// }
+
+// ---------- END ---------------
+
+// func (d *decoderBase) detach2Str(in []byte, usingBuf bool) string {
+// 	if d.isAttachedBytes(usingBuf) {
+// 		return d.string(in)
+// 	}
+// 	return stringView(in)
+// }
+
+// func (d *decoder[T]) jsondriver() *jsonDecDriver {
+// 	return (*jsonDecDriver)((*unsafeIntf)(unsafe.Pointer(&d.d)).ptr)
+// }
+
+// func (n *structFieldInfoNode) rvFieldAddr(v reflect.Value) (rv reflect.Value) {
+// 	// we already know this is exported, and maybe embedded (based on what si says)
+// 	uv := (*unsafeReflectValue)(unsafe.Pointer(&v))
+// 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
+// 	// clear flagEmbedRO if necessary, and inherit permission bits from v
+// 	urv.flag = uv.flag&(unsafeFlagStickyRO|unsafeFlagIndir|unsafeFlagAddr) | uintptr(n.kind)
+// 	urv.flag = (urv.flag & unsafeFlagRO) | uintptr(reflect.Ptr)
+// 	urv.typ = ((*unsafeIntf)(unsafe.Pointer(&n.ptrTyp))).ptr
+// 	urv.ptr = unsafe.Pointer(uintptr(uv.ptr) + uintptr(n.offset))
 // 	return
 // }

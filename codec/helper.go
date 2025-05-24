@@ -457,12 +457,6 @@ func init() {
 			jsonCharHtmlSafeBitset.set(i)
 		}
 	}
-
-	// var bstr256 [256]byte
-	// for i := range len(bstr256) {
-	// 	bstr256[i] = byte(i)
-	// }
-	// str256 = string(bstr256[:])
 }
 
 func searchRtids(s []uintptr, v uintptr) (i uint, ok bool) {
@@ -480,16 +474,6 @@ LOOP:
 	}
 	return i, i < uint(len(s)) && s[i] == v
 }
-
-// // driverStateManager supports the runtime state of an (enc|dec)Driver.
-// //
-// // During a side(En|De)code call, we can capture the state, reset it,
-// // and then restore it later to continue the primary encoding/decoding.
-// type driverStateManager interface {
-// 	resetState()
-// 	captureState() interface{}
-// 	restoreState(state interface{})
-// }
 
 // circularRefChecker holds interfaces during an encoding (if CheckCircularRef=true)
 //
@@ -525,24 +509,6 @@ func (_ *circularRefChecker) canPushElemKind(elemKind reflect.Kind) bool {
 	return false
 }
 
-// // pushRV expects to get a Pointer value, and pushes it on
-// func (ci *circularRefChecker) pushRV(v reflect.Value) (num int) {
-// 	// only push comparable values if a pointer to a container
-// 	// - (struct, slice, array, map)
-// TOP:
-// 	switch v.Type().Elem().Kind() {
-// 	case reflect.Struct, reflect.Slice, reflect.Array, reflect.Map:
-// 		ci.push(rv2i(v))
-// 		num++
-// 	case reflect.Pointer:
-// 		v = v.Elem()
-// 		if v.Kind() == reflect.Pointer {
-// 			goto TOP
-// 		}
-// 	}
-// 	return
-// }
-
 func (ci *circularRefChecker) pop(num int) {
 	*ci = (*ci)[:len(*ci)-num]
 }
@@ -552,10 +518,6 @@ type bdAndBdread struct {
 	bd     byte
 }
 
-// func (x bdAndBdread) captureState() interface{}   { return x }
-// func (x *bdAndBdread) resetState()                { x.bd, x.bdRead = 0, false }
-// func (x *bdAndBdread) reset()                     { x.resetState() }
-// func (x *bdAndBdread) restoreState(v interface{}) { *x = v.(bdAndBdread) }
 func (x *bdAndBdread) reset() { x.bd, x.bdRead = 0, false }
 
 type clsErr struct {
@@ -1074,24 +1036,6 @@ func (x *BasicHandle) clearInited() {
 	atomic.StoreUint32(&x.inited, 0)
 }
 
-// func (x *BasicHandle) Name() string {
-// 	return x.name
-// }
-
-// // TimeBuiltin returns whether time.Time OOTB support is used,
-// // based on the initial configuration of TimeNotBuiltin
-// func (x *basicHandleRuntimeState) TimeBuiltin() bool {
-// 	return x.timeBuiltin
-// }
-
-// func (x *basicHandleRuntimeState) isJs() bool {
-// 	return x.jsonHandle
-// }
-
-// func (x *basicHandleRuntimeState) isBe() bool {
-// 	return x.binaryHandle
-// }
-
 func (x *basicHandleRuntimeState) setExt(rt reflect.Type, tag uint64, ext Ext) (err error) {
 	rk := rt.Kind()
 	for rk == reflect.Ptr {
@@ -1147,12 +1091,6 @@ func (x *BasicHandle) getTypeInfo(rtid uintptr, rt reflect.Type) (pti *typeInfo)
 func (x *BasicHandle) getTypeInfo4RT(rt reflect.Type) (pti *typeInfo) {
 	return x.typeInfos().get(rt2id(rt), rt)
 }
-
-// type handle interface {
-// 	*SimpleHandle
-//
-// 	Handle
-// }
 
 // Handle defines a specific encoding format. It also stores any runtime state
 // used during an Encoding or Decoding session e.g. stored state about Types, etc.
@@ -1399,26 +1337,6 @@ func (z bigenHelper) Uint64(b [8]byte) (v uint64) {
 		uint64(b[0])<<56
 }
 
-// type bigenWriter[T encWriter] struct {
-// 	bigenHelper
-// }
-//
-// func (z bigenWriter[T]) writeUint16(w T, v uint16) {
-// 	w.writen2(z.PutUint16(v))
-// }
-//
-// func (z bigenWriter[T]) writeUint32(w T, v uint32) {
-// 	// w.writeb((z.PutUint32(v))[:])
-// 	// x := z.PutUint32(v)
-// 	// w.writeb(x[:])
-// 	// w.writen4(x[0], x[1], x[2], x[3])
-// 	w.writen4(z.PutUint32(v))
-// }
-//
-// func (z bigenWriter[T]) writeUint64(w T, v uint64) {
-// 	w.writen8(z.PutUint64(v))
-// }
-
 type extTypeTagFn struct {
 	rtid    uintptr
 	rtidptr uintptr
@@ -1544,31 +1462,6 @@ type structFieldInfoNode struct {
 	typ reflect.Type
 }
 
-// // field returns the field of the struct.
-// func (n *structFieldInfoNode) field(v reflect.Value, alloc, base bool) (rv reflect.Value) {
-// 	v = n.rvField(v)
-// 	rv = v
-//
-// 	// typically, fields only have at numderef = 0 or 1.
-// 	// (You don't typically see fields like **int).
-// 	// Consequently, not much value in hoisting 'if alloc' conditional out of the loop.
-//
-// 	for range n.numderef {
-// 		if rvPtrIsNil(v) {
-// 			if alloc {
-// 				rvSetDirect(v, reflect.New(v.Type().Elem()))
-// 			} else {
-// 				return reflect.Value{}
-// 			}
-// 		}
-// 		v = v.Elem()
-// 	}
-// 	if base {
-// 		rv = v
-// 	}
-// 	return
-// }
-
 // structFieldinfopathNode is a node in a tree, which allows us easily
 // walk the anonymous path.
 //
@@ -1690,26 +1583,6 @@ func (n *structFieldInfo) fieldNoAlloc(v reflect.Value, base bool) (rv reflect.V
 	}
 	return
 }
-
-// func (n *structFieldInfo) fieldCirRef(ci *circularRefChecker, v reflect.Value, alloc, addr bool) (rv reflect.Value, numRefPush int) {
-// 	rv = n.path.field(v, alloc)
-// 	var rvAddrOK bool
-// 	if ci != nil {
-// 		if rv.IsValid() {
-// 			rvAddrOK = true
-// 			v = rvAddr(rv, n.ptrTyp)
-// 			numRefPush = ci.pushRV(v)
-// 		}
-// 	}
-// 	if addr {
-// 		if rvAddrOK {
-// 			rv = v
-// 		} else if rv.IsValid() {
-// 			rv = rvAddr(rv, n.ptrTyp)
-// 		}
-// 	}
-// 	return
-// }
 
 func parseStructInfo(stag string) (toArray, omitEmpty bool, keytype valueType) {
 	keytype = valueTypeString // default
@@ -2700,15 +2573,6 @@ func panicToErr(h errDecorator, fn func()) (err error) {
 	return
 }
 
-// // recovered panics can be runtime.Error, error, string or anything else.
-// func panicValToErr(h errDecorator, err, errCopy *error, panicAgain bool) {
-// 	r := recover()
-// 	if r == nil || err == nil {
-// 		return
-// 	}
-// 	panicValToErr2(h, r, err, errCopy, panicAgain)
-// }
-
 // panicValToErr will convert a panic value into an error
 //
 // err and recovered are guaranteed to be not nil
@@ -3393,4 +3257,135 @@ func (x internerMap) string(v []byte) (s string) {
 // 		goto LOOP
 // 	}
 // 	return i, i < uint(len(s)) && s[i] == v
+// }
+
+// // driverStateManager supports the runtime state of an (enc|dec)Driver.
+// //
+// // During a side(En|De)code call, we can capture the state, reset it,
+// // and then restore it later to continue the primary encoding/decoding.
+// type driverStateManager interface {
+// 	resetState()
+// 	captureState() interface{}
+// 	restoreState(state interface{})
+// }
+
+// // pushRV expects to get a Pointer value, and pushes it on
+// func (ci *circularRefChecker) pushRV(v reflect.Value) (num int) {
+// 	// only push comparable values if a pointer to a container
+// 	// - (struct, slice, array, map)
+// TOP:
+// 	switch v.Type().Elem().Kind() {
+// 	case reflect.Struct, reflect.Slice, reflect.Array, reflect.Map:
+// 		ci.push(rv2i(v))
+// 		num++
+// 	case reflect.Pointer:
+// 		v = v.Elem()
+// 		if v.Kind() == reflect.Pointer {
+// 			goto TOP
+// 		}
+// 	}
+// 	return
+// }
+
+// func (x bdAndBdread) captureState() interface{}   { return x }
+// func (x *bdAndBdread) resetState()                { x.bd, x.bdRead = 0, false }
+// func (x *bdAndBdread) reset()                     { x.resetState() }
+// func (x *bdAndBdread) restoreState(v interface{}) { *x = v.(bdAndBdread) }
+
+// func (x *BasicHandle) Name() string {
+// 	return x.name
+// }
+
+// // TimeBuiltin returns whether time.Time OOTB support is used,
+// // based on the initial configuration of TimeNotBuiltin
+// func (x *basicHandleRuntimeState) TimeBuiltin() bool {
+// 	return x.timeBuiltin
+// }
+
+// func (x *basicHandleRuntimeState) isJs() bool {
+// 	return x.jsonHandle
+// }
+
+// func (x *basicHandleRuntimeState) isBe() bool {
+// 	return x.binaryHandle
+// }
+
+// type handle interface {
+// 	*SimpleHandle
+//
+// 	Handle
+// }
+
+// type bigenWriter[T encWriter] struct {
+// 	bigenHelper
+// }
+//
+// func (z bigenWriter[T]) writeUint16(w T, v uint16) {
+// 	w.writen2(z.PutUint16(v))
+// }
+//
+// func (z bigenWriter[T]) writeUint32(w T, v uint32) {
+// 	// w.writeb((z.PutUint32(v))[:])
+// 	// x := z.PutUint32(v)
+// 	// w.writeb(x[:])
+// 	// w.writen4(x[0], x[1], x[2], x[3])
+// 	w.writen4(z.PutUint32(v))
+// }
+//
+// func (z bigenWriter[T]) writeUint64(w T, v uint64) {
+// 	w.writen8(z.PutUint64(v))
+// }
+
+// // field returns the field of the struct.
+// func (n *structFieldInfoNode) field(v reflect.Value, alloc, base bool) (rv reflect.Value) {
+// 	v = n.rvField(v)
+// 	rv = v
+//
+// 	// typically, fields only have at numderef = 0 or 1.
+// 	// (You don't typically see fields like **int).
+// 	// Consequently, not much value in hoisting 'if alloc' conditional out of the loop.
+//
+// 	for range n.numderef {
+// 		if rvPtrIsNil(v) {
+// 			if alloc {
+// 				rvSetDirect(v, reflect.New(v.Type().Elem()))
+// 			} else {
+// 				return reflect.Value{}
+// 			}
+// 		}
+// 		v = v.Elem()
+// 	}
+// 	if base {
+// 		rv = v
+// 	}
+// 	return
+// }
+
+// func (n *structFieldInfo) fieldCirRef(ci *circularRefChecker, v reflect.Value, alloc, addr bool) (rv reflect.Value, numRefPush int) {
+// 	rv = n.path.field(v, alloc)
+// 	var rvAddrOK bool
+// 	if ci != nil {
+// 		if rv.IsValid() {
+// 			rvAddrOK = true
+// 			v = rvAddr(rv, n.ptrTyp)
+// 			numRefPush = ci.pushRV(v)
+// 		}
+// 	}
+// 	if addr {
+// 		if rvAddrOK {
+// 			rv = v
+// 		} else if rv.IsValid() {
+// 			rv = rvAddr(rv, n.ptrTyp)
+// 		}
+// 	}
+// 	return
+// }
+
+// // recovered panics can be runtime.Error, error, string or anything else.
+// func panicValToErr(h errDecorator, err, errCopy *error, panicAgain bool) {
+// 	r := recover()
+// 	if r == nil || err == nil {
+// 		return
+// 	}
+// 	panicValToErr2(h, r, err, errCopy, panicAgain)
 // }

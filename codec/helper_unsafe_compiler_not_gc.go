@@ -39,11 +39,6 @@ func unsafeGrowslice(typ unsafe.Pointer, old unsafeSlice, cap, incr int) (v unsa
 	return
 }
 
-// func unsafeNew(t reflect.Type, typ unsafe.Pointer) unsafe.Pointer {
-// 	rv := reflect.New(t)
-// 	return ((*unsafeReflectValue)(unsafe.Pointer(&rv))).ptr
-// }
-
 // runtime.{mapassign_fastXXX, mapaccess2_fastXXX} are not supported in gollvm,
 // failing with "error: undefined reference" error.
 // so we just use runtime.{mapassign, mapaccess2} directly
@@ -84,3 +79,8 @@ func mapGet(m, k, v reflect.Value, p mapReqParams) (_ reflect.Value) {
 
 	return v
 }
+
+// func unsafeNew(t reflect.Type, typ unsafe.Pointer) unsafe.Pointer {
+// 	rv := reflect.New(t)
+// 	return ((*unsafeReflectValue)(unsafe.Pointer(&rv))).ptr
+// }

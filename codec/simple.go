@@ -10,20 +10,6 @@ import (
 	"time"
 )
 
-// func init() {
-// 	var t *SimpleHandle
-// 	h := handleNewFn{
-// 		typ: rt2id(reflect.TypeOf(t)),
-// 		encBytes: func(v *[]byte, h Handle) encoderI {
-// 			return newEncDriverBytes[simpleEncDriverM[bytesEncAppenderM]](v, h)
-// 		},
-// 		encIO:    newEncDriverIO[simpleEncDriverM[bufioEncAppenderM], simpleEncDriverM[bytesEncAppenderM]],
-// 		decBytes: newDecDriverBytes[simpleDecDriverM[bytesDecReaderM]],
-// 		decIO:    newDecDriverIO[simpleDecDriverM[ioDecReaderM], simpleDecDriverM[bytesDecReaderM]],
-// 	}
-// 	handleNewFns = append(handleNewFns, h)
-// }
-
 const (
 	_               uint8 = iota
 	simpleVdNil           = 1
@@ -84,14 +70,6 @@ type simpleEncDriver[T encWriter] struct {
 	e *encoderBase
 	// b [8]byte
 	w T
-
-	// bytes bool
-
-	// // we cannot reference a *encoder here, due to recursive limitations of go generics
-	// // this MUST be *encoder[simpleEncDriverM[bytesEncAppenderM]]
-	// // es encoderI // must-be *encoder[simpleEncDriverM[bytesEncAppenderM]]
-	// // es *encoder[simpleEncDriverM[bytesEncAppenderM]]
-	// es interface{}
 }
 
 func (e *simpleEncDriver[T]) EncodeNil() {
@@ -636,15 +614,6 @@ func (d *simpleDecDriver[T]) nextValueBytes() (v []byte) {
 	return
 }
 
-// func (d *simpleDecDriver[T]) nextValueBytesR() {
-// 	d.readNextBd()
-// 	v0 = append(v0, d.bd)
-// 	d.r.startRecording(v0)
-// 	d.nextValueBytesBdReadR()
-// 	v = d.r.stopRecording()
-// 	return
-// }
-
 func (d *simpleDecDriver[T]) nextValueBytesBdReadR() {
 	c := d.bd
 
@@ -750,19 +719,10 @@ type SimpleHandle struct {
 	EncZeroValuesAsNil bool
 }
 
-// func (h *SimpleHandle) init() {
-// 	// h.rt.init()
-// }
-
 // Name returns the name of the handle: simple
 func (h *SimpleHandle) Name() string { return "simple" }
 
 func (h *SimpleHandle) desc(bd byte) string { return simpledesc(bd) }
-
-// func (h *SimpleHandle) clone() interface{} {
-// 	h2 := *h
-// 	return &h2
-// }
 
 // SetBytesExt sets an extension
 func (h *SimpleHandle) SetBytesExt(rt reflect.Type, tag uint64, ext BytesExt) (err error) {
@@ -792,8 +752,6 @@ func (d *simpleEncDriver[T]) init(hh Handle, shared *encoderBase, enc encoderI) 
 }
 
 func (e *simpleEncDriver[T]) writeBytesAsis(b []byte) { e.w.writeb(b) }
-
-// func (e *simpleEncDriver[T]) writeStringAsisDblQuoted(v string) { e.w.writeqstr(v) }
 
 func (e *simpleEncDriver[T]) writerEnd() { e.w.end() }
 
@@ -842,3 +800,39 @@ func (d *simpleDecDriver[T]) descBd() string {
 func (d *simpleDecDriver[T]) DecodeFloat32() (f float32) {
 	return float32(chkOvf.Float32V(d.DecodeFloat64()))
 }
+
+// ----
+
+// func init() {
+// 	var t *SimpleHandle
+// 	h := handleNewFn{
+// 		typ: rt2id(reflect.TypeOf(t)),
+// 		encBytes: func(v *[]byte, h Handle) encoderI {
+// 			return newEncDriverBytes[simpleEncDriverM[bytesEncAppenderM]](v, h)
+// 		},
+// 		encIO:    newEncDriverIO[simpleEncDriverM[bufioEncAppenderM], simpleEncDriverM[bytesEncAppenderM]],
+// 		decBytes: newDecDriverBytes[simpleDecDriverM[bytesDecReaderM]],
+// 		decIO:    newDecDriverIO[simpleDecDriverM[ioDecReaderM], simpleDecDriverM[bytesDecReaderM]],
+// 	}
+// 	handleNewFns = append(handleNewFns, h)
+// }
+
+// func (d *simpleDecDriver[T]) nextValueBytesR() {
+// 	d.readNextBd()
+// 	v0 = append(v0, d.bd)
+// 	d.r.startRecording(v0)
+// 	d.nextValueBytesBdReadR()
+// 	v = d.r.stopRecording()
+// 	return
+// }
+
+// func (h *SimpleHandle) init() {
+// 	// h.rt.init()
+// }
+
+// func (h *SimpleHandle) clone() interface{} {
+// 	h2 := *h
+// 	return &h2
+// }
+
+// func (e *simpleEncDriver[T]) writeStringAsisDblQuoted(v string) { e.w.writeqstr(v) }

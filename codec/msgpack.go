@@ -547,14 +547,6 @@ func (d *msgpackDecDriver[T]) nextValueBytes() (v []byte) {
 	return
 }
 
-// func (d *msgpackDecDriver[T]) nextValueBytesR(v0 []byte) (v []byte) {
-// 	d.readNextBd()
-// 	v = v0
-// 	var h decNextValueBytesHelper
-// 	h.append1(&v, d.bytes, d.bd)
-// 	return d.nextValueBytesBdReadR(v)
-// }
-
 func (d *msgpackDecDriver[T]) nextValueBytesBdReadR() {
 	bd := d.bd
 
@@ -1288,3 +1280,13 @@ func (d *msgpackDecDriver[T]) descBd() string {
 func (d *msgpackDecDriver[T]) DecodeFloat32() (f float32) {
 	return float32(chkOvf.Float32V(d.DecodeFloat64()))
 }
+
+// ----
+
+// func (d *msgpackDecDriver[T]) nextValueBytesR(v0 []byte) (v []byte) {
+// 	d.readNextBd()
+// 	v = v0
+// 	var h decNextValueBytesHelper
+// 	h.append1(&v, d.bytes, d.bd)
+// 	return d.nextValueBytesBdReadR(v)
+// }

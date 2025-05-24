@@ -572,28 +572,6 @@ func (e *encoder[T]) kArrayWMbs(rv reflect.Value, ti *typeInfo, isSlice bool) {
 	// e.mapEnd()
 }
 
-// func (e *encoder[T]) kSliceW(rv reflect.Value, ti *typeInfo) {
-// 	var l = rvLenSlice(rv)
-// 	e.arrayStart(l)
-// 	if l <= 0 {
-// 		goto END
-// 	}
-// 	if ti.tielem.flagEncBuiltin {
-// 		for j := 0; j < l; j++ {
-// 			e.arrayElem()
-// 			e.encode(rv2i(baseRVRV(rvSliceIndex(rv, j, ti))))
-// 		}
-// 	} else {
-// 		fn := e.kSeqFn(ti.elem)
-// 		for j := 0; j < l; j++ {
-// 			e.arrayElem()
-// 			e.encodeValue(rvSliceIndex(rv, j, ti), fn)
-// 		}
-// 	}
-// END:
-// 	e.arrayEnd()
-// }
-
 func (e *encoder[T]) kArrayW(rv reflect.Value, ti *typeInfo, isSlice bool) {
 	var l int
 	if isSlice {
@@ -615,9 +593,10 @@ func (e *encoder[T]) kArrayW(rv reflect.Value, ti *typeInfo, isSlice bool) {
 	j := 0
 	e.c = containerArrayElem
 	e.e.WriteArrayElem(true)
+	builtin := ti.tielem.flagEncBuiltin
 	for {
 		rvv := rvArrayIndex(rv, j, ti, isSlice)
-		if ti.tielem.flagEncBuiltin {
+		if builtin {
 			e.encode(rv2i(baseRVRV(rvv)))
 		} else {
 			e.encodeValue(rvv, fn)
@@ -1672,6 +1651,9 @@ func (e *encoder[T]) fnNoExt(t reflect.Type) *encFn[T] {
 // Callbacks ie Write(Map|Array)XXX should not use the containerState.
 // It is there for post-callback use.
 // Instead, callbacks have a parameter to tell if first time or not.
+//
+// Some code is commented out below, as they are manually inlined.
+// Commented code is retained here for convernience.
 
 func (e *encoder[T]) mapStart(length int) {
 	e.e.WriteMapStart(length)
@@ -2087,3 +2069,27 @@ func oneOffEncode(se encoderI, v interface{}, out *[]byte, basetype reflect.Type
 	// e.sideEncoder(&bs)
 	// e.sideEncode(v, basetype, 0)
 }
+
+// ----
+
+// func (e *encoder[T]) kSliceW(rv reflect.Value, ti *typeInfo) {
+// 	var l = rvLenSlice(rv)
+// 	e.arrayStart(l)
+// 	if l <= 0 {
+// 		goto END
+// 	}
+// 	if ti.tielem.flagEncBuiltin {
+// 		for j := 0; j < l; j++ {
+// 			e.arrayElem()
+// 			e.encode(rv2i(baseRVRV(rvSliceIndex(rv, j, ti))))
+// 		}
+// 	} else {
+// 		fn := e.kSeqFn(ti.elem)
+// 		for j := 0; j < l; j++ {
+// 			e.arrayElem()
+// 			e.encodeValue(rvSliceIndex(rv, j, ti), fn)
+// 		}
+// 	}
+// END:
+// 	e.arrayEnd()
+// }

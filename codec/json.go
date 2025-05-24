@@ -244,22 +244,6 @@ func (e *jsonEncDriver[T]) EncodeBool(b bool) {
 	e.w.writestr(jsonEncBoolStrs[bool2int(e.ks && e.e.c == containerMapKey)%2][bool2int(b)%2])
 }
 
-// func (e *jsonEncDriver[T]) EncodeBool(b bool) {
-// 	if e.ks && e.e.c == containerMapKey {
-// 		if b {
-// 			e.w.writestr(jsonLits[jsonLitT-1 : jsonLitT+5])
-// 		} else {
-// 			e.w.writestr(jsonLits[jsonLitF-1 : jsonLitF+6])
-// 		}
-// 	} else {
-// 		if b {
-// 			e.w.writestr(jsonLits[jsonLitT : jsonLitT+4])
-// 		} else {
-// 			e.w.writestr(jsonLits[jsonLitF : jsonLitF+5])
-// 		}
-// 	}
-// }
-
 func (e *jsonEncDriver[T]) encodeFloat(f float64, bitsize, fmt byte, prec int8) {
 	var blen uint
 	if e.ks && e.e.c == containerMapKey {
@@ -669,17 +653,6 @@ func (d *jsonDecDriver[T]) checkSep(xc byte) {
 	}
 	d.tok = 0
 }
-
-// func (d *jsonDecDriver[T]) ReadArrayElem(firstTime bool) {
-// 	const xc uint8 = ','
-// 	if !firstTime {
-// 		d.advance()
-// 		if d.tok != xc {
-// 			d.readDelimError(xc)
-// 		}
-// 		d.tok = 0
-// 	}
-// }
 
 func (d *jsonDecDriver[T]) ReadArrayElem(firstTime bool) {
 	if !firstTime {
@@ -1332,33 +1305,6 @@ func (h *JsonHandle) SetInterfaceExt(rt reflect.Type, tag uint64, ext InterfaceE
 	return h.SetExt(rt, tag, makeExt(ext))
 }
 
-// func (h *JsonHandle) newEncDriver() encDriver {
-// 	var e = &jsonEncDriver{h: h}
-// 	// var x []byte
-// 	// e.buf = &x
-// 	e.e.e = e
-// 	e.e.js = true
-// 	e.e.init(h)
-// 	e.reset()
-// 	return e
-// }
-
-// func (h *JsonHandle) newDecDriver() decDriver {
-// 	var d = &jsonDecDriver{h: h}
-// 	var x []byte
-// 	d.buf = &x
-// 	d.d.d = d
-// 	d.d.js = true
-// 	d.d.jsms = h.MapKeyAsString
-// 	d.d.init(h)
-// 	d.reset()
-// 	return d
-// }
-
-// func (e *jsonEncDriver[T]) resetState() {
-// 	e.dl = 0
-// }
-
 func (e *jsonEncDriver[T]) reset() {
 	e.dl = 0
 	// e.resetState()
@@ -1376,11 +1322,6 @@ func (e *jsonEncDriver[T]) reset() {
 	e.ks = e.h.MapKeyAsString
 	e.is = e.h.IntegerAsString
 }
-
-// func (d *jsonDecDriver[T]) resetState() {
-// 	*d.buf = d.d.blist.check(*d.buf, 256)
-// 	d.tok = 0
-// }
 
 func (d *jsonDecDriver[T]) reset() {
 	d.buf = d.d.blist.check(d.buf, 256)
@@ -1419,11 +1360,6 @@ func jsonFloatStrconvFmtPrec32(f float32) (fmt byte, prec int8) {
 	}
 	return
 }
-
-// var _ decDriverContainerTracker = (*jsonDecDriver[T])(nil)
-// var _ encDriverContainerTracker = (*jsonEncDriver[T])(nil)
-// var _ decDriver = (*jsonDecDriver[T])(nil)
-// var _ encDriver = (*jsonEncDriver[T])(nil)
 
 // ----
 //
@@ -1511,3 +1447,71 @@ func (d *jsonDecDriver[T]) init2(dec decoderI) {
 	// d.d.js = true
 	d.d.jsms = d.h.MapKeyAsString
 }
+
+// ----
+
+// var _ decDriverContainerTracker = (*jsonDecDriver[T])(nil)
+// var _ encDriverContainerTracker = (*jsonEncDriver[T])(nil)
+// var _ decDriver = (*jsonDecDriver[T])(nil)
+// var _ encDriver = (*jsonEncDriver[T])(nil)
+
+// ----
+
+// func (e *jsonEncDriver[T]) EncodeBool(b bool) {
+// 	if e.ks && e.e.c == containerMapKey {
+// 		if b {
+// 			e.w.writestr(jsonLits[jsonLitT-1 : jsonLitT+5])
+// 		} else {
+// 			e.w.writestr(jsonLits[jsonLitF-1 : jsonLitF+6])
+// 		}
+// 	} else {
+// 		if b {
+// 			e.w.writestr(jsonLits[jsonLitT : jsonLitT+4])
+// 		} else {
+// 			e.w.writestr(jsonLits[jsonLitF : jsonLitF+5])
+// 		}
+// 	}
+// }
+
+// func (d *jsonDecDriver[T]) ReadArrayElem(firstTime bool) {
+// 	const xc uint8 = ','
+// 	if !firstTime {
+// 		d.advance()
+// 		if d.tok != xc {
+// 			d.readDelimError(xc)
+// 		}
+// 		d.tok = 0
+// 	}
+// }
+
+// func (h *JsonHandle) newEncDriver() encDriver {
+// 	var e = &jsonEncDriver{h: h}
+// 	// var x []byte
+// 	// e.buf = &x
+// 	e.e.e = e
+// 	e.e.js = true
+// 	e.e.init(h)
+// 	e.reset()
+// 	return e
+// }
+
+// func (h *JsonHandle) newDecDriver() decDriver {
+// 	var d = &jsonDecDriver{h: h}
+// 	var x []byte
+// 	d.buf = &x
+// 	d.d.d = d
+// 	d.d.js = true
+// 	d.d.jsms = h.MapKeyAsString
+// 	d.d.init(h)
+// 	d.reset()
+// 	return d
+// }
+
+// func (e *jsonEncDriver[T]) resetState() {
+// 	e.dl = 0
+// }
+
+// func (d *jsonDecDriver[T]) resetState() {
+// 	*d.buf = d.d.blist.check(*d.buf, 256)
+// 	d.tok = 0
+// }
