@@ -269,9 +269,10 @@ func (e *encoderMsgpackBytes) kArrayW(rv reflect.Value, ti *typeInfo, isSlice bo
 	j := 0
 	e.c = containerArrayElem
 	e.e.WriteArrayElem(true)
+	builtin := ti.tielem.flagEncBuiltin
 	for {
 		rvv := rvArrayIndex(rv, j, ti, isSlice)
-		if ti.tielem.flagEncBuiltin {
+		if builtin {
 			e.encode(rv2i(baseRVRV(rvv)))
 		} else {
 			e.encodeValue(rvv, fn)
@@ -925,34 +926,10 @@ func (e *encoderMsgpackBytes) mustEncode(v interface{}) {
 
 func (e *encoderMsgpackBytes) encode(iv interface{}) {
 
-	if isNil(iv) {
+	rv, isnil := isNil(iv, true)
+	if isnil {
 		e.e.EncodeNil()
 		return
-	}
-
-	rv := reflect.ValueOf(iv)
-TOP:
-	if isnilBitset.isset(byte(rv.Kind())) {
-		if rv.Kind() == reflect.Ptr {
-			rv = rv.Elem()
-			iv = rv2i(rv)
-			goto TOP
-		}
-		if rvIsNil(rv) {
-			if e.h.NilCollectionToZeroLength {
-				switch rv.Kind() {
-				case reflect.Slice, reflect.Chan:
-
-					e.e.WriteArrayEmpty()
-					return
-				case reflect.Map:
-					e.e.WriteMapEmpty()
-					return
-				}
-			}
-			e.e.EncodeNil()
-			return
-		}
 	}
 
 	switch v := iv.(type) {
@@ -999,10 +976,19 @@ TOP:
 	case time.Time:
 		e.e.EncodeTime(v)
 	case []byte:
-		e.e.EncodeStringBytesRaw(v)
+		if v != nil {
+			e.e.EncodeStringBytesRaw(v)
+		} else if e.h.NilCollectionToZeroLength {
+			e.e.WriteArrayEmpty()
+		} else {
+			e.e.EncodeNil()
+		}
 	default:
 
 		if skipFastpathTypeSwitchInDirectCall || !e.dh.fastpathEncodeTypeSwitch(iv, e) {
+			if !rv.IsValid() {
+				rv = reflect.ValueOf(iv)
+			}
 			e.encodeValue(rv, nil)
 		}
 	}
@@ -1011,9 +997,6 @@ TOP:
 func (e *encoderMsgpackBytes) encodeValue(rv reflect.Value, fn *encFnMsgpackBytes) {
 
 	var ciPushes int
-	if e.h.CheckCircularRef {
-		ciPushes = e.ci.pushRV(rv)
-	}
 
 	var rvp reflect.Value
 	var rvpValid bool
@@ -1024,9 +1007,14 @@ TOP:
 			e.e.EncodeNil()
 			goto END
 		}
+
 		rvpValid = true
 		rvp = rv
 		rv = rv.Elem()
+		if e.h.CheckCircularRef && e.ci.canPushElemKind(rv.Kind()) {
+			e.ci.push(rv2i(rvp))
+			ciPushes++
+		}
 		goto TOP
 	case reflect.Interface:
 		if rvIsNil(rv) {
@@ -1723,13 +1711,11 @@ func (d *decoderMsgpackBytes) kStructSimple(f *decFnInfo, rv reflect.Value) {
 			return
 		}
 		hasLen := containerLen >= 0
+		var rvkencname []byte
 		for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
 			d.mapElemKey(j == 0)
-			rvkencname, att := d.d.DecodeStringAsBytes()
-
-			if d.bufio && d.h.jsonHandle {
-				rvkencname = d.detach2Bytes(rvkencname, d.b[:], att)
-			}
+			sab, att := d.d.DecodeStringAsBytes()
+			rvkencname = d.usableStructFieldNameBytes(rvkencname, sab, att)
 			d.mapElemValue()
 			if si := ti.siForEncName(rvkencname); si != nil {
 				d.kStructField(si, rv)
@@ -1779,21 +1765,14 @@ func (d *decoderMsgpackBytes) kStruct(f *decFnInfo, rv reflect.Value) {
 		}
 		hasLen := containerLen >= 0
 		var name2 []byte
-		if mf != nil {
-			name2 = make([]byte, 0, 16)
-		}
 		var rvkencname []byte
-		var att dBytesAttachState
 		tkt := ti.keyType
 		for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
 			d.mapElemKey(j == 0)
 
 			if tkt == valueTypeString {
-				rvkencname, att = d.d.DecodeStringAsBytes()
-
-				if d.bufio && d.h.jsonHandle {
-					rvkencname = d.detach2Bytes(rvkencname, d.b[:], att)
-				}
+				sab, att := d.d.DecodeStringAsBytes()
+				rvkencname = d.usableStructFieldNameBytes(rvkencname, sab, att)
 			} else if tkt == valueTypeInt {
 				rvkencname = strconv.AppendInt(d.b[:0], d.d.DecodeInt64(), 10)
 			} else if tkt == valueTypeUint {
@@ -1805,8 +1784,7 @@ func (d *decoderMsgpackBytes) kStruct(f *decFnInfo, rv reflect.Value) {
 			}
 
 			d.mapElemValue()
-			si := ti.siForEncName(rvkencname)
-			if si != nil {
+			if si := ti.siForEncName(rvkencname); si != nil {
 				d.kStructField(si, rv)
 			} else if mf != nil {
 
@@ -1858,18 +1836,14 @@ func (d *decoderMsgpackBytes) kSlice(f *decFnInfo, rv reflect.Value) {
 			halt.errorf("bytes/string in stream must decode into slice/array of bytes, not %v", ti.rt)
 		}
 		rvbs := rvGetBytes(rv)
-		if !rvCanset {
-
-			rvbs = rvbs[:len(rvbs):len(rvbs)]
-		}
-		bs2 := d.decodeBytesInto(rvbs)
-
-		if !(len(bs2) > 0 && len(bs2) == len(rvbs) && &bs2[0] == &rvbs[0]) {
-			if rvCanset {
+		if rvCanset {
+			bs2, bst := d.decodeBytesInto(rvbs, false)
+			if bst != dBytesIntoParamOut {
 				rvSetBytes(rv, bs2)
-			} else if len(rvbs) > 0 && len(bs2) > 0 {
-				copy(rvbs, bs2)
 			}
+		} else {
+
+			d.decodeBytesInto(rvbs[:len(rvbs):len(rvbs)], true)
 		}
 		return
 	}
@@ -2001,6 +1975,7 @@ func (d *decoderMsgpackBytes) kSlice(f *decFnInfo, rv reflect.Value) {
 					halt.onerror(errExpandSliceCannotChange)
 				}
 				rv, rvcap, rvCanset = rvGrowSlice(rv, f.ti, rvcap, 1)
+
 				rvlen = rvcap
 				rvChanged = !rvCanset
 			}
@@ -2060,10 +2035,7 @@ func (d *decoderMsgpackBytes) kArray(f *decFnInfo, rv reflect.Value) {
 			halt.errorf("bytes/string in stream can decode into array of bytes, but not %v", ti.rt)
 		}
 		rvbs := rvGetArrayBytes(rv, nil)
-		bs2 := d.decodeBytesInto(rvbs)
-		if !byteSliceSameData(rvbs, bs2) && len(rvbs) > 0 && len(bs2) > 0 {
-			copy(rvbs, bs2)
-		}
+		d.decodeBytesInto(rvbs, true)
 		return
 	}
 
@@ -2250,7 +2222,7 @@ func (d *decoderMsgpackBytes) kChan(f *decFnInfo, rv reflect.Value) {
 
 		if rv9.IsValid() {
 			rvSetZero(rv9)
-		} else if decUseTransient && useTransient {
+		} else if useTransient {
 			rv9 = d.perType.TransientAddrK(ti.elem, reflect.Kind(ti.elemkind))
 		} else {
 			rv9 = rvZeroAddrK(ti.elem, reflect.Kind(ti.elemkind))
@@ -2295,7 +2267,8 @@ func (d *decoderMsgpackBytes) kMap(f *decFnInfo, rv reflect.Value) {
 	ktypePtr := ktypeKind == reflect.Ptr
 
 	vTransient := decUseTransient && !vtypePtr && ti.tielem.flagCanTransient
-	kTransient := decUseTransient && !ktypePtr && ti.tikey.flagCanTransient
+
+	kTransient := vTransient && !ktypePtr && ti.tikey.flagCanTransient
 
 	var vtypeElem reflect.Type
 
@@ -2353,7 +2326,7 @@ func (d *decoderMsgpackBytes) kMap(f *decFnInfo, rv reflect.Value) {
 		kstr = ""
 		if j == 0 {
 
-			if decUseTransient && vTransient && kTransient {
+			if kTransient {
 				rvk = d.perType.TransientAddr2K(ktype, ktypeKind)
 			} else {
 				rvk = rvZeroAddrK(ktype, ktypeKind)
@@ -2362,7 +2335,7 @@ func (d *decoderMsgpackBytes) kMap(f *decFnInfo, rv reflect.Value) {
 				rvkn = rvk
 			}
 			if !rvvMut {
-				if decUseTransient && vTransient {
+				if vTransient {
 					rvvn = d.perType.TransientAddrK(vtype, vtypeKind)
 				} else {
 					rvvn = rvZeroAddrK(vtype, vtypeKind)
@@ -2386,7 +2359,6 @@ func (d *decoderMsgpackBytes) kMap(f *decFnInfo, rv reflect.Value) {
 			rvSetZero(rvk)
 		} else if ktypeIsString {
 			kstr2bs, att = d.d.DecodeStringAsBytes()
-
 			kstr, mapKeyStringSharesBytesBuf = d.bytes2Str(kstr2bs, att)
 			rvSetString(rvk, kstr)
 		} else {
@@ -2406,7 +2378,6 @@ func (d *decoderMsgpackBytes) kMap(f *decFnInfo, rv reflect.Value) {
 			if ktypeIsIntf {
 				if rvk2 := rvk.Elem(); rvk2.IsValid() && rvk2.Type() == uint8SliceTyp {
 					kstr2bs = rvGetBytes(rvk2)
-
 					kstr, mapKeyStringSharesBytesBuf = d.bytes2Str(kstr2bs, dBytesAttachView)
 					rvSetIntf(rvk, rv4istr(kstr))
 				}
@@ -2468,7 +2439,7 @@ func (d *decoderMsgpackBytes) kMap(f *decFnInfo, rv reflect.Value) {
 				rvv = rvvn
 			default:
 
-				if decUseTransient && vTransient {
+				if vTransient {
 					rvvn = d.perType.TransientAddrK(vtype, vtypeKind)
 				} else {
 					rvvn = rvZeroAddrK(vtype, vtypeKind)
@@ -2482,7 +2453,7 @@ func (d *decoderMsgpackBytes) kMap(f *decFnInfo, rv reflect.Value) {
 	NEW_RVV:
 		if vtypePtr {
 			rvv = reflect.New(vtypeElem)
-		} else if decUseTransient && vTransient {
+		} else if vTransient {
 			rvv = d.perType.TransientAddrK(vtype, vtypeKind)
 		} else {
 			rvv = rvZeroAddrK(vtype, vtypeKind)
@@ -2622,8 +2593,7 @@ func (d *decoderMsgpackBytes) mustDecode(v interface{}) {
 	d.calls--
 }
 
-func (d *decoderMsgpackBytes) Release() {
-}
+func (d *decoderMsgpackBytes) Release() {}
 
 func (d *decoderMsgpackBytes) swallow() {
 	d.d.nextValueBytes()
@@ -2635,17 +2605,13 @@ func (d *decoderMsgpackBytes) nextValueBytes() []byte {
 
 func (d *decoderMsgpackBytes) decode(iv interface{}) {
 
-	if iv == nil {
+	rv, ok := isNil(iv, true)
+	if ok {
 		halt.onerror(errCannotDecodeIntoNil)
 	}
 
 	switch v := iv.(type) {
 
-	case reflect.Value:
-		if x, _ := isDecodeable(v); !x {
-			d.haltAsNotDecodeable(v)
-		}
-		d.decodeValue(v, nil)
 	case *string:
 		*v = d.detach2Str(d.d.DecodeStringAsBytes())
 	case *bool:
@@ -2681,13 +2647,10 @@ func (d *decoderMsgpackBytes) decode(iv interface{}) {
 	case *complex128:
 		*v = complex(d.d.DecodeFloat64(), 0)
 	case *[]byte:
-		*v = d.decodeBytesInto(*v)
+		*v, _ = d.decodeBytesInto(*v, false)
 	case []byte:
 
-		b := d.decodeBytesInto(v[:len(v):len(v)])
-		if !(len(b) > 0 && len(b) == len(v) && &b[0] == &v[0]) {
-			copy(v, b)
-		}
+		d.decodeBytesInto(v[:len(v):len(v)], true)
 	case *time.Time:
 		*v = d.d.DecodeTime()
 	case *Raw:
@@ -2696,14 +2659,22 @@ func (d *decoderMsgpackBytes) decode(iv interface{}) {
 	case *interface{}:
 		d.decodeValue(rv4iptr(v), nil)
 
+	case reflect.Value:
+		if ok, _ = isDecodeable(v); !ok {
+			d.haltAsNotDecodeable(v)
+		}
+		d.decodeValue(v, nil)
+
 	default:
 
 		if skipFastpathTypeSwitchInDirectCall || !d.dh.fastpathDecodeTypeSwitch(iv, d) {
-			v := reflect.ValueOf(iv)
-			if x, _ := isDecodeable(v); !x {
-				d.haltAsNotDecodeable(v)
+			if !rv.IsValid() {
+				rv = reflect.ValueOf(iv)
 			}
-			d.decodeValue(v, nil)
+			if ok, _ = isDecodeable(rv); !ok {
+				d.haltAsNotDecodeable(rv)
+			}
+			d.decodeValue(rv, nil)
 		}
 	}
 }
@@ -2766,9 +2737,30 @@ func (d *decoderMsgpackBytes) structFieldNotFound(index int, rvkencname string) 
 	d.swallow()
 }
 
-func (d *decoderMsgpackBytes) decodeBytesInto(in []byte) (v []byte) {
+func (d *decoderMsgpackBytes) decodeBytesInto(out []byte, mustFit bool) (v []byte, state dBytesIntoState) {
 	v, att := d.d.DecodeBytes()
-	return d.detach2Bytes(v, in, att)
+	if cap(v) == 0 || (att >= dBytesAttachViewZerocopy && !mustFit) {
+
+		return
+	}
+	if len(v) == 0 {
+		v = zeroByteSlice
+		return
+	}
+	if len(out) == len(v) {
+		state = dBytesIntoParamOut
+	} else if cap(out) >= len(v) {
+		out = out[:len(v)]
+		state = dBytesIntoParamOutSlice
+	} else if mustFit {
+		halt.errorf("bytes capacity insufficient for decoded bytes: got/expected: %d/%d", len(v), len(out))
+	} else {
+		out = make([]byte, len(v))
+		state = dBytesIntoNew
+	}
+	copy(out, v)
+	v = out
+	return
 }
 
 func (d *decoderMsgpackBytes) rawBytes() (v []byte) {
@@ -4243,9 +4235,10 @@ func (e *encoderMsgpackIO) kArrayW(rv reflect.Value, ti *typeInfo, isSlice bool)
 	j := 0
 	e.c = containerArrayElem
 	e.e.WriteArrayElem(true)
+	builtin := ti.tielem.flagEncBuiltin
 	for {
 		rvv := rvArrayIndex(rv, j, ti, isSlice)
-		if ti.tielem.flagEncBuiltin {
+		if builtin {
 			e.encode(rv2i(baseRVRV(rvv)))
 		} else {
 			e.encodeValue(rvv, fn)
@@ -4899,34 +4892,10 @@ func (e *encoderMsgpackIO) mustEncode(v interface{}) {
 
 func (e *encoderMsgpackIO) encode(iv interface{}) {
 
-	if isNil(iv) {
+	rv, isnil := isNil(iv, true)
+	if isnil {
 		e.e.EncodeNil()
 		return
-	}
-
-	rv := reflect.ValueOf(iv)
-TOP:
-	if isnilBitset.isset(byte(rv.Kind())) {
-		if rv.Kind() == reflect.Ptr {
-			rv = rv.Elem()
-			iv = rv2i(rv)
-			goto TOP
-		}
-		if rvIsNil(rv) {
-			if e.h.NilCollectionToZeroLength {
-				switch rv.Kind() {
-				case reflect.Slice, reflect.Chan:
-
-					e.e.WriteArrayEmpty()
-					return
-				case reflect.Map:
-					e.e.WriteMapEmpty()
-					return
-				}
-			}
-			e.e.EncodeNil()
-			return
-		}
 	}
 
 	switch v := iv.(type) {
@@ -4973,10 +4942,19 @@ TOP:
 	case time.Time:
 		e.e.EncodeTime(v)
 	case []byte:
-		e.e.EncodeStringBytesRaw(v)
+		if v != nil {
+			e.e.EncodeStringBytesRaw(v)
+		} else if e.h.NilCollectionToZeroLength {
+			e.e.WriteArrayEmpty()
+		} else {
+			e.e.EncodeNil()
+		}
 	default:
 
 		if skipFastpathTypeSwitchInDirectCall || !e.dh.fastpathEncodeTypeSwitch(iv, e) {
+			if !rv.IsValid() {
+				rv = reflect.ValueOf(iv)
+			}
 			e.encodeValue(rv, nil)
 		}
 	}
@@ -4985,9 +4963,6 @@ TOP:
 func (e *encoderMsgpackIO) encodeValue(rv reflect.Value, fn *encFnMsgpackIO) {
 
 	var ciPushes int
-	if e.h.CheckCircularRef {
-		ciPushes = e.ci.pushRV(rv)
-	}
 
 	var rvp reflect.Value
 	var rvpValid bool
@@ -4998,9 +4973,14 @@ TOP:
 			e.e.EncodeNil()
 			goto END
 		}
+
 		rvpValid = true
 		rvp = rv
 		rv = rv.Elem()
+		if e.h.CheckCircularRef && e.ci.canPushElemKind(rv.Kind()) {
+			e.ci.push(rv2i(rvp))
+			ciPushes++
+		}
 		goto TOP
 	case reflect.Interface:
 		if rvIsNil(rv) {
@@ -5697,13 +5677,11 @@ func (d *decoderMsgpackIO) kStructSimple(f *decFnInfo, rv reflect.Value) {
 			return
 		}
 		hasLen := containerLen >= 0
+		var rvkencname []byte
 		for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
 			d.mapElemKey(j == 0)
-			rvkencname, att := d.d.DecodeStringAsBytes()
-
-			if d.bufio && d.h.jsonHandle {
-				rvkencname = d.detach2Bytes(rvkencname, d.b[:], att)
-			}
+			sab, att := d.d.DecodeStringAsBytes()
+			rvkencname = d.usableStructFieldNameBytes(rvkencname, sab, att)
 			d.mapElemValue()
 			if si := ti.siForEncName(rvkencname); si != nil {
 				d.kStructField(si, rv)
@@ -5753,21 +5731,14 @@ func (d *decoderMsgpackIO) kStruct(f *decFnInfo, rv reflect.Value) {
 		}
 		hasLen := containerLen >= 0
 		var name2 []byte
-		if mf != nil {
-			name2 = make([]byte, 0, 16)
-		}
 		var rvkencname []byte
-		var att dBytesAttachState
 		tkt := ti.keyType
 		for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
 			d.mapElemKey(j == 0)
 
 			if tkt == valueTypeString {
-				rvkencname, att = d.d.DecodeStringAsBytes()
-
-				if d.bufio && d.h.jsonHandle {
-					rvkencname = d.detach2Bytes(rvkencname, d.b[:], att)
-				}
+				sab, att := d.d.DecodeStringAsBytes()
+				rvkencname = d.usableStructFieldNameBytes(rvkencname, sab, att)
 			} else if tkt == valueTypeInt {
 				rvkencname = strconv.AppendInt(d.b[:0], d.d.DecodeInt64(), 10)
 			} else if tkt == valueTypeUint {
@@ -5779,8 +5750,7 @@ func (d *decoderMsgpackIO) kStruct(f *decFnInfo, rv reflect.Value) {
 			}
 
 			d.mapElemValue()
-			si := ti.siForEncName(rvkencname)
-			if si != nil {
+			if si := ti.siForEncName(rvkencname); si != nil {
 				d.kStructField(si, rv)
 			} else if mf != nil {
 
@@ -5832,18 +5802,14 @@ func (d *decoderMsgpackIO) kSlice(f *decFnInfo, rv reflect.Value) {
 			halt.errorf("bytes/string in stream must decode into slice/array of bytes, not %v", ti.rt)
 		}
 		rvbs := rvGetBytes(rv)
-		if !rvCanset {
-
-			rvbs = rvbs[:len(rvbs):len(rvbs)]
-		}
-		bs2 := d.decodeBytesInto(rvbs)
-
-		if !(len(bs2) > 0 && len(bs2) == len(rvbs) && &bs2[0] == &rvbs[0]) {
-			if rvCanset {
+		if rvCanset {
+			bs2, bst := d.decodeBytesInto(rvbs, false)
+			if bst != dBytesIntoParamOut {
 				rvSetBytes(rv, bs2)
-			} else if len(rvbs) > 0 && len(bs2) > 0 {
-				copy(rvbs, bs2)
 			}
+		} else {
+
+			d.decodeBytesInto(rvbs[:len(rvbs):len(rvbs)], true)
 		}
 		return
 	}
@@ -5975,6 +5941,7 @@ func (d *decoderMsgpackIO) kSlice(f *decFnInfo, rv reflect.Value) {
 					halt.onerror(errExpandSliceCannotChange)
 				}
 				rv, rvcap, rvCanset = rvGrowSlice(rv, f.ti, rvcap, 1)
+
 				rvlen = rvcap
 				rvChanged = !rvCanset
 			}
@@ -6034,10 +6001,7 @@ func (d *decoderMsgpackIO) kArray(f *decFnInfo, rv reflect.Value) {
 			halt.errorf("bytes/string in stream can decode into array of bytes, but not %v", ti.rt)
 		}
 		rvbs := rvGetArrayBytes(rv, nil)
-		bs2 := d.decodeBytesInto(rvbs)
-		if !byteSliceSameData(rvbs, bs2) && len(rvbs) > 0 && len(bs2) > 0 {
-			copy(rvbs, bs2)
-		}
+		d.decodeBytesInto(rvbs, true)
 		return
 	}
 
@@ -6224,7 +6188,7 @@ func (d *decoderMsgpackIO) kChan(f *decFnInfo, rv reflect.Value) {
 
 		if rv9.IsValid() {
 			rvSetZero(rv9)
-		} else if decUseTransient && useTransient {
+		} else if useTransient {
 			rv9 = d.perType.TransientAddrK(ti.elem, reflect.Kind(ti.elemkind))
 		} else {
 			rv9 = rvZeroAddrK(ti.elem, reflect.Kind(ti.elemkind))
@@ -6269,7 +6233,8 @@ func (d *decoderMsgpackIO) kMap(f *decFnInfo, rv reflect.Value) {
 	ktypePtr := ktypeKind == reflect.Ptr
 
 	vTransient := decUseTransient && !vtypePtr && ti.tielem.flagCanTransient
-	kTransient := decUseTransient && !ktypePtr && ti.tikey.flagCanTransient
+
+	kTransient := vTransient && !ktypePtr && ti.tikey.flagCanTransient
 
 	var vtypeElem reflect.Type
 
@@ -6327,7 +6292,7 @@ func (d *decoderMsgpackIO) kMap(f *decFnInfo, rv reflect.Value) {
 		kstr = ""
 		if j == 0 {
 
-			if decUseTransient && vTransient && kTransient {
+			if kTransient {
 				rvk = d.perType.TransientAddr2K(ktype, ktypeKind)
 			} else {
 				rvk = rvZeroAddrK(ktype, ktypeKind)
@@ -6336,7 +6301,7 @@ func (d *decoderMsgpackIO) kMap(f *decFnInfo, rv reflect.Value) {
 				rvkn = rvk
 			}
 			if !rvvMut {
-				if decUseTransient && vTransient {
+				if vTransient {
 					rvvn = d.perType.TransientAddrK(vtype, vtypeKind)
 				} else {
 					rvvn = rvZeroAddrK(vtype, vtypeKind)
@@ -6360,7 +6325,6 @@ func (d *decoderMsgpackIO) kMap(f *decFnInfo, rv reflect.Value) {
 			rvSetZero(rvk)
 		} else if ktypeIsString {
 			kstr2bs, att = d.d.DecodeStringAsBytes()
-
 			kstr, mapKeyStringSharesBytesBuf = d.bytes2Str(kstr2bs, att)
 			rvSetString(rvk, kstr)
 		} else {
@@ -6380,7 +6344,6 @@ func (d *decoderMsgpackIO) kMap(f *decFnInfo, rv reflect.Value) {
 			if ktypeIsIntf {
 				if rvk2 := rvk.Elem(); rvk2.IsValid() && rvk2.Type() == uint8SliceTyp {
 					kstr2bs = rvGetBytes(rvk2)
-
 					kstr, mapKeyStringSharesBytesBuf = d.bytes2Str(kstr2bs, dBytesAttachView)
 					rvSetIntf(rvk, rv4istr(kstr))
 				}
@@ -6442,7 +6405,7 @@ func (d *decoderMsgpackIO) kMap(f *decFnInfo, rv reflect.Value) {
 				rvv = rvvn
 			default:
 
-				if decUseTransient && vTransient {
+				if vTransient {
 					rvvn = d.perType.TransientAddrK(vtype, vtypeKind)
 				} else {
 					rvvn = rvZeroAddrK(vtype, vtypeKind)
@@ -6456,7 +6419,7 @@ func (d *decoderMsgpackIO) kMap(f *decFnInfo, rv reflect.Value) {
 	NEW_RVV:
 		if vtypePtr {
 			rvv = reflect.New(vtypeElem)
-		} else if decUseTransient && vTransient {
+		} else if vTransient {
 			rvv = d.perType.TransientAddrK(vtype, vtypeKind)
 		} else {
 			rvv = rvZeroAddrK(vtype, vtypeKind)
@@ -6596,8 +6559,7 @@ func (d *decoderMsgpackIO) mustDecode(v interface{}) {
 	d.calls--
 }
 
-func (d *decoderMsgpackIO) Release() {
-}
+func (d *decoderMsgpackIO) Release() {}
 
 func (d *decoderMsgpackIO) swallow() {
 	d.d.nextValueBytes()
@@ -6609,17 +6571,13 @@ func (d *decoderMsgpackIO) nextValueBytes() []byte {
 
 func (d *decoderMsgpackIO) decode(iv interface{}) {
 
-	if iv == nil {
+	rv, ok := isNil(iv, true)
+	if ok {
 		halt.onerror(errCannotDecodeIntoNil)
 	}
 
 	switch v := iv.(type) {
 
-	case reflect.Value:
-		if x, _ := isDecodeable(v); !x {
-			d.haltAsNotDecodeable(v)
-		}
-		d.decodeValue(v, nil)
 	case *string:
 		*v = d.detach2Str(d.d.DecodeStringAsBytes())
 	case *bool:
@@ -6655,13 +6613,10 @@ func (d *decoderMsgpackIO) decode(iv interface{}) {
 	case *complex128:
 		*v = complex(d.d.DecodeFloat64(), 0)
 	case *[]byte:
-		*v = d.decodeBytesInto(*v)
+		*v, _ = d.decodeBytesInto(*v, false)
 	case []byte:
 
-		b := d.decodeBytesInto(v[:len(v):len(v)])
-		if !(len(b) > 0 && len(b) == len(v) && &b[0] == &v[0]) {
-			copy(v, b)
-		}
+		d.decodeBytesInto(v[:len(v):len(v)], true)
 	case *time.Time:
 		*v = d.d.DecodeTime()
 	case *Raw:
@@ -6670,14 +6625,22 @@ func (d *decoderMsgpackIO) decode(iv interface{}) {
 	case *interface{}:
 		d.decodeValue(rv4iptr(v), nil)
 
+	case reflect.Value:
+		if ok, _ = isDecodeable(v); !ok {
+			d.haltAsNotDecodeable(v)
+		}
+		d.decodeValue(v, nil)
+
 	default:
 
 		if skipFastpathTypeSwitchInDirectCall || !d.dh.fastpathDecodeTypeSwitch(iv, d) {
-			v := reflect.ValueOf(iv)
-			if x, _ := isDecodeable(v); !x {
-				d.haltAsNotDecodeable(v)
+			if !rv.IsValid() {
+				rv = reflect.ValueOf(iv)
 			}
-			d.decodeValue(v, nil)
+			if ok, _ = isDecodeable(rv); !ok {
+				d.haltAsNotDecodeable(rv)
+			}
+			d.decodeValue(rv, nil)
 		}
 	}
 }
@@ -6740,9 +6703,30 @@ func (d *decoderMsgpackIO) structFieldNotFound(index int, rvkencname string) {
 	d.swallow()
 }
 
-func (d *decoderMsgpackIO) decodeBytesInto(in []byte) (v []byte) {
+func (d *decoderMsgpackIO) decodeBytesInto(out []byte, mustFit bool) (v []byte, state dBytesIntoState) {
 	v, att := d.d.DecodeBytes()
-	return d.detach2Bytes(v, in, att)
+	if cap(v) == 0 || (att >= dBytesAttachViewZerocopy && !mustFit) {
+
+		return
+	}
+	if len(v) == 0 {
+		v = zeroByteSlice
+		return
+	}
+	if len(out) == len(v) {
+		state = dBytesIntoParamOut
+	} else if cap(out) >= len(v) {
+		out = out[:len(v)]
+		state = dBytesIntoParamOutSlice
+	} else if mustFit {
+		halt.errorf("bytes capacity insufficient for decoded bytes: got/expected: %d/%d", len(v), len(out))
+	} else {
+		out = make([]byte, len(v))
+		state = dBytesIntoNew
+	}
+	copy(out, v)
+	v = out
+	return
 }
 
 func (d *decoderMsgpackIO) rawBytes() (v []byte) {
