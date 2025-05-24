@@ -79,9 +79,23 @@ func mapKeyFastKindFor(k reflect.Kind) mapKeyFastKind {
 	return mapKeyFastKindVals[k&31]
 }
 
-func unsafeGrowslice(typ unsafe.Pointer, old unsafeSlice, cap, incr int) (v unsafeSlice) {
-	return growslice(typ, old, cap+incr)
+func unsafeGrowslice(typ unsafe.Pointer, old unsafeSlice, cap, incr int) (s unsafeSlice) {
+	// culled from GOROOT/runtime/slice.go
+	s = rtgrowslice(old.Data, old.Cap+incr, old.Cap, incr, typ)
+	s.Len = old.Len
+	return
 }
+
+// func unsafeGrowslice(typ unsafe.Pointer, old unsafeSlice, cap, incr int) (s unsafeSlice) {
+// 	return growslice(typ, old, cap+incr)
+// }
+// func growslice(typ unsafe.Pointer, old unsafeSlice, num int) (s unsafeSlice) {
+// 	// culled from GOROOT/runtime/slice.go
+// 	num -= old.Cap - old.Len
+// 	s = rtgrowslice(old.Data, old.Cap+num, old.Cap, num, typ)
+// 	s.Len = old.Len
+// 	return
+// }
 
 // func rvType(rv reflect.Value) reflect.Type {
 // 	return rvPtrToType(((*unsafeReflectValue)(unsafe.Pointer(&rv))).typ)
@@ -223,3 +237,11 @@ func mapaccess2_fast64(typ unsafe.Pointer, m unsafe.Pointer, key uint64) (val un
 //go:linkname mapaccess2_faststr runtime.mapaccess2_faststr
 //go:noescape
 func mapaccess2_faststr(typ unsafe.Pointer, m unsafe.Pointer, key string) (val unsafe.Pointer, ok bool)
+
+//go:linkname rtgrowslice runtime.growslice
+//go:noescape
+func rtgrowslice(oldPtr unsafe.Pointer, newLen, oldCap, num int, typ unsafe.Pointer) unsafeSlice
+
+// //go:linkname growslice reflect.growslice
+// //go:noescape
+// func growslice(typ unsafe.Pointer, old unsafeSlice, cap int) unsafeSlice

@@ -1227,6 +1227,7 @@ func (d *decoder[T]) kSlice(f *decFnInfo, rv reflect.Value) {
 					halt.onerror(errExpandSliceCannotChange)
 				}
 				rv, rvcap, rvCanset = rvGrowSlice(rv, f.ti, rvcap, 1)
+				// note: 1 requested is hint/minimum - new capacity with more space
 				rvlen = rvcap
 				rvChanged = !rvCanset
 			}
