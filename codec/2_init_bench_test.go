@@ -122,11 +122,8 @@ func benchmarkDivider() {
 // 	testOnce.Do(testInitAll)
 // }
 
-func TestBenchInit(t *testing.T) {
+func TestBenchOnePass(t *testing.T) {
 	// testOnce.Do(testInitAll)
-	if !testing.Verbose() {
-		return
-	}
 	// t.Logf("..............................................")
 	t.Logf("BENCHMARK INIT: %v", time.Now())
 	// t.Logf("To run full benchmark comparing encodings, use: \"go test -bench=.\"")
