@@ -23,7 +23,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     env:
       GO111MODULE: 'on'
-      COVER_GO_VERSION: '1.24'
+      LATEST_GO_STABLE_VERSION: '1.24'
       GOARCH: ${{ matrix.arch }}
     name: go ${{ matrix.go }} on ${{ matrix.arch }} at branch ${{ github.ref_name }}
     steps:
@@ -34,16 +34,31 @@ jobs:
       - shell: bash
         run: cd codec; go get github.com/google/go-cmp/cmp
       - name: Run tests
+        if: matrix.go != env.LATEST_GO_STABLE_VERSION
         shell: bash
         run: |
           cd codec
-          # go mod edit -droprequire github.com/ugorji/go
-          t=( "" "safe" "notfastpath" "notmono" )
+          go mod edit -droprequire github.com/ugorji/go
+          t=( "" "codec.safe" "codec.notfastpath" "codec.notmono" )
           for i in "${t[@]}"; do
-          go test "-tags=alltests codec.nobench ${i}" "-run=Suite" "-coverprofile=coverage.${{ matrix.go }}.${{ matrix.arch }}.${i}.txt"
+          go test "-tags=alltests codec.nobench ${i}" "-run=Suite"
+          done
+      - name: Run tests
+        if: matrix.go == env.LATEST_GO_STABLE_VERSION
+        shell: bash
+        run: |
+          cd codec
+          go mod edit -droprequire github.com/ugorji/go
+          tt=( "" "codec.safe" "codec.notfastpath" "codec.safe codec.notfastpath" \
+              "codec.notmono" "codec.notmono codec.safe" \
+              "codec.notmono codec.notfastpath" "codec.notmono codec.safe codec.notfastpath" )
+          for i in "${t[@]}"; do
+          ii="${i// /-}"
+          ii="${ii//codec./}"
+          go test "-tags=alltests codec.nobench ${i}" "-run=Suite" "-coverprofile=coverage.${{ matrix.go }}.${{ matrix.arch }}.${ii}.txt"
           done
       - uses: codecov/codecov-action@v5
-        if: matrix.go == env.COVER_GO_VERSION
+        if: matrix.go == env.LATEST_GO_STABLE_VERSION
         with:
           directory: ./codec
 
