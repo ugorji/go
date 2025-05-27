@@ -2,17 +2,18 @@ name: Build and Test go-codec
 on:
   workflow_dispatch: {}
   push:
-    branches: [ master ]
-    paths: [ '**.go' ]
+    branches: [ master, devel ]
+    paths: [ '**.go', '.github/workflows/*' ]
   pull_request:
     branches: [ master ]
-    paths: [ '**.go' ]
+    paths: [ '**.go', '.github/workflows/*' ]
 jobs:
-  tests:
+  master_tests:
+    if: github.ref_name == 'master'
     strategy:
       fail-fast: false
       matrix:
-        go: [ '1.19', '1.17', '1.11', '1.20.0-rc.1', '1.24' ]
+        go: [ '1.24', '1.19', '1.17', '1.11' ]
         arch: [ amd64 ]
         os: [ ubuntu-latest ]
         include:
@@ -24,7 +25,7 @@ jobs:
       GO111MODULE: 'on'
       COVER_GO_VERSION: '1.19'
       GOARCH: ${{ matrix.arch }}
-    name: go ${{ matrix.go }} on ${{ matrix.arch }}
+    name: go ${{ matrix.go }} on ${{ matrix.arch }} at branch ${{ github.ref_name }}
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-go@v3
@@ -35,12 +36,47 @@ jobs:
         run: |
           cd codec
           go mod edit -droprequire github.com/ugorji/go
-          t=( "" "safe" "notfastpath" "codecgen" )
-          for i in "${t[@]}"; do go test "-tags=alltests ${i}" "-run=Suite" "-coverprofile=coverage.${{ matrix.go }}.${{ matrix.arch }}.${i}.txt"; done
+          t=( "" "safe" "notfastpath" "notmono" )
+          for i in "${t[@]}"; do
+          go test "-tags=alltests codec.nobench ${i}" "-run=Suite" "-coverprofile=coverage.${{ matrix.go }}.${{ matrix.arch }}.${i}.txt"
+          done
       - uses: codecov/codecov-action@v3
         if: matrix.go == env.COVER_GO_VERSION
         with:
           directory: ./codec
+  devel_tests:
+    if: github.ref_name == 'devel'
+    strategy:
+      fail-fast: false
+      matrix:
+        go: [ '1.24', '1.22' ]
+        arch: [ amd64 ]
+        os: [ ubuntu-latest ]
+        include:
+          - go: '1.22'
+            arch: '386'
+            os: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    env:
+      GO111MODULE: 'on'
+      GOARCH: ${{ matrix.arch }}
+    name: go ${{ matrix.go }} on ${{ matrix.arch }} at branch ${{ github.ref_name }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v3
+        with:
+          go-version: ${{ matrix.go }}
+      - shell: bash
+        run: cd codec; go get github.com/google/go-cmp/cmp
+      - name: Run tests
+        shell: bash
+        run: |
+          cd codec
+          go mod edit -droprequire github.com/ugorji/go
+          t=( "" "safe" "notfastpath" "notmono" )
+          for i in "${t[@]}"; do
+          go test "-tags=alltests codec.nobench ${i}" "-run=Suite" "-coverprofile=coverage.${{ matrix.go }}.${{ matrix.arch }}.${i}.txt"
+          done
 
 
 # No need to go get, as github knows its working out of this folder.
@@ -66,8 +102,6 @@ jobs:
 # We put a requirements cycle with github.com/ugorji/go to allow folks requiring .../ugorji/go in 2019 to work ok.
 # Now, everyone should have updated to a go-codec version >= 1.17 or preferably >= 1.2.0.
 # Now is a good time to remove that requirements cycle.
-#
-#
 #
 #
 # --- SCRATCH ---

@@ -9,15 +9,30 @@ package codec
 import (
 	"errors"
 	"reflect"
+
+	"github.com/google/go-cmp/cmp"
 )
 
 // --- these functions are used by both benchmarks and tests
 
-var errDeepEqualNotMatch = errors.New("Not Match")
+var errDeepEqualNotMatch = errors.New("not match")
+
+var testCmpOpts []cmp.Option
+
+// var testCmpOpts = []cmp.Option{
+// 	cmpopts.EquateNaNs(),
+// 	cmpopts.EquateApprox(0.001, 0.001),
+// 	cmpopts.SortMaps(func(a, b float32) bool { return a < b }),
+// 	cmpopts.SortMaps(func(a, b float64) bool { return a < b }),
+// }
 
 func deepEqual(v1, v2 interface{}) (err error) {
 	if !reflect.DeepEqual(v1, v2) {
-		err = errDeepEqualNotMatch
+		if testUseDiff {
+			err = errors.New(cmp.Diff(v1, v2, testCmpOpts...))
+		} else {
+			err = errDeepEqualNotMatch
+		}
 	}
 	return
 }
