@@ -2,7 +2,7 @@ name: Build and Test go-codec
 on:
   workflow_dispatch: {}
   push:
-    branches: [ master, devel ]
+    branches: [ master ]
     paths: [ '**.go', '.github/workflows/*' ]
   pull_request:
     branches: [ master ]
@@ -13,52 +13,17 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        go: [ '1.24', '1.19', '1.17', '1.11' ]
+        go: [ '1.24', '1.23', '1.22', '1.21' ]
         arch: [ amd64 ]
         os: [ ubuntu-latest ]
         include:
-          - go: '1.19'
+          - go: '1.24'
             arch: '386'
             os: ubuntu-latest
     runs-on: ${{ matrix.os }}
     env:
       GO111MODULE: 'on'
-      COVER_GO_VERSION: '1.19'
-      GOARCH: ${{ matrix.arch }}
-    name: go ${{ matrix.go }} on ${{ matrix.arch }} at branch ${{ github.ref_name }}
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-go@v3
-        with:
-          go-version: ${{ matrix.go }}
-      - name: Run tests
-        shell: bash
-        run: |
-          cd codec
-          go mod edit -droprequire github.com/ugorji/go
-          t=( "" "safe" "notfastpath" "notmono" )
-          for i in "${t[@]}"; do
-          go test "-tags=alltests codec.nobench ${i}" "-run=Suite" "-coverprofile=coverage.${{ matrix.go }}.${{ matrix.arch }}.${i}.txt"
-          done
-      - uses: codecov/codecov-action@v3
-        if: matrix.go == env.COVER_GO_VERSION
-        with:
-          directory: ./codec
-  devel_tests:
-    if: github.ref_name == 'devel'
-    strategy:
-      fail-fast: false
-      matrix:
-        go: [ '1.24', '1.22' ]
-        arch: [ amd64 ]
-        os: [ ubuntu-latest ]
-        include:
-          - go: '1.22'
-            arch: '386'
-            os: ubuntu-latest
-    runs-on: ${{ matrix.os }}
-    env:
-      GO111MODULE: 'on'
+      COVER_GO_VERSION: '1.24'
       GOARCH: ${{ matrix.arch }}
     name: go ${{ matrix.go }} on ${{ matrix.arch }} at branch ${{ github.ref_name }}
     steps:
@@ -72,31 +37,27 @@ jobs:
         shell: bash
         run: |
           cd codec
-          go mod edit -droprequire github.com/ugorji/go
+          # go mod edit -droprequire github.com/ugorji/go
           t=( "" "safe" "notfastpath" "notmono" )
           for i in "${t[@]}"; do
           go test "-tags=alltests codec.nobench ${i}" "-run=Suite" "-coverprofile=coverage.${{ matrix.go }}.${{ matrix.arch }}.${i}.txt"
           done
+      - uses: codecov/codecov-action@v3
+        if: matrix.go == env.COVER_GO_VERSION
+        with:
+          directory: ./codec
 
 
 # No need to go get, as github knows its working out of this folder.
 #
-# Most of our code is the same since go1.12; before that we selectively compile files using build constraints.
-#
 # We test against the following go releases
 # - latest production release
 # - 2 releases before that
-# - an archive version (go 1.11)
 # - and a beta/rc of development release (so github can just download an archive of it and use)
 #
 # Pre-release versions must use semver e.g. as of 20221220, it's '1.20.0-rc.1' 
-# TODO: add this back once we resolve the issue with go-codec failing on development branch.
 #
 # We test amd64 on all releases, and i386 (32-bit) on last production release.
-#
-# We previously had each tag be its own matrix, but that exploded the number of runs.
-# Instead, since the environment is consistent, we just use a bash script to run through all
-# the tags for that run.
 #
 # Finally, we do a go mod edit -droprequire github.com/ugorji/go to circumvent the "missing go.sum entry" error.
 # We put a requirements cycle with github.com/ugorji/go to allow folks requiring .../ugorji/go in 2019 to work ok.
