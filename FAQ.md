@@ -87,3 +87,6 @@ All development happens on the main trunk.
 
 In the rare case that a patch release needs to happen for an old minor or major release,
 a release branch will be created from which that release will be cut.
+
+## Latest Release
+Latest release is v1.2.14 - released on May 27, 2025.
