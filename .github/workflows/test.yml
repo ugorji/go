@@ -49,7 +49,7 @@ jobs:
         run: |
           cd codec
           go mod edit -droprequire github.com/ugorji/go
-          tt=( "" "codec.safe" "codec.notfastpath" "codec.safe codec.notfastpath" \
+          t=( "" "codec.safe" "codec.notfastpath" "codec.safe codec.notfastpath" \
               "codec.notmono" "codec.notmono codec.safe" \
               "codec.notmono codec.notfastpath" "codec.notmono codec.safe codec.notfastpath" )
           for i in "${t[@]}"; do
