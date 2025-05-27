@@ -27,8 +27,8 @@ jobs:
       GOARCH: ${{ matrix.arch }}
     name: go ${{ matrix.go }} on ${{ matrix.arch }} at branch ${{ github.ref_name }}
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-go@v3
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
         with:
           go-version: ${{ matrix.go }}
       - shell: bash
@@ -42,7 +42,7 @@ jobs:
           for i in "${t[@]}"; do
           go test "-tags=alltests codec.nobench ${i}" "-run=Suite" "-coverprofile=coverage.${{ matrix.go }}.${{ matrix.arch }}.${i}.txt"
           done
-      - uses: codecov/codecov-action@v3
+      - uses: codecov/codecov-action@v5
         if: matrix.go == env.COVER_GO_VERSION
         with:
           directory: ./codec
