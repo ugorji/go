@@ -81,3 +81,12 @@ There's a caveat for contributors to the library.
 If you are contributing to the library, you will need to run `./build.sh -m` at some point.
 This has a failure on gccgo. Consequently, contributors must use the `gc` compiler.
 
+## Development Model
+
+All development happens on the main trunk.
+
+In the rare case that a patch release needs to happen for an old minor or major release,
+a release branch will be created from which that release will be cut.
+
+## Latest Release
+Latest release is v1.2.14 - released on May 27, 2025.
