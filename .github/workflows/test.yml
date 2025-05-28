@@ -17,7 +17,7 @@ jobs:
         arch: [ amd64 ]
         os: [ ubuntu-latest ]
         include:
-          - go: '1.24'
+          - go: '1.23'
             arch: '386'
             os: ubuntu-latest
     runs-on: ${{ matrix.os }}
@@ -58,7 +58,7 @@ jobs:
           go test "-tags=alltests codec.nobench ${i}" "-run=Suite" "-coverprofile=coverage.${{ matrix.go }}.${{ matrix.arch }}.${ii}.txt"
           done
       - uses: codecov/codecov-action@v5
-        if: matrix.go == env.LATEST_GO_STABLE_VERSION
+        if: matrix.go == env.LATEST_GO_STABLE_VERSION 
         with:
           directory: ./codec
 
@@ -66,19 +66,13 @@ jobs:
 # No need to go get, as github knows its working out of this folder.
 #
 # We test against the following go releases
-# - latest production release
-# - 2 releases before that
-# - and a beta/rc of development release (so github can just download an archive of it and use)
+# - latest production release (run all permutations - full matrix, with code cov)
+# - prior production release (run i386)
+# - last 3 prior releases (run 1 permutation per tag)
 #
-# Pre-release versions must use semver e.g. as of 20221220, it's '1.20.0-rc.1' 
+# Pre-release versions must use semver e.g. as of 20221220, it's '1.20.0-rc.1'
 #
-# We test amd64 on all releases, and i386 (32-bit) on last production release.
-#
-# Finally, we do a go mod edit -droprequire github.com/ugorji/go to circumvent the "missing go.sum entry" error.
-# We put a requirements cycle with github.com/ugorji/go to allow folks requiring .../ugorji/go in 2019 to work ok.
-# Now, everyone should have updated to a go-codec version >= 1.17 or preferably >= 1.2.0.
-# Now is a good time to remove that requirements cycle.
-#
+# Finally, we do a go mod edit -droprequire github.com/ugorji/go to circumvent the "missing go.sum entry" error
 #
 # --- SCRATCH ---
 # coverage:
