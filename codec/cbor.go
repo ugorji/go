@@ -353,7 +353,7 @@ type cborDecDriver[T decReader] struct {
 	r   T
 	dec decoderI
 	bdAndBdread
-	st bool // skip tags
+	// st bool // skip tags
 	// bytes bool
 }
 
@@ -395,7 +395,7 @@ func (d *cborDecDriver[T]) ContainerType() (vt valueType) {
 	if !d.bdRead {
 		d.readNextBd()
 	}
-	if d.st {
+	if d.h.SkipUnexpectedTags {
 		d.skipTags()
 	}
 	if d.bd == cborBdNil {
@@ -509,7 +509,7 @@ func (d *cborDecDriver[T]) DecodeInt64() (i int64) {
 	if d.advanceNil() {
 		return
 	}
-	if d.st {
+	if d.h.SkipUnexpectedTags {
 		d.skipTags()
 	}
 	v1, v2, v3 := d.decInteger()
@@ -522,7 +522,7 @@ func (d *cborDecDriver[T]) DecodeUint64() (ui uint64) {
 	if d.advanceNil() {
 		return
 	}
-	if d.st {
+	if d.h.SkipUnexpectedTags {
 		d.skipTags()
 	}
 	ui = decNegintPosintFloatNumberHelper{d}.uint64(d.decInteger())
@@ -534,7 +534,7 @@ func (d *cborDecDriver[T]) DecodeFloat64() (f float64) {
 	if d.advanceNil() {
 		return
 	}
-	if d.st {
+	if d.h.SkipUnexpectedTags {
 		d.skipTags()
 	}
 	v1, v2 := d.decFloat()
@@ -548,7 +548,7 @@ func (d *cborDecDriver[T]) DecodeBool() (b bool) {
 	if d.advanceNil() {
 		return
 	}
-	if d.st {
+	if d.h.SkipUnexpectedTags {
 		d.skipTags()
 	}
 	if d.bd == cborBdTrue {
@@ -565,7 +565,7 @@ func (d *cborDecDriver[T]) ReadMapStart() (length int) {
 	if d.advanceNil() {
 		return containerLenNil
 	}
-	if d.st {
+	if d.h.SkipUnexpectedTags {
 		d.skipTags()
 	}
 	d.bdRead = false
@@ -582,7 +582,7 @@ func (d *cborDecDriver[T]) ReadArrayStart() (length int) {
 	if d.advanceNil() {
 		return containerLenNil
 	}
-	if d.st {
+	if d.h.SkipUnexpectedTags {
 		d.skipTags()
 	}
 	d.bdRead = false
@@ -602,7 +602,7 @@ func (d *cborDecDriver[T]) DecodeBytes() (bs []byte, state dBytesAttachState) {
 	if d.advanceNil() {
 		return
 	}
-	if d.st {
+	if d.h.SkipUnexpectedTags {
 		d.skipTags()
 	}
 	if d.bd == cborBdIndefiniteBytes || d.bd == cborBdIndefiniteString {
@@ -754,7 +754,7 @@ func (d *cborDecDriver[T]) DecodeNaked() {
 			d.bdRead = false
 			n.v = valueTypeTime
 			n.t = d.decodeTime(n.u)
-		} else if d.st && d.h.getExtForTag(n.u) == nil {
+		} else if d.h.SkipUnexpectedTags && d.h.getExtForTag(n.u) == nil {
 			// d.skipTags() // no need to call this - tags already skipped
 			d.bdRead = false
 			d.DecodeNaked()
@@ -957,7 +957,7 @@ func (h *CborHandle) SetInterfaceExt(rt reflect.Type, tag uint64, ext InterfaceE
 
 func (d *cborDecDriver[T]) reset() {
 	d.bdAndBdread.reset()
-	d.st = d.h.SkipUnexpectedTags
+	// d.st = d.h.SkipUnexpectedTags
 }
 
 // ----
