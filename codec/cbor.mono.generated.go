@@ -71,7 +71,6 @@ type cborDecDriverBytes struct {
 	r   bytesDecReader
 	dec decoderI
 	bdAndBdread
-	st bool
 }
 
 func (e *encoderCborBytes) rawExt(_ *encFnInfo, rv reflect.Value) {
@@ -3259,21 +3258,14 @@ func (e *cborEncDriverBytes) encStringBytesS(bb byte, v string) {
 		} else {
 			e.w.writen1(cborBdIndefiniteString)
 		}
-		var vlen uint = uint(len(v))
-		blen := vlen / 4
-		if blen == 0 {
-			blen = 64
-		} else if blen > 1024 {
-			blen = 1024
-		}
+		vlen := uint(len(v))
+		n := max(4, min(vlen/4, 1024))
 		for i := uint(0); i < vlen; {
-			var v2 string
-			i2 := i + blen
-			if i2 >= i && i2 < vlen {
-				v2 = v[i:i2]
-			} else {
-				v2 = v[i:]
+			i2 := i + n
+			if i2 >= vlen {
+				i2 = vlen
 			}
+			v2 := v[i:i2]
 			e.encLen(bb, len(v2))
 			e.w.writestr(v2)
 			i = i2
@@ -3316,7 +3308,7 @@ func (d *cborDecDriverBytes) ContainerType() (vt valueType) {
 	if !d.bdRead {
 		d.readNextBd()
 	}
-	if d.st {
+	if d.h.SkipUnexpectedTags {
 		d.skipTags()
 	}
 	if d.bd == cborBdNil {
@@ -3360,41 +3352,13 @@ func (d *cborDecDriverBytes) decUint() (ui uint64) {
 	} else if v == 0x1b {
 		ui = uint64(bigen.Uint64(d.r.readn8()))
 	} else {
-		halt.errorf("invalid descriptor decoding uint: %x/%s", d.bd, cbordesc(d.bd))
+		halt.errorf("invalid descriptor decoding uint: %x/%s (%x)", d.bd, cbordesc(d.bd), v)
 	}
 	return
 }
 
 func (d *cborDecDriverBytes) decLen() int {
 	return int(d.decUint())
-}
-
-func (d *cborDecDriverBytes) decAppendIndefiniteBytes(bs []byte, major byte) []byte {
-	d.bdRead = false
-	for !d.CheckBreak() {
-		chunkMajor := d.bd >> 5
-		if chunkMajor != major {
-			halt.errorf("malformed indefinite string/bytes %x (%s); contains chunk with major type %v, expected %v",
-				d.bd, cbordesc(d.bd), chunkMajor, major)
-		}
-		n := uint(d.decLen())
-		oldLen := uint(len(bs))
-		newLen := oldLen + n
-		if newLen > uint(cap(bs)) {
-			bs2 := make([]byte, newLen, 2*uint(cap(bs))+n)
-			copy(bs2, bs)
-			bs = bs2
-		} else {
-			bs = bs[:newLen]
-		}
-		d.r.readb(bs[oldLen:newLen])
-		if d.h.ValidateUnicode && major == cborMajorString && !utf8.Valid(bs[oldLen:newLen]) {
-			halt.errorf("indefinite-length text string contains chunk that is not a valid utf-8 sequence: 0x%x", bs[oldLen:newLen])
-		}
-		d.bdRead = false
-	}
-	d.bdRead = false
-	return bs
 }
 
 func (d *cborDecDriverBytes) decFloat() (f float64, ok bool) {
@@ -3430,7 +3394,7 @@ func (d *cborDecDriverBytes) DecodeInt64() (i int64) {
 	if d.advanceNil() {
 		return
 	}
-	if d.st {
+	if d.h.SkipUnexpectedTags {
 		d.skipTags()
 	}
 	v1, v2, v3 := d.decInteger()
@@ -3443,7 +3407,7 @@ func (d *cborDecDriverBytes) DecodeUint64() (ui uint64) {
 	if d.advanceNil() {
 		return
 	}
-	if d.st {
+	if d.h.SkipUnexpectedTags {
 		d.skipTags()
 	}
 	ui = decNegintPosintFloatNumberHelper{d}.uint64(d.decInteger())
@@ -3455,7 +3419,7 @@ func (d *cborDecDriverBytes) DecodeFloat64() (f float64) {
 	if d.advanceNil() {
 		return
 	}
-	if d.st {
+	if d.h.SkipUnexpectedTags {
 		d.skipTags()
 	}
 	v1, v2 := d.decFloat()
@@ -3468,7 +3432,7 @@ func (d *cborDecDriverBytes) DecodeBool() (b bool) {
 	if d.advanceNil() {
 		return
 	}
-	if d.st {
+	if d.h.SkipUnexpectedTags {
 		d.skipTags()
 	}
 	if d.bd == cborBdTrue {
@@ -3485,7 +3449,7 @@ func (d *cborDecDriverBytes) ReadMapStart() (length int) {
 	if d.advanceNil() {
 		return containerLenNil
 	}
-	if d.st {
+	if d.h.SkipUnexpectedTags {
 		d.skipTags()
 	}
 	d.bdRead = false
@@ -3502,7 +3466,7 @@ func (d *cborDecDriverBytes) ReadArrayStart() (length int) {
 	if d.advanceNil() {
 		return containerLenNil
 	}
-	if d.st {
+	if d.h.SkipUnexpectedTags {
 		d.skipTags()
 	}
 	d.bdRead = false
@@ -3516,17 +3480,41 @@ func (d *cborDecDriverBytes) ReadArrayStart() (length int) {
 }
 
 func (d *cborDecDriverBytes) DecodeBytes() (bs []byte, state dBytesAttachState) {
+
 	if d.advanceNil() {
 		return
 	}
-	if d.st {
+	if d.h.SkipUnexpectedTags {
 		d.skipTags()
 	}
 	if d.bd == cborBdIndefiniteBytes || d.bd == cborBdIndefiniteString {
+		major := d.bd >> 5
+		val4str := d.h.ValidateUnicode && major == cborMajorString
+		bs = d.d.buf[:0]
 		d.bdRead = false
-		bs = d.decAppendIndefiniteBytes(d.d.buf[:0], d.bd>>5)
+		for !d.CheckBreak() {
+			if d.bd>>5 != major {
+				const msg = "malformed indefinite string/bytes %x (%s); " +
+					"contains chunk with major type %v, expected %v"
+				halt.errorf(msg, d.bd, cbordesc(d.bd), d.bd>>5, major)
+			}
+			n := uint(d.decLen())
+			bs = append(bs, d.r.readx(n)...)
+			d.bdRead = false
+			if val4str && !utf8.Valid(bs[len(bs)-int(n):]) {
+				const msg = "indefinite-length text string contains chunk " +
+					"that is not a valid utf-8 sequence: 0x%x"
+				halt.errorf(msg, bs[len(bs)-int(n):])
+			}
+		}
+		d.bdRead = false
 		d.d.buf = bs
 		state = dBytesAttachBuffer
+
+		if bs == nil {
+			bs = zeroByteSlice
+			state = dBytesDetach
+		}
 		return
 	}
 	if d.bd == cborBdIndefiniteArray {
@@ -3671,7 +3659,7 @@ func (d *cborDecDriverBytes) DecodeNaked() {
 			d.bdRead = false
 			n.v = valueTypeTime
 			n.t = d.decodeTime(n.u)
-		} else if d.st && d.h.getExtForTag(n.u) == nil {
+		} else if d.h.SkipUnexpectedTags && d.h.getExtForTag(n.u) == nil {
 
 			d.bdRead = false
 			d.DecodeNaked()
@@ -3817,7 +3805,7 @@ func (d *cborDecDriverBytes) nextValueBytesBdReadR() {
 
 func (d *cborDecDriverBytes) reset() {
 	d.bdAndBdread.reset()
-	d.st = d.h.SkipUnexpectedTags
+
 }
 
 func (d *cborEncDriverBytes) init(hh Handle, shared *encoderBase, enc encoderI) (fp interface{}) {
@@ -3942,7 +3930,6 @@ type cborDecDriverIO struct {
 	r   ioDecReader
 	dec decoderI
 	bdAndBdread
-	st bool
 }
 
 func (e *encoderCborIO) rawExt(_ *encFnInfo, rv reflect.Value) {
@@ -7130,21 +7117,14 @@ func (e *cborEncDriverIO) encStringBytesS(bb byte, v string) {
 		} else {
 			e.w.writen1(cborBdIndefiniteString)
 		}
-		var vlen uint = uint(len(v))
-		blen := vlen / 4
-		if blen == 0 {
-			blen = 64
-		} else if blen > 1024 {
-			blen = 1024
-		}
+		vlen := uint(len(v))
+		n := max(4, min(vlen/4, 1024))
 		for i := uint(0); i < vlen; {
-			var v2 string
-			i2 := i + blen
-			if i2 >= i && i2 < vlen {
-				v2 = v[i:i2]
-			} else {
-				v2 = v[i:]
+			i2 := i + n
+			if i2 >= vlen {
+				i2 = vlen
 			}
+			v2 := v[i:i2]
 			e.encLen(bb, len(v2))
 			e.w.writestr(v2)
 			i = i2
@@ -7187,7 +7167,7 @@ func (d *cborDecDriverIO) ContainerType() (vt valueType) {
 	if !d.bdRead {
 		d.readNextBd()
 	}
-	if d.st {
+	if d.h.SkipUnexpectedTags {
 		d.skipTags()
 	}
 	if d.bd == cborBdNil {
@@ -7231,41 +7211,13 @@ func (d *cborDecDriverIO) decUint() (ui uint64) {
 	} else if v == 0x1b {
 		ui = uint64(bigen.Uint64(d.r.readn8()))
 	} else {
-		halt.errorf("invalid descriptor decoding uint: %x/%s", d.bd, cbordesc(d.bd))
+		halt.errorf("invalid descriptor decoding uint: %x/%s (%x)", d.bd, cbordesc(d.bd), v)
 	}
 	return
 }
 
 func (d *cborDecDriverIO) decLen() int {
 	return int(d.decUint())
-}
-
-func (d *cborDecDriverIO) decAppendIndefiniteBytes(bs []byte, major byte) []byte {
-	d.bdRead = false
-	for !d.CheckBreak() {
-		chunkMajor := d.bd >> 5
-		if chunkMajor != major {
-			halt.errorf("malformed indefinite string/bytes %x (%s); contains chunk with major type %v, expected %v",
-				d.bd, cbordesc(d.bd), chunkMajor, major)
-		}
-		n := uint(d.decLen())
-		oldLen := uint(len(bs))
-		newLen := oldLen + n
-		if newLen > uint(cap(bs)) {
-			bs2 := make([]byte, newLen, 2*uint(cap(bs))+n)
-			copy(bs2, bs)
-			bs = bs2
-		} else {
-			bs = bs[:newLen]
-		}
-		d.r.readb(bs[oldLen:newLen])
-		if d.h.ValidateUnicode && major == cborMajorString && !utf8.Valid(bs[oldLen:newLen]) {
-			halt.errorf("indefinite-length text string contains chunk that is not a valid utf-8 sequence: 0x%x", bs[oldLen:newLen])
-		}
-		d.bdRead = false
-	}
-	d.bdRead = false
-	return bs
 }
 
 func (d *cborDecDriverIO) decFloat() (f float64, ok bool) {
@@ -7301,7 +7253,7 @@ func (d *cborDecDriverIO) DecodeInt64() (i int64) {
 	if d.advanceNil() {
 		return
 	}
-	if d.st {
+	if d.h.SkipUnexpectedTags {
 		d.skipTags()
 	}
 	v1, v2, v3 := d.decInteger()
@@ -7314,7 +7266,7 @@ func (d *cborDecDriverIO) DecodeUint64() (ui uint64) {
 	if d.advanceNil() {
 		return
 	}
-	if d.st {
+	if d.h.SkipUnexpectedTags {
 		d.skipTags()
 	}
 	ui = decNegintPosintFloatNumberHelper{d}.uint64(d.decInteger())
@@ -7326,7 +7278,7 @@ func (d *cborDecDriverIO) DecodeFloat64() (f float64) {
 	if d.advanceNil() {
 		return
 	}
-	if d.st {
+	if d.h.SkipUnexpectedTags {
 		d.skipTags()
 	}
 	v1, v2 := d.decFloat()
@@ -7339,7 +7291,7 @@ func (d *cborDecDriverIO) DecodeBool() (b bool) {
 	if d.advanceNil() {
 		return
 	}
-	if d.st {
+	if d.h.SkipUnexpectedTags {
 		d.skipTags()
 	}
 	if d.bd == cborBdTrue {
@@ -7356,7 +7308,7 @@ func (d *cborDecDriverIO) ReadMapStart() (length int) {
 	if d.advanceNil() {
 		return containerLenNil
 	}
-	if d.st {
+	if d.h.SkipUnexpectedTags {
 		d.skipTags()
 	}
 	d.bdRead = false
@@ -7373,7 +7325,7 @@ func (d *cborDecDriverIO) ReadArrayStart() (length int) {
 	if d.advanceNil() {
 		return containerLenNil
 	}
-	if d.st {
+	if d.h.SkipUnexpectedTags {
 		d.skipTags()
 	}
 	d.bdRead = false
@@ -7387,17 +7339,41 @@ func (d *cborDecDriverIO) ReadArrayStart() (length int) {
 }
 
 func (d *cborDecDriverIO) DecodeBytes() (bs []byte, state dBytesAttachState) {
+
 	if d.advanceNil() {
 		return
 	}
-	if d.st {
+	if d.h.SkipUnexpectedTags {
 		d.skipTags()
 	}
 	if d.bd == cborBdIndefiniteBytes || d.bd == cborBdIndefiniteString {
+		major := d.bd >> 5
+		val4str := d.h.ValidateUnicode && major == cborMajorString
+		bs = d.d.buf[:0]
 		d.bdRead = false
-		bs = d.decAppendIndefiniteBytes(d.d.buf[:0], d.bd>>5)
+		for !d.CheckBreak() {
+			if d.bd>>5 != major {
+				const msg = "malformed indefinite string/bytes %x (%s); " +
+					"contains chunk with major type %v, expected %v"
+				halt.errorf(msg, d.bd, cbordesc(d.bd), d.bd>>5, major)
+			}
+			n := uint(d.decLen())
+			bs = append(bs, d.r.readx(n)...)
+			d.bdRead = false
+			if val4str && !utf8.Valid(bs[len(bs)-int(n):]) {
+				const msg = "indefinite-length text string contains chunk " +
+					"that is not a valid utf-8 sequence: 0x%x"
+				halt.errorf(msg, bs[len(bs)-int(n):])
+			}
+		}
+		d.bdRead = false
 		d.d.buf = bs
 		state = dBytesAttachBuffer
+
+		if bs == nil {
+			bs = zeroByteSlice
+			state = dBytesDetach
+		}
 		return
 	}
 	if d.bd == cborBdIndefiniteArray {
@@ -7542,7 +7518,7 @@ func (d *cborDecDriverIO) DecodeNaked() {
 			d.bdRead = false
 			n.v = valueTypeTime
 			n.t = d.decodeTime(n.u)
-		} else if d.st && d.h.getExtForTag(n.u) == nil {
+		} else if d.h.SkipUnexpectedTags && d.h.getExtForTag(n.u) == nil {
 
 			d.bdRead = false
 			d.DecodeNaked()
@@ -7688,7 +7664,7 @@ func (d *cborDecDriverIO) nextValueBytesBdReadR() {
 
 func (d *cborDecDriverIO) reset() {
 	d.bdAndBdread.reset()
-	d.st = d.h.SkipUnexpectedTags
+
 }
 
 func (d *cborEncDriverIO) init(hh Handle, shared *encoderBase, enc encoderI) (fp interface{}) {
