@@ -282,3 +282,34 @@ Key rules
 - No closures taking parameters of generic types
 
 */
+
+/*
+Naming convention:
+
+Currently, as typed parameters and not are put in the same files, we suffer because:
+- built files have many lines which are not used at runtime (due to type parameters)
+- code coverage is inaccurate on a single run
+
+To resolve this, we are streamlining our file naming strategy.
+
+Basically, we will have the following nomenclature for filenames:
+- fastpath only (tag:notfastpath):   *.notfastpath.*.go vs *.fastpath.*.go
+- typed parameters (tag:notmono):    *.notmono.*.go vs *.mono.*.go
+- safe: (tag:safe)                   *.safe.*.go vs *.unsafe.go
+- generated files:                   *.generated.go
+- all others (tags:N/A):             *.go without safe/mono/fastpath/generated in the name
+
+base files (separate a <file>.go --> <file>.go and <file>.notmono.go)
+- binc.go
+- cbor.go
+- json.go
+- msgpack.go
+- simple.go
+- decode.go
+- encode.go
+
+Others
+- fastpath.generated.go -> base.fastpath.generated.go and base.fastpath.notmono.generated.go
+- fastpath.not.go       -> base.notfastpath.go
+- init.go               -> init.notmono.go
+*/

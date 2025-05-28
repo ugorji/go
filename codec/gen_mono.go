@@ -72,9 +72,9 @@ func (x *genMono) reset() {
 func (m *genMono) hdl(hname string) {
 	m.reset()
 	hdlFname := hname + ".go"
-	m.do(hname, []string{"encode.go", "decode.go", hdlFname}, []string{"fastpath.not.go"}, "", "")
-	m.do(hname, []string{"fastpath.not.go"}, nil, ".notfastpath", ` && (notfastpath || codec.notfastpath)`)
-	m.do(hname, []string{"fastpath.generated.go"}, nil, ".fastpath", ` && !notfastpath && !codec.notfastpath`)
+	m.do(hname, []string{"encode.go", "decode.go", hdlFname}, []string{"base.notfastpath.go"}, "", "")
+	m.do(hname, []string{"base.notfastpath.go"}, nil, ".notfastpath", ` && (notfastpath || codec.notfastpath)`)
+	m.do(hname, []string{"base.fastpath.generated.go"}, nil, ".fastpath", ` && !notfastpath && !codec.notfastpath`)
 }
 
 func (m *genMono) do(hname string, fnames, tnames []string, fnameInfx string, buildTagsSfx string) {
