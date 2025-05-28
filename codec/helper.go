@@ -266,6 +266,10 @@ const (
 	// to determine the function to use for values of that type.
 	skipFastpathTypeSwitchInDirectCall = false
 
+	// maxArrayLen is the size of uint, which determines
+	// the maximum length of any array.
+	maxArrayLen = 1<<((32<<(^uint(0)>>63))-1) - 1
+
 	// ---- below this line, useXXX consts should be true
 
 	usePoolForSFIs  = true
@@ -2774,6 +2778,91 @@ func isNumberChar(v byte) bool {
 	return numCharBitset.isset(v)
 	// return v < 64 && numCharNoExpBitset64.isset(v) || v == 'e' || v == 'E'
 	// return v > 42 && v < 102 && numCharWithExpBitset64.isset(v-42)
+}
+
+// -----------------------
+
+func pruneSignExt(v []byte, pos bool) (n int) {
+	if len(v) < 2 {
+	} else if pos && v[0] == 0 {
+		for ; v[n] == 0 && n+1 < len(v) && (v[n+1]&(1<<7) == 0); n++ {
+		}
+	} else if !pos && v[0] == 0xff {
+		for ; v[n] == 0xff && n+1 < len(v) && (v[n+1]&(1<<7) != 0); n++ {
+		}
+	}
+	return
+}
+
+func halfFloatToFloatBits(h uint16) (f uint32) {
+	// retrofitted from:
+	// - OGRE (Object-Oriented Graphics Rendering Engine)
+	//   function: halfToFloatI https://www.ogre3d.org/docs/api/1.9/_ogre_bitwise_8h_source.html
+
+	s := uint32(h >> 15)
+	m := uint32(h & 0x03ff)
+	e := int32((h >> 10) & 0x1f)
+
+	if e == 0 {
+		if m == 0 { // plus or minus 0
+			return s << 31
+		}
+		// Denormalized number -- renormalize it
+		for (m & 0x0400) == 0 {
+			m <<= 1
+			e -= 1
+		}
+		e += 1
+		m &= ^uint32(0x0400)
+	} else if e == 31 {
+		if m == 0 { // Inf
+			return (s << 31) | 0x7f800000
+		}
+		return (s << 31) | 0x7f800000 | (m << 13) // NaN
+	}
+	e = e + (127 - 15)
+	m = m << 13
+	return (s << 31) | (uint32(e) << 23) | m
+}
+
+func floatToHalfFloatBits(i uint32) (h uint16) {
+	// retrofitted from:
+	// - OGRE (Object-Oriented Graphics Rendering Engine)
+	//   function: halfToFloatI https://www.ogre3d.org/docs/api/1.9/_ogre_bitwise_8h_source.html
+	// - http://www.java2s.com/example/java-utility-method/float-to/floattohalf-float-f-fae00.html
+	s := (i >> 16) & 0x8000
+	e := int32(((i >> 23) & 0xff) - (127 - 15))
+	m := i & 0x7fffff
+
+	var h32 uint32
+
+	if e <= 0 {
+		if e < -10 { // zero
+			h32 = s // track -0 vs +0
+		} else {
+			m = (m | 0x800000) >> uint32(1-e)
+			h32 = s | (m >> 13)
+		}
+	} else if e == 0xff-(127-15) {
+		if m == 0 { // Inf
+			h32 = s | 0x7c00
+		} else { // NAN
+			m >>= 13
+			var me uint32
+			if m == 0 {
+				me = 1
+			}
+			h32 = s | 0x7c00 | m | me
+		}
+	} else {
+		if e > 30 { // Overflow
+			h32 = s | 0x7c00
+		} else {
+			h32 = s | (uint32(e) << 10) | (m >> 13)
+		}
+	}
+	h = uint16(h32)
+	return
 }
 
 // -----------------------
