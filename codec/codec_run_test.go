@@ -1672,15 +1672,9 @@ func doTestMapEncodeForCanonical(t *testing.T, h Handle) {
 	// encode v1 into b1, decode b1 into v2, encode v2 into b2, and compare b1 and b2.
 	// OR
 	// encode v1 into b1, decode b1 into v2, encode v2 into b2 and b3, and compare b2 and b3.
-	//   e.g. when doing cbor indefinite, we may haveto use out-of-band encoding
+	//   e.g. when doing cbor indefinite, we may have to use out-of-band encoding
 	//   where each key is encoded as an indefinite length string, which makes it not the same
 	//   order as the strings were lexicographically ordered before.
-
-	var cborIndef bool
-	var fi testFieldIntrospect
-	if h.Name() == "cbor" {
-		cborIndef = fi.get(h, "IndefiniteLength").(bool)
-	}
 
 	// if ch, ok := h.(*BincHandle); ok && ch.AsSymbols != 2 {
 	// 	defer func(u uint8) { ch.AsSymbols = u }(ch.AsSymbols)
@@ -1689,10 +1683,7 @@ func doTestMapEncodeForCanonical(t *testing.T, h Handle) {
 
 	bh := testBasicHandle(h)
 
-	defer func(c, si bool) {
-		bh.Canonical = c
-		bh.SignedInteger = si
-	}(bh.Canonical, bh.SignedInteger)
+	defer func(c, si bool) { bh.Canonical, bh.SignedInteger = c, si }(bh.Canonical, bh.SignedInteger)
 	bh.Canonical = true
 	// bh.SignedInteger = true
 
@@ -1704,6 +1695,8 @@ func doTestMapEncodeForCanonical(t *testing.T, h Handle) {
 	e2 := NewEncoderBytes(&b2, h)
 	e2.MustEncode(v2)
 	var b1t, b2t = b1, b2
+
+	cborIndef := h.Name() == "cbor" && testFieldIntrospect{}.get(h, "IndefiniteLength").(bool)
 	if cborIndef {
 		e2 = NewEncoderBytes(&b3, h)
 		e2.MustEncode(v2)
