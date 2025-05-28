@@ -42,7 +42,8 @@ EOF
 package main
 import "${zpkg}"
 func main() {
-codec.GenTmplRun2Go("fastpath.go.tmpl", "fastpath.generated.go")
+codec.GenTmplRun2Go("fastpath.go.tmpl", "base.fastpath.generated.go")
+codec.GenTmplRun2Go("fastpath.notmono.go.tmpl", "base.fastpath.notmono.generated.go")
 codec.GenTmplRun2Go("mammoth_test.go.tmpl", "mammoth_generated_test.go")
 codec.GenMonoAll()
 }

@@ -31,7 +31,8 @@ var genMonoSpecialFieldTypes = []string{"helperDecReader"}
 // These functions should take the address of first param when monomorphized
 var genMonoSpecialFunc4Addr = []string{} // {"decByteSlice"}
 
-var genMonoImportsToSkip = []string{`"errors"`, `"fmt"`, `"net/rpc"`}
+// MARKER: skip cmp since we don't want cmp.orderedRv (means cmp import becomes spurious)
+var genMonoImportsToSkip = []string{`"errors"`, `"fmt"`, `"net/rpc"`, `"cmp"`}
 
 var genMonoRefImportsVia_ = [][2]string{
 	// {"errors", "New"},
@@ -71,26 +72,26 @@ func (x *genMono) reset() {
 
 func (m *genMono) hdl(hname string) {
 	m.reset()
-	hdlFname := hname + ".go"
-	m.do(hname, []string{"encode.go", "decode.go", hdlFname}, []string{"base.notfastpath.go"}, "", "")
-	m.do(hname, []string{"base.notfastpath.go"}, nil, ".notfastpath", ` && (notfastpath || codec.notfastpath)`)
-	m.do(hname, []string{"base.fastpath.generated.go"}, nil, ".fastpath", ` && !notfastpath && !codec.notfastpath`)
+	m.do(hname, []string{"encode.go", "decode.go", hname + ".go"}, []string{"base.notfastpath.go", "base.notfastpath.notmono.go"}, "", "")
+	m.do(hname, []string{"base.notfastpath.notmono.go"}, nil, ".notfastpath", ` && (notfastpath || codec.notfastpath)`)
+	m.do(hname, []string{"base.fastpath.notmono.generated.go"}, []string{"base.fastpath.generated.go"}, ".fastpath", ` && !notfastpath && !codec.notfastpath`)
 }
 
 func (m *genMono) do(hname string, fnames, tnames []string, fnameInfx string, buildTagsSfx string) {
 	// keep m.typParams across whole call, as all others use it
-
 	const fnameSfx = ".mono.generated.go"
+	fname := hname + fnameInfx + fnameSfx
+	// debugf("genMono: [%s] --> [%s]", hlGREEN, hname, fname)
 
 	var imports = genMonoImports{set: make(map[string]struct{})}
 
 	r1, fset := m.merge(fnames, tnames, &imports)
 	m.trFile(r1, hname, true)
+	// debugf("\tgenMono 1: imports: %v (%d)", hlYELLOW, imports.set, len(imports.specs))
 
 	r2, fset := m.merge(fnames, tnames, &imports)
 	m.trFile(r2, hname, false)
-
-	fname := hname + fnameInfx + fnameSfx
+	// debugf("\tgenMono 2: imports: %v (%d)", hlYELLOW, imports.set, len(imports.specs))
 
 	r0 := genMonoOutInit(imports.specs, fname)
 	r0.Decls = append(r0.Decls, r1.Decls...)
@@ -102,8 +103,7 @@ func (m *genMono) do(hname string, fnames, tnames []string, fnameInfx string, bu
 	defer f.Close()
 
 	var s genMonoStrBuilder
-	s.s(`//go:build !codec.notmono `).s(buildTagsSfx)
-	s.s(`
+	s.s(`//go:build !codec.notmono `).s(buildTagsSfx).s(`
 
 // Copyright (c) 2012-2020 Ugorji Nwoke. All rights reserved.
 // Use of this source code is governed by a MIT license found in the LICENSE file.
@@ -189,9 +189,12 @@ func (x *genMono) merge(fNames, tNames []string, imports *genMonoImports) (dst *
 			}
 			return false
 		case *ast.GenDecl:
+			// debugf("\tGenDecl found of type: %v", hlBLUE, n.Tok)
 			if n.Tok == token.IMPORT {
+				// debugf("\timport GenDecl found (%d specs)", hlBLUE, len(n.Specs))
 				for _, v := range n.Specs {
 					nn := v.(*ast.ImportSpec)
+					// debugf("\timport found: %s", hlBLUE, nn.Path.Value)
 					if slices.Contains(genMonoImportsToSkip, nn.Path.Value) {
 						continue
 					}
@@ -511,7 +514,7 @@ func genMonoIsBytesVals(hName string, isbytes bool) (suffix, writer, reader, hNa
 	return "IO", "bufioEncWriter", "ioDecReader", hNameUp
 }
 
-func genMonoTypeParamsOk(v *ast.FieldList) bool {
+func genMonoTypeParamsOk(v *ast.FieldList) (ok bool) {
 	if v == nil || v.List == nil || len(v.List) != 1 {
 		return false
 	}
@@ -523,7 +526,13 @@ func genMonoTypeParamsOk(v *ast.FieldList) bool {
 	if pnName != "T" {
 		return false
 	}
-	switch pn.Type.(*ast.Ident).Name {
+	// ignore any nodes which are not idents e.g. cmp.orderedRv
+	vv, ok := pn.Type.(*ast.Ident)
+	if !ok {
+		return false
+	}
+	// debugf("pn.Type: %T, %v", hlRED, pn.Type, pn.Type)
+	switch vv.Name {
 	case "encDriver", "decDriver", "encWriter", "decReader":
 		return true
 	}
