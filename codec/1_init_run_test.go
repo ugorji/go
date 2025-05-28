@@ -10,13 +10,6 @@ import (
 	// . "github.com/ugorji/go/codec"
 )
 
-// variables that are not flags, but which can configure the handles
-var (
-	testEncodeOptions EncodeOptions
-	testDecodeOptions DecodeOptions
-	testRPCOptions    RPCOptions
-)
-
 type testHED struct {
 	H   Handle
 	Eb  *Encoder
@@ -133,8 +126,8 @@ func testSharedCodecEncode(ts interface{}, bsIn []byte,
 	// bs = make([]byte, 0, approxSize)
 	var e *Encoder
 	var buf *bytes.Buffer
-	useIO := testUseIoEncDec >= 0
-	if testUseReset && !testUseParallel {
+	useIO := testv.E.WriterBufferSize >= 0
+	if testv.UseReset && !testv.UseParallel {
 		hed := testHEDGet(h)
 		if useIO {
 			e = hed.Eio
@@ -150,7 +143,7 @@ func testSharedCodecEncode(ts interface{}, bsIn []byte,
 	// var oldWriteBufferSize int
 	if useIO {
 		buf = fn(bsIn)
-		if testUseIoWrapper {
+		if testv.UseIoWrapper {
 			e.Reset(ioWriterWrapper{buf})
 		} else {
 			e.Reset(buf)
@@ -164,7 +157,7 @@ func testSharedCodecEncode(ts interface{}, bsIn []byte,
 	} else {
 		err = e.Encode(ts)
 	}
-	if testUseIoEncDec >= 0 {
+	if testv.E.WriterBufferSize >= 0 {
 		bs = buf.Bytes()
 	}
 	return
@@ -172,8 +165,8 @@ func testSharedCodecEncode(ts interface{}, bsIn []byte,
 
 func testSharedCodecDecoder(bs []byte, h Handle) (d *Decoder) {
 	// var buf *bytes.Reader
-	useIO := testUseIoEncDec >= 0
-	if testUseReset && !testUseParallel {
+	useIO := testv.D.ReaderBufferSize >= 0
+	if testv.UseReset && !testv.UseParallel {
 		hed := testHEDGet(h)
 		if useIO {
 			d = hed.Dio
@@ -187,7 +180,7 @@ func testSharedCodecDecoder(bs []byte, h Handle) (d *Decoder) {
 	}
 	if useIO {
 		buf := bytes.NewReader(bs)
-		if testUseIoWrapper {
+		if testv.UseIoWrapper {
 			d.Reset(ioReaderWrapper{buf})
 		} else {
 			d.Reset(buf)
@@ -212,9 +205,9 @@ func testUpdateBasicHandleOptions(bh *BasicHandle) {
 	// cleanInited() not needed, as we re-create the Handles on each reinit
 	// bh.clearInited() // so it is reinitialized next time around
 	// pre-fill them first
-	bh.EncodeOptions = testEncodeOptions
-	bh.DecodeOptions = testDecodeOptions
-	bh.RPCOptions = testRPCOptions
+	bh.EncodeOptions = testv.E
+	bh.DecodeOptions = testv.D
+	bh.RPCOptions = testv.R
 	// bh.InterfaceReset = true
 	// bh.PreferArrayOverSlice = true
 	// modify from flag'ish things

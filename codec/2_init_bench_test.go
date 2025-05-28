@@ -78,9 +78,9 @@ func init() {
 }
 
 func benchInit() {
-	benchTs = newTestStruc(testDepth, testNumRepeatString, true, !testSkipIntf, testMapStringKeyOnly)
+	benchTs = newTestStruc(testv.Depth, testv.NumRepeatString, true, !testv.SkipIntf, testv.MapStringKeyOnly)
 	approxSize = approxDataSize(reflect.ValueOf(benchTs)) * 2 // multiply by 1.5 or 2 to appease msgp, and prevent alloc
-	// bytesLen := 1024 * 4 * (testDepth + 1) * (testDepth + 1)
+	// bytesLen := 1024 * 4 * (testv.Depth + 1) * (testv.Depth + 1)
 	// if bytesLen < approxSize {
 	// 	bytesLen = approxSize
 	// }
@@ -93,7 +93,7 @@ func benchReinit() {
 
 func benchUpdateHandles() {
 	// benchCheckers = nil
-	if testBenchmarkNoConfig {
+	if testv.BenchmarkNoConfig {
 		return
 	}
 
@@ -128,7 +128,7 @@ func TestBenchOnePass(t *testing.T) {
 	t.Logf("BENCHMARK INIT: %v", time.Now())
 	// t.Logf("To run full benchmark comparing encodings, use: \"go test -bench=.\"")
 	t.Logf("Benchmark: ")
-	t.Logf("\tStruct recursive Depth:             %d", testDepth)
+	t.Logf("\tStruct recursive Depth:             %d", testv.Depth)
 	if approxSize > 0 {
 		t.Logf("\tApproxDeepSize Of benchmark Struct: %d bytes", approxSize)
 	}
@@ -140,9 +140,9 @@ func TestBenchOnePass(t *testing.T) {
 	for _, bc := range benchCheckers {
 		doBenchCheck(t, bc.name, bc.encodefn, bc.decodefn)
 	}
-	if testVerbose {
+	if testv.Verbose {
 		t.Logf("..............................................")
-		t.Logf("<<<<====>>>> depth: %v, ts: %#v\n", testDepth, benchTs)
+		t.Logf("<<<<====>>>> depth: %v, ts: %#v\n", testv.Depth, benchTs)
 	}
 	runtime.GC()
 	time.Sleep(100 * time.Millisecond)
@@ -294,7 +294,7 @@ func fnBenchmarkDecode(b *testing.B, encName string, ts interface{},
 
 func fnBenchmarkRun(b *testing.B, fn func()) {
 	fn() // run one time first - to init things
-	if testBenchmarkWithRuntimeMetrics {
+	if testv.BenchmarkWithRuntimeMetrics {
 		fnBenchmarkRunWithMetrics(b, fn)
 	} else {
 		fnBenchmarkRunNoMetrics(b, fn)

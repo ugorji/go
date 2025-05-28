@@ -60,14 +60,15 @@ package codec
 import (
 	"bytes"
 	"flag"
+	"strconv"
 	"testing"
 )
 
 func init() {
 	// log.SetOutput(io.Discard) // don't allow things log to standard out/err
 	testPreInitFns = append(testPreInitFns, testInitFlags, benchInitFlags, testParseFlags)
-	testPostInitFns = append(testPostInitFns, testUpdateOptionsFromFlags)
-	testReInitFns = append(testReInitFns, testUpdateOptionsFromFlags)
+	// testPostInitFns = append(testPostInitFns, testUpdateOptionsFromFlags)
+	// testReInitFns = append(testReInitFns, testUpdateOptionsFromFlags)
 }
 
 func TestMain(m *testing.M) {
@@ -83,64 +84,92 @@ var (
 )
 
 // flag variables used by tests (and bench)
-var (
-	testVerbose bool
-
+type testVars struct {
+	Verbose bool
 	//depth of 0 maps to ~400bytes json-encoded string, 1 maps to ~1400 bytes, etc
 	//For depth>1, we likely trigger stack growth for encoders, making benchmarking unreliable.
-	testDepth int
+	Depth int
 
-	testMaxInitLen int
+	UseDiff bool
 
-	testUseDiff bool
+	UseReset    bool
+	UseParallel bool
 
-	testUseReset    bool
-	testUseParallel bool
+	SkipIntf     bool
+	SkipRPCTests bool
 
-	testSkipIntf bool
+	UseIoWrapper bool
 
-	testUseIoEncDec  int
-	testUseIoWrapper bool
+	NumRepeatString int
 
-	testNumRepeatString int
+	RpcBufsize       int
+	MapStringKeyOnly bool
 
-	testRpcBufsize       int // Deprecated: no-op
-	testMapStringKeyOnly bool
-	testZeroCopy         bool
+	BenchmarkNoConfig bool
 
-	testBenchmarkNoConfig bool
+	BenchmarkWithRuntimeMetrics bool
 
-	testBenchmarkWithRuntimeMetrics bool
-)
+	bufsize testBufioSizeFlag
+
+	// variables that are not flags, but which can configure the handles
+	E EncodeOptions
+	D DecodeOptions
+	R RPCOptions
+
+	// MaxInitLen int
+	// ZeroCopy         bool
+	// UseIoEncDec  int
+}
+
+func (x *testVars) setBufsize(v int) {
+	x.E.WriterBufferSize = v
+	x.D.ReaderBufferSize = v
+}
+
+type testBufioSizeFlag int
+
+func (x *testBufioSizeFlag) String() string { return strconv.Itoa(int(*x)) }
+func (x *testBufioSizeFlag) Set(s string) (err error) {
+	v, err := strconv.ParseInt(s, 0, strconv.IntSize)
+	if err != nil {
+		v = -1
+	}
+	*x = testBufioSizeFlag(v)
+	testv.setBufsize((int)(v))
+	return
+}
+func (x *testBufioSizeFlag) Get() interface{} { return int(*x) }
+
+var testv testVars
 
 func testInitFlags() {
 	var bIgnore bool
 	// delete(testDecOpts.ExtFuncs, timeTyp)
-	flag.BoolVar(&testVerbose, "tv", false, "Text Extra Verbose Logging if -v if set")
-	flag.IntVar(&testUseIoEncDec, "ti", -1, "Use IO Reader/Writer for Marshal/Unmarshal ie >= 0")
-	flag.BoolVar(&testUseIoWrapper, "tiw", false, "Wrap the IO Reader/Writer with a base pass-through reader/writer")
+	flag.Var(&testv.bufsize, "ti", "Use IO Reader/Writer for Marshal/Unmarshal ie >= 0")
+	flag.BoolVar(&testv.Verbose, "tv", false, "Text Extra Verbose Logging if -v if set")
+	flag.BoolVar(&testv.UseIoWrapper, "tiw", false, "Wrap the IO Reader/Writer with a base pass-through reader/writer")
 
-	flag.BoolVar(&testSkipIntf, "tf", false, "Skip Interfaces")
-	flag.BoolVar(&testUseReset, "tr", false, "Use Reset")
-	flag.BoolVar(&testUseParallel, "tp", false, "Run tests in parallel")
-	flag.IntVar(&testNumRepeatString, "trs", 8, "Create string variables by repeating a string N times")
-	flag.BoolVar(&testUseDiff, "tdiff", false, "Use Diff")
-	flag.BoolVar(&testZeroCopy, "tzc", false, "Use Zero copy mode")
+	flag.BoolVar(&testv.SkipIntf, "tf", false, "Skip Interfaces")
+	flag.BoolVar(&testv.UseReset, "tr", false, "Use Reset")
+	flag.BoolVar(&testv.UseParallel, "tp", false, "Run tests in parallel")
+	flag.IntVar(&testv.NumRepeatString, "trs", 8, "Create string variables by repeating a string N times")
+	flag.BoolVar(&testv.UseDiff, "tdiff", false, "Use Diff")
+	flag.BoolVar(&testv.D.ZeroCopy, "tzc", false, "Use Zero copy mode")
+
+	flag.IntVar(&testv.D.MaxInitLen, "tx", 0, "Max Init Len")
+
+	flag.IntVar(&testv.Depth, "tsd", 0, "Test Struc Depth")
+	flag.BoolVar(&testv.MapStringKeyOnly, "tsk", false, "use maps with string keys only")
 
 	flag.BoolVar(&bIgnore, "tm", true, "(Deprecated) Use Must(En|De)code")
-
-	flag.IntVar(&testMaxInitLen, "tx", 0, "Max Init Len")
-
-	flag.IntVar(&testDepth, "tsd", 0, "Test Struc Depth")
-	flag.BoolVar(&testMapStringKeyOnly, "tsk", false, "use maps with string keys only")
 }
 
 func benchInitFlags() {
-	flag.BoolVar(&testBenchmarkNoConfig, "bnc", false, "benchmarks: do not make configuration changes for fair benchmarking")
-	flag.BoolVar(&testBenchmarkWithRuntimeMetrics, "brm", false, "benchmarks: include runtime metrics")
+	flag.BoolVar(&testv.BenchmarkNoConfig, "bnc", false, "benchmarks: do not make configuration changes for fair benchmarking")
+	flag.BoolVar(&testv.BenchmarkWithRuntimeMetrics, "brm", false, "benchmarks: include runtime metrics")
 	// flags reproduced here for compatibility (duplicate some in testInitFlags)
-	flag.BoolVar(&testMapStringKeyOnly, "bs", false, "benchmarks: use maps with string keys only")
-	flag.IntVar(&testDepth, "bd", 1, "Benchmarks: Test Struc Depth")
+	flag.BoolVar(&testv.MapStringKeyOnly, "bs", false, "benchmarks: use maps with string keys only")
+	flag.IntVar(&testv.Depth, "bd", 1, "Benchmarks: Test Struc Depth")
 }
 
 func testParseFlags() {
@@ -150,12 +179,12 @@ func testParseFlags() {
 	}
 }
 
-func testUpdateOptionsFromFlags() {
-	testEncodeOptions.WriterBufferSize = testUseIoEncDec
-	testDecodeOptions.ReaderBufferSize = testUseIoEncDec
-	testDecodeOptions.MaxInitLen = testMaxInitLen
-	testDecodeOptions.ZeroCopy = testZeroCopy
-}
+// func testUpdateOptionsFromFlags() {
+// 	testv.E.WriterBufferSize = testv.UseIoEncDec
+// 	testv.D.ReaderBufferSize = testv.UseIoEncDec
+// 	testv.D.MaxInitLen = testv.MaxInitLen
+// 	testv.D.ZeroCopy = testv.ZeroCopy
+// }
 
 func testReinit() {
 	// testOnce = sync.Once{}

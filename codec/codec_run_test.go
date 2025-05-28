@@ -221,7 +221,6 @@ var (
 	testTableNumMaps       int
 
 	// set this when running using bufio, etc
-	testSkipRPCTests = false
 
 	testSkipRPCTestsMsg      = "testSkipRPCTests=true"
 	testSkipParallelTestsMsg = "testSkipParallelTestsMsg=true && Handle being modified"
@@ -515,13 +514,13 @@ func testSetup2(t *testing.T, h *Handle) (fn func()) {
 // of the test.
 //
 // It explicitly will call t.Parallel() if allowParallel=true
-// and testUseParallel=true.
+// and testv.UseParallel=true.
 //
 // This function can track how much time a test took,
 // or recover from panic's and fail the test appropriately.
 func testSetupWithChecks(t *testing.T, _ *Handle, allowParallel bool) (fn func()) {
 	// testOnce.Do(testInitAll)
-	if allowParallel && testUseParallel {
+	if allowParallel && testv.UseParallel {
 		t.Parallel()
 	}
 	// in case an error is seen, recover it here.
@@ -561,7 +560,7 @@ func testCheckEqual(t *testing.T, v1 interface{}, v2 interface{}, desc string) {
 	t.Helper()
 	if err := deepEqual(v1, v2); err != nil {
 		t.Logf("Not Equal: %s: %v", desc, err)
-		if testVerbose {
+		if testv.Verbose {
 			t.Logf("\tv1: %v, v2: %v", v1, v2)
 		}
 		t.FailNow()
@@ -694,8 +693,8 @@ ugorji
 	table = append(table, primitives)
 	table = append(table, testMbsT(primitives))
 	table = append(table, maps...)
-	table = append(table, newTestStrucFlex(0, testNumRepeatString, false, !testSkipIntf, testMapStringKeyOnly))
-	// table = append(table, newTestStrucFlex(0, testNumRepeatString, true, !testSkipIntf, testMapStringKeyOnly))
+	table = append(table, newTestStrucFlex(0, testv.NumRepeatString, false, !testv.SkipIntf, testv.MapStringKeyOnly))
+	// table = append(table, newTestStrucFlex(0, testv.NumRepeatString, true, !testv.SkipIntf, testv.MapStringKeyOnly))
 }
 
 func testTableVerify(f testVerifyFlag, h Handle) (av []interface{}) {
@@ -875,13 +874,13 @@ func testVerifyVal(v interface{}, f testVerifyFlag, h Handle) (v2 interface{}) {
 }
 
 func testReleaseBytes(bs []byte) {
-	if !testUseParallel {
+	if !testv.UseParallel {
 		testBytesFreeList.put(bs)
 	}
 }
 
 func testGetBytes() (bs []byte) {
-	if !testUseParallel {
+	if !testv.UseParallel {
 		bs = testBytesFreeList.get(64)
 	}
 	return
@@ -909,7 +908,7 @@ func testMarshalErr(v interface{}, h Handle, t *testing.T, name string) (bs []by
 	bs, err := testCodecEncode(v, testGetBytes(), testByteBuf, h, true)
 	if err != nil {
 		t.Logf("%s: marshal failed: %v", name, err)
-		if testVerbose {
+		if testv.Verbose {
 			t.Logf("Error encoding %s: %v, Err: %v", name, v, err)
 		}
 		t.FailNow()
@@ -922,7 +921,7 @@ func testUnmarshalErr(v interface{}, data []byte, h Handle, t *testing.T, name s
 	err := testCodecDecode(data, v, h, true)
 	if err != nil {
 		t.Logf("%s: unmarshal failed: %v", name, err)
-		if testVerbose {
+		if testv.Verbose {
 			t.Logf("Error Decoding into %s: %v, Err: %v", name, v, err)
 		}
 		t.FailNow()
@@ -933,12 +932,12 @@ func testDeepEqualErr(v1, v2 interface{}, t *testing.T, name string) {
 	t.Helper()
 	err := deepEqual(v1, v2)
 	if err == nil {
-		if testVerbose {
+		if testv.Verbose {
 			t.Logf("%s: values equal", name)
 		}
 	} else {
 		t.Logf("%s: values not equal: %v", name, err)
-		if testVerbose {
+		if testv.Verbose {
 			t.Logf("%s: values not equal: %v. 1: %#v, 2: %#v", name, err, v1, v2)
 		}
 		t.FailNow()
@@ -949,14 +948,14 @@ func testReadWriteCloser(c io.ReadWriteCloser) io.ReadWriteCloser {
 	if !testWrapRpcReadWriteCloser {
 		return c
 	}
-	if testRpcBufsize <= 0 && rand.Int63()%2 == 0 {
+	if testv.RpcBufsize <= 0 && rand.Int63()%2 == 0 {
 		return c
 	}
 	return struct {
 		io.Closer
 		*bufio.Reader
 		*bufio.Writer
-	}{c, bufio.NewReaderSize(c, testRpcBufsize), bufio.NewWriterSize(c, testRpcBufsize)}
+	}{c, bufio.NewReaderSize(c, testv.RpcBufsize), bufio.NewWriterSize(c, testv.RpcBufsize)}
 }
 
 // testCodecTableOne allows us test for different variations based on arguments passed.
@@ -964,7 +963,7 @@ func testCodecTableOne(t *testing.T, testNil bool, h Handle,
 	vs []interface{}, vsVerify []interface{}) {
 	//if testNil, then just test for when a pointer to a nil interface{} is passed. It should work.
 	//Current setup allows us test (at least manually) the nil interface or typed interface.
-	if testVerbose {
+	if testv.Verbose {
 		t.Logf("================ TestNil: %v: %v entries ================\n", testNil, len(vs))
 	}
 
@@ -989,7 +988,7 @@ func testCodecTableOne(t *testing.T, testNil bool, h Handle,
 
 	bh := testBasicHandle(h)
 	for i, v0 := range vs {
-		if testVerbose {
+		if testv.Verbose {
 			t.Logf("..............................................")
 			t.Logf("         Testing: #%d:, %T, %#v\n", i, v0, v0)
 		}
@@ -1030,7 +1029,7 @@ func testCodecTableOne(t *testing.T, testNil bool, h Handle,
 				b1 = b0[:256]
 			}
 		}
-		if testVerbose {
+		if testv.Verbose {
 			t.Logf("         Encoded %s: type: %T, len/cap: %v/%v, %v, %s\n", bytesorstr, v0, len(b0), cap(b0), b1, "...")
 		}
 		// TestStrucFlex has many fields which will encode differently if SignedInteger - so skip
@@ -1070,7 +1069,7 @@ func testCodecTableOne(t *testing.T, testNil bool, h Handle,
 			_, _ = mapMsp2ss, mapMip2ss
 		}
 
-		if testVerbose {
+		if testv.Verbose {
 			t.Logf("         v1 returned: %T, %v %#v", v1, v1, v1)
 		}
 		// if v1 != nil {
@@ -1080,27 +1079,27 @@ func testCodecTableOne(t *testing.T, testNil bool, h Handle,
 		// }
 		if err != nil {
 			t.Logf("-------- Error: %v", err)
-			if testVerbose {
+			if testv.Verbose {
 				t.Logf("-------- Partial return: %v", v1)
 			}
 			t.FailNow()
 		}
 		v0check := vsVerify[i]
 		if v0check == skipVerifyVal || bh.SignedInteger {
-			if testVerbose {
+			if testv.Verbose {
 				t.Logf("        Nil Check skipped: Decoded: %T, %#v\n", v1, v1)
 			}
 			continue
 		}
 		if err = deepEqual(v0check, v1); err == nil {
-			if testVerbose {
+			if testv.Verbose {
 				t.Logf("++++++++ Before and After marshal matched\n")
 			}
 		} else {
 			// t.Logf("-------- Before and After marshal do not match: Error: %v"+
 			// 	" ====> GOLDEN: (%T) %#v, DECODED: (%T) %#v\n", err, v0check, v0check, v1, v1)
 			t.Logf("-------- FAIL: Before and After marshal do not match: Error: %v", err)
-			if testVerbose {
+			if testv.Verbose {
 				t.Logf("    ....... GOLDEN:  (%T) %v %#v", v0check, v0check, v0check)
 				t.Logf("    ....... DECODED: (%T) %v %#v", v1, v1, v1)
 			}
@@ -1182,7 +1181,7 @@ func doTestCodecMiscOne(t *testing.T, h Handle) {
 	}
 
 	// func TestMsgpackDecodePtr(t *testing.T) {
-	ts := newTestStrucFlex(testDepth, testNumRepeatString, false, !testSkipIntf, testMapStringKeyOnly)
+	ts := newTestStrucFlex(testv.Depth, testv.NumRepeatString, false, !testv.SkipIntf, testv.MapStringKeyOnly)
 	testReleaseBytes(b)
 	b = testMarshalErr(ts, h, t, "pointer-to-struct")
 	if len(b) < 40 {
@@ -1193,7 +1192,7 @@ func doTestCodecMiscOne(t *testing.T, h Handle) {
 	if len(b1) > 256 {
 		b1 = b1[:256]
 	}
-	if testVerbose {
+	if testv.Verbose {
 		if h.isBinary() {
 			t.Logf("------- b: size: %v, value: %v", len(b), b1)
 		} else {
@@ -1243,7 +1242,7 @@ func doTestCodecMiscOne(t *testing.T, h Handle) {
 	testCheckEqual(t, p, p2, "p=p2")
 	testCheckEqual(t, m, m2, "m=m2")
 	if err = deepEqual(p, p2); err == nil {
-		if testVerbose {
+		if testv.Verbose {
 			t.Logf("p and p2 match")
 		}
 	} else {
@@ -1251,7 +1250,7 @@ func doTestCodecMiscOne(t *testing.T, h Handle) {
 		t.FailNow()
 	}
 	if err = deepEqual(m, m2); err == nil {
-		if testVerbose {
+		if testv.Verbose {
 			t.Logf("m and m2 match")
 		}
 	} else {
@@ -1287,7 +1286,7 @@ func doTestCodecMiscOne(t *testing.T, h Handle) {
 		bs = testMarshalErr(tarr1, h, t, "tarr1")
 		// if _, ok := h.(*JsonHandle); ok {
 		if h.Name() == "json" {
-			if testVerbose {
+			if testv.Verbose {
 				t.Logf("Marshal as: %s", bs)
 			}
 		}
@@ -1375,7 +1374,7 @@ func doTestCodecChan(t *testing.T, h Handle) {
 	// - compare sl1 and sl2
 
 	{
-		if testVerbose {
+		if testv.Verbose {
 			t.Logf("*int64")
 		}
 		sl1 := make([]*int64, 4)
@@ -1398,7 +1397,7 @@ func doTestCodecChan(t *testing.T, h Handle) {
 		}
 		if err := deepEqual(sl1, sl2); err != nil {
 			t.Logf("FAIL: Not Match: %v; len: %v, %v", err, len(sl1), len(sl2))
-			if testVerbose {
+			if testv.Verbose {
 				t.Logf("sl1: %#v, sl2: %#v", sl1, sl2)
 			}
 			t.FailNow()
@@ -1406,7 +1405,7 @@ func doTestCodecChan(t *testing.T, h Handle) {
 	}
 
 	{
-		if testVerbose {
+		if testv.Verbose {
 			t.Logf("testBytesT []byte - input []byte")
 		}
 		type testBytesT []byte
@@ -1431,14 +1430,14 @@ func doTestCodecChan(t *testing.T, h Handle) {
 		}
 		if err := deepEqual(sl1, sl2); err != nil {
 			t.Logf("FAIL: Not Match: %v; len: %v, %v", err, len(sl1), len(sl2))
-			if testVerbose {
+			if testv.Verbose {
 				t.Logf("sl1: %#v, sl2: %#v", sl1, sl2)
 			}
 			t.FailNow()
 		}
 	}
 	{
-		if testVerbose {
+		if testv.Verbose {
 			t.Logf("testBytesT byte - input string/testBytesT")
 		}
 		type testBytesT byte
@@ -1467,7 +1466,7 @@ func doTestCodecChan(t *testing.T, h Handle) {
 	}
 
 	{
-		if testVerbose {
+		if testv.Verbose {
 			t.Logf("*[]byte")
 		}
 		sl1 := make([]byte, 4)
@@ -1496,7 +1495,7 @@ func doTestCodecChan(t *testing.T, h Handle) {
 }
 
 func doTestCodecRpcOne(t *testing.T, rr Rpc, h Handle, doRequest bool, exitSleep time.Duration) (port int) {
-	if testSkipRPCTests {
+	if testv.SkipRPCTests {
 		t.Skip(testSkipRPCTestsMsg)
 	}
 	if !testRecoverPanicToErr {
@@ -1525,7 +1524,7 @@ func doTestCodecRpcOne(t *testing.T, rr Rpc, h Handle, doRequest bool, exitSleep
 	ln, err := net.Listen("tcp", "127.0.0.1:0") // listen on ipv4 localhost
 	testCheckErr(t, err)
 	port = (ln.Addr().(*net.TCPAddr)).Port
-	if testVerbose {
+	if testv.Verbose {
 		t.Logf("connFn: addr: %v, network: %v, port: %v", ln.Addr(), ln.Addr().Network(), port)
 	}
 	// var opts *DecoderOptions
@@ -1553,7 +1552,7 @@ func doTestCodecRpcOne(t *testing.T, rr Rpc, h Handle, doRequest bool, exitSleep
 				break
 			}
 			if err1 != nil {
-				if testVerbose {
+				if testv.Verbose {
 					t.Logf("rpc error accepting connection: %v", err1)
 				}
 				continue
@@ -1705,7 +1704,7 @@ func doTestMapEncodeForCanonical(t *testing.T, h Handle) {
 
 	if !bytes.Equal(b1t, b2t) {
 		t.Logf("Unequal bytes of length: %v vs %v", len(b1t), len(b2t))
-		if testVerbose {
+		if testv.Verbose {
 			t.Logf("Unequal bytes: \n\t%v \n\tVS \n\t%v", b1t, b2t)
 		}
 		t.FailNow()
@@ -1725,7 +1724,7 @@ func doTestStdEncIntf(t *testing.T, h Handle) {
 		d := NewDecoderBytes(b, h)
 		d.MustDecode(a[1])
 		if err := deepEqual(a[0], a[1]); err == nil {
-			if testVerbose {
+			if testv.Verbose {
 				t.Logf("++++ Objects match")
 			}
 		} else {
@@ -1772,7 +1771,7 @@ func doTestEncCircularRef(t *testing.T, h Handle) {
 		t.FailNow()
 	}
 	if x := err.Error(); strings.Contains(x, "circular") || strings.Contains(x, "cyclic") {
-		if testVerbose {
+		if testv.Verbose {
 			t.Logf("error detected as expected: %v", x)
 		}
 	} else {
@@ -1808,7 +1807,7 @@ func doTestAnonCycle(t *testing.T, h Handle) {
 	rt := reflect.TypeOf((*TestAnonCycleT1)(nil)).Elem()
 	rtid := rt2id(rt)
 	pti := testBasicHandle(h).getTypeInfo(rtid, rt)
-	if testVerbose {
+	if testv.Verbose {
 		t.Logf("[%s] pti: %v", h.Name(), pti)
 	}
 }
@@ -1856,7 +1855,7 @@ func doTestRawValue(t *testing.T, h Handle) {
 	v = TestRawValue{I: i}
 	e := NewEncoderBytes(&bs, h)
 	e.MustEncode(v.I)
-	if testVerbose {
+	if testv.Verbose {
 		t.Logf(">>> raw: %v, %s\n", bs, bs)
 	}
 
@@ -1864,18 +1863,18 @@ func doTestRawValue(t *testing.T, h Handle) {
 	e.ResetBytes(&bs2)
 	e.MustEncode(v)
 
-	if testVerbose {
+	if testv.Verbose {
 		t.Logf(">>> bs2: %v, %s\n", bs2, bs2)
 	}
 	d := NewDecoderBytes(bs2, h)
 	d.MustDecode(&v2)
 	d.ResetBytes(v2.R)
-	if testVerbose {
+	if testv.Verbose {
 		t.Logf(">>> v2.R: %v, %s\n", ([]byte)(v2.R), ([]byte)(v2.R))
 	}
 	d.MustDecode(&i2)
 
-	if testVerbose {
+	if testv.Verbose {
 		t.Logf(">>> Encoded %v, decoded %v\n", i, i2)
 	}
 	// t.Logf("Encoded %v, decoded %v", i, i2)
@@ -1895,7 +1894,7 @@ func doTestPythonGenStreams(t *testing.T, h Handle) {
 	// defer func(t0 time.Time) { debugf("python-gen-streams: %s: took: %v", h.Name(), time.Since(t0)) }(time.Now())
 
 	name := h.Name()
-	if testVerbose {
+	if testv.Verbose {
 		t.Logf("TestPythonGenStreams-%v", name)
 	}
 	tmpdir, err := os.MkdirTemp("", "golang-"+name+"-test")
@@ -1904,7 +1903,7 @@ func doTestPythonGenStreams(t *testing.T, h Handle) {
 		t.FailNow()
 	}
 	defer os.RemoveAll(tmpdir)
-	if testVerbose {
+	if testv.Verbose {
 		t.Logf("tmpdir: %v", tmpdir)
 	}
 	cmd := exec.Command("python", "test.py", "testdata", tmpdir)
@@ -1935,7 +1934,7 @@ func doTestPythonGenStreams(t *testing.T, h Handle) {
 		//compare to in-mem object
 		//encode it again
 		//compare to output stream
-		if testVerbose {
+		if testv.Verbose {
 			t.Logf("..............................................")
 			t.Logf("         Testing: #%d: %T, %#v\n", i, v, v)
 		}
@@ -1960,12 +1959,12 @@ func doTestPythonGenStreams(t *testing.T, h Handle) {
 		//no need to indirect, because we pass a nil ptr, so we already have the value
 		//if v1 != nil { v1 = reflect.Indirect(reflect.ValueOf(v1)).Interface() }
 		if err = deepEqual(v, v1); err == nil {
-			if testVerbose {
+			if testv.Verbose {
 				t.Logf("++++++++ Objects match: %T, %v", v, v)
 			}
 		} else {
 			t.Logf("-------- FAIL: Objects do not match: %v. Source: %T. Decoded: %T", err, v, v1)
-			if testVerbose {
+			if testv.Verbose {
 				t.Logf("--------   GOLDEN: %#v", v)
 				// t.Logf("--------   DECODED: %#v <====> %#v", v1, reflect.Indirect(reflect.ValueOf(v1)).Interface())
 				t.Logf("--------   DECODED: %#v <====> %#v", v1, reflect.Indirect(reflect.ValueOf(v1)).Interface())
@@ -1979,21 +1978,21 @@ func doTestPythonGenStreams(t *testing.T, h Handle) {
 			continue
 		}
 		if err = deepEqual(bsb, bss); err == nil {
-			if testVerbose {
+			if testv.Verbose {
 				t.Logf("++++++++ Bytes match")
 			}
 		} else {
 			xs := "--------"
 			if reflect.ValueOf(v).Kind() == reflect.Map {
 				xs = "        "
-				if testVerbose {
+				if testv.Verbose {
 					t.Logf("%s FAIL - bytes do not match, but it's a map (ok - dependent on ordering): %v", xs, err)
 				}
 			} else {
 				t.Logf("%s FAIL - bytes do not match and is not a map (bad): %v", xs, err)
 				t.FailNow()
 			}
-			if testVerbose {
+			if testv.Verbose {
 				t.Logf("%s   FROM_FILE: %4d] %v", xs, len(bss), bss)
 				t.Logf("%s     ENCODED: %4d] %v", xs, len(bsb), bsb)
 			}
@@ -2005,7 +2004,7 @@ func doTestPythonGenStreams(t *testing.T, h Handle) {
 
 func doTestSwallowAndZero(t *testing.T, h Handle) {
 	defer testSetup(t, &h)()
-	v1 := newTestStrucFlex(testDepth, testNumRepeatString, false, false, testMapStringKeyOnly)
+	v1 := newTestStrucFlex(testv.Depth, testv.NumRepeatString, false, false, testv.MapStringKeyOnly)
 	var b1 []byte
 
 	e1 := NewEncoderBytes(&b1, h)
@@ -2142,7 +2141,7 @@ func doTestDecodeNilMapValue(t *testing.T, h Handle) {
 	}}
 
 	bs := testMarshalErr(toEncode, h, t, "-")
-	if isJsonHandle && testVerbose {
+	if isJsonHandle && testv.Verbose {
 		t.Logf("json encoded: %s\n", bs)
 	}
 
@@ -3210,7 +3209,7 @@ func doTestStrucEncDec(t *testing.T, h Handle) {
 	name := h.Name()
 
 	{
-		var ts1 = newTestStruc(2, testNumRepeatString, false, !testSkipIntf, testMapStringKeyOnly)
+		var ts1 = newTestStruc(2, testv.NumRepeatString, false, !testv.SkipIntf, testv.MapStringKeyOnly)
 		var ts2 TestStruc
 		bs := testMarshalErr(ts1, h, t, name)
 		testUnmarshalErr(&ts2, bs, h, t, name)
@@ -3221,7 +3220,7 @@ func doTestStrucEncDec(t *testing.T, h Handle) {
 	// Note: We cannot use TestStrucFlex because it has omitempty values,
 	// Meaning that sometimes, encoded and decoded will not be same.
 	// {
-	// 	var ts1 = newTestStrucFlex(2, testNumRepeatString, false, !testSkipIntf, testMapStringKeyOnly)
+	// 	var ts1 = newTestStrucFlex(2, testv.NumRepeatString, false, !testv.SkipIntf, testv.MapStringKeyOnly)
 	// 	var ts2 TestStrucFlex
 	// 	bs := testMarshalErr(ts1, h, t, name)
 	// 	testUnmarshalErr(&ts2, bs, h, t, name)
@@ -3506,7 +3505,7 @@ func doTestZeroCopyBytes(t *testing.T, h Handle) {
 func doTestNextValueBytes(t *testing.T, h Handle) {
 	// defer testSetup(t, &h)()
 	// bh := testBasicHandle(h)
-	// if testUseParallel && (testUseIoEncDec >= 0 || bh.InterfaceReset) {
+	// if testv.UseParallel && (testUseIoEncDec >= 0 || bh.InterfaceReset) {
 	// 	t.Skip(testSkipParallelTestsMsg)
 	// }
 	defer testSetup2(t, &h)()
@@ -3524,7 +3523,7 @@ func doTestNextValueBytes(t *testing.T, h Handle) {
 		[]string{"1", "22", "333", "4444"},
 		// use *TestStruc, not *TestStrucFlex, as *TestStrucFlex is harder to compare with deep equal
 		// Remember: *TestStruc was separated for this reason, affording comparing against other libraries
-		newTestStruc(testDepth, testNumRepeatString, false, false, true),
+		newTestStruc(testv.Depth, testv.NumRepeatString, false, false, true),
 		"1223334444",
 	}
 	var out []byte
@@ -3543,10 +3542,19 @@ func doTestNextValueBytes(t *testing.T, h Handle) {
 	var valueBytes = make([][]byte, len(inputs))
 	var valueBytes2 = make([][]byte, len(inputs))
 
+	fnUncontested := func(v []byte) []byte {
+		if testv.D.ReaderBufferSize >= 0 { // useIO
+			v2 := make([]byte, len(v))
+			copy(v2, v)
+			v = v2
+		}
+		return v
+	}
+
 	d := testSharedCodecDecoder(out, h)
 	for i := 0; i < len(inputs); i++ {
-		valueBytes[i] = testUncontendedBytes(d.nextValueBytes())
-		valueBytes2[i] = testUncontendedBytes(d.nextValueBytes())
+		valueBytes[i] = fnUncontested(d.nextValueBytes())
+		valueBytes2[i] = fnUncontested(d.nextValueBytes())
 	}
 	// if testUseIoEncDec >= 0 {
 	// 	bh.ReaderBufferSize = oldReadBufferSize
@@ -3579,7 +3587,7 @@ func __doTestIntegers(t *testing.T, h Handle) {
 	// handle SignedInteger=true|false
 	// decode into an interface{}
 
-	if testUseParallel {
+	if testv.UseParallel {
 		t.Skip(testSkipParallelTestsMsg)
 	}
 
@@ -4006,15 +4014,6 @@ func TestMapRangeIndex(t *testing.T) {
 // ----- RPC custom -----
 
 // --------
-
-func testUncontendedBytes(v []byte) []byte {
-	if testUseIoEncDec >= 0 { // useIO
-		v2 := make([]byte, len(v))
-		copy(v2, v)
-		v = v2
-	}
-	return v
-}
 
 type testNameBasicHandle struct {
 	n string

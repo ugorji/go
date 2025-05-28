@@ -26,7 +26,7 @@ import (
 //    - Python Service allows multiple arguments
 
 func doTestMsgpackRpcSpecGoClientToPythonSvc(t *testing.T, h Handle) {
-	if testSkipRPCTests {
+	if testv.SkipRPCTests {
 		t.Skip(testSkipRPCTestsMsg)
 	}
 	defer testSetup(t, &h)()
@@ -58,7 +58,7 @@ func doTestMsgpackRpcSpecGoClientToPythonSvc(t *testing.T, h Handle) {
 }
 
 func doTestMsgpackRpcSpecPythonClientToGoSvc(t *testing.T, h Handle) {
-	if testSkipRPCTests {
+	if testv.SkipRPCTests {
 		t.Skip(testSkipRPCTestsMsg)
 	}
 	defer testSetup(t, &h)()

@@ -25,7 +25,7 @@ func doTestJsonDecodeNonStringScalarInStringContext(t *testing.T, h Handle) {
 	d := NewDecoderBytes([]byte(b), h)
 	d.MustDecode(&m)
 	if err := deepEqual(golden, m); err == nil {
-		if testVerbose {
+		if testv.Verbose {
 			t.Logf("++++ match: decoded: %#v", m)
 		}
 	} else {
@@ -528,7 +528,7 @@ func doTestJsonNumberParsing(t *testing.T, h Handle) {
 }
 
 func __doTestJsonLargeInteger(t *testing.T, v interface{}, ias uint8, jh *JsonHandle) {
-	if testVerbose {
+	if testv.Verbose {
 		t.Logf("Running TestJsonLargeInteger: v: %#v, ias: %c", v, ias)
 	}
 

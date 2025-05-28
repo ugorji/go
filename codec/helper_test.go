@@ -28,7 +28,7 @@ var testCmpOpts []cmp.Option
 
 func deepEqual(v1, v2 interface{}) (err error) {
 	if !reflect.DeepEqual(v1, v2) {
-		if testUseDiff {
+		if testv.UseDiff {
 			err = errors.New(cmp.Diff(v1, v2, testCmpOpts...))
 		} else {
 			err = errDeepEqualNotMatch
