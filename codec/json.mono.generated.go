@@ -7,6 +7,7 @@ package codec
 
 import (
 	"encoding"
+
 	"encoding/base64"
 	"io"
 	"math"
@@ -18,7 +19,6 @@ import (
 	"time"
 	"unicode"
 	"unicode/utf16"
-
 	"unicode/utf8"
 )
 

@@ -7,6 +7,7 @@ package codec
 
 import (
 	"encoding"
+
 	"io"
 	"math"
 	"reflect"

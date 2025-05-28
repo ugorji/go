@@ -8,7 +8,6 @@ package codec
 import (
 	"reflect"
 	"slices"
-
 	"sort"
 )
 
