@@ -1,7 +1,7 @@
+//go:build notfastpath || (codec.notfastpath && (notmono || codec.notmono))
+
 // Copyright (c) 2012-2020 Ugorji Nwoke. All rights reserved.
 // Use of this source code is governed by a MIT license found in the LICENSE file.
-
-//go:build notfastpath || codec.notfastpath
 
 package codec
 
