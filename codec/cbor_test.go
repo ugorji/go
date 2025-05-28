@@ -15,17 +15,18 @@ import (
 )
 
 func TestCborIndefiniteLength(t *testing.T) {
-	var h Handle = testCborH
+	ch := testCborH
+	var h Handle = ch
 	defer testSetup2(t, &h)()
 	bh := testBasicHandle(h)
-	defer func(oldMapType reflect.Type, oldRawToString, oldSignedInteger bool) {
-		bh.MapType = oldMapType
-		bh.RawToString = oldRawToString
-		bh.SignedInteger = oldSignedInteger
-	}(bh.MapType, bh.RawToString, bh.SignedInteger)
+	defer func(a reflect.Type, b, c, d bool) {
+		bh.MapType, bh.RawToString, bh.SignedInteger, ch.IndefiniteLength = a, b, c, d
+	}(bh.MapType, bh.RawToString, bh.SignedInteger, ch.IndefiniteLength)
 	bh.MapType = testMapStrIntfTyp
 	bh.RawToString = false
 	bh.SignedInteger = false
+	// since we're writing this manually using MustEncode, don't use IndefiniteLength
+	ch.IndefiniteLength = false
 	// var (
 	// 	M1 map[string][]byte
 	// 	M2 map[uint64]bool
@@ -87,7 +88,7 @@ func TestCborIndefiniteLength(t *testing.T) {
 	NewDecoderBytes(buf.Bytes(), h).MustDecode(&vv)
 	if err := deepEqual(v, vv); err != nil {
 		t.Logf("-------- Before and After marshal do not match: Error: %v", err)
-		if testVerbose {
+		if testv.Verbose {
 			t.Logf("    ....... GOLDEN:  (%T) %#v", v, v)
 			t.Logf("    ....... DECODED: (%T) %#v", vv, vv)
 		}
@@ -197,7 +198,7 @@ func TestCborGoldens(t *testing.T) {
 	for i, g := range gs {
 		// skip tags or simple or those with prefix, as we can't verify them.
 		if g.Skip || strings.HasPrefix(g.Diagnostic, "simple(") || tagregex.MatchString(g.Diagnostic) {
-			if testVerbose {
+			if testv.Verbose {
 				t.Logf("[%v] skipping because skip=true OR unsupported simple value or Tag Value", i)
 			}
 			continue
@@ -252,7 +253,7 @@ func testCborError(t *testing.T, i int, v0, v1 interface{}, err error, equal *bo
 	}
 	if err != nil {
 		t.Logf("[%v] deepEqual error: %v", i, err)
-		if testVerbose {
+		if testv.Verbose {
 			t.Logf("    ....... GOLDEN:  (%T) %#v", v0, v0)
 			t.Logf("    ....... DECODED: (%T) %#v", v1, v1)
 		}
@@ -260,7 +261,7 @@ func testCborError(t *testing.T, i int, v0, v1 interface{}, err error, equal *bo
 	}
 	if equal != nil && !*equal {
 		t.Logf("[%v] values not equal", i)
-		if testVerbose {
+		if testv.Verbose {
 			t.Logf("    ....... GOLDEN:  (%T) %#v", v0, v0)
 			t.Logf("    ....... DECODED: (%T) %#v", v1, v1)
 		}
@@ -292,7 +293,7 @@ func TestCborHalfFloat(t *testing.T) {
 		bigenstd.PutUint16(ba[1:], k)
 		testUnmarshalErr(&res, ba[:3], h, t, "-")
 		if res == v {
-			if testVerbose {
+			if testv.Verbose {
 				t.Logf("equal floats: from %x %b, %v", k, k, v)
 			}
 		} else {
@@ -391,15 +392,18 @@ func TestCborSkipTags(t *testing.T) {
 	}
 
 	var h = testCborH // &CborHandle{}
-	defer func(a, b, c, d, e bool) {
+	defer func(a, b, c, d, e, f bool) {
 		h.SkipUnexpectedTags, h.Canonical, h.ZeroCopy = a, b, c
-		h.SignedInteger, h.StructToArray = d, e
-	}(h.SkipUnexpectedTags, h.Canonical, h.ZeroCopy, h.SignedInteger, h.StructToArray)
+		h.SignedInteger, h.StructToArray, h.IndefiniteLength = d, e, f
+	}(h.SkipUnexpectedTags, h.Canonical, h.ZeroCopy,
+		h.SignedInteger, h.StructToArray, h.IndefiniteLength)
 	h.SkipUnexpectedTags = true
 	h.Canonical = true
 	h.ZeroCopy = false // so we can reuse the w.b slice without worrying about sharedBytes
 	h.SignedInteger = false
 	h.StructToArray = false
+	// manually encoding the value, so must not have IndefiniteLength=true
+	h.IndefiniteLength = false
 
 	var gold []byte
 	NewEncoderBytes(&gold, h).MustEncode(v)
