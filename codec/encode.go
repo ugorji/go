@@ -4,6 +4,7 @@
 package codec
 
 import (
+	"cmp"
 	"encoding"
 	"errors"
 	"io"
@@ -138,6 +139,17 @@ func (p encStructFieldObjSlice) Len() int      { return len(p) }
 func (p encStructFieldObjSlice) Swap(i, j int) { p[uint(i)], p[uint(j)] = p[uint(j)], p[uint(i)] }
 func (p encStructFieldObjSlice) Less(i, j int) bool {
 	return p[uint(i)].key < p[uint(j)].key
+}
+
+// ----
+
+type orderedRv[T cmp.Ordered] struct {
+	v T
+	r reflect.Value
+}
+
+func cmpOrderedRv[T cmp.Ordered](v1, v2 orderedRv[T]) int {
+	return cmp.Compare(v1.v, v2.v)
 }
 
 // ----

@@ -191,7 +191,6 @@ package codec
 
 import (
 	"bytes"
-	"cmp"
 	"encoding"
 	"encoding/binary"
 	"errors"
@@ -2448,11 +2447,6 @@ LOOP:
 	}
 }
 
-type orderedRv[T cmp.Ordered] struct {
-	v T
-	r reflect.Value
-}
-
 type timeRv struct {
 	v time.Time
 	r reflect.Value
@@ -2466,10 +2460,6 @@ type bytesRv struct {
 type stringIntf struct {
 	v string
 	i interface{}
-}
-
-func cmpOrderedRv[T cmp.Ordered](v1, v2 orderedRv[T]) int {
-	return cmp.Compare(v1.v, v2.v)
 }
 
 func cmpTimeRv(v1, v2 timeRv) int {
