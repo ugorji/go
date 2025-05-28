@@ -286,20 +286,24 @@ Key rules
 /*
 Naming convention:
 
-Currently, as typed parameters and not are put in the same files, we suffer because:
-- built files have many lines which are not used at runtime (due to type parameters)
+Currently, as generic and non-generic types/functions/vars are put in the same files,
+we suffer because:
+- build takes longer as non-generic code is built when a build tag wants only monomorphised code
+- files have many lines which are not used at runtime (due to type parameters)
 - code coverage is inaccurate on a single run
 
 To resolve this, we are streamlining our file naming strategy.
 
 Basically, we will have the following nomenclature for filenames:
-- fastpath only (tag:notfastpath):   *.notfastpath.*.go vs *.fastpath.*.go
+- fastpath (tag:notfastpath):        *.notfastpath.*.go vs *.fastpath.*.go
 - typed parameters (tag:notmono):    *.notmono.*.go vs *.mono.*.go
-- safe: (tag:safe)                   *.safe.*.go vs *.unsafe.go
+- safe (tag:safe):                   *.safe.*.go vs *.unsafe.go
 - generated files:                   *.generated.go
 - all others (tags:N/A):             *.go without safe/mono/fastpath/generated in the name
 
-base files (separate a <file>.go --> <file>.go and <file>.notmono.go)
+The following files will be affected and split/renamed accordingly
+
+Base files:
 - binc.go
 - cbor.go
 - json.go
@@ -308,8 +312,14 @@ base files (separate a <file>.go --> <file>.go and <file>.notmono.go)
 - decode.go
 - encode.go
 
-Others
+For each base file, split into __file__.go (containing type parameters) and __file__.base.go.
+__file__.go will only build with notmono.
+
+Other files:
 - fastpath.generated.go -> base.fastpath.generated.go and base.fastpath.notmono.generated.go
 - fastpath.not.go       -> base.notfastpath.go
 - init.go               -> init.notmono.go
+
+Appropriate build tags will be included in the files, and the right ones only used for
+monomorphization.
 */

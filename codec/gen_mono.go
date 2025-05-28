@@ -31,8 +31,7 @@ var genMonoSpecialFieldTypes = []string{"helperDecReader"}
 // These functions should take the address of first param when monomorphized
 var genMonoSpecialFunc4Addr = []string{} // {"decByteSlice"}
 
-// MARKER: skip cmp since we don't want cmp.orderedRv (means cmp import becomes spurious)
-var genMonoImportsToSkip = []string{`"errors"`, `"fmt"`, `"net/rpc"`, `"cmp"`}
+var genMonoImportsToSkip = []string{`"errors"`, `"fmt"`, `"net/rpc"`}
 
 var genMonoRefImportsVia_ = [][2]string{
 	// {"errors", "New"},
