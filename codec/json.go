@@ -1,3 +1,5 @@
+//go:build notmono || codec.notmono
+
 // Copyright (c) 2012-2020 Ugorji Nwoke. All rights reserved.
 // Use of this source code is governed by a MIT license found in the LICENSE file.
 
@@ -18,7 +20,6 @@ package codec
 
 import (
 	"encoding/base64"
-	"errors"
 	"io"
 	"math"
 	"reflect"
@@ -28,91 +29,6 @@ import (
 	"unicode/utf16"
 	"unicode/utf8"
 )
-
-//--------------------------------
-
-// jsonLits and jsonLitb are defined at the package level,
-// so they are guaranteed to be stored efficiently, making
-// for better append/string comparison/etc.
-//
-// (anecdotal evidence from some benchmarking on go 1.20 devel in 20220104)
-const jsonLits = `"true"false"null"`
-
-var jsonLitb = []byte(jsonLits)
-
-const (
-	jsonLitT = 1
-	jsonLitF = 6
-	jsonLitN = 12
-)
-
-const jsonEncodeUintSmallsString = "" +
-	"00010203040506070809" +
-	"10111213141516171819" +
-	"20212223242526272829" +
-	"30313233343536373839" +
-	"40414243444546474849" +
-	"50515253545556575859" +
-	"60616263646566676869" +
-	"70717273747576777879" +
-	"80818283848586878889" +
-	"90919293949596979899"
-
-var jsonEncodeUintSmallsStringBytes = (*[len(jsonEncodeUintSmallsString)]byte)([]byte(jsonEncodeUintSmallsString))
-
-const (
-	jsonU4Chk2 = '0'
-	jsonU4Chk1 = 'a' - 10
-	jsonU4Chk0 = 'A' - 10
-)
-
-const (
-	// If !jsonValidateSymbols, decoding will be faster, by skipping some checks:
-	//   - If we see first character of null, false or true,
-	//     do not validate subsequent characters.
-	//   - e.g. if we see a n, assume null and skip next 3 characters,
-	//     and do not validate they are ull.
-	// P.S. Do not expect a significant decoding boost from this.
-	jsonValidateSymbols = true
-
-	// jsonEscapeMultiByteUnicodeSep controls whether some unicode characters
-	// that are valid json but may bomb in some contexts are escaped during encoeing.
-	//
-	// U+2028 is LINE SEPARATOR. U+2029 is PARAGRAPH SEPARATOR.
-	// Both technically valid JSON, but bomb on JSONP, so fix here unconditionally.
-	jsonEscapeMultiByteUnicodeSep = true
-
-	// jsonRecognizeBoolNullInQuotedStr is used during decoding into a blank interface{}
-	// to control whether we detect quoted values of bools and null where a map key is expected,
-	// and treat as nil, true or false.
-	jsonNakedBoolNullInQuotedStr = true
-)
-
-var (
-	// jsonTabs and jsonSpaces are used as caches for indents
-	jsonTabs   [32]byte
-	jsonSpaces [128]byte
-)
-
-func init() {
-	for i := 0; i < len(jsonTabs); i++ {
-		jsonTabs[i] = '\t'
-	}
-	for i := 0; i < len(jsonSpaces); i++ {
-		jsonSpaces[i] = ' '
-	}
-}
-
-// ----------------
-
-type jsonEncState struct {
-	di int8   // indent per: if negative, use tabs
-	d  bool   // indenting?
-	dl uint16 // indent level
-}
-
-// func (x jsonEncState) captureState() interface{}   { return x }
-// func (x *jsonEncState) restoreState(v interface{}) { *x = v.(jsonEncState) }
 
 type jsonEncDriver[T encWriter] struct {
 	noBuiltInTypes
@@ -235,11 +151,6 @@ func (e *jsonEncDriver[T]) EncodeRawExt(re *RawExt) {
 	}
 }
 
-var jsonEncBoolStrs = [2][2]string{
-	{jsonLits[jsonLitF : jsonLitF+5], jsonLits[jsonLitT : jsonLitT+4]},
-	{jsonLits[jsonLitF-1 : jsonLitF+6], jsonLits[jsonLitT-1 : jsonLitT+5]},
-}
-
 func (e *jsonEncDriver[T]) EncodeBool(b bool) {
 	e.w.writestr(jsonEncBoolStrs[bool2int(e.ks && e.e.c == containerMapKey)%2][bool2int(b)%2])
 }
@@ -273,63 +184,6 @@ func (e *jsonEncDriver[T]) EncodeFloat32(f float32) {
 	}
 	fmt, prec := jsonFloatStrconvFmtPrec32(f)
 	e.encodeFloat(float64(f), 32, fmt, prec)
-}
-
-func jsonEncodeUint(neg, quotes bool, u uint64, b *[48]byte) []byte {
-	// MARKER: use setByteAt/byteAt to elide the bounds-checks
-	// when we are sure that we don't go beyond the bounds.
-
-	// copied mostly from std library: strconv
-	// this should only be called on 64bit OS.
-
-	// const ss = jsonEncodeUintSmallsString
-	var ss = jsonEncodeUintSmallsStringBytes[:]
-
-	// typically, 19 or 20 bytes sufficient for decimal encoding a uint64
-	// var a [24]byte
-	// var a = (*[24]byte)(b[0:24])
-	var a = b[:24]
-	var i = uint(len(a))
-
-	if quotes {
-		i--
-		setByteAt(a, i, '"')
-		// a[i] = '"'
-	}
-	// u guaranteed to fit into a uint (as we are not 32bit OS)
-	var is uint
-	var us = uint(u)
-	for us >= 100 {
-		is = us % 100 * 2
-		us /= 100
-		i -= 2
-		setByteAt(a, i+1, byteAt(ss, is+1))
-		setByteAt(a, i, byteAt(ss, is))
-		// a[i+1] = ss[is+1]
-		// a[i] = ss[is]
-	}
-
-	// us < 100
-	is = us * 2
-	i--
-	setByteAt(a, i, byteAt(ss, is+1))
-	// a[i] = ss[is+1]
-	if us >= 10 {
-		i--
-		setByteAt(a, i, byteAt(ss, is))
-		// a[i] = ss[is]
-	}
-	if neg {
-		i--
-		setByteAt(a, i, '-')
-		// a[i] = '-'
-	}
-	if quotes {
-		i--
-		setByteAt(a, i, '"')
-		// a[i] = '"'
-	}
-	return a[i:]
 }
 
 func (e *jsonEncDriver[T]) encodeUint(neg bool, quotes bool, u uint64) {
@@ -575,22 +429,6 @@ func (e *jsonEncDriver[T]) atEndOfEncode() {
 
 // ----------
 
-type jsonDecState struct {
-	// scratch buffer used for base64 decoding (DecodeBytes in reuseBuf mode),
-	// or reading doubleQuoted string (DecodeStringAsBytes, DecodeNaked)
-	buf []byte
-
-	rawext bool // rawext configured on the handle
-
-	tok  uint8   // used to store the token read right after skipWhiteSpace
-	_    bool    // found null
-	_    byte    // padding
-	bstr [4]byte // scratch used for string \UXXX parsing
-}
-
-// func (x jsonDecState) captureState() interface{}   { return x }
-// func (x *jsonDecState) restoreState(v interface{}) { *x = v.(jsonDecState) }
-
 type jsonDecDriver[T decReader] struct {
 	noBuiltInTypes
 	decDriverNoopNumberHelper
@@ -697,18 +535,6 @@ func (d *jsonDecDriver[T]) checkLit4(got, expect [4]byte) {
 		jsonCheckLitErr4(got, expect)
 	}
 	d.tok = 0
-}
-
-// MARKER: checkLitErr methods to prevent the got/expect parameters from escaping
-
-//go:noinline
-func jsonCheckLitErr3(got, expect [3]byte) {
-	halt.errorf("expecting %s: got %s", expect, got)
-}
-
-//go:noinline
-func jsonCheckLitErr4(got, expect [4]byte) {
-	halt.errorf("expecting %s: got %s", expect, got)
 }
 
 func (d *jsonDecDriver[T]) skipWhitespace() {
@@ -1114,34 +940,6 @@ func (d *jsonDecDriver[T]) appendStringAsBytesSlashU() (r rune) {
 	return
 }
 
-func jsonSlashURune(cs [4]byte) (rr uint32) {
-	for _, c := range cs {
-		// best to use explicit if-else
-		// - not a table, etc which involve memory loads, array lookup with bounds checks, etc
-		if c >= '0' && c <= '9' {
-			rr = rr*16 + uint32(c-jsonU4Chk2)
-		} else if c >= 'a' && c <= 'f' {
-			rr = rr*16 + uint32(c-jsonU4Chk1)
-		} else if c >= 'A' && c <= 'F' {
-			rr = rr*16 + uint32(c-jsonU4Chk0)
-		} else {
-			return unicode.ReplacementChar
-		}
-	}
-	return
-}
-
-func jsonNakedNum(z *fauxUnion, bs []byte, preferFloat, signedInt bool) (err error) {
-	// Note: jsonNakedNum is NEVER called with a zero-length []byte
-	if preferFloat {
-		z.v = valueTypeFloat
-		z.f, err = parseFloat64(bs)
-	} else {
-		err = parseNumber(bs, z, signedInt)
-	}
-	return
-}
-
 func (d *jsonDecDriver[T]) DecodeNaked() {
 	z := d.d.naked()
 
@@ -1201,110 +999,6 @@ func (d *jsonDecDriver[T]) DecodeNaked() {
 	}
 }
 
-//----------------------
-
-// JsonHandle is a handle for JSON encoding format.
-//
-// Json is comprehensively supported:
-//   - decodes numbers into interface{} as int, uint or float64
-//     based on how the number looks and some config parameters e.g. PreferFloat, SignedInt, etc.
-//   - decode integers from float formatted numbers e.g. 1.27e+8
-//   - decode any json value (numbers, bool, etc) from quoted strings
-//   - configurable way to encode/decode []byte .
-//     by default, encodes and decodes []byte using base64 Std Encoding
-//   - UTF-8 support for encoding and decoding
-//
-// It has better performance than the json library in the standard library,
-// by leveraging the performance improvements of the codec library.
-//
-// In addition, it doesn't read more bytes than necessary during a decode, which allows
-// reading multiple values from a stream containing json and non-json content.
-// For example, a user can read a json value, then a cbor value, then a msgpack value,
-// all from the same stream in sequence.
-//
-// Note that, when decoding quoted strings, invalid UTF-8 or invalid UTF-16 surrogate pairs are
-// not treated as an error. Instead, they are replaced by the Unicode replacement character U+FFFD.
-//
-// Note also that the float values for NaN, +Inf or -Inf are encoded as null,
-// as suggested by NOTE 4 of the ECMA-262 ECMAScript Language Specification 5.1 edition.
-// see http://www.ecma-international.org/publications/files/ECMA-ST/Ecma-262.pdf .
-//
-// Note the following behaviour differences vs std-library encoding/json package:
-//   - struct field names matched in case-sensitive manner
-type JsonHandle struct {
-	textEncodingType
-	BasicHandle
-
-	// Indent indicates how a value is encoded.
-	//   - If positive, indent by that number of spaces.
-	//   - If negative, indent by that number of tabs.
-	Indent int8
-
-	// IntegerAsString controls how integers (signed and unsigned) are encoded.
-	//
-	// Per the JSON Spec, JSON numbers are 64-bit floating point numbers.
-	// Consequently, integers > 2^53 cannot be represented as a JSON number without losing precision.
-	// This can be mitigated by configuring how to encode integers.
-	//
-	// IntegerAsString interpretes the following values:
-	//   - if 'L', then encode integers > 2^53 as a json string.
-	//   - if 'A', then encode all integers as a json string
-	//             containing the exact integer representation as a decimal.
-	//   - else    encode all integers as a json number (default)
-	IntegerAsString byte
-
-	// HTMLCharsAsIs controls how to encode some special characters to html: < > &
-	//
-	// By default, we encode them as \uXXX
-	// to prevent security holes when served from some browsers.
-	HTMLCharsAsIs bool
-
-	// PreferFloat says that we will default to decoding a number as a float.
-	// If not set, we will examine the characters of the number and decode as an
-	// integer type if it doesn't have any of the characters [.eE].
-	PreferFloat bool
-
-	// TermWhitespace says that we add a whitespace character
-	// at the end of an encoding.
-	//
-	// The whitespace is important, especially if using numbers in a context
-	// where multiple items are written to a stream.
-	TermWhitespace bool
-
-	// MapKeyAsString says to encode all map keys as strings.
-	//
-	// Use this to enforce strict json output.
-	// The only caveat is that nil value is ALWAYS written as null (never as "null")
-	MapKeyAsString bool
-
-	// _ uint64 // padding (cache line)
-
-	// Note: below, we store hardly-used items e.g. RawBytesExt.
-	// These values below may straddle a cache line, but they are hardly-used,
-	// so shouldn't contribute to false-sharing except in rare cases.
-
-	// RawBytesExt, if configured, is used to encode and decode raw bytes in a custom way.
-	// If not configured, raw bytes are encoded to/from base64 text.
-	RawBytesExt InterfaceExt
-}
-
-func (h *JsonHandle) isJson() bool { return true }
-
-// Name returns the name of the handle: json
-func (h *JsonHandle) Name() string { return "json" }
-
-// func (h *JsonHandle) desc(bd byte) string { return str4byte(bd) }
-func (h *JsonHandle) desc(bd byte) string { return string(bd) }
-
-func (h *JsonHandle) typical() bool {
-	return h.Indent == 0 && !h.MapKeyAsString && h.IntegerAsString != 'A' && h.IntegerAsString != 'L'
-}
-
-// SetInterfaceExt sets an extension
-func (h *JsonHandle) SetInterfaceExt(rt reflect.Type, tag uint64, ext InterfaceExt) (err error) {
-	return h.SetExt(rt, tag, makeExt(ext))
-}
-
 func (e *jsonEncDriver[T]) reset() {
 	e.dl = 0
 	// e.resetState()
@@ -1328,37 +1022,6 @@ func (d *jsonDecDriver[T]) reset() {
 	d.tok = 0
 	// d.resetState()
 	d.rawext = d.h.RawBytesExt != nil
-}
-
-func jsonFloatStrconvFmtPrec64(f float64) (fmt byte, prec int8) {
-	fmt = 'f'
-	prec = -1
-	fbits := math.Float64bits(f)
-	abs := math.Float64frombits(fbits &^ (1 << 63))
-	if abs == 0 || abs == 1 {
-		prec = 1
-	} else if abs < 1e-6 || abs >= 1e21 {
-		fmt = 'e'
-	} else if noFrac64(fbits) {
-		prec = 1
-	}
-	return
-}
-
-func jsonFloatStrconvFmtPrec32(f float32) (fmt byte, prec int8) {
-	fmt = 'f'
-	prec = -1
-	// directly handle Modf (to get fractions) and Abs (to get absolute)
-	fbits := math.Float32bits(f)
-	abs := math.Float32frombits(fbits &^ (1 << 31))
-	if abs == 0 || abs == 1 {
-		prec = 1
-	} else if abs < 1e-6 || abs >= 1e21 {
-		fmt = 'e'
-	} else if noFrac32(fbits) {
-		prec = 1
-	}
-	return
 }
 
 // ----
@@ -1426,8 +1089,6 @@ func (d *jsonDecDriver[T]) resetInIO(r io.Reader) {
 
 // ---- (custom stanza)
 
-var errJsonNoBd = errors.New("descBd unsupported in json")
-
 func (d *jsonDecDriver[T]) descBd() (s string) {
 	halt.onerror(errJsonNoBd)
 	return
@@ -1482,29 +1143,6 @@ func (d *jsonDecDriver[T]) init2(dec decoderI) {
 // 		}
 // 		d.tok = 0
 // 	}
-// }
-
-// func (h *JsonHandle) newEncDriver() encDriver {
-// 	var e = &jsonEncDriver{h: h}
-// 	// var x []byte
-// 	// e.buf = &x
-// 	e.e.e = e
-// 	e.e.js = true
-// 	e.e.init(h)
-// 	e.reset()
-// 	return e
-// }
-
-// func (h *JsonHandle) newDecDriver() decDriver {
-// 	var d = &jsonDecDriver{h: h}
-// 	var x []byte
-// 	d.buf = &x
-// 	d.d.d = d
-// 	d.d.js = true
-// 	d.d.jsms = h.MapKeyAsString
-// 	d.d.init(h)
-// 	d.reset()
-// 	return d
 // }
 
 // func (e *jsonEncDriver[T]) resetState() {
