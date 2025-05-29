@@ -282,7 +282,6 @@ Key rules
 - No closures taking parameters of generic types
 
 */
-
 /*
 Naming convention:
 
@@ -322,4 +321,18 @@ Other files:
 
 Appropriate build tags will be included in the files, and the right ones only used for
 monomorphization.
+*/
+/*
+Caching Handle options for fast runtime use
+
+If using cached values from Handle options, then
+- re-cache them at each reset() call
+- reset is always called at the start of each (Must)(En|De)code
+  - which calls (en|de)coder.reset([]byte|io.Reader|String)
+  - which calls (en|de)cDriver.reset()
+- at reset, (en|de)c(oder|Driver) can re-cache Handle options before each run
+
+Some examples:
+- json: e.rawext,di,d,ks,is / d.rawext
+- decode: (decoderBase) d.jsms,mtr,str,
 */
