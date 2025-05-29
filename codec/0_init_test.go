@@ -58,8 +58,8 @@ package codec
 // and will not redefine these "global" flags.
 
 import (
-	"bytes"
 	"flag"
+	"reflect"
 	"strconv"
 	"testing"
 )
@@ -202,13 +202,36 @@ func testInitAll() {
 	}
 }
 
-// --- functions below are used only by benchmarks alone
-
-func fnBenchmarkByteBuf(bsIn []byte) (buf *bytes.Buffer) {
-	// var buf bytes.Buffer
-	// buf.Grow(approxSize)
-	buf = bytes.NewBuffer(bsIn)
-	buf.Truncate(0)
+func approxDataSize(rv reflect.Value) (sum int) {
+	switch rk := rv.Kind(); rk {
+	case reflect.Invalid:
+	case reflect.Ptr, reflect.Interface:
+		sum += int(rv.Type().Size())
+		sum += approxDataSize(rv.Elem())
+	case reflect.Slice:
+		sum += int(rv.Type().Size())
+		for j := 0; j < rv.Len(); j++ {
+			sum += approxDataSize(rv.Index(j))
+		}
+	case reflect.String:
+		sum += int(rv.Type().Size())
+		sum += rv.Len()
+	case reflect.Map:
+		sum += int(rv.Type().Size())
+		for _, mk := range rv.MapKeys() {
+			sum += approxDataSize(mk)
+			sum += approxDataSize(rv.MapIndex(mk))
+		}
+	case reflect.Struct:
+		//struct size already includes the full data size.
+		//sum += int(rv.Type().Size())
+		for j := 0; j < rv.NumField(); j++ {
+			sum += approxDataSize(rv.Field(j))
+		}
+	default:
+		//pure value types
+		sum += int(rv.Type().Size())
+	}
 	return
 }
 

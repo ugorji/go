@@ -86,7 +86,7 @@ func TestCborIndefiniteLength(t *testing.T) {
 	buf.WriteByte(cborBdBreak) // close map
 
 	NewDecoderBytes(buf.Bytes(), h).MustDecode(&vv)
-	if err := deepEqual(v, vv); err != nil {
+	if err := testEqual(v, vv); err != nil {
 		t.Logf("-------- Before and After marshal do not match: Error: %v", err)
 		if testv.Verbose {
 			t.Logf("    ....... GOLDEN:  (%T) %#v", v, v)
@@ -242,7 +242,7 @@ func TestCborGoldens(t *testing.T) {
 		default:
 			v0 := g.Decoded
 			// testCborCoerceJsonNumber(reflect.ValueOf(&v0))
-			testCborError(t, i, v0, v, deepEqual(v0, v), nil)
+			testCborError(t, i, v0, v, testEqual(v0, v), nil)
 		}
 	}
 }
@@ -252,7 +252,7 @@ func testCborError(t *testing.T, i int, v0, v1 interface{}, err error, equal *bo
 		return
 	}
 	if err != nil {
-		t.Logf("[%v] deepEqual error: %v", i, err)
+		t.Logf("[%v] testEqual error: %v", i, err)
 		if testv.Verbose {
 			t.Logf("    ....... GOLDEN:  (%T) %#v", v0, v0)
 			t.Logf("    ....... DECODED: (%T) %#v", v1, v1)

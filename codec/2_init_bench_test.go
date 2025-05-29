@@ -36,6 +36,7 @@ package codec
 // This test MUST be run always, as it calls init() internally
 
 import (
+	"bytes"
 	"reflect"
 	"runtime"
 	"runtime/metrics"
@@ -156,6 +157,14 @@ func fnBenchNewTs() interface{} {
 	// return new(TestStruc)
 }
 
+func fnBenchmarkByteBuf(bsIn []byte) (buf *bytes.Buffer) {
+	// var buf bytes.Buffer
+	// buf.Grow(approxSize)
+	buf = bytes.NewBuffer(bsIn)
+	buf.Truncate(0)
+	return
+}
+
 // const benchCheckDoDeepEqual = false
 
 func benchRecoverPanic(t *testing.B) {
@@ -204,10 +213,10 @@ func doBenchCheck(t *testing.T, name string, encfn benchEncFn, decfn benchDecFn)
 	decDur := time.Since(tnow)
 	// if benchCheckDoDeepEqual {
 	if benchVerify {
-		err = deepEqual(benchTs, &ts2)
-		if err == nil {
+		if reflect.DeepEqual(benchTs, &ts2) {
 			t.Logf("\t%10s: len: %d bytes,\t encode: %v,\t decode: %v,\tencoded == decoded", name, encLen, encDur, decDur)
 		} else {
+			err = errDeepEqualNotMatch
 			t.Logf("\t%10s: len: %d bytes,\t encode: %v,\t decode: %v,\tencoded != decoded: %v", name, encLen, encDur, decDur, err)
 		}
 	} else {

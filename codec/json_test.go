@@ -24,7 +24,7 @@ func doTestJsonDecodeNonStringScalarInStringContext(t *testing.T, h Handle) {
 	var m map[string]string
 	d := NewDecoderBytes([]byte(b), h)
 	d.MustDecode(&m)
-	if err := deepEqual(golden, m); err == nil {
+	if err := testEqual(golden, m); err == nil {
 		if testv.Verbose {
 			t.Logf("++++ match: decoded: %#v", m)
 		}
@@ -69,7 +69,7 @@ func doTestJsonDecodeNonStringScalarInStringContext(t *testing.T, h Handle) {
 		d.ResetBytes([]byte(b))
 		var mf interface{}
 		d.MustDecode(&mf)
-		if err := deepEqual(golden2, mf); err != nil {
+		if err := testEqual(golden2, mf); err != nil {
 			t.Logf("---- mismatch: %v ==> golden: %#v, decoded: %#v", err, golden2, mf)
 			t.FailNow()
 		}

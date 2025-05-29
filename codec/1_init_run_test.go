@@ -5,9 +5,13 @@ package codec
 
 import (
 	"bytes"
+	"errors"
 	"io"
+	"reflect"
+
 	// using codec.XXX directly
 	// . "github.com/ugorji/go/codec"
+	gocmp "github.com/google/go-cmp/cmp"
 )
 
 type testHED struct {
@@ -212,4 +216,26 @@ func testUpdateBasicHandleOptions(bh *BasicHandle) {
 	// bh.PreferArrayOverSlice = true
 	// modify from flag'ish things
 	// bh.MaxInitLen = testMaxInitLen
+}
+
+var errDeepEqualNotMatch = errors.New("not match")
+
+var testCmpOpts []gocmp.Option
+
+// var testCmpOpts = []cmp.Option{
+// 	cmpopts.EquateNaNs(),
+// 	cmpopts.EquateApprox(0.001, 0.001),
+// 	cmpopts.SortMaps(func(a, b float32) bool { return a < b }),
+// 	cmpopts.SortMaps(func(a, b float64) bool { return a < b }),
+// }
+
+func testEqual(v1, v2 interface{}) (err error) {
+	if !reflect.DeepEqual(v1, v2) {
+		if testv.UseDiff {
+			err = errors.New(gocmp.Diff(v1, v2, testCmpOpts...))
+		} else {
+			err = errDeepEqualNotMatch
+		}
+	}
+	return
 }
