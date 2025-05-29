@@ -384,12 +384,15 @@ func testNonHandlesGroup(t *testing.T) {
 }
 
 func TestCodecSuite(t *testing.T) {
-	// simple model:
-	// - testGroupResetBase
-	// - update testv
-	// - testReinit
-	// - testGroupResetHandles
-	// - update handles > run
+	// steps for each run:
+	// - testGroupResetBase     - default reset of testv
+	// - update testv           - (run-specific) updates to testv (which will apply to all handles within testReinit)
+	// - testReinit             - recreate handles and apply testv updates
+	// - testGroupResetHandles  - default updates to handles
+	// - update handles         - (run-specific) updates to handles for this specific Run operation
+	// - RUN                    - (run-specific) execution
+	//
+	// Most of these steps are optional
 
 	var tt testTimeTracker
 	tt.Elapsed()
@@ -404,11 +407,13 @@ func TestCodecSuite(t *testing.T) {
 		return j
 	}
 
+	// --------------
 	testGroupResetBase()
 	testReinit()
 	testGroupResetHandles()
 	fnRun("optionsFalse", testCodecGroup)
 
+	// --------------
 	testGroupResetBase()
 	testv.setBufsize(0)
 	testv.UseReset = true
@@ -460,12 +465,14 @@ func TestCodecSuite(t *testing.T) {
 	// testCborH.SkipUnexpectedTags = true // MARKER 2025 failing
 	fnRun("optionsTrue", testCodecGroup)
 
+	// --------------
 	testGroupResetBase()
 	testv.Depth = fnb2i(testing.Short(), 2, 4)
 	testReinit()
 	testGroupResetHandles()
 	fnRun("optionsTrue-deepstruct", testCodecGroupV)
 
+	// --------------
 	testv.Depth = 0
 	// ---
 	// testv.E.AsSymbols = AsSymbolAll
@@ -474,6 +481,7 @@ func TestCodecSuite(t *testing.T) {
 	testGroupResetHandles()
 	fnRun("optionsTrue-ioWrapper", testCodecGroupV)
 
+	// --------------
 	testv.UseIoWrapper = false
 	// testv.UseIoEncDec = -1
 	// ---
@@ -489,6 +497,7 @@ func TestCodecSuite(t *testing.T) {
 	testGroupResetHandles()
 	fnRun("optionsTrue-bufio", testCodecGroupV)
 
+	// --------------
 	// testv.D.ReaderBufferSize = 0
 	// testv.E.WriterBufferSize = 0
 	testv.SkipRPCTests = false
@@ -499,6 +508,7 @@ func TestCodecSuite(t *testing.T) {
 	testGroupResetHandles()
 	fnRun("optionsTrue-largestrings", testCodecGroupV)
 
+	// --------------
 	testGroupResetBase()
 	testv.NumRepeatString = 8
 	// ---
@@ -516,29 +526,31 @@ func TestCodecSuite(t *testing.T) {
 	testJsonH.HTMLCharsAsIs = true
 	fnRun("json-spaces-htmlcharsasis-initLen10", testJsonGroup)
 
+	// --------------
 	testReinit()
 	testGroupResetHandles()
 	testJsonH.Indent = -1
 	testJsonH.HTMLCharsAsIs = false
 	fnRun("json-tabs-initLen10", testJsonGroup)
 
-	// ---
+	// --------------
 	testReinit()
 	testGroupResetHandles()
 	defer func(v uint8) { testBincH.AsSymbols = v }(testBincH.AsSymbols)
 	testBincH.AsSymbols = 2 // AsSymbolNone
 	fnRun("binc-no-symbols", testBincGroup)
 
+	// --------------
 	testBincH.AsSymbols = 1 // AsSymbolAll
 	fnRun("binc-all-symbols", testBincGroup)
 
-	// ---
+	// --------------
 	defer func(v bool) { testSimpleH.EncZeroValuesAsNil = v }(testSimpleH.EncZeroValuesAsNil)
 	testSimpleH.EncZeroValuesAsNil = !testSimpleH.EncZeroValuesAsNil
 	testReinit()
 	fnRun("simple-enczeroasnil", testSimpleMammothGroup) // testSimpleGroup
 
-	// ---
+	// --------------
 	defer testv.setBufsize((int)(testv.bufsize))
 	defer func(b bool) { testv.R.RPCNoBuffer = b }(testv.R.RPCNoBuffer)
 
@@ -556,7 +568,6 @@ func TestCodecSuite(t *testing.T) {
 	fnRun("rpc-buf-16", testRpcGroup)
 	testv.RpcBufsize = 2048
 	fnRun("rpc-buf-2048", testRpcGroup)
-
 	testv.R.RPCNoBuffer = true
 	testv.RpcBufsize = 0
 	fnRun("rpc-buf-0-rpcNoBuffer", testRpcGroup)
