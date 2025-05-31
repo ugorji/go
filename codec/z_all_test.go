@@ -92,42 +92,6 @@ func (tt *testTimeTracker) Elapsed() (d time.Duration) {
 	return
 }
 
-func testGroupResetBase() {
-	testv.setBufsize(-1)
-	testv.RpcBufsize = 2048
-	testv.UseReset = false
-	testv.UseParallel = false
-	testv.UseIoWrapper = false
-	testv.NumRepeatString = 8
-	testv.Depth = 0
-
-	a, b := testv.D.MaxInitLen, testv.D.ZeroCopy
-	testv.D = DecodeOptions{}
-	testv.E = EncodeOptions{}
-	testv.setBufsize((int)(testv.bufsize))
-	testv.D.MaxInitLen = a
-	testv.D.ZeroCopy = b
-	// testUpdateOptionsFromFlags()
-}
-
-func testGroupResetHandles() {
-	testJsonH.Indent = 0 // -1?
-	testJsonH.HTMLCharsAsIs = false
-	testJsonH.MapKeyAsString = false
-	testJsonH.PreferFloat = false
-
-	testCborH.IndefiniteLength = false
-	testCborH.TimeRFC3339 = false
-	testCborH.SkipUnexpectedTags = false
-	testBincH.AsSymbols = 0 // 2? AsSymbolNone
-
-	testMsgpackH.WriteExt = false
-	testMsgpackH.NoFixedNum = false
-	testMsgpackH.PositiveIntUnsigned = false
-
-	testSimpleH.EncZeroValuesAsNil = false
-}
-
 func testCodecGroup(t *testing.T) {
 	// <setup code>
 	testJsonGroup(t)
@@ -407,81 +371,122 @@ func TestCodecSuite(t *testing.T) {
 		return j
 	}
 
+	testGroupResetBase := func() {
+		testv.D = DecodeOptions{}
+		testv.E = EncodeOptions{}
+		testv.updateHandleOptions()
+
+		testv.RpcBufsize = 2048
+		testv.UseReset = false
+		testv.UseParallel = false
+		testv.UseIoWrapper = false
+		testv.NumRepeatString = 8
+		testv.Depth = 0
+	}
+
+	testGroupResetHandles := func() {
+		testJsonH.Indent = 0 // -1?
+		testJsonH.HTMLCharsAsIs = false
+		testJsonH.MapKeyAsString = false
+		testJsonH.PreferFloat = false
+
+		testCborH.IndefiniteLength = false
+		testCborH.TimeRFC3339 = false
+		testCborH.SkipUnexpectedTags = false
+		testBincH.AsSymbols = 0 // 2? AsSymbolNone
+
+		testMsgpackH.WriteExt = false
+		testMsgpackH.NoFixedNum = false
+		testMsgpackH.PositiveIntUnsigned = false
+
+		testSimpleH.EncZeroValuesAsNil = false
+	}
+
+	fnTrueV := func() {
+		testGroupResetBase()
+		testv.setBufsize(0)
+		testv.UseReset = true
+		testv.UseParallel = true
+
+		testv.D.ZeroCopy = true
+		testv.D.InternString = true
+		testv.D.MapValueReset = true
+
+		// testv.D.ErrorIfNoField = true // error, as expected fields not there
+		// testv.D.ErrorIfNoArrayExpand = true // no error, but no error case either
+		// testv.D.PreferArrayOverSlice = true // error??? because slice != array.
+		testv.D.SignedInteger = true // error as deepEqual compares int64 to uint64
+		testv.D.SliceElementReset = true
+		testv.D.InterfaceReset = true
+		testv.D.RawToString = true // MARKER 2025 checked
+		testv.D.PreferPointerForStructOrArray = true
+
+		testv.E.StructToArray = false // MARKER 2025 checked
+		testv.E.Canonical = false     // MARKER 2025 checked
+		testv.E.CheckCircularRef = true
+		testv.E.RecursiveEmptyCheck = true
+		testv.E.OptimumSize = true               // MARKER 2025 checked
+		testv.E.NilCollectionToZeroLength = true // MARKER 2025 (causing failure)
+		// MARKER: we cannot test these below, as they will not encode as expected
+		// meaning a decoded value will look different than expected.
+		// e.g. encode nil slice, and get a decoded stream with zero-length array
+		//
+		// Consequently, we don't modify these here.
+		// Standalone unit tests will test these out in codec_run_test.go
+		//
+		// testv.E.NilCollectionToZeroLength = true
+		// testv.E.Raw = true
+		// testv.E.StringToRaw = true
+	}
+
+	fnTrueH := func() {
+		// MARKER: same as above - do not modify fields which cause the
+		// encoded stream to contain unexpected values than what a decode would expect.
+		//
+		// testJsonH.MapKeyAsString = true
+		// testJsonH.PreferFloat = true
+		// testSimpleH.EncZeroValuesAsNil = true
+		testJsonH.HTMLCharsAsIs = true
+		testCborH.TimeRFC3339 = true
+		testMsgpackH.WriteExt = true
+		testMsgpackH.NoFixedNum = true
+		testMsgpackH.PositiveIntUnsigned = true
+		testCborH.IndefiniteLength = true // MARKER 2025 checked
+		// testCborH.SkipUnexpectedTags = true // MARKER 2025 failing
+	}
 	// --------------
 	testGroupResetBase()
+	testv.setBufsize(-1)
 	testReinit()
 	testGroupResetHandles()
 	fnRun("optionsFalse", testCodecGroup)
 
 	// --------------
-	testGroupResetBase()
-	testv.setBufsize(0)
-	testv.UseReset = true
-	testv.UseParallel = true
-
-	testv.D.ZeroCopy = true
-	testv.D.InternString = true
-	testv.D.MapValueReset = true
-
-	// testv.D.ErrorIfNoField = true // error, as expected fields not there
-	// testv.D.ErrorIfNoArrayExpand = true // no error, but no error case either
-	// testv.D.PreferArrayOverSlice = true // error??? because slice != array.
-	testv.D.SignedInteger = true // error as deepEqual compares int64 to uint64
-	testv.D.SliceElementReset = true
-	testv.D.InterfaceReset = true
-	testv.D.RawToString = true
-	testv.D.PreferPointerForStructOrArray = true
-
-	testv.E.StructToArray = true
-	testv.E.Canonical = true
-	testv.E.CheckCircularRef = true
-	testv.E.RecursiveEmptyCheck = true
-	testv.E.OptimumSize = true
-
-	// MARKER: we cannot test these below, as they will not encode as expected
-	// meaning a decoded value will look different than expected.
-	// e.g. encode nil slice, and get a decoded stream with zero-length array
-	//
-	// Consequently, we don't modify these here.
-	// Standalone unit tests will test these out in codec_run_test.go
-	//
-	// testv.E.NilCollectionToZeroLength = true
-	// testv.E.Raw = true
-	// testv.E.StringToRaw = true
+	fnTrueV()
 	testReinit()
 	testGroupResetHandles()
-	// MARKER: same as above - do not modify fields which cause the
-	// encoded stream to contain unexpected values than what a decode would expect.
-	//
-	// testJsonH.MapKeyAsString = true
-	// testJsonH.PreferFloat = true
-	// testSimpleH.EncZeroValuesAsNil = true
-	testJsonH.HTMLCharsAsIs = true
-	testCborH.TimeRFC3339 = true
-	testMsgpackH.WriteExt = true
-	testMsgpackH.NoFixedNum = true
-	testMsgpackH.PositiveIntUnsigned = true
-	testCborH.IndefiniteLength = true
-	// testCborH.SkipUnexpectedTags = true // MARKER 2025 failing
+	fnTrueH()
 	fnRun("optionsTrue", testCodecGroup)
 
 	// --------------
-	testGroupResetBase()
+	fnTrueV()
 	testv.Depth = fnb2i(testing.Short(), 2, 4)
 	testReinit()
 	testGroupResetHandles()
 	fnRun("optionsTrue-deepstruct", testCodecGroupV)
 
 	// --------------
+	fnTrueV()
 	testv.Depth = 0
-	// ---
 	// testv.E.AsSymbols = AsSymbolAll
 	testv.UseIoWrapper = true
 	testReinit()
 	testGroupResetHandles()
+	fnTrueH()
 	fnRun("optionsTrue-ioWrapper", testCodecGroupV)
 
 	// --------------
+	fnTrueV()
 	testv.UseIoWrapper = false
 	// testv.UseIoEncDec = -1
 	// ---
@@ -495,9 +500,11 @@ func TestCodecSuite(t *testing.T) {
 	// testv.E.WriterBufferSize = 128
 	testReinit()
 	testGroupResetHandles()
+	fnTrueH()
 	fnRun("optionsTrue-bufio", testCodecGroupV)
 
 	// --------------
+	fnTrueV()
 	// testv.D.ReaderBufferSize = 0
 	// testv.E.WriterBufferSize = 0
 	testv.SkipRPCTests = false
@@ -506,12 +513,12 @@ func TestCodecSuite(t *testing.T) {
 	testv.NumRepeatString = 32
 	testReinit()
 	testGroupResetHandles()
+	fnTrueH()
 	fnRun("optionsTrue-largestrings", testCodecGroupV)
 
 	// --------------
 	testGroupResetBase()
 	testv.NumRepeatString = 8
-	// ---
 	defer func(ml int, d int8, hca, mkas bool) {
 		testv.D.MaxInitLen = ml
 		testJsonH.Indent = d
@@ -526,34 +533,24 @@ func TestCodecSuite(t *testing.T) {
 	testJsonH.HTMLCharsAsIs = true
 	fnRun("json-spaces-htmlcharsasis-initLen10", testJsonGroup)
 
-	// --------------
-	testReinit()
-	testGroupResetHandles()
 	testJsonH.Indent = -1
 	testJsonH.HTMLCharsAsIs = false
 	fnRun("json-tabs-initLen10", testJsonGroup)
 
-	// --------------
-	testReinit()
-	testGroupResetHandles()
 	defer func(v uint8) { testBincH.AsSymbols = v }(testBincH.AsSymbols)
 	testBincH.AsSymbols = 2 // AsSymbolNone
 	fnRun("binc-no-symbols", testBincGroup)
 
-	// --------------
 	testBincH.AsSymbols = 1 // AsSymbolAll
 	fnRun("binc-all-symbols", testBincGroup)
 
-	// --------------
 	defer func(v bool) { testSimpleH.EncZeroValuesAsNil = v }(testSimpleH.EncZeroValuesAsNil)
 	testSimpleH.EncZeroValuesAsNil = !testSimpleH.EncZeroValuesAsNil
-	testReinit()
 	fnRun("simple-enczeroasnil", testSimpleMammothGroup) // testSimpleGroup
 
 	// --------------
 	defer testv.setBufsize((int)(testv.bufsize))
 	defer func(b bool) { testv.R.RPCNoBuffer = b }(testv.R.RPCNoBuffer)
-
 	testv.setBufsize(16)
 	testv.R.RPCNoBuffer = false
 	testReinit()
