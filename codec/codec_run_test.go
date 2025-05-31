@@ -930,7 +930,16 @@ func testUnmarshalErr(v interface{}, data []byte, h Handle, t *testing.T, name s
 
 func testDeepEqualErr(v1, v2 interface{}, t *testing.T, name string) {
 	t.Helper()
-	err := testEqual(v1, v2)
+	testDeepEqual4Err(v1, v2, t, name, testEqual(v1, v2))
+}
+
+func testDeepEqualErrHandle(v1, v2 interface{}, h Handle, t *testing.T, name string) {
+	t.Helper()
+	testDeepEqual4Err(v1, v2, t, name, testEqualH(v1, v2, h))
+}
+
+func testDeepEqual4Err(v1, v2 interface{}, t *testing.T, name string, err error) {
+	t.Helper()
 	if err == nil {
 		if testv.Verbose {
 			t.Logf("%s: values equal", name)
@@ -1891,8 +1900,6 @@ func doTestRawValue(t *testing.T, h Handle) {
 func doTestPythonGenStreams(t *testing.T, h Handle) {
 	defer testSetup2(t, &h)()
 
-	// defer func(t0 time.Time) { debugf("python-gen-streams: %s: took: %v", h.Name(), time.Since(t0)) }(time.Now())
-
 	name := h.Name()
 	if testv.Verbose {
 		t.Logf("TestPythonGenStreams-%v", name)
@@ -2127,10 +2134,10 @@ func doTestDecodeNilMapValue(t *testing.T, h Handle) {
 	}
 
 	bh := testBasicHandle(h)
-	defer func(t reflect.Type) {
-		bh.MapType = t
-	}(bh.MapType)
-
+	defer func(t reflect.Type, b bool) {
+		bh.MapType, bh.NilCollectionToZeroLength = t, b
+	}(bh.MapType, bh.NilCollectionToZeroLength)
+	bh.NilCollectionToZeroLength = false
 	// this test expects that nil doesn't result in deleting entries
 
 	// _, isJsonHandle := h.(*JsonHandle)
@@ -2928,7 +2935,6 @@ func doTestIntfMapping(t *testing.T, h Handle) {
 
 func doTestOmitempty(t *testing.T, h Handle) {
 	defer testSetup2(t, &h)()
-	// debugf("doTestOmitempty: h: %s", hlGREEN, h.Name())
 	name := h.Name()
 	bh := testBasicHandle(h)
 	// if bh.StructToArray {
@@ -2950,11 +2956,8 @@ func doTestOmitempty(t *testing.T, h Handle) {
 	var v1 T1
 	var v2 T2
 	b1 := testMarshalErr(v1, h, t, name+"-omitempty")
-	// debugf("b1: %v", hlYELLOW, b1)
 
 	b2 := testMarshalErr(v2, h, t, name+"-no-omitempty-trunc")
-	// debugf("b1: %v", hlBLUE, b1)
-	// debugf("b2: %v", hlRED, b2)
 
 	testDeepEqualErr(b1, b2, t, name+"-omitempty-cmp")
 	testReleaseBytes(b1)
@@ -3213,7 +3216,8 @@ func doTestStrucEncDec(t *testing.T, h Handle) {
 		var ts2 TestStruc
 		bs := testMarshalErr(ts1, h, t, name)
 		testUnmarshalErr(&ts2, bs, h, t, name)
-		testDeepEqualErr(ts1, &ts2, t, name)
+		testDeepEqualErrHandle(ts1, &ts2, h, t, name)
+		// testDeepEqualErr(ts1, &ts2, t, name)
 		testReleaseBytes(bs)
 	}
 
@@ -3569,7 +3573,7 @@ func doTestNextValueBytes(t *testing.T, h Handle) {
 		// result = reflect.New(reflect.TypeOf(inputs[i])).Elem().Interface()
 		result = reflect.Zero(reflect.TypeOf(inputs[i])).Interface()
 		testUnmarshalErr(&result, valueBytes[i], h, t, "nextvaluebytes")
-		testDeepEqualErr(inputs[i], result, t, "nextvaluebytes-1")
+		testDeepEqualErrHandle(inputs[i], result, h, t, "nextvaluebytes-1")
 		result = nil
 		testUnmarshalErr(&result, valueBytes2[i], h, t, "nextvaluebytes")
 		testDeepEqualErr(nil, result, t, "nextvaluebytes-2")
