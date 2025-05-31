@@ -116,17 +116,13 @@ after the new line
 	}
 	jh := h.(*JsonHandle)
 
-	oldcan := jh.Canonical
-	oldIndent := jh.Indent
-	oldS2A := jh.StructToArray
-	defer func() {
-		jh.Canonical = oldcan
-		jh.Indent = oldIndent
-		jh.StructToArray = oldS2A
-	}()
+	defer func(a, b, c bool, d int8) {
+		jh.Canonical, jh.StructToArray, jh.NilCollectionToZeroLength, jh.Indent = a, b, c, d
+	}(jh.Canonical, jh.StructToArray, jh.NilCollectionToZeroLength, jh.Indent)
 	jh.Canonical = true
 	jh.Indent = -1
 	jh.StructToArray = false
+	jh.NilCollectionToZeroLength = false
 	var bs []byte
 	NewEncoderBytes(&bs, jh).MustEncode(&v)
 	txt1Tab := string(bs)
