@@ -32,21 +32,28 @@ package codec
 // 
 
 {{/*
-fastpathEncMapStringUint64R  (called by fastpath...switch)
-EncMapStringUint64V (... also called by codecgen)
+// ----------------
+fastpathEncMap<KV>R func (mapped to type id), routes to:
+- ft.EncMap<KV>V
 
-fastpathEncSliceBoolR: (called by fastpath...switch) (checks f.ti.mbs and calls one of them below)
-EncSliceBoolV  (... also called by codecgen)
-EncAsMapSliceBoolV (delegate when mapbyslice=true)
+fastpathEncSlice<E>R func (mapped to type id), delegates to one of:
+- ft.EncSlice<E>V
+- ft.EncAsMapSlice<E>V (when mapbyslice ie f.ti.mbs=true)
 
-fastpathDecSliceIntfR (called by fastpath...switch) (calls Y or N below depending on if it can be updated)
-DecSliceIntfX  (called by codecgen) (calls Y below)
-DecSliceIntfY  (delegate when slice CAN be updated)
-DecSliceIntfN  (delegate when slice CANNOT be updated e.g. from array or non-addressable slice)
+// ----------------
+fastpathDecSlice<E>R func (mapped to type id), delegates to:
+- ft.DecSliceIntfY  (when slice CAN be updated)
+- ft.DecSliceIntfN  (when slice CANNOT be updated e.g. from array or non-addressable slice)
 
-fastpathDecMap...R (called by fastpath...switch) (calls L or X? below)
-DecMap...X  (called by codecgen)
-DecMap...L  (delegated to by both above)
+fastpathDecMap<KV>R func (mapped to type id), routes to
+- ft.DecMap<KV>L  (handles ptr which is changeable, and non-pointer which cannot be made if nil)
+
+// ----------------
+NOTE:
+- fastpath typeswitch directly calls the secondary methods for builtin maps/slices with appropriate nil handling:
+  - except EncAsMapSlice<E>V which only applies to wrapper types not those in the switch
+- fastpathEncXXX functions mapped to type ID MUST do nil-checks during encode
+  - they are only called by decodeValue/encodeValue or other code (same way kMap et al are called)
 */ -}}
 
 import (
