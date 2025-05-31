@@ -2621,21 +2621,34 @@ HANDLE_COPY:
 	}
 }
 
-func usableByteSlice(bs []byte, slen int) (out []byte, changed bool) {
+func usableByteSlice(bs []byte, slen int) (out []byte, isMadeNew bool) {
 	const maxCap = 1024 * 1024 * 64 // 64MB
-	const skipMaxCap = false        // allow to test
-	if slen <= 0 {
-		// return zeroByteSlice, true
+	// const skipMaxCap = false        // allow to test
+
+	// if slen <= 0 {
+	// 	return bs[:0], false // return zeroByteSlice, true
+	// }
+
+	// slen=0 means it's defined-length of 0.
+	// slen<0 means non-defined length which would be determined in future.
+
+	// if bs is nil, for length=0, ensure we don't return a nil []byte,
+	// which will cause DecodeBytes (caller) to return a nil []byte incorrectly.
+	if slen == 0 {
+		return zeroByteSlice, false
+	}
+	if slen < 0 {
 		return bs[:0], false
 	}
 	if slen <= cap(bs) {
 		return bs[:slen], false
 	}
 	// slen > cap(bs) ... handle memory overload appropriately
-	if skipMaxCap || slen <= maxCap {
-		return make([]byte, slen), true
-	}
-	return make([]byte, maxCap), true
+	return make([]byte, min(slen, maxCap)), true
+	// if skipMaxCap || slen <= maxCap {
+	// 	return make([]byte, slen), true
+	// }
+	// return make([]byte, maxCap), true
 }
 
 func makeExt(ext interface{}) Ext {
