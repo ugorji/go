@@ -170,7 +170,12 @@ func genTmplEncCommandAsString(s string, vname string) string {
 	case "int", "int8", "int16", "int32":
 		return "e.e.EncodeInt(int64(" + vname + "))"
 	case "[]byte", "[]uint8", "bytes":
-		return "e.e.EncodeStringBytesRaw(" + vname + ")"
+		// return fmt.Sprintf(
+		// 	"if %s != nil { e.e.EncodeStringBytesRaw(%s) } "+
+		// 		"else if e.h.NilCollectionToZeroLength { e.e.WriteArrayEmpty() } "+
+		// 		"else { e.e.EncodeNil() }", vname, vname)
+		// return "e.e.EncodeStringBytesRaw(" + vname + ")"
+		return "e.e.EncodeBytes(" + vname + ")"
 	case "string":
 		return "e.e.EncodeString(" + vname + ")"
 	case "float32":

@@ -62,7 +62,10 @@ type encDriverI interface {
 	// EncodeString using cUTF8, honor'ing StringToRaw flag
 	EncodeString(v string)
 	EncodeStringNoEscape4Json(v string)
+	// encode a non-nil []byte
 	EncodeStringBytesRaw(v []byte)
+	// encode a []byte as nil, empty or encoded sequence of bytes depending on context
+	EncodeBytes(v []byte)
 	EncodeTime(time.Time)
 	WriteArrayStart(length int)
 	WriteArrayEnd()

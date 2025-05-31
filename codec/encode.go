@@ -315,7 +315,8 @@ func (e *encoder[T]) kSlice(f *encFnInfo, rv reflect.Value) {
 	if f.ti.mbs {
 		e.kArrayWMbs(rv, f.ti, true)
 	} else if f.ti.rtid == uint8SliceTypId || uint8TypId == rt2id(f.ti.elem) {
-		e.e.EncodeStringBytesRaw(rvGetBytes(rv))
+		// 'uint8TypId == rt2id(f.ti.elem)' checks types having underlying []byte
+		e.e.EncodeBytes(rvGetBytes(rv))
 	} else {
 		e.kArrayW(rv, f.ti, true)
 	}
@@ -325,7 +326,7 @@ func (e *encoder[T]) kArray(f *encFnInfo, rv reflect.Value) {
 	if f.ti.mbs {
 		e.kArrayWMbs(rv, f.ti, false)
 	} else if handleBytesWithinKArray && uint8TypId == rt2id(f.ti.elem) {
-		e.e.EncodeStringBytesRaw(rvGetArrayBytes(rv, nil))
+		e.e.EncodeStringBytesRaw(rvGetArrayBytes(rv, nil)) // bytes from array never nil
 	} else {
 		e.kArrayW(rv, f.ti, false)
 	}
@@ -372,7 +373,7 @@ L1:
 		}
 	}
 
-	e.e.EncodeStringBytesRaw(bs)
+	e.e.EncodeBytes(bs)
 	e.blist.put(bs)
 	if !byteSliceSameData(bs0, bs) {
 		e.blist.put(bs0)
@@ -1073,9 +1074,9 @@ func (e *encoder[T]) encode(iv interface{}) {
 	// MARKER: a switch with only concrete types can be optimized.
 	// consequently, we deal with nil and interfaces outside the switch.
 
-	rv, isnil := isNil(iv, true)
-	if isnil { // fast isNil check (e.g. for nil intf or nil pointers)
-		e.e.EncodeNil()
+	rv, isnil := isNil(iv, true) // fast isNil check (e.g. for nil intf or nil pointers)
+	if isnil {
+		e.e.EncodeNil() // problem here MARKER 2025
 		return
 	}
 
@@ -1124,13 +1125,7 @@ func (e *encoder[T]) encode(iv interface{}) {
 	case time.Time:
 		e.e.EncodeTime(v)
 	case []byte:
-		if v != nil {
-			e.e.EncodeStringBytesRaw(v)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteArrayEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		e.e.EncodeBytes(v)
 	default:
 		// we can't check non-predefined types, as they might be a Selfer or extension.
 		if skipFastpathTypeSwitchInDirectCall || !e.dh.fastpathEncodeTypeSwitch(iv, e) {
@@ -1272,11 +1267,7 @@ func (e *encoder[T]) marshalAsis(bs []byte, fnerr error) {
 
 func (e *encoder[T]) marshalRaw(bs []byte, fnerr error) {
 	halt.onerror(fnerr)
-	if bs == nil {
-		e.e.EncodeNil()
-	} else {
-		e.e.EncodeStringBytesRaw(bs)
-	}
+	e.e.EncodeBytes(bs)
 }
 
 func (e *encoder[T]) rawBytes(vv Raw) {
