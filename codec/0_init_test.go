@@ -109,7 +109,9 @@ type testVars struct {
 
 	BenchmarkWithRuntimeMetrics bool
 
-	bufsize testBufioSizeFlag
+	bufsize    testBufioSizeFlag
+	maxInitLen int
+	zeroCopy   bool
 
 	// variables that are not flags, but which can configure the handles
 	E EncodeOptions
@@ -124,6 +126,12 @@ type testVars struct {
 func (x *testVars) setBufsize(v int) {
 	x.E.WriterBufferSize = v
 	x.D.ReaderBufferSize = v
+}
+
+func (x *testVars) updateHandleOptions() {
+	x.D.MaxInitLen = testv.maxInitLen
+	x.D.ZeroCopy = testv.zeroCopy
+	x.setBufsize((int)(x.bufsize))
 }
 
 type testBufioSizeFlag int
@@ -154,9 +162,9 @@ func testInitFlags() {
 	flag.BoolVar(&testv.UseParallel, "tp", false, "Run tests in parallel")
 	flag.IntVar(&testv.NumRepeatString, "trs", 8, "Create string variables by repeating a string N times")
 	flag.BoolVar(&testv.UseDiff, "tdiff", false, "Use Diff")
-	flag.BoolVar(&testv.D.ZeroCopy, "tzc", false, "Use Zero copy mode")
+	flag.BoolVar(&testv.zeroCopy, "tzc", false, "Use Zero copy mode")
 
-	flag.IntVar(&testv.D.MaxInitLen, "tx", 0, "Max Init Len")
+	flag.IntVar(&testv.maxInitLen, "tx", 0, "Max Init Len")
 
 	flag.IntVar(&testv.Depth, "tsd", 0, "Test Struc Depth")
 	flag.BoolVar(&testv.MapStringKeyOnly, "tsk", false, "use maps with string keys only")
@@ -177,14 +185,9 @@ func testParseFlags() {
 	if !flag.Parsed() {
 		flag.Parse()
 	}
+	testv.setBufsize((int)(testv.bufsize))
+	testv.updateHandleOptions()
 }
-
-// func testUpdateOptionsFromFlags() {
-// 	testv.E.WriterBufferSize = testv.UseIoEncDec
-// 	testv.D.ReaderBufferSize = testv.UseIoEncDec
-// 	testv.D.MaxInitLen = testv.MaxInitLen
-// 	testv.D.ZeroCopy = testv.ZeroCopy
-// }
 
 func testReinit() {
 	// testOnce = sync.Once{}
