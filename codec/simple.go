@@ -118,7 +118,8 @@ func (e *simpleEncDriver[T]) EncodeExt(v interface{}, basetype reflect.Type, xta
 		bs = ext.WriteExt(v)
 	}
 	if bs == nil {
-		e.EncodeNil()
+		e.encodeNilBytes() // MARKER 2025
+		// e.EncodeNil()
 		goto END
 	}
 	e.encodeExtPreamble(uint8(xtag), len(bs))
@@ -151,11 +152,13 @@ func (e *simpleEncDriver[T]) WriteMapStart(length int) {
 }
 
 func (e *simpleEncDriver[T]) WriteArrayEmpty() {
-	e.WriteArrayStart(0)
+	// e.WriteArrayStart(0) = e.encLen(simpleVdArray, 0)
+	e.w.writen1(simpleVdArray)
 }
 
 func (e *simpleEncDriver[T]) WriteMapEmpty() {
-	e.WriteMapStart(0)
+	// e.WriteMapStart(0) = e.encLen(simpleVdMap, 0)
+	e.w.writen1(simpleVdMap)
 }
 
 func (e *simpleEncDriver[T]) EncodeString(v string) {
@@ -175,12 +178,24 @@ func (e *simpleEncDriver[T]) EncodeStringNoEscape4Json(v string) { e.EncodeStrin
 
 func (e *simpleEncDriver[T]) EncodeStringBytesRaw(v []byte) {
 	// if e.h.EncZeroValuesAsNil && e.c != containerMapKey && v == nil {
-	if v == nil {
-		e.EncodeNil()
-		return
-	}
 	e.encLen(simpleVdByteArray, len(v))
 	e.w.writeb(v)
+}
+
+func (e *simpleEncDriver[T]) EncodeBytes(v []byte) {
+	if v == nil {
+		e.encodeNilBytes()
+		return
+	}
+	e.EncodeStringBytesRaw(v)
+}
+
+func (e *simpleEncDriver[T]) encodeNilBytes() {
+	b := byte(simpleVdNil)
+	if e.h.NilCollectionToZeroLength {
+		b = simpleVdArray
+	}
+	e.w.writen1(b)
 }
 
 func (e *simpleEncDriver[T]) EncodeTime(t time.Time) {
@@ -400,7 +415,7 @@ func (d *simpleDecDriver[T]) DecodeBytes() (bs []byte, state dBytesAttachState) 
 	}
 	var cond bool
 	// check if an "array" of uint8's (see ContainerType for how to infer if an array)
-	if d.bd >= simpleVdArray && d.bd <= simpleVdMap+4 {
+	if d.bd >= simpleVdArray && d.bd <= simpleVdArray+4 {
 		slen := d.ReadArrayStart()
 		bs, cond = usableByteSlice(d.d.buf, slen)
 		for i := 0; i < len(bs); i++ {
@@ -413,6 +428,7 @@ func (d *simpleDecDriver[T]) DecodeBytes() (bs []byte, state dBytesAttachState) 
 			d.d.buf = bs
 		}
 		state = dBytesAttachBuffer
+
 		return
 	}
 

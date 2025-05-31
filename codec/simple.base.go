@@ -21,7 +21,7 @@ const (
 
 	simpleVdTime = 24
 
-	// containers: each lasts for 4 (ie n, n+1, n+2, ... n+7)
+	// containers: each lasts for 8 (ie n, n+1, n+2, ... n+7)
 	simpleVdString    = 216
 	simpleVdByteArray = 224
 	simpleVdArray     = 232

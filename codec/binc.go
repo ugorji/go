@@ -188,11 +188,13 @@ func (e *bincEncDriver[T]) WriteMapStart(length int) {
 }
 
 func (e *bincEncDriver[T]) WriteArrayEmpty() {
-	e.WriteArrayStart(0)
+	// e.WriteArrayStart(0) = e.encLen(bincVdArray<<4, 0)
+	e.w.writen1(bincVdArray<<4 | uint8(0+4))
 }
 
 func (e *bincEncDriver[T]) WriteMapEmpty() {
-	e.WriteMapStart(0)
+	// e.WriteMapStart(0) = e.encLen(bincVdMap<<4, 0)
+	e.w.writen1(bincVdMap<<4 | uint8(0+4))
 }
 
 func (e *bincEncDriver[T]) EncodeSymbol(v string) {
@@ -278,14 +280,22 @@ func (e *bincEncDriver[T]) EncodeStringEnc(c charEncoding, v string) {
 }
 
 func (e *bincEncDriver[T]) EncodeStringBytesRaw(v []byte) {
-	if v == nil {
-		e.EncodeNil()
-		return
-	}
 	e.encLen(bincVdByteArray<<4, uint64(len(v)))
 	if len(v) > 0 {
 		e.w.writeb(v)
 	}
+}
+
+func (e *bincEncDriver[T]) EncodeBytes(v []byte) {
+	if v == nil {
+		b := byte(bincBdNil)
+		if e.h.NilCollectionToZeroLength {
+			b = bincVdArray<<4 | uint8(0+4)
+		}
+		e.w.writen1(b)
+		return
+	}
+	e.EncodeStringBytesRaw(v)
 }
 
 func (e *bincEncDriver[T]) encBytesLen(c charEncoding, length uint64) {

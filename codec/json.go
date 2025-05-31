@@ -114,7 +114,8 @@ func (e *jsonEncDriver[T]) EncodeNil() {
 	// We always encode nil as just null (never in quotes)
 	// so we can easily decode if a nil in the json stream ie if initial token is n.
 
-	e.w.writestr(jsonLits[jsonLitN : jsonLitN+4])
+	// e.w.writestr(jsonLits[jsonLitN : jsonLitN+4])
+	e.w.writeb(jsonNull)
 }
 
 func (e *jsonEncDriver[T]) EncodeTime(t time.Time) {
@@ -244,12 +245,6 @@ func (e *jsonEncDriver[T]) EncodeString(v string) {
 func (e *jsonEncDriver[T]) EncodeStringNoEscape4Json(v string) { e.w.writeqstr(v) }
 
 func (e *jsonEncDriver[T]) EncodeStringBytesRaw(v []byte) {
-	// if encoding raw bytes and RawBytesExt is configured, use it to encode
-	if v == nil {
-		e.EncodeNil()
-		return
-	}
-
 	if e.rawext {
 		// explicitly convert v to interface{} so that v doesn't escape to heap
 		iv := e.h.RawBytesExt.ConvertExt(any(v))
@@ -273,6 +268,18 @@ func (e *jsonEncDriver[T]) EncodeStringBytesRaw(v []byte) {
 	bs[len(bs)-1] = '"'
 	bs[0] = '"'
 	e.w.writeb(bs)
+}
+
+func (e *jsonEncDriver[T]) EncodeBytes(v []byte) {
+	if v == nil {
+		bs := jsonNull
+		if e.h.NilCollectionToZeroLength {
+			bs = jsonArrayEmpty
+		}
+		e.w.writeb(bs)
+		return
+	}
+	e.EncodeStringBytesRaw(v)
 }
 
 // indent is done as below:
@@ -762,8 +769,11 @@ func (d *jsonDecDriver[T]) DecodeRawExt(re *RawExt) {
 }
 
 func (d *jsonDecDriver[T]) decBytesFromArray(bs []byte) []byte {
-	bs = append(bs, uint8(d.DecodeUint64()))
 	d.advance()
+	if d.tok != ']' {
+		bs = append(bs, uint8(d.DecodeUint64()))
+		d.advance()
+	}
 	for d.tok != ']' {
 		if d.tok != ',' {
 			halt.errorByte("read array element - expect char ',' but got char: ", d.tok)

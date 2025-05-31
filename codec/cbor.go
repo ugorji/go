@@ -143,19 +143,19 @@ func (e *cborEncDriver[T]) EncodeRawExt(re *RawExt) {
 
 func (e *cborEncDriver[T]) WriteArrayEmpty() {
 	if e.h.IndefiniteLength {
-		e.w.writen1(cborBdIndefiniteArray)
-		e.w.writen1(cborBdBreak)
+		e.w.writen2(cborBdIndefiniteArray, cborBdBreak)
 	} else {
-		e.encLen(cborBaseArray, 0)
+		e.w.writen1(cborBaseArray)
+		// e.encLen(cborBaseArray, 0)
 	}
 }
 
 func (e *cborEncDriver[T]) WriteMapEmpty() {
 	if e.h.IndefiniteLength {
-		e.w.writen1(cborBdIndefiniteMap)
-		e.w.writen1(cborBdBreak)
+		e.w.writen2(cborBdIndefiniteMap, cborBdBreak)
 	} else {
-		e.encLen(cborBaseMap, 0)
+		e.w.writen1(cborBaseMap)
+		// e.encLen(cborBaseMap, 0)
 	}
 }
 
@@ -198,11 +198,7 @@ func (e *cborEncDriver[T]) EncodeString(v string) {
 func (e *cborEncDriver[T]) EncodeStringNoEscape4Json(v string) { e.EncodeString(v) }
 
 func (e *cborEncDriver[T]) EncodeStringBytesRaw(v []byte) {
-	if v == nil {
-		e.EncodeNil()
-	} else {
-		e.encStringBytesS(cborBaseBytes, stringView(v))
-	}
+	e.encStringBytesS(cborBaseBytes, stringView(v))
 }
 
 func (e *cborEncDriver[T]) encStringBytesS(bb byte, v string) {
@@ -229,6 +225,18 @@ func (e *cborEncDriver[T]) encStringBytesS(bb byte, v string) {
 		e.encLen(bb, len(v))
 		e.w.writestr(v)
 	}
+}
+
+func (e *cborEncDriver[T]) EncodeBytes(v []byte) {
+	if v == nil {
+		b := cborBdNil
+		if e.h.NilCollectionToZeroLength {
+			b = cborBaseArray
+		}
+		e.w.writen1(b)
+		return
+	}
+	e.EncodeStringBytesRaw(v)
 }
 
 // ----------------------
@@ -519,7 +527,9 @@ func (d *cborDecDriver[T]) DecodeBytes() (bs []byte, state dBytesAttachState) {
 		for i := len(bs); i < slen; i++ {
 			bs = append(bs, uint8(chkOvf.UintV(d.DecodeUint64(), 8)))
 		}
-		d.d.buf = bs
+		if cond {
+			d.d.buf = bs
+		}
 		state = dBytesAttachBuffer
 		return
 	}

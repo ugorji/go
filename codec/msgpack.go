@@ -162,14 +162,14 @@ func (e *msgpackEncDriver[T]) EncodeExt(v interface{}, basetype reflect.Type, xt
 		bs = ext.WriteExt(v)
 	}
 	if bs == nil {
-		e.EncodeNil()
+		e.encodeNilBytes() // e.EncodeNil() MARKER 2025???
 		goto END
 	}
 	if e.h.WriteExt {
 		e.encodeExtPreamble(uint8(xtag), len(bs))
 		e.w.writeb(bs)
 	} else {
-		e.EncodeStringBytesRaw(bs)
+		e.EncodeBytes(bs)
 	}
 END:
 	if ext == SelfExt {
@@ -219,11 +219,13 @@ func (e *msgpackEncDriver[T]) WriteMapStart(length int) {
 }
 
 func (e *msgpackEncDriver[T]) WriteArrayEmpty() {
-	e.WriteArrayStart(0)
+	// e.WriteArrayStart(0) = e.writeContainerLen(msgpackContainerList, 0)
+	e.w.writen1(mpFixArrayMin)
 }
 
 func (e *msgpackEncDriver[T]) WriteMapEmpty() {
-	e.WriteMapStart(0)
+	// e.WriteMapStart(0) = e.writeContainerLen(msgpackContainerMap, 0)
+	e.w.writen1(mpFixMapMin)
 }
 
 func (e *msgpackEncDriver[T]) EncodeString(s string) {
@@ -246,10 +248,6 @@ func (e *msgpackEncDriver[T]) EncodeString(s string) {
 func (e *msgpackEncDriver[T]) EncodeStringNoEscape4Json(v string) { e.EncodeString(v) }
 
 func (e *msgpackEncDriver[T]) EncodeStringBytesRaw(bs []byte) {
-	if bs == nil {
-		e.EncodeNil()
-		return
-	}
 	if e.h.WriteExt {
 		e.writeContainerLen(msgpackContainerBin, len(bs))
 	} else {
@@ -258,6 +256,22 @@ func (e *msgpackEncDriver[T]) EncodeStringBytesRaw(bs []byte) {
 	if len(bs) > 0 {
 		e.w.writeb(bs)
 	}
+}
+
+func (e *msgpackEncDriver[T]) EncodeBytes(v []byte) {
+	if v == nil {
+		e.encodeNilBytes()
+		return
+	}
+	e.EncodeStringBytesRaw(v)
+}
+
+func (e *msgpackEncDriver[T]) encodeNilBytes() {
+	b := mpNil
+	if e.h.NilCollectionToZeroLength {
+		b = mpFixArrayMin
+	}
+	e.w.writen1(b)
 }
 
 func (e *msgpackEncDriver[T]) writeContainerLen(ct msgpackContainerType, l int) {

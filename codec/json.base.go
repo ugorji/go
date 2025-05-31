@@ -17,15 +17,20 @@ import (
 // for better append/string comparison/etc.
 //
 // (anecdotal evidence from some benchmarking on go 1.20 devel in 20220104)
-const jsonLits = `"true"false"null"`
-
-var jsonLitb = []byte(jsonLits)
+const jsonLits = `"true"false"null"{}[]`
 
 const (
 	jsonLitT = 1
 	jsonLitF = 6
 	jsonLitN = 12
+	jsonLitM = 17
+	jsonLitA = 19
 )
+
+var jsonLitb = []byte(jsonLits)
+var jsonNull = jsonLitb[jsonLitN : jsonLitN+4]
+var jsonArrayEmpty = jsonLitb[jsonLitA : jsonLitA+2]
+var jsonMapEmpty = jsonLitb[jsonLitM : jsonLitM+2]
 
 const jsonEncodeUintSmallsString = "" +
 	"00010203040506070809" +
