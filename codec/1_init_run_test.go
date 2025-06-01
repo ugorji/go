@@ -255,211 +255,165 @@ func testEqualH(v1, v2 interface{}, h Handle) (err error) {
 		mapKeyAsStr = x.MapKeyAsString
 		preferFloat = x.PreferFloat
 	}
-	// var o gocmp.Option
-	// var p []gocmp.Option
-	// if zeroAsNil {
-	// }
-	// if mapKeyAsStr {
-	// }
-	// if bh.NilCollectionToZeroLength {
-	var rc func(rv reflect.Value)
-	rc = func(rv reflect.Value) {
-		switch rv.Kind() {
+
+	// create a clone that honors the Handle options
+	// then compare that using reflect.DeepEqual
+
+	const structExportedFieldsOnly = false
+
+	visited := make(map[uintptr]reflect.Value)
+
+	var rcopy func(src, target reflect.Value)
+	rcopy = func(src, target reflect.Value) {
+	TOP:
+		switch src.Kind() {
+		case reflect.Interface:
+			if src.IsNil() {
+				return
+			}
+			src = src.Elem()
+			goto TOP
+		case reflect.Ptr:
+			if src.IsNil() {
+				return // target remains zero, which is correct for a nil pointer
+			}
+			addr := src.Pointer()
+			if copiedPtr, ok := visited[addr]; ok {
+				if target.Type() == copiedPtr.Type() {
+					target.Set(copiedPtr) // Set target to the already copied pointer
+				} else if target.Type() == copiedPtr.Elem().Type() && copiedPtr.Kind() == reflect.Ptr {
+					target.Set(copiedPtr.Elem()) // If target is value, set to copied pointer's element
+				}
+				return
+			}
+			// New pointer needed for the field/element
+			elemCopy := reflect.New(src.Elem().Type())
+			visited[addr] = elemCopy // Store the new pointer
+			rcopy(src.Elem(), elemCopy.Elem())
+			target.Set(elemCopy)
+		case reflect.Array:
+			target.Set(src)
+			for i, slen := 0, src.Len(); i < slen; i++ {
+				rcopy(src.Index(i), target.Index(i))
+			}
 		case reflect.Slice:
-			if bh.NilCollectionToZeroLength && rv.IsNil() {
-				rv.Set(reflect.MakeSlice(rv.Type(), 0, 0))
+			if src.IsNil() {
+				if bh.NilCollectionToZeroLength {
+					target.Set(reflect.MakeSlice(src.Type(), 0, 0))
+				}
+				return
 				// debugf("slice: %T: %v", hlBLUE, rv.Interface(), rv.Interface())
 			}
-			for i := 0; i < rv.Len(); i++ {
-				rc(rv.Index(i))
-			}
-		case reflect.Array:
-			for i := 0; i < rv.Len(); i++ {
-				rc(rv.Index(i))
+			slen := src.Len()
+			target.Set(reflect.MakeSlice(src.Type(), slen, src.Cap()))
+			for i := 0; i < slen; i++ {
+				rcopy(src.Index(i), target.Index(i))
 			}
 		case reflect.Map:
-			if bh.NilCollectionToZeroLength && rv.IsNil() {
-				rv.Set(reflect.MakeMapWithSize(rv.Type(), 0))
+			if src.IsNil() {
+				if bh.NilCollectionToZeroLength {
+					target.Set(reflect.MakeMapWithSize(src.Type(), 0))
+				}
+				return
 				// debugf("map: %T: %v", hlBLUE, rv.Interface(), rv.Interface())
 			}
-			for iter := rv.MapRange(); iter.Next(); {
-				rv1 := iter.Key()
-				rc(rv1) // MARKER - is this necessary?
-				// if value is not addressable, we should clone it on the heap, modify it, and update it
-				rv2 := iter.Value()
-				if rv2.CanAddr() {
-					rc(rv2)
-				} else {
-					rv3 := reflect.New(rv2.Type()).Elem()
-					deepCopyRecursiveInto(rv2, rv3, make(map[uintptr]reflect.Value))
-					rv2 = rv3
-					rc(rv2)
-					rv.SetMapIndex(rv1, rv2)
-				}
+			target.Set(reflect.MakeMapWithSize(src.Type(), src.Len()))
+			iter := src.MapRange()
+			for iter.Next() {
+				kSrc := iter.Key()
+				vSrc := iter.Value()
+				kTarget := reflect.New(kSrc.Type()).Elem()
+				vTarget := reflect.New(vSrc.Type()).Elem()
+				rcopy(kSrc, kTarget)
+				rcopy(vSrc, vTarget)
+				target.SetMapIndex(kTarget, vTarget)
 			}
 		case reflect.Chan:
-			if bh.NilCollectionToZeroLength && rv.IsNil() {
-				rv.Set(reflect.MakeChan(rv.Type(), 0))
-			}
-		case reflect.Pointer, reflect.Interface:
-			if !rv.IsNil() {
-				rc(rv.Elem())
+			if src.IsNil() {
+				if bh.NilCollectionToZeroLength {
+					target.Set(reflect.MakeChan(src.Type(), 0))
+				}
+				return
 			}
 		case reflect.Struct:
-			if !rv.CanAddr() {
-				// debugf("struct not addressable: %v", hlRED, rv.Type())
-			}
-			tt := rv.Type()
-			for i, n := 0, rv.NumField(); i < n; i++ {
-				sf := tt.Field(i)
-				if sf.IsExported() {
-					rv2 := rv.Field(i)
-					if kk := rv2.Kind(); (kk == reflect.Slice || kk == reflect.Map) && rv2.IsNil() {
-						// debugf("struct field: [%v/%s] (%v) nil: %v", hlYELLOW, tt, sf.Name, rv2.Type(), rv2.IsNil())
-					}
-					rc(rv2)
+			tt := src.Type()
+			for i, n := 0, src.NumField(); i < n; i++ {
+				if !structExportedFieldsOnly || tt.Field(i).IsExported() {
+					// rv2 := rv.Field(i)
+					// if kk := rv2.Kind(); (kk == reflect.Slice || kk == reflect.Map) && rv2.IsNil() {
+					// 	// debugf("struct field: [%v/%s] (%v) nil: %v", hlYELLOW, tt, sf.Name, rv2.Type(), rv2.IsNil())
+					// }
+					rcopy(src.Field(i), target.Field(i))
 				}
 			}
-			// }
-			// tt := rv.Type()
-			// for i := 0; i < tt.NumField(); i++ {
-			// 	if tt.Field(i).IsExported() {
-			// 		if rv2 := rv.Field(i); rv2.CanSet() { // in case an unaddressable struct
-			// 			rc(rv2)
-			// 		}
-			// 	}
-			// }
+		default: // Basic types: int, string, bool, etc.
+			if src.Type().AssignableTo(target.Type()) {
+				target.Set(src)
+			}
 		}
 	}
 
-	f := func(in interface{}) (out interface{}) {
+	deepcopy := func(in interface{}) (rv reflect.Value) {
 		// debugf("start transform: %T(%p) (isnil: %v)", hlGREEN, in, in, in == nil)
-		v := deepCopyValue(in)
-		if v.IsValid() {
-			rc(v)
-			out = v.Interface()
+		clear(visited)
+		src := reflect.ValueOf(in)
+		if src.Kind() == reflect.Ptr {
+			if src.IsNil() {
+				rv = reflect.Zero(src.Type()) // or nil for typed nil
+			} else {
+				rv = reflect.New(src.Type().Elem())
+				visited[src.Pointer()] = rv
+				rcopy(src.Elem(), rv.Elem())
+			}
+		} else {
+			rv = reflect.New(src.Type()).Elem()
+			rcopy(src, rv)
 		}
 		// debugf("transforming %T(%p) --> %T(%p) (isnil: %v)", hlGREEN, in, in, out, out, out == nil)
 		return
 	}
 
-	// o = gocmpopts.AcyclicTransformer("T1", f)
-	// p = append(p, o)
-	// if !gocmp.Equal(v1, v2, p...) {
-	// 	if testv.UseDiff {
-	// 		err = errors.New(gocmp.Diff(v1, v2, p...))
-	// 	} else {
-	// 		err = errDeepEqualNotMatch
-	// 	}
-	// }
-	// return
-
-	v11 := f(v1)
-	if !reflect.DeepEqual(v11, v2) {
+	if v1 != nil {
+		v1 = deepcopy(v1).Interface()
+	}
+	if !reflect.DeepEqual(v1, v2) {
 		if testv.UseDiff {
-			err = errors.New(gocmp.Diff(v11, v2))
+			err = errors.New(gocmp.Diff(v1, v2))
 		} else {
 			err = errDeepEqualNotMatch
 		}
 	}
 	return
-
-	// o = cmp.Transformer("T1", func(in interface{}) (out interface{}) {
-	// 	out.Real, out.Imag = real(in), imag(in)
-	// 	return out
-	// })
 }
 
-func deepCopyValue(val interface{}) (rv reflect.Value) {
-	if val == nil {
-		return
-	}
-	orig := reflect.ValueOf(val)
-	visited := make(map[uintptr]reflect.Value)
-
-	if orig.Kind() == reflect.Ptr {
-		if orig.IsNil() {
-			return reflect.Zero(orig.Type()) // or nil for typed nil
-		}
-		rv = reflect.New(orig.Type().Elem())
-		visited[orig.Pointer()] = rv
-		deepCopyRecursiveInto(orig.Elem(), rv.Elem(), visited)
-	} else {
-		rv = reflect.New(orig.Type()).Elem()
-		deepCopyRecursiveInto(orig, rv, visited)
-	}
-	return
-}
-
-// deepCopyRecursiveInto copies from 'original' into 'target'. Both are concrete values.
-func deepCopyRecursiveInto(orig, target reflect.Value, visited map[uintptr]reflect.Value) {
-	for orig.Kind() == reflect.Interface { // Ptrs inside structs handled by checking visited
-		if orig.IsNil() {
-			return
-		}
-		orig = orig.Elem()
-	}
-	switch orig.Kind() {
-	case reflect.Ptr:
-		if orig.IsNil() {
-			return // Target remains zero, which is correct for a nil pointer
-		}
-		addr := orig.Pointer()
-		if copiedPtr, ok := visited[addr]; ok {
-			if target.Type() == copiedPtr.Type() {
-				target.Set(copiedPtr) // Set target to the already copied pointer
-			} else if target.Type() == copiedPtr.Elem().Type() && copiedPtr.Kind() == reflect.Ptr {
-				target.Set(copiedPtr.Elem()) // If target is value, set to copied pointer's element
-			}
-			return
-		}
-		// New pointer needed for the field/element
-		elemCopy := reflect.New(orig.Elem().Type())
-		visited[addr] = elemCopy // Store the new pointer
-		deepCopyRecursiveInto(orig.Elem(), elemCopy.Elem(), visited)
-		target.Set(elemCopy)
-	case reflect.Struct:
-		for i := 0; i < orig.NumField(); i++ {
-			deepCopyRecursiveInto(orig.Field(i), target.Field(i), visited)
-			// if target.Field(i).CanSet() {
-			// 	deepCopyRecursiveInto(orig.Field(i), target.Field(i), visited)
-			// }
-		}
-	case reflect.Slice:
-		if orig.IsNil() {
-			// target.Set(reflect.Zero(orig.Type())) // target becomes a nil slice
-			return // target is already a zero slice if newly created.
-		}
-		if target.IsZero() || target.Cap() < orig.Cap() { // Check if target needs to be (re)made
-			target.Set(reflect.MakeSlice(orig.Type(), orig.Len(), orig.Cap()))
-		} else {
-			target.SetLen(orig.Len()) // Ensure length matches
-		}
-		for i := 0; i < orig.Len(); i++ {
-			deepCopyRecursiveInto(orig.Index(i), target.Index(i), visited)
-		}
-	case reflect.Map:
-		if orig.IsNil() {
-			// target.Set(reflect.Zero(orig.Type())) // target becomes a nil map
-			return
-		}
-		if target.IsZero() {
-			target.Set(reflect.MakeMap(orig.Type()))
-		}
-
-		iter := orig.MapRange()
-		for iter.Next() {
-			kOrig := iter.Key()
-			vOrig := iter.Value()
-			kTarget := reflect.New(kOrig.Type()).Elem()
-			vTarget := reflect.New(vOrig.Type()).Elem()
-			deepCopyRecursiveInto(kOrig, kTarget, visited)
-			deepCopyRecursiveInto(vOrig, vTarget, visited)
-			target.SetMapIndex(kTarget, vTarget)
-		}
-	default: // Basic types: int, string, bool, etc.
-		if orig.Type().AssignableTo(target.Type()) {
-			target.Set(orig)
-		}
-	}
-}
+// func testEqualH(v1, v2 interface{}, h Handle) (err error) {
+// 	// ...
+// 	//
+// 	// var o gocmp.Option
+// 	// var p []gocmp.Option
+// 	// if zeroAsNil {
+// 	// }
+// 	// if mapKeyAsStr {
+// 	// }
+// 	// if bh.NilCollectionToZeroLength {
+// 	//
+// 	// ...
+// 	//
+// 	// o = gocmpopts.AcyclicTransformer("T1", f)
+// 	// p = append(p, o)
+// 	// if !gocmp.Equal(v1, v2, p...) {
+// 	// 	if testv.UseDiff {
+// 	// 		err = errors.New(gocmp.Diff(v1, v2, p...))
+// 	// 	} else {
+// 	// 		err = errDeepEqualNotMatch
+// 	// 	}
+// 	// }
+// 	// return
+// 	//
+// 	// ...
+// 	//
+// 	// o = cmp.Transformer("T1", func(in interface{}) (out interface{}) {
+// 	// 	out.Real, out.Imag = real(in), imag(in)
+// 	// 	return out
+// 	// })
+// }
