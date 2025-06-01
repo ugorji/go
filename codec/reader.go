@@ -151,10 +151,13 @@ func (z *ioDecReader) resetIO(r io.Reader, bufsize int, maxInitLen int, blist *b
 	z.maxInitLen = max(1024, uint(maxInitLen))
 	z.blist = blist
 	z.buf = blist.check(buf, max(256, bufsize))
-	z.buf = z.buf[:cap(z.buf)]
 	z.bufsize = uint(max(0, bufsize))
-	z.bufio = bufsize > 0
-
+	z.bufio = z.bufsize > 0
+	if z.bufio {
+		z.buf = z.buf[:cap(z.buf)]
+	} else {
+		z.buf = z.buf[:0]
+	}
 	if r == nil {
 		z.r = &eofReader
 	} else {
