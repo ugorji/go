@@ -126,7 +126,7 @@ func (e *cborEncDriver[T]) EncodeExt(rv interface{}, basetype reflect.Type, xtag
 	} else if v := ext.ConvertExt(rv); v == nil {
 		e.EncodeNil()
 	} else {
-		e.enc.encode(v)
+		e.enc.encodeI(v)
 	}
 }
 
@@ -135,7 +135,7 @@ func (e *cborEncDriver[T]) EncodeRawExt(re *RawExt) {
 	if re.Data != nil {
 		e.w.writeb(re.Data)
 	} else if re.Value != nil {
-		e.enc.encode(re.Value)
+		e.enc.encodeI(re.Value)
 	} else {
 		e.EncodeNil()
 	}

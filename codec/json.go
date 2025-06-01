@@ -138,7 +138,7 @@ func (e *jsonEncDriver[T]) EncodeExt(rv interface{}, basetype reflect.Type, xtag
 	} else if v := ext.ConvertExt(rv); v == nil {
 		e.EncodeNil()
 	} else {
-		e.enc.encode(v)
+		e.enc.encodeI(v)
 	}
 }
 
@@ -146,7 +146,7 @@ func (e *jsonEncDriver[T]) EncodeRawExt(re *RawExt) {
 	if re.Data != nil {
 		e.w.writeb(re.Data)
 	} else if re.Value != nil {
-		e.enc.encode(re.Value)
+		e.enc.encodeI(re.Value)
 	} else {
 		e.EncodeNil()
 	}
@@ -251,7 +251,7 @@ func (e *jsonEncDriver[T]) EncodeStringBytesRaw(v []byte) {
 		if iv == nil {
 			e.EncodeNil()
 		} else {
-			e.enc.encode(iv)
+			e.enc.encodeI(iv)
 		}
 		return
 	}

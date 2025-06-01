@@ -205,7 +205,7 @@ func (e *encoder[T]) kArrayWMbs(rv reflect.Value, ti *typeInfo, isSlice bool) {
 	for {
 		rvv := rvArrayIndex(rv, j, ti, isSlice)
 		if builtin {
-			e.encode(rv2i(baseRVRV(rvv)))
+			e.encodeR(baseRVRV(rvv))
 		} else {
 			e.encodeValue(rvv, fn)
 		}
@@ -264,7 +264,7 @@ func (e *encoder[T]) kArrayW(rv reflect.Value, ti *typeInfo, isSlice bool) {
 	for {
 		rvv := rvArrayIndex(rv, j, ti, isSlice)
 		if builtin {
-			e.encode(rv2i(baseRVRV(rvv)))
+			e.encodeR(baseRVRV(rvv))
 		} else {
 			e.encodeValue(rvv, fn)
 		}
@@ -419,7 +419,7 @@ func (e *encoder[T]) kStructSimple(f *encFnInfo, rv reflect.Value) {
 			e.c = containerArrayElem
 			e.e.WriteArrayElem(j == 0)
 			if si.encBuiltin {
-				e.encode(rv2i(si.fieldNoAlloc(rv, true)))
+				e.encodeR(si.fieldNoAlloc(rv, true))
 			} else {
 				e.encodeValue(si.fieldNoAlloc(rv, !chkCirRef), nil)
 			}
@@ -441,7 +441,7 @@ func (e *encoder[T]) kStructSimple(f *encFnInfo, rv reflect.Value) {
 			e.e.EncodeStringNoEscape4Json(si.encName)
 			e.mapElemValue()
 			if si.encBuiltin {
-				e.encode(rv2i(si.fieldNoAlloc(rv, true)))
+				e.encodeR(si.fieldNoAlloc(rv, true))
 			} else {
 				e.encodeValue(si.fieldNoAlloc(rv, !chkCirRef), nil)
 			}
@@ -552,12 +552,12 @@ func (e *encoder[T]) kStruct(f *encFnInfo, rv reflect.Value) {
 				e.mapElemValue()
 				if sf.isRv {
 					if sf.builtin {
-						e.encode(rv2i(baseRVRV(sf.rv)))
+						e.encodeR(baseRVRV(sf.rv))
 					} else {
 						e.encodeValue(sf.rv, nil)
 					}
 				} else {
-					e.encode(sf.intf)
+					e.encodeI(sf.intf)
 				}
 			}
 		} else {
@@ -573,7 +573,7 @@ func (e *encoder[T]) kStruct(f *encFnInfo, rv reflect.Value) {
 				}
 				e.mapElemValue()
 				if kv.v.encBuiltin {
-					e.encode(rv2i(baseRVRV(kv.r)))
+					e.encodeR(baseRVRV(kv.r))
 				} else {
 					e.encodeValue(kv.r, nil)
 				}
@@ -583,7 +583,7 @@ func (e *encoder[T]) kStruct(f *encFnInfo, rv reflect.Value) {
 				e.e.WriteMapElemKey(j == 0)
 				e.kStructFieldKey(keytyp, v.v)
 				e.mapElemValue()
-				e.encode(v.i)
+				e.encodeI(v.i)
 				j++
 			}
 		}
@@ -623,7 +623,7 @@ func (e *encoder[T]) kStruct(f *encFnInfo, rv reflect.Value) {
 			if !kv.r.IsValid() {
 				e.e.EncodeNil()
 			} else if kv.v.encBuiltin {
-				e.encode(rv2i(baseRVRV(kv.r)))
+				e.encodeR(baseRVRV(kv.r))
 			} else {
 				e.encodeValue(kv.r, nil)
 			}
@@ -706,14 +706,14 @@ func (e *encoder[T]) kMap(f *encFnInfo, rv reflect.Value) {
 		if keyTypeIsString {
 			e.e.EncodeString(rvGetString(rv))
 		} else if kbuiltin {
-			e.encode(rv2i(baseRVRV(rv)))
+			e.encodeR(baseRVRV(rv))
 		} else {
 			e.encodeValue(rv, keyFn)
 		}
 		e.mapElemValue()
 		rv = it.Value()
 		if vbuiltin {
-			e.encode(rv2i(baseRVRV(rv)))
+			e.encodeR(baseRVRV(rv))
 		} else {
 			e.encodeValue(it.Value(), valFn)
 		}
@@ -888,7 +888,7 @@ func (e *encoder[T]) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, keyFn, v
 				v := &mksbv[i]
 				l := len(mksv)
 				se.setContainerState(containerMapKey)
-				se.encode(rv2i(baseRVRV(k)))
+				se.encodeI(rv2i(baseRVRV(k)))
 				se.atEndOfEncode()
 				se.writerEnd()
 				v.r = k
@@ -1062,7 +1062,7 @@ func (e *encoder[T]) mustEncode(v interface{}) {
 	}
 
 	e.calls++
-	e.encode(v)
+	e.encodeI(v)
 	e.calls--
 	if e.calls == 0 {
 		e.e.atEndOfEncode()
@@ -1070,15 +1070,46 @@ func (e *encoder[T]) mustEncode(v interface{}) {
 	}
 }
 
-func (e *encoder[T]) encode(iv interface{}) {
+func (e *encoder[T]) encodeI(iv interface{}) {
+	// reflect.ValueOf(iv) is cheap if iv == nil, so let it be handled there
+	e.encodeIR(iv, reflect.ValueOf(iv))
+}
+
+func (e *encoder[T]) encodeR(base reflect.Value) {
+	e.encodeIR(rv2i(base), base)
+}
+
+func (e *encoder[T]) encodeIR(iv interface{}, rv reflect.Value) {
 	// MARKER: a switch with only concrete types can be optimized.
 	// consequently, we deal with nil and interfaces outside the switch.
 
-	rv, isnil := isNil(iv, true) // fast isNil check (e.g. for nil intf or nil pointers)
-	if isnil {
-		e.e.EncodeNil() // problem here MARKER 2025
+	if iv == nil {
+		e.e.EncodeNil()
 		return
 	}
+
+	k := rv.Kind()
+
+	if isnilBitset.isset(byte(k)) && rvIsNil(rv) {
+		if e.h.NilCollectionToZeroLength {
+			switch k {
+			case reflect.Map:
+				e.e.WriteMapEmpty()
+				return
+			case reflect.Slice, reflect.Chan:
+				e.e.WriteArrayEmpty()
+				return
+			}
+		}
+		e.e.EncodeNil()
+		return
+	}
+
+	// rv, isnil := isNil(iv, true) // fast isNil check (e.g. for nil intf or nil pointers)
+	// if isnil {
+	// 	e.e.EncodeNil() // problem here MARKER 2025
+	// 	return
+	// }
 
 	switch v := iv.(type) {
 	// case nil:
@@ -1125,14 +1156,17 @@ func (e *encoder[T]) encode(iv interface{}) {
 	case time.Time:
 		e.e.EncodeTime(v)
 	case []byte:
-		e.e.EncodeBytes(v)
+		e.e.EncodeBytes(v) // e.e.EncodeStringBytesRaw(v)
 	default:
 		// we can't check non-predefined types, as they might be a Selfer or extension.
 		if skipFastpathTypeSwitchInDirectCall || !e.dh.fastpathEncodeTypeSwitch(iv, e) {
-			if !rv.IsValid() {
-				rv = reflect.ValueOf(iv)
+			// e.encodeValue(rv, nil)
+			if k == reflect.Ptr || k == reflect.Interface {
+				// fn needs to come from possibly multiple .Elem calls
+				e.encodeValue(rv.Elem(), nil)
+			} else {
+				e.encodeValueNonNil(rv, e.fn(rv.Type()))
 			}
-			e.encodeValue(rv, nil)
 		}
 	}
 }

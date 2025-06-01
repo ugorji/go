@@ -79,24 +79,12 @@ func (helperEncDriver[T]) fastpathEncodeTypeSwitch(iv interface{}, e *encoder[T]
 	switch v := iv.(type) {
 		{{range .Values}}{{if not .Primitive}}{{if not .MapKey -}}
 	case []{{ .Elem }}:
-		if v != nil {
-			ft.{{ .MethodNamePfx "Enc" false }}V(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteArrayEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.{{ .MethodNamePfx "Enc" false }}V(v, e)
 {{end}}{{end}}{{end -}}
 
 {{range .Values}}{{if not .Primitive}}{{if .MapKey -}}
 	case map[{{ .MapKey }}]{{ .Elem }}:
-		if v != nil {
-			ft.{{ .MethodNamePfx "Enc" false }}V(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteMapEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.{{ .MethodNamePfx "Enc" false }}V(v, e)
 {{end}}{{end}}{{end -}}
 
 	default:

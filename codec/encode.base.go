@@ -395,7 +395,7 @@ type encoderI interface {
 	atEndOfEncode()
 	writerEnd()
 
-	encode(v interface{})
+	encodeI(v interface{})
 	encodeAs(v interface{}, t reflect.Type, ext bool)
 
 	setContainerState(cs containerState) // needed for canonical encoding via side encoder

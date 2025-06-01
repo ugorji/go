@@ -187,7 +187,7 @@ func genTmplEncCommandAsString(s string, vname string) string {
 	// case "symbol":
 	// 	return "e.e.EncodeSymbol(" + vname + ")"
 	default:
-		return "e.encode(" + vname + ")"
+		return "e.encodeI(" + vname + ")"
 	}
 }
 
