@@ -148,7 +148,12 @@ func (x *testBufioSizeFlag) Set(s string) (err error) {
 }
 func (x *testBufioSizeFlag) Get() interface{} { return int(*x) }
 
-var testv testVars
+var testv = testVars{
+	bufsize:         -1,
+	maxInitLen:      1024,
+	zeroCopy:        true,
+	NumRepeatString: 8,
+}
 
 func testInitFlags() {
 	var bIgnore bool
@@ -169,7 +174,7 @@ func testInitFlags() {
 	flag.IntVar(&testv.Depth, "tsd", 0, "Test Struc Depth")
 	flag.BoolVar(&testv.MapStringKeyOnly, "tsk", false, "use maps with string keys only")
 
-	flag.BoolVar(&bIgnore, "tm", true, "(Deprecated) Use Must(En|De)code")
+	flag.BoolVar(&bIgnore, "tm", false, "(Deprecated) Use Must(En|De)code")
 }
 
 func benchInitFlags() {
