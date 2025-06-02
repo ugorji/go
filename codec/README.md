@@ -95,6 +95,9 @@ At runtime:
 - codec.notmono: use generics code (bypassing performance-boosting monomorphized code)
 - codec.notfastpath: skip fast path code for slices and maps of built-in types (number, bool, string, bytes)
 
+Each of these "runtime" tags have a convenience synonym i.e. safe, notmono, notfastpath.
+Pls use these mostly during development - use codec.XXX in your go files.
+
 Build only:
 
 - codec.build: used to generate fastpath and monomorphization code
