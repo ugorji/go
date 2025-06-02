@@ -2108,13 +2108,7 @@ func doTestMapStructKey(t *testing.T, h Handle) {
 		{"55555", 55555}: []wrapUint64{12345},
 		{"333", 333}:     []wrapUint64{123},
 	}
-	oldCanonical := bh.Canonical
-	oldMapType := bh.MapType
-	defer func() {
-		bh.Canonical = oldCanonical
-		bh.MapType = oldMapType
-	}()
-
+	defer func(t reflect.Type, b bool) { bh.MapType, bh.Canonical = t, b }(bh.MapType, bh.Canonical)
 	bh.MapType = reflect.TypeOf((*map[stringUint64T]wrapUint64Slice)(nil)).Elem()
 	for _, bv := range [2]bool{true, false} {
 		b, v = nil, nil
@@ -2818,10 +2812,8 @@ func doTestScalars(t *testing.T, h Handle) {
 	// - compare to original
 
 	bh := testBasicHandle(h)
-	if !bh.Canonical {
-		bh.Canonical = true
-		defer func() { bh.Canonical = false }()
-	}
+	defer func(b bool) { bh.Canonical = b }(bh.Canonical)
+	bh.Canonical = true
 
 	var bzero = testMarshalErr(nil, h, t, "nil-enc")
 
@@ -2998,10 +2990,8 @@ func doTestMissingFields(t *testing.T, h Handle) {
 	// test canonical interaction - with structs having some missing fields and some regular fields
 	bh := testBasicHandle(h)
 
-	if !bh.Canonical {
-		bh.Canonical = true
-		defer func() { bh.Canonical = false }()
-	}
+	defer func(b bool) { bh.Canonical = b }(bh.Canonical)
+	bh.Canonical = true
 	b1 = nil
 
 	var s1 = struct {
@@ -3319,20 +3309,12 @@ func doTestRawToStringToRawEtc(t *testing.T, h Handle) {
 
 	bh := testBasicHandle(h)
 
-	r2s := bh.RawToString
-	s2r := bh.StringToRaw
-	can := bh.Canonical
-	mvr := bh.MapValueReset
-
 	mok := h.Name() == "msgpack"
 	jok := h.Name() == "json"
 
-	defer func() {
-		bh.RawToString = r2s
-		bh.StringToRaw = s2r
-		bh.Canonical = can
-		bh.MapValueReset = mvr
-	}()
+	defer func(a, b, c, d bool) {
+		bh.RawToString, bh.StringToRaw, bh.Canonical, bh.MapValueReset = a, b, c, d
+	}(bh.RawToString, bh.StringToRaw, bh.Canonical, bh.MapValueReset)
 
 	bh.Canonical = false
 
