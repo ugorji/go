@@ -228,7 +228,10 @@ func byteSliceSameData(v1 []byte, v2 []byte) bool {
 
 // isNil checks - without much effort - if an interface is nil.
 //
-// returned rv is not guaranteed to be valid (e.g. if v == nil)
+// returned rv is not guaranteed to be valid (e.g. if v == nil).
+//
+// Note that this will handle all pointer-sized types e.g.
+// pointer, map, chan, func, etc.
 func isNil(v interface{}, checkPtr bool) (rv reflect.Value, b bool) {
 	b = ((*unsafeIntf)(unsafe.Pointer(&v))).ptr == nil
 	return

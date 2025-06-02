@@ -610,7 +610,7 @@ var errDecNoResetBytesWithReader = errors.New("cannot reset an Decoder reading f
 var errDecNoResetReaderWithBytes = errors.New("cannot reset an Decoder reading from io.Reader with a []byte")
 
 func setZero(iv interface{}) {
-	rv, isnil := isNil(iv, true)
+	rv, isnil := isNil(iv, false)
 	if isnil {
 		return
 	}
