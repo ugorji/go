@@ -244,8 +244,8 @@ func testEqual(v1, v2 interface{}) (err error) {
 
 // perform a comparison taking Handle fields into consideration
 func testEqualH(v1, v2 interface{}, h Handle) (err error) {
-	var preferFloat, zeroAsNil, mapKeyAsStr bool
-	_, _, _ = preferFloat, zeroAsNil, mapKeyAsStr
+	var preferFloat, zeroAsNil, mapKeyAsStr, isJson bool
+	_, _, _, _ = preferFloat, zeroAsNil, mapKeyAsStr, isJson
 	// var nilColAsZeroLen, str2Raw, intAsStr bool
 	bh := testBasicHandle(h)
 	switch x := h.(type) {
@@ -254,6 +254,7 @@ func testEqualH(v1, v2 interface{}, h Handle) (err error) {
 	case *JsonHandle:
 		mapKeyAsStr = x.MapKeyAsString
 		preferFloat = x.PreferFloat
+		isJson = true
 	}
 
 	// create a clone that honors the Handle options
@@ -346,10 +347,24 @@ func testEqualH(v1, v2 interface{}, h Handle) (err error) {
 					rcopy(src.Field(i), target.Field(i))
 				}
 			}
+		case reflect.String:
+			// MARKER 2025 - need to all use same functions to compare
+			// s := src.String()
+			// if isJson && bh.StringToRaw {
+			// 	s = base64.StdEncoding.EncodeToString(bytesView(s))
+			// 	// dbuf := make([]byte, base64.StdEncoding.DecodedLen(len(s)))
+			// 	// n, err := base64.StdEncoding.Decode(dbuf, bytesView(s))
+			// 	// if err == nil {
+			// 	// 	s = stringView(dbuf[:n])
+			// 	// }
+			// }
+			// target.SetString(s)
+			target.Set(src)
 		default: // Basic types: int, string, bool, etc.
-			if src.Type().AssignableTo(target.Type()) {
-				target.Set(src)
-			}
+			target.Set(src)
+			// if src.Type().AssignableTo(target.Type()) {
+			// 	target.Set(src)
+			// }
 		}
 	}
 

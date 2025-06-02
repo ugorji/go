@@ -1,7 +1,7 @@
 // Copyright (c) 2012-2020 Ugorji Nwoke. All rights reserved.
 // Use of this source code is governed by a MIT license found in the LICENSE file.
 
-//go:build alltests && go1.9
+//go:build (alltests || codec.alltests) && go1.9
 
 package codec
 
@@ -151,6 +151,8 @@ func testJsonGroup(t *testing.T) {
 	t.Run("TestJsonNumberParsing", TestJsonNumberParsing)
 	t.Run("TestJsonMultipleEncDec", TestJsonMultipleEncDec)
 	t.Run("TestJsonAllErrWriter", TestJsonAllErrWriter)
+	t.Run("TestJsonMammoth", TestJsonMammoth)
+	t.Run("TestJsonMammothMapsAndSlices", TestJsonMammothMapsAndSlices)
 }
 
 func testJsonGroupV(t *testing.T) {
@@ -190,6 +192,8 @@ func testBincGroup(t *testing.T) {
 	t.Run("TestBincNumbers", TestBincNumbers)
 	t.Run("TestBincDesc", TestBincDesc)
 	t.Run("TestBincStructFieldInfoToArray", TestBincStructFieldInfoToArray)
+	t.Run("TestBincMammoth", TestBincMammoth)
+	t.Run("TestBincMammothMapsAndSlices", TestBincMammothMapsAndSlices)
 }
 
 func testBincGroupV(t *testing.T) {
@@ -239,6 +243,8 @@ func testCborGroup(t *testing.T) {
 	t.Run("TestCborAllErrWriter", TestCborAllErrWriter)
 	t.Run("TestCborAllEncCircularRef", TestCborAllEncCircularRef)
 	t.Run("TestCborAllAnonCycle", TestCborAllAnonCycle)
+	t.Run("TestCborMammoth", TestCborMammoth)
+	t.Run("TestCborMammothMapsAndSlices", TestCborMammothMapsAndSlices)
 }
 
 func testCborGroupV(t *testing.T) {
@@ -279,6 +285,8 @@ func testMsgpackGroup(t *testing.T) {
 	t.Run("TestMsgpackDesc", TestMsgpackDesc)
 	t.Run("TestMsgpackStructFieldInfoToArray", TestMsgpackStructFieldInfoToArray)
 	t.Run("TestMsgpackDecodeMapAndExtSizeMismatch", TestMsgpackDecodeMapAndExtSizeMismatch)
+	t.Run("TestMsgpackMammoth", TestMsgpackMammoth)
+	t.Run("TestMsgpackMammothMapsAndSlices", TestMsgpackMammothMapsAndSlices)
 }
 
 func testMsgpackGroupV(t *testing.T) {
@@ -319,6 +327,8 @@ func testSimpleGroup(t *testing.T) {
 	t.Run("TestSimpleStructFieldInfoToArray", TestSimpleStructFieldInfoToArray)
 	t.Run("TestSimpleMultipleEncDec", TestSimpleMultipleEncDec)
 	t.Run("TestSimpleAllErrWriter", TestSimpleAllErrWriter)
+	t.Run("TestSimpleMammoth", TestSimpleMammoth)
+	t.Run("TestSimpleMammothMapsAndSlices", TestSimpleMammothMapsAndSlices)
 }
 
 func testSimpleGroupV(t *testing.T) {
@@ -418,15 +428,16 @@ func TestCodecSuite(t *testing.T) {
 		testv.D.SignedInteger = true // error as deepEqual compares int64 to uint64
 		testv.D.SliceElementReset = true
 		testv.D.InterfaceReset = true
-		testv.D.RawToString = true // MARKER 2025 checked
+		testv.D.RawToString = true
 		testv.D.PreferPointerForStructOrArray = true
 
-		testv.E.StructToArray = false // MARKER 2025 checked
-		testv.E.Canonical = false     // MARKER 2025 checked
+		testv.E.StructToArray = true
+		testv.E.Canonical = true
 		testv.E.CheckCircularRef = true
 		testv.E.RecursiveEmptyCheck = true
-		testv.E.OptimumSize = true               // MARKER 2025 checked
-		testv.E.NilCollectionToZeroLength = true // MARKER 2025 (causing failure)
+		testv.E.OptimumSize = true
+		testv.E.NilCollectionToZeroLength = true
+		// testv.E.StringToRaw = true // MARKER 2025 - testing this
 		// MARKER: we cannot test these below, as they will not encode as expected
 		// meaning a decoded value will look different than expected.
 		// e.g. encode nil slice, and get a decoded stream with zero-length array
@@ -434,7 +445,6 @@ func TestCodecSuite(t *testing.T) {
 		// Consequently, we don't modify these here.
 		// Standalone unit tests will test these out in codec_run_test.go
 		//
-		// testv.E.NilCollectionToZeroLength = true
 		// testv.E.Raw = true
 		// testv.E.StringToRaw = true
 	}
@@ -451,7 +461,7 @@ func TestCodecSuite(t *testing.T) {
 		testMsgpackH.WriteExt = true
 		testMsgpackH.NoFixedNum = true
 		testMsgpackH.PositiveIntUnsigned = true
-		testCborH.IndefiniteLength = true // MARKER 2025 checked
+		testCborH.IndefiniteLength = true
 		// testCborH.SkipUnexpectedTags = true // MARKER 2025 failing
 	}
 	// --------------

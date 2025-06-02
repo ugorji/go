@@ -46,12 +46,6 @@ type TestMammoth struct {
 // in all modes, including notfastpath, etc.
 //
 // Add test file for creating a mammoth generated file as _mammoth_generated.go
-//  - generate a second mammoth files in a different file: mammoth2_generated_test.go
-//    mammoth_test.go.tmpl will do this
-//  - run codecgen on it, into mammoth2_codecgen_generated_test.go (no build tags)
-//  - as part of TestMammoth, run it also
-//  - this will cover all the codecgen, etc in one full run
-//  - check in mammoth* files into github also
 //
 // Now, add some types:
 //  - some that implement BinaryMarshal, TextMarshal, JSONMarshal, and one that implements none of it
@@ -152,40 +146,40 @@ func __doTestMammothSlices(t *testing.T, h Handle) {
 	} else {
 	v{{$i}}v2 = make([]{{ .Elem }}, len(v))
 	testUnmarshalErr(v{{$i}}v2, bs{{$i}}, h, t, "dec-slice-v{{$i}}")
-	testDeepEqualErr(v{{$i}}v1, v{{$i}}v2, t, "equal-slice-v{{$i}}")
+	testDeepEqualErrHandle(v{{$i}}v1, v{{$i}}v2, h, t, "equal-slice-v{{$i}}")
 	v{{$i}}v2 = make([]{{ .Elem }}, len(v))
 	testUnmarshalErr(reflect.ValueOf(v{{$i}}v2), bs{{$i}}, h, t, "dec-slice-v{{$i}}-noaddr") // non-addressable value
-	testDeepEqualErr(v{{$i}}v1, v{{$i}}v2, t, "equal-slice-v{{$i}}-noaddr")
+	testDeepEqualErrHandle(v{{$i}}v1, v{{$i}}v2, h, t, "equal-slice-v{{$i}}-noaddr")
 	}
 	testReleaseBytes(bs{{$i}})
 	// ...
 	bs{{$i}} = testMarshalErr(&v{{$i}}v1, h, t, "enc-slice-v{{$i}}-p")
 	v{{$i}}v2 = nil
 	testUnmarshalErr(&v{{$i}}v2, bs{{$i}}, h, t, "dec-slice-v{{$i}}-p")
-	testDeepEqualErr(v{{$i}}v1, v{{$i}}v2, t, "equal-slice-v{{$i}}-p")
+	testDeepEqualErrHandle(v{{$i}}v1, v{{$i}}v2, h, t, "equal-slice-v{{$i}}-p")
 	v{{$i}}va = [8]{{ .Elem }}{} // clear the array
 	testUnmarshalErr(&v{{$i}}va, bs{{$i}}, h, t, "dec-array-v{{$i}}-p-1")
 	if v{{$i}}v1 == nil && v{{$i}}v2 == nil { v{{$i}}v2 = []{{ .Elem }}{} } // so we can compare to zero len slice below
-	testDeepEqualErr(v{{$i}}va[:len(v{{$i}}v2)], v{{$i}}v2, t, "equal-array-v{{$i}}-p-1")
+	testDeepEqualErrHandle(v{{$i}}va[:len(v{{$i}}v2)], v{{$i}}v2, h, t, "equal-array-v{{$i}}-p-1")
 	v{{$i}}va = [8]{{ .Elem }}{} // clear the array		
 	v{{$i}}v2 = v{{$i}}va[:1:1]
 	testUnmarshalErr(&v{{$i}}v2, bs{{$i}}, h, t, "dec-slice-v{{$i}}-p-1")
-	testDeepEqualErr(v{{$i}}v1, v{{$i}}v2, t, "equal-slice-v{{$i}}-p-1")
+	testDeepEqualErrHandle(v{{$i}}v1, v{{$i}}v2, h, t, "equal-slice-v{{$i}}-p-1")
 	v{{$i}}va = [8]{{ .Elem }}{} // clear the array
 	v{{$i}}v2 = v{{$i}}va[:len(v{{$i}}v1):len(v{{$i}}v1)]
 	testUnmarshalErr(&v{{$i}}v2, bs{{$i}}, h, t, "dec-slice-v{{$i}}-p-len")
-	testDeepEqualErr(v{{$i}}v1, v{{$i}}v2, t, "equal-slice-v{{$i}}-p-len")
+	testDeepEqualErrHandle(v{{$i}}v1, v{{$i}}v2, h, t, "equal-slice-v{{$i}}-p-len")
 	v{{$i}}va = [8]{{ .Elem }}{} // clear the array
 	v{{$i}}v2 = v{{$i}}va[:]
 	testUnmarshalErr(&v{{$i}}v2, bs{{$i}}, h, t, "dec-slice-v{{$i}}-p-cap")
-	testDeepEqualErr(v{{$i}}v1, v{{$i}}v2, t, "equal-slice-v{{$i}}-p-cap")
+	testDeepEqualErrHandle(v{{$i}}v1, v{{$i}}v2, h, t, "equal-slice-v{{$i}}-p-cap")
 	if len(v{{$i}}v1) > 1 {
 	v{{$i}}va = [8]{{ .Elem }}{} // clear the array
 	testUnmarshalErr((&v{{$i}}va)[:len(v{{$i}}v1)], bs{{$i}}, h, t, "dec-slice-v{{$i}}-p-len-noaddr")
-	testDeepEqualErr(v{{$i}}v1, v{{$i}}va[:len(v{{$i}}v1)], t, "equal-slice-v{{$i}}-p-len-noaddr")
+	testDeepEqualErrHandle(v{{$i}}v1, v{{$i}}va[:len(v{{$i}}v1)], h, t, "equal-slice-v{{$i}}-p-len-noaddr")
 	v{{$i}}va = [8]{{ .Elem }}{} // clear the array
 	testUnmarshalErr((&v{{$i}}va)[:], bs{{$i}}, h, t, "dec-slice-v{{$i}}-p-cap-noaddr")
-	testDeepEqualErr(v{{$i}}v1, v{{$i}}va[:len(v{{$i}}v1)], t, "equal-slice-v{{$i}}-p-cap-noaddr")
+	testDeepEqualErrHandle(v{{$i}}v1, v{{$i}}va[:len(v{{$i}}v1)], h, t, "equal-slice-v{{$i}}-p-cap-noaddr")
     }
 	testReleaseBytes(bs{{$i}})
     // ...
@@ -197,14 +191,14 @@ func __doTestMammothSlices(t *testing.T, h Handle) {
     if v != nil {
     bs{{$i}} = testMarshalErr(v{{$i}}v3, h, t, "enc-slice-v{{$i}}-custom")
     testUnmarshalErr(v{{$i}}v4, bs{{$i}}, h, t, "dec-slice-v{{$i}}-custom")
-    testDeepEqualErr(v{{$i}}v3, v{{$i}}v4, t, "equal-slice-v{{$i}}-custom")
+    testDeepEqualErrHandle(v{{$i}}v3, v{{$i}}v4, h, t, "equal-slice-v{{$i}}-custom")
 	testReleaseBytes(bs{{$i}})
     }
     bs{{$i}} = testMarshalErr(&v{{$i}}v3, h, t, "enc-slice-v{{$i}}-custom-p")
     v{{$i}}v2 = nil
     v{{$i}}v4 = {{ .MethodNamePfx "typMbs" false }}(v{{$i}}v2)
     testUnmarshalErr(&v{{$i}}v4, bs{{$i}}, h, t, "dec-slice-v{{$i}}-custom-p")
-    testDeepEqualErr(v{{$i}}v3, v{{$i}}v4, t, "equal-slice-v{{$i}}-custom-p")
+    testDeepEqualErrHandle(v{{$i}}v3, v{{$i}}v4, h, t, "equal-slice-v{{$i}}-custom-p")
 	testReleaseBytes(bs{{$i}})
     }
 {{end}}{{end}}{{end}}
@@ -221,19 +215,19 @@ func __doTestMammothMaps(t *testing.T, h Handle) {
     if v != nil {
 	if v == nil { v{{$i}}v2 = nil } else { v{{$i}}v2 = make(map[{{ .MapKey }}]{{ .Elem }}, len(v)) } // reset map
 	testUnmarshalErr(v{{$i}}v2, bs{{$i}}, h, t, "dec-map-v{{$i}}")
-	testDeepEqualErr(v{{$i}}v1, v{{$i}}v2, t, "equal-map-v{{$i}}")
+	testDeepEqualErrHandle(v{{$i}}v1, v{{$i}}v2, h, t, "equal-map-v{{$i}}")
 	if v == nil { v{{$i}}v2 = nil } else { v{{$i}}v2 = make(map[{{ .MapKey }}]{{ .Elem }}, len(v)) } // reset map
 	testUnmarshalErr(reflect.ValueOf(v{{$i}}v2), bs{{$i}}, h, t, "dec-map-v{{$i}}-noaddr") // decode into non-addressable map value
-	testDeepEqualErr(v{{$i}}v1, v{{$i}}v2, t, "equal-map-v{{$i}}-noaddr")
+	testDeepEqualErrHandle(v{{$i}}v1, v{{$i}}v2, h, t, "equal-map-v{{$i}}-noaddr")
     }
 	if v == nil { v{{$i}}v2 = nil } else { v{{$i}}v2 = make(map[{{ .MapKey }}]{{ .Elem }}, len(v)) } // reset map
 	testUnmarshalErr(&v{{$i}}v2, bs{{$i}}, h, t, "dec-map-v{{$i}}-p-len")
-	testDeepEqualErr(v{{$i}}v1, v{{$i}}v2, t, "equal-map-v{{$i}}-p-len")
+	testDeepEqualErrHandle(v{{$i}}v1, v{{$i}}v2, h, t, "equal-map-v{{$i}}-p-len")
 	testReleaseBytes(bs{{$i}})
 	bs{{$i}} = testMarshalErr(&v{{$i}}v1, h, t, "enc-map-v{{$i}}-p")
 	v{{$i}}v2 = nil
 	testUnmarshalErr(&v{{$i}}v2, bs{{$i}}, h, t, "dec-map-v{{$i}}-p-nil")
-	testDeepEqualErr(v{{$i}}v1, v{{$i}}v2, t, "equal-map-v{{$i}}-p-nil")
+	testDeepEqualErrHandle(v{{$i}}v1, v{{$i}}v2, h, t, "equal-map-v{{$i}}-p-nil")
 	testReleaseBytes(bs{{$i}})
     // ...
 	if v == nil { v{{$i}}v2 = nil } else { v{{$i}}v2 = make(map[{{ .MapKey }}]{{ .Elem }}, len(v)) } // reset map
@@ -243,7 +237,7 @@ func __doTestMammothMaps(t *testing.T, h Handle) {
     if v != nil {
     bs{{$i}} = testMarshalErr(v{{$i}}v3, h, t, "enc-map-v{{$i}}-custom")
 	testUnmarshalErr(v{{$i}}v4, bs{{$i}}, h, t, "dec-map-v{{$i}}-p-len")
-	testDeepEqualErr(v{{$i}}v3, v{{$i}}v4, t, "equal-map-v{{$i}}-p-len")
+	testDeepEqualErrHandle(v{{$i}}v3, v{{$i}}v4, h, t, "equal-map-v{{$i}}-p-len")
 	testReleaseBytes(bs{{$i}})
     }
     }
@@ -276,7 +270,7 @@ func doTestMammoth(t *testing.T, h Handle) {
 	b = testMarshalErr(&m, h, t, "mammoth-"+name)
 
 	testUnmarshalErr(&m2, b, h, t, "mammoth-"+name)
-	testDeepEqualErr(&m, &m2, t, "mammoth-"+name)
+	testDeepEqualErrHandle(&m, &m2, h, t, "mammoth-"+name)
 	testReleaseBytes(b)
 
 	if testing.Short() {
@@ -288,7 +282,7 @@ func doTestMammoth(t *testing.T, h Handle) {
 	b = testMarshalErr(&mm, h, t, "mammoth2-"+name)
 	// os.Stderr.Write([]byte("\n\n\n\n" + string(b) + "\n\n\n\n"))
 	testUnmarshalErr(&mm2, b, h, t, "mammoth2-"+name)
-	testDeepEqualErr(&mm, &mm2, t, "mammoth2-"+name)
+	testDeepEqualErrHandle(&mm, &mm2, h, t, "mammoth2-"+name)
 	// testMammoth2(t, name, h)
 	testReleaseBytes(b)
 }
