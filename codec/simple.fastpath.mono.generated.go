@@ -1,4 +1,4 @@
-//go:build !codec.notmono  && !notfastpath && !codec.notfastpath
+//go:build !notmono && !codec.notmono  && !notfastpath && !codec.notfastpath
 
 // Copyright (c) 2012-2020 Ugorji Nwoke. All rights reserved.
 // Use of this source code is governed by a MIT license found in the LICENSE file.
@@ -172,453 +172,117 @@ func (helperEncDriverSimpleBytes) fastpathEncodeTypeSwitch(iv interface{}, e *en
 	var ft fastpathETSimpleBytes
 	switch v := iv.(type) {
 	case []interface{}:
-		if v != nil {
-			ft.EncSliceIntfV(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteArrayEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncSliceIntfV(v, e)
 	case []string:
-		if v != nil {
-			ft.EncSliceStringV(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteArrayEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncSliceStringV(v, e)
 	case [][]byte:
-		if v != nil {
-			ft.EncSliceBytesV(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteArrayEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncSliceBytesV(v, e)
 	case []float32:
-		if v != nil {
-			ft.EncSliceFloat32V(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteArrayEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncSliceFloat32V(v, e)
 	case []float64:
-		if v != nil {
-			ft.EncSliceFloat64V(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteArrayEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncSliceFloat64V(v, e)
 	case []uint8:
-		if v != nil {
-			ft.EncSliceUint8V(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteArrayEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncSliceUint8V(v, e)
 	case []uint64:
-		if v != nil {
-			ft.EncSliceUint64V(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteArrayEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncSliceUint64V(v, e)
 	case []int:
-		if v != nil {
-			ft.EncSliceIntV(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteArrayEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncSliceIntV(v, e)
 	case []int32:
-		if v != nil {
-			ft.EncSliceInt32V(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteArrayEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncSliceInt32V(v, e)
 	case []int64:
-		if v != nil {
-			ft.EncSliceInt64V(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteArrayEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncSliceInt64V(v, e)
 	case []bool:
-		if v != nil {
-			ft.EncSliceBoolV(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteArrayEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncSliceBoolV(v, e)
 	case map[string]interface{}:
-		if v != nil {
-			ft.EncMapStringIntfV(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteMapEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncMapStringIntfV(v, e)
 	case map[string]string:
-		if v != nil {
-			ft.EncMapStringStringV(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteMapEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncMapStringStringV(v, e)
 	case map[string][]byte:
-		if v != nil {
-			ft.EncMapStringBytesV(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteMapEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncMapStringBytesV(v, e)
 	case map[string]uint8:
-		if v != nil {
-			ft.EncMapStringUint8V(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteMapEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncMapStringUint8V(v, e)
 	case map[string]uint64:
-		if v != nil {
-			ft.EncMapStringUint64V(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteMapEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncMapStringUint64V(v, e)
 	case map[string]int:
-		if v != nil {
-			ft.EncMapStringIntV(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteMapEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncMapStringIntV(v, e)
 	case map[string]int32:
-		if v != nil {
-			ft.EncMapStringInt32V(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteMapEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncMapStringInt32V(v, e)
 	case map[string]float64:
-		if v != nil {
-			ft.EncMapStringFloat64V(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteMapEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncMapStringFloat64V(v, e)
 	case map[string]bool:
-		if v != nil {
-			ft.EncMapStringBoolV(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteMapEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncMapStringBoolV(v, e)
 	case map[uint8]interface{}:
-		if v != nil {
-			ft.EncMapUint8IntfV(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteMapEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncMapUint8IntfV(v, e)
 	case map[uint8]string:
-		if v != nil {
-			ft.EncMapUint8StringV(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteMapEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncMapUint8StringV(v, e)
 	case map[uint8][]byte:
-		if v != nil {
-			ft.EncMapUint8BytesV(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteMapEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncMapUint8BytesV(v, e)
 	case map[uint8]uint8:
-		if v != nil {
-			ft.EncMapUint8Uint8V(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteMapEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncMapUint8Uint8V(v, e)
 	case map[uint8]uint64:
-		if v != nil {
-			ft.EncMapUint8Uint64V(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteMapEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncMapUint8Uint64V(v, e)
 	case map[uint8]int:
-		if v != nil {
-			ft.EncMapUint8IntV(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteMapEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncMapUint8IntV(v, e)
 	case map[uint8]int32:
-		if v != nil {
-			ft.EncMapUint8Int32V(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteMapEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncMapUint8Int32V(v, e)
 	case map[uint8]float64:
-		if v != nil {
-			ft.EncMapUint8Float64V(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteMapEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncMapUint8Float64V(v, e)
 	case map[uint8]bool:
-		if v != nil {
-			ft.EncMapUint8BoolV(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteMapEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncMapUint8BoolV(v, e)
 	case map[uint64]interface{}:
-		if v != nil {
-			ft.EncMapUint64IntfV(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteMapEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncMapUint64IntfV(v, e)
 	case map[uint64]string:
-		if v != nil {
-			ft.EncMapUint64StringV(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteMapEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncMapUint64StringV(v, e)
 	case map[uint64][]byte:
-		if v != nil {
-			ft.EncMapUint64BytesV(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteMapEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncMapUint64BytesV(v, e)
 	case map[uint64]uint8:
-		if v != nil {
-			ft.EncMapUint64Uint8V(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteMapEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncMapUint64Uint8V(v, e)
 	case map[uint64]uint64:
-		if v != nil {
-			ft.EncMapUint64Uint64V(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteMapEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncMapUint64Uint64V(v, e)
 	case map[uint64]int:
-		if v != nil {
-			ft.EncMapUint64IntV(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteMapEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncMapUint64IntV(v, e)
 	case map[uint64]int32:
-		if v != nil {
-			ft.EncMapUint64Int32V(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteMapEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncMapUint64Int32V(v, e)
 	case map[uint64]float64:
-		if v != nil {
-			ft.EncMapUint64Float64V(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteMapEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncMapUint64Float64V(v, e)
 	case map[uint64]bool:
-		if v != nil {
-			ft.EncMapUint64BoolV(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteMapEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncMapUint64BoolV(v, e)
 	case map[int]interface{}:
-		if v != nil {
-			ft.EncMapIntIntfV(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteMapEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncMapIntIntfV(v, e)
 	case map[int]string:
-		if v != nil {
-			ft.EncMapIntStringV(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteMapEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncMapIntStringV(v, e)
 	case map[int][]byte:
-		if v != nil {
-			ft.EncMapIntBytesV(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteMapEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncMapIntBytesV(v, e)
 	case map[int]uint8:
-		if v != nil {
-			ft.EncMapIntUint8V(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteMapEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncMapIntUint8V(v, e)
 	case map[int]uint64:
-		if v != nil {
-			ft.EncMapIntUint64V(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteMapEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncMapIntUint64V(v, e)
 	case map[int]int:
-		if v != nil {
-			ft.EncMapIntIntV(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteMapEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncMapIntIntV(v, e)
 	case map[int]int32:
-		if v != nil {
-			ft.EncMapIntInt32V(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteMapEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncMapIntInt32V(v, e)
 	case map[int]float64:
-		if v != nil {
-			ft.EncMapIntFloat64V(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteMapEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncMapIntFloat64V(v, e)
 	case map[int]bool:
-		if v != nil {
-			ft.EncMapIntBoolV(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteMapEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncMapIntBoolV(v, e)
 	case map[int32]interface{}:
-		if v != nil {
-			ft.EncMapInt32IntfV(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteMapEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncMapInt32IntfV(v, e)
 	case map[int32]string:
-		if v != nil {
-			ft.EncMapInt32StringV(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteMapEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncMapInt32StringV(v, e)
 	case map[int32][]byte:
-		if v != nil {
-			ft.EncMapInt32BytesV(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteMapEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncMapInt32BytesV(v, e)
 	case map[int32]uint8:
-		if v != nil {
-			ft.EncMapInt32Uint8V(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteMapEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncMapInt32Uint8V(v, e)
 	case map[int32]uint64:
-		if v != nil {
-			ft.EncMapInt32Uint64V(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteMapEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncMapInt32Uint64V(v, e)
 	case map[int32]int:
-		if v != nil {
-			ft.EncMapInt32IntV(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteMapEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncMapInt32IntV(v, e)
 	case map[int32]int32:
-		if v != nil {
-			ft.EncMapInt32Int32V(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteMapEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncMapInt32Int32V(v, e)
 	case map[int32]float64:
-		if v != nil {
-			ft.EncMapInt32Float64V(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteMapEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncMapInt32Float64V(v, e)
 	case map[int32]bool:
-		if v != nil {
-			ft.EncMapInt32BoolV(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteMapEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncMapInt32BoolV(v, e)
 	default:
 		_ = v
 		return false
@@ -650,7 +314,7 @@ func (fastpathETSimpleBytes) EncSliceIntfV(v []interface{}, e *encoderSimpleByte
 	for j := range v {
 		e.c = containerArrayElem
 		e.e.WriteArrayElem(j == 0)
-		e.encode(v[j])
+		e.encodeI(v[j])
 	}
 	e.c = 0
 	e.e.WriteArrayEnd()
@@ -670,7 +334,7 @@ func (fastpathETSimpleBytes) EncAsMapSliceIntfV(v []interface{}, e *encoderSimpl
 		} else {
 			e.mapElemValue()
 		}
-		e.encode(v[j])
+		e.encodeI(v[j])
 	}
 	e.c = 0
 	e.e.WriteMapEnd()
@@ -750,7 +414,7 @@ func (fastpathETSimpleBytes) EncSliceBytesV(v [][]byte, e *encoderSimpleBytes) {
 	for j := range v {
 		e.c = containerArrayElem
 		e.e.WriteArrayElem(j == 0)
-		e.e.EncodeStringBytesRaw(v[j])
+		e.e.EncodeBytes(v[j])
 	}
 	e.c = 0
 	e.e.WriteArrayEnd()
@@ -770,7 +434,7 @@ func (fastpathETSimpleBytes) EncAsMapSliceBytesV(v [][]byte, e *encoderSimpleByt
 		} else {
 			e.mapElemValue()
 		}
-		e.e.EncodeStringBytesRaw(v[j])
+		e.e.EncodeBytes(v[j])
 	}
 	e.c = 0
 	e.e.WriteMapEnd()
@@ -1186,7 +850,7 @@ func (fastpathETSimpleBytes) EncMapStringIntfV(v map[string]interface{}, e *enco
 			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeString(k2)
 			e.mapElemValue()
-			e.encode(v[k2])
+			e.encodeI(v[k2])
 		}
 	} else {
 		i = 0
@@ -1195,7 +859,7 @@ func (fastpathETSimpleBytes) EncMapStringIntfV(v map[string]interface{}, e *enco
 			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeString(k2)
 			e.mapElemValue()
-			e.encode(v2)
+			e.encodeI(v2)
 			i++
 		}
 	}
@@ -1262,7 +926,7 @@ func (fastpathETSimpleBytes) EncMapStringBytesV(v map[string][]byte, e *encoderS
 			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeString(k2)
 			e.mapElemValue()
-			e.e.EncodeStringBytesRaw(v[k2])
+			e.e.EncodeBytes(v[k2])
 		}
 	} else {
 		i = 0
@@ -1271,7 +935,7 @@ func (fastpathETSimpleBytes) EncMapStringBytesV(v map[string][]byte, e *encoderS
 			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeString(k2)
 			e.mapElemValue()
-			e.e.EncodeStringBytesRaw(v2)
+			e.e.EncodeBytes(v2)
 			i++
 		}
 	}
@@ -1528,7 +1192,7 @@ func (fastpathETSimpleBytes) EncMapUint8IntfV(v map[uint8]interface{}, e *encode
 			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeUint(uint64(k2))
 			e.mapElemValue()
-			e.encode(v[k2])
+			e.encodeI(v[k2])
 		}
 	} else {
 		i = 0
@@ -1537,7 +1201,7 @@ func (fastpathETSimpleBytes) EncMapUint8IntfV(v map[uint8]interface{}, e *encode
 			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeUint(uint64(k2))
 			e.mapElemValue()
-			e.encode(v2)
+			e.encodeI(v2)
 			i++
 		}
 	}
@@ -1604,7 +1268,7 @@ func (fastpathETSimpleBytes) EncMapUint8BytesV(v map[uint8][]byte, e *encoderSim
 			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeUint(uint64(k2))
 			e.mapElemValue()
-			e.e.EncodeStringBytesRaw(v[k2])
+			e.e.EncodeBytes(v[k2])
 		}
 	} else {
 		i = 0
@@ -1613,7 +1277,7 @@ func (fastpathETSimpleBytes) EncMapUint8BytesV(v map[uint8][]byte, e *encoderSim
 			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeUint(uint64(k2))
 			e.mapElemValue()
-			e.e.EncodeStringBytesRaw(v2)
+			e.e.EncodeBytes(v2)
 			i++
 		}
 	}
@@ -1870,7 +1534,7 @@ func (fastpathETSimpleBytes) EncMapUint64IntfV(v map[uint64]interface{}, e *enco
 			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeUint(k2)
 			e.mapElemValue()
-			e.encode(v[k2])
+			e.encodeI(v[k2])
 		}
 	} else {
 		i = 0
@@ -1879,7 +1543,7 @@ func (fastpathETSimpleBytes) EncMapUint64IntfV(v map[uint64]interface{}, e *enco
 			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeUint(k2)
 			e.mapElemValue()
-			e.encode(v2)
+			e.encodeI(v2)
 			i++
 		}
 	}
@@ -1946,7 +1610,7 @@ func (fastpathETSimpleBytes) EncMapUint64BytesV(v map[uint64][]byte, e *encoderS
 			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeUint(k2)
 			e.mapElemValue()
-			e.e.EncodeStringBytesRaw(v[k2])
+			e.e.EncodeBytes(v[k2])
 		}
 	} else {
 		i = 0
@@ -1955,7 +1619,7 @@ func (fastpathETSimpleBytes) EncMapUint64BytesV(v map[uint64][]byte, e *encoderS
 			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeUint(k2)
 			e.mapElemValue()
-			e.e.EncodeStringBytesRaw(v2)
+			e.e.EncodeBytes(v2)
 			i++
 		}
 	}
@@ -2212,7 +1876,7 @@ func (fastpathETSimpleBytes) EncMapIntIntfV(v map[int]interface{}, e *encoderSim
 			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeInt(int64(k2))
 			e.mapElemValue()
-			e.encode(v[k2])
+			e.encodeI(v[k2])
 		}
 	} else {
 		i = 0
@@ -2221,7 +1885,7 @@ func (fastpathETSimpleBytes) EncMapIntIntfV(v map[int]interface{}, e *encoderSim
 			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeInt(int64(k2))
 			e.mapElemValue()
-			e.encode(v2)
+			e.encodeI(v2)
 			i++
 		}
 	}
@@ -2288,7 +1952,7 @@ func (fastpathETSimpleBytes) EncMapIntBytesV(v map[int][]byte, e *encoderSimpleB
 			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeInt(int64(k2))
 			e.mapElemValue()
-			e.e.EncodeStringBytesRaw(v[k2])
+			e.e.EncodeBytes(v[k2])
 		}
 	} else {
 		i = 0
@@ -2297,7 +1961,7 @@ func (fastpathETSimpleBytes) EncMapIntBytesV(v map[int][]byte, e *encoderSimpleB
 			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeInt(int64(k2))
 			e.mapElemValue()
-			e.e.EncodeStringBytesRaw(v2)
+			e.e.EncodeBytes(v2)
 			i++
 		}
 	}
@@ -2554,7 +2218,7 @@ func (fastpathETSimpleBytes) EncMapInt32IntfV(v map[int32]interface{}, e *encode
 			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeInt(int64(k2))
 			e.mapElemValue()
-			e.encode(v[k2])
+			e.encodeI(v[k2])
 		}
 	} else {
 		i = 0
@@ -2563,7 +2227,7 @@ func (fastpathETSimpleBytes) EncMapInt32IntfV(v map[int32]interface{}, e *encode
 			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeInt(int64(k2))
 			e.mapElemValue()
-			e.encode(v2)
+			e.encodeI(v2)
 			i++
 		}
 	}
@@ -2630,7 +2294,7 @@ func (fastpathETSimpleBytes) EncMapInt32BytesV(v map[int32][]byte, e *encoderSim
 			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeInt(int64(k2))
 			e.mapElemValue()
-			e.e.EncodeStringBytesRaw(v[k2])
+			e.e.EncodeBytes(v[k2])
 		}
 	} else {
 		i = 0
@@ -2639,7 +2303,7 @@ func (fastpathETSimpleBytes) EncMapInt32BytesV(v map[int32][]byte, e *encoderSim
 			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeInt(int64(k2))
 			e.mapElemValue()
-			e.e.EncodeStringBytesRaw(v2)
+			e.e.EncodeBytes(v2)
 			i++
 		}
 	}
@@ -6495,453 +6159,117 @@ func (helperEncDriverSimpleIO) fastpathEncodeTypeSwitch(iv interface{}, e *encod
 	var ft fastpathETSimpleIO
 	switch v := iv.(type) {
 	case []interface{}:
-		if v != nil {
-			ft.EncSliceIntfV(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteArrayEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncSliceIntfV(v, e)
 	case []string:
-		if v != nil {
-			ft.EncSliceStringV(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteArrayEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncSliceStringV(v, e)
 	case [][]byte:
-		if v != nil {
-			ft.EncSliceBytesV(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteArrayEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncSliceBytesV(v, e)
 	case []float32:
-		if v != nil {
-			ft.EncSliceFloat32V(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteArrayEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncSliceFloat32V(v, e)
 	case []float64:
-		if v != nil {
-			ft.EncSliceFloat64V(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteArrayEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncSliceFloat64V(v, e)
 	case []uint8:
-		if v != nil {
-			ft.EncSliceUint8V(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteArrayEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncSliceUint8V(v, e)
 	case []uint64:
-		if v != nil {
-			ft.EncSliceUint64V(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteArrayEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncSliceUint64V(v, e)
 	case []int:
-		if v != nil {
-			ft.EncSliceIntV(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteArrayEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncSliceIntV(v, e)
 	case []int32:
-		if v != nil {
-			ft.EncSliceInt32V(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteArrayEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncSliceInt32V(v, e)
 	case []int64:
-		if v != nil {
-			ft.EncSliceInt64V(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteArrayEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncSliceInt64V(v, e)
 	case []bool:
-		if v != nil {
-			ft.EncSliceBoolV(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteArrayEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncSliceBoolV(v, e)
 	case map[string]interface{}:
-		if v != nil {
-			ft.EncMapStringIntfV(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteMapEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncMapStringIntfV(v, e)
 	case map[string]string:
-		if v != nil {
-			ft.EncMapStringStringV(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteMapEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncMapStringStringV(v, e)
 	case map[string][]byte:
-		if v != nil {
-			ft.EncMapStringBytesV(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteMapEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncMapStringBytesV(v, e)
 	case map[string]uint8:
-		if v != nil {
-			ft.EncMapStringUint8V(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteMapEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncMapStringUint8V(v, e)
 	case map[string]uint64:
-		if v != nil {
-			ft.EncMapStringUint64V(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteMapEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncMapStringUint64V(v, e)
 	case map[string]int:
-		if v != nil {
-			ft.EncMapStringIntV(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteMapEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncMapStringIntV(v, e)
 	case map[string]int32:
-		if v != nil {
-			ft.EncMapStringInt32V(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteMapEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncMapStringInt32V(v, e)
 	case map[string]float64:
-		if v != nil {
-			ft.EncMapStringFloat64V(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteMapEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncMapStringFloat64V(v, e)
 	case map[string]bool:
-		if v != nil {
-			ft.EncMapStringBoolV(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteMapEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncMapStringBoolV(v, e)
 	case map[uint8]interface{}:
-		if v != nil {
-			ft.EncMapUint8IntfV(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteMapEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncMapUint8IntfV(v, e)
 	case map[uint8]string:
-		if v != nil {
-			ft.EncMapUint8StringV(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteMapEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncMapUint8StringV(v, e)
 	case map[uint8][]byte:
-		if v != nil {
-			ft.EncMapUint8BytesV(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteMapEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncMapUint8BytesV(v, e)
 	case map[uint8]uint8:
-		if v != nil {
-			ft.EncMapUint8Uint8V(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteMapEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncMapUint8Uint8V(v, e)
 	case map[uint8]uint64:
-		if v != nil {
-			ft.EncMapUint8Uint64V(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteMapEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncMapUint8Uint64V(v, e)
 	case map[uint8]int:
-		if v != nil {
-			ft.EncMapUint8IntV(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteMapEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncMapUint8IntV(v, e)
 	case map[uint8]int32:
-		if v != nil {
-			ft.EncMapUint8Int32V(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteMapEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncMapUint8Int32V(v, e)
 	case map[uint8]float64:
-		if v != nil {
-			ft.EncMapUint8Float64V(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteMapEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncMapUint8Float64V(v, e)
 	case map[uint8]bool:
-		if v != nil {
-			ft.EncMapUint8BoolV(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteMapEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncMapUint8BoolV(v, e)
 	case map[uint64]interface{}:
-		if v != nil {
-			ft.EncMapUint64IntfV(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteMapEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncMapUint64IntfV(v, e)
 	case map[uint64]string:
-		if v != nil {
-			ft.EncMapUint64StringV(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteMapEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncMapUint64StringV(v, e)
 	case map[uint64][]byte:
-		if v != nil {
-			ft.EncMapUint64BytesV(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteMapEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncMapUint64BytesV(v, e)
 	case map[uint64]uint8:
-		if v != nil {
-			ft.EncMapUint64Uint8V(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteMapEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncMapUint64Uint8V(v, e)
 	case map[uint64]uint64:
-		if v != nil {
-			ft.EncMapUint64Uint64V(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteMapEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncMapUint64Uint64V(v, e)
 	case map[uint64]int:
-		if v != nil {
-			ft.EncMapUint64IntV(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteMapEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncMapUint64IntV(v, e)
 	case map[uint64]int32:
-		if v != nil {
-			ft.EncMapUint64Int32V(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteMapEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncMapUint64Int32V(v, e)
 	case map[uint64]float64:
-		if v != nil {
-			ft.EncMapUint64Float64V(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteMapEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncMapUint64Float64V(v, e)
 	case map[uint64]bool:
-		if v != nil {
-			ft.EncMapUint64BoolV(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteMapEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncMapUint64BoolV(v, e)
 	case map[int]interface{}:
-		if v != nil {
-			ft.EncMapIntIntfV(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteMapEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncMapIntIntfV(v, e)
 	case map[int]string:
-		if v != nil {
-			ft.EncMapIntStringV(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteMapEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncMapIntStringV(v, e)
 	case map[int][]byte:
-		if v != nil {
-			ft.EncMapIntBytesV(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteMapEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncMapIntBytesV(v, e)
 	case map[int]uint8:
-		if v != nil {
-			ft.EncMapIntUint8V(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteMapEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncMapIntUint8V(v, e)
 	case map[int]uint64:
-		if v != nil {
-			ft.EncMapIntUint64V(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteMapEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncMapIntUint64V(v, e)
 	case map[int]int:
-		if v != nil {
-			ft.EncMapIntIntV(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteMapEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncMapIntIntV(v, e)
 	case map[int]int32:
-		if v != nil {
-			ft.EncMapIntInt32V(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteMapEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncMapIntInt32V(v, e)
 	case map[int]float64:
-		if v != nil {
-			ft.EncMapIntFloat64V(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteMapEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncMapIntFloat64V(v, e)
 	case map[int]bool:
-		if v != nil {
-			ft.EncMapIntBoolV(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteMapEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncMapIntBoolV(v, e)
 	case map[int32]interface{}:
-		if v != nil {
-			ft.EncMapInt32IntfV(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteMapEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncMapInt32IntfV(v, e)
 	case map[int32]string:
-		if v != nil {
-			ft.EncMapInt32StringV(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteMapEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncMapInt32StringV(v, e)
 	case map[int32][]byte:
-		if v != nil {
-			ft.EncMapInt32BytesV(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteMapEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncMapInt32BytesV(v, e)
 	case map[int32]uint8:
-		if v != nil {
-			ft.EncMapInt32Uint8V(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteMapEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncMapInt32Uint8V(v, e)
 	case map[int32]uint64:
-		if v != nil {
-			ft.EncMapInt32Uint64V(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteMapEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncMapInt32Uint64V(v, e)
 	case map[int32]int:
-		if v != nil {
-			ft.EncMapInt32IntV(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteMapEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncMapInt32IntV(v, e)
 	case map[int32]int32:
-		if v != nil {
-			ft.EncMapInt32Int32V(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteMapEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncMapInt32Int32V(v, e)
 	case map[int32]float64:
-		if v != nil {
-			ft.EncMapInt32Float64V(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteMapEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncMapInt32Float64V(v, e)
 	case map[int32]bool:
-		if v != nil {
-			ft.EncMapInt32BoolV(v, e)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteMapEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		ft.EncMapInt32BoolV(v, e)
 	default:
 		_ = v
 		return false
@@ -6973,7 +6301,7 @@ func (fastpathETSimpleIO) EncSliceIntfV(v []interface{}, e *encoderSimpleIO) {
 	for j := range v {
 		e.c = containerArrayElem
 		e.e.WriteArrayElem(j == 0)
-		e.encode(v[j])
+		e.encodeI(v[j])
 	}
 	e.c = 0
 	e.e.WriteArrayEnd()
@@ -6993,7 +6321,7 @@ func (fastpathETSimpleIO) EncAsMapSliceIntfV(v []interface{}, e *encoderSimpleIO
 		} else {
 			e.mapElemValue()
 		}
-		e.encode(v[j])
+		e.encodeI(v[j])
 	}
 	e.c = 0
 	e.e.WriteMapEnd()
@@ -7073,7 +6401,7 @@ func (fastpathETSimpleIO) EncSliceBytesV(v [][]byte, e *encoderSimpleIO) {
 	for j := range v {
 		e.c = containerArrayElem
 		e.e.WriteArrayElem(j == 0)
-		e.e.EncodeStringBytesRaw(v[j])
+		e.e.EncodeBytes(v[j])
 	}
 	e.c = 0
 	e.e.WriteArrayEnd()
@@ -7093,7 +6421,7 @@ func (fastpathETSimpleIO) EncAsMapSliceBytesV(v [][]byte, e *encoderSimpleIO) {
 		} else {
 			e.mapElemValue()
 		}
-		e.e.EncodeStringBytesRaw(v[j])
+		e.e.EncodeBytes(v[j])
 	}
 	e.c = 0
 	e.e.WriteMapEnd()
@@ -7509,7 +6837,7 @@ func (fastpathETSimpleIO) EncMapStringIntfV(v map[string]interface{}, e *encoder
 			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeString(k2)
 			e.mapElemValue()
-			e.encode(v[k2])
+			e.encodeI(v[k2])
 		}
 	} else {
 		i = 0
@@ -7518,7 +6846,7 @@ func (fastpathETSimpleIO) EncMapStringIntfV(v map[string]interface{}, e *encoder
 			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeString(k2)
 			e.mapElemValue()
-			e.encode(v2)
+			e.encodeI(v2)
 			i++
 		}
 	}
@@ -7585,7 +6913,7 @@ func (fastpathETSimpleIO) EncMapStringBytesV(v map[string][]byte, e *encoderSimp
 			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeString(k2)
 			e.mapElemValue()
-			e.e.EncodeStringBytesRaw(v[k2])
+			e.e.EncodeBytes(v[k2])
 		}
 	} else {
 		i = 0
@@ -7594,7 +6922,7 @@ func (fastpathETSimpleIO) EncMapStringBytesV(v map[string][]byte, e *encoderSimp
 			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeString(k2)
 			e.mapElemValue()
-			e.e.EncodeStringBytesRaw(v2)
+			e.e.EncodeBytes(v2)
 			i++
 		}
 	}
@@ -7851,7 +7179,7 @@ func (fastpathETSimpleIO) EncMapUint8IntfV(v map[uint8]interface{}, e *encoderSi
 			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeUint(uint64(k2))
 			e.mapElemValue()
-			e.encode(v[k2])
+			e.encodeI(v[k2])
 		}
 	} else {
 		i = 0
@@ -7860,7 +7188,7 @@ func (fastpathETSimpleIO) EncMapUint8IntfV(v map[uint8]interface{}, e *encoderSi
 			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeUint(uint64(k2))
 			e.mapElemValue()
-			e.encode(v2)
+			e.encodeI(v2)
 			i++
 		}
 	}
@@ -7927,7 +7255,7 @@ func (fastpathETSimpleIO) EncMapUint8BytesV(v map[uint8][]byte, e *encoderSimple
 			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeUint(uint64(k2))
 			e.mapElemValue()
-			e.e.EncodeStringBytesRaw(v[k2])
+			e.e.EncodeBytes(v[k2])
 		}
 	} else {
 		i = 0
@@ -7936,7 +7264,7 @@ func (fastpathETSimpleIO) EncMapUint8BytesV(v map[uint8][]byte, e *encoderSimple
 			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeUint(uint64(k2))
 			e.mapElemValue()
-			e.e.EncodeStringBytesRaw(v2)
+			e.e.EncodeBytes(v2)
 			i++
 		}
 	}
@@ -8193,7 +7521,7 @@ func (fastpathETSimpleIO) EncMapUint64IntfV(v map[uint64]interface{}, e *encoder
 			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeUint(k2)
 			e.mapElemValue()
-			e.encode(v[k2])
+			e.encodeI(v[k2])
 		}
 	} else {
 		i = 0
@@ -8202,7 +7530,7 @@ func (fastpathETSimpleIO) EncMapUint64IntfV(v map[uint64]interface{}, e *encoder
 			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeUint(k2)
 			e.mapElemValue()
-			e.encode(v2)
+			e.encodeI(v2)
 			i++
 		}
 	}
@@ -8269,7 +7597,7 @@ func (fastpathETSimpleIO) EncMapUint64BytesV(v map[uint64][]byte, e *encoderSimp
 			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeUint(k2)
 			e.mapElemValue()
-			e.e.EncodeStringBytesRaw(v[k2])
+			e.e.EncodeBytes(v[k2])
 		}
 	} else {
 		i = 0
@@ -8278,7 +7606,7 @@ func (fastpathETSimpleIO) EncMapUint64BytesV(v map[uint64][]byte, e *encoderSimp
 			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeUint(k2)
 			e.mapElemValue()
-			e.e.EncodeStringBytesRaw(v2)
+			e.e.EncodeBytes(v2)
 			i++
 		}
 	}
@@ -8535,7 +7863,7 @@ func (fastpathETSimpleIO) EncMapIntIntfV(v map[int]interface{}, e *encoderSimple
 			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeInt(int64(k2))
 			e.mapElemValue()
-			e.encode(v[k2])
+			e.encodeI(v[k2])
 		}
 	} else {
 		i = 0
@@ -8544,7 +7872,7 @@ func (fastpathETSimpleIO) EncMapIntIntfV(v map[int]interface{}, e *encoderSimple
 			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeInt(int64(k2))
 			e.mapElemValue()
-			e.encode(v2)
+			e.encodeI(v2)
 			i++
 		}
 	}
@@ -8611,7 +7939,7 @@ func (fastpathETSimpleIO) EncMapIntBytesV(v map[int][]byte, e *encoderSimpleIO) 
 			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeInt(int64(k2))
 			e.mapElemValue()
-			e.e.EncodeStringBytesRaw(v[k2])
+			e.e.EncodeBytes(v[k2])
 		}
 	} else {
 		i = 0
@@ -8620,7 +7948,7 @@ func (fastpathETSimpleIO) EncMapIntBytesV(v map[int][]byte, e *encoderSimpleIO) 
 			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeInt(int64(k2))
 			e.mapElemValue()
-			e.e.EncodeStringBytesRaw(v2)
+			e.e.EncodeBytes(v2)
 			i++
 		}
 	}
@@ -8877,7 +8205,7 @@ func (fastpathETSimpleIO) EncMapInt32IntfV(v map[int32]interface{}, e *encoderSi
 			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeInt(int64(k2))
 			e.mapElemValue()
-			e.encode(v[k2])
+			e.encodeI(v[k2])
 		}
 	} else {
 		i = 0
@@ -8886,7 +8214,7 @@ func (fastpathETSimpleIO) EncMapInt32IntfV(v map[int32]interface{}, e *encoderSi
 			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeInt(int64(k2))
 			e.mapElemValue()
-			e.encode(v2)
+			e.encodeI(v2)
 			i++
 		}
 	}
@@ -8953,7 +8281,7 @@ func (fastpathETSimpleIO) EncMapInt32BytesV(v map[int32][]byte, e *encoderSimple
 			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeInt(int64(k2))
 			e.mapElemValue()
-			e.e.EncodeStringBytesRaw(v[k2])
+			e.e.EncodeBytes(v[k2])
 		}
 	} else {
 		i = 0
@@ -8962,7 +8290,7 @@ func (fastpathETSimpleIO) EncMapInt32BytesV(v map[int32][]byte, e *encoderSimple
 			e.e.WriteMapElemKey(i == 0)
 			e.e.EncodeInt(int64(k2))
 			e.mapElemValue()
-			e.e.EncodeStringBytesRaw(v2)
+			e.e.EncodeBytes(v2)
 			i++
 		}
 	}

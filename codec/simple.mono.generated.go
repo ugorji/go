@@ -1,4 +1,4 @@
-//go:build !codec.notmono 
+//go:build !notmono && !codec.notmono 
 
 // Copyright (c) 2012-2020 Ugorji Nwoke. All rights reserved.
 // Use of this source code is governed by a MIT license found in the LICENSE file.
@@ -228,7 +228,7 @@ func (e *encoderSimpleBytes) kArrayWMbs(rv reflect.Value, ti *typeInfo, isSlice 
 	for {
 		rvv := rvArrayIndex(rv, j, ti, isSlice)
 		if builtin {
-			e.encode(rv2i(baseRVRV(rvv)))
+			e.encodeR(baseRVRV(rvv))
 		} else {
 			e.encodeValue(rvv, fn)
 		}
@@ -273,7 +273,7 @@ func (e *encoderSimpleBytes) kArrayW(rv reflect.Value, ti *typeInfo, isSlice boo
 	for {
 		rvv := rvArrayIndex(rv, j, ti, isSlice)
 		if builtin {
-			e.encode(rv2i(baseRVRV(rvv)))
+			e.encodeR(baseRVRV(rvv))
 		} else {
 			e.encodeValue(rvv, fn)
 		}
@@ -311,7 +311,8 @@ func (e *encoderSimpleBytes) kSlice(f *encFnInfo, rv reflect.Value) {
 	if f.ti.mbs {
 		e.kArrayWMbs(rv, f.ti, true)
 	} else if f.ti.rtid == uint8SliceTypId || uint8TypId == rt2id(f.ti.elem) {
-		e.e.EncodeStringBytesRaw(rvGetBytes(rv))
+
+		e.e.EncodeBytes(rvGetBytes(rv))
 	} else {
 		e.kArrayW(rv, f.ti, true)
 	}
@@ -366,7 +367,7 @@ L1:
 		}
 	}
 
-	e.e.EncodeStringBytesRaw(bs)
+	e.e.EncodeBytes(bs)
 	e.blist.put(bs)
 	if !byteSliceSameData(bs0, bs) {
 		e.blist.put(bs0)
@@ -406,7 +407,7 @@ func (e *encoderSimpleBytes) kStructSimple(f *encFnInfo, rv reflect.Value) {
 			e.c = containerArrayElem
 			e.e.WriteArrayElem(j == 0)
 			if si.encBuiltin {
-				e.encode(rv2i(si.fieldNoAlloc(rv, true)))
+				e.encodeR(si.fieldNoAlloc(rv, true))
 			} else {
 				e.encodeValue(si.fieldNoAlloc(rv, !chkCirRef), nil)
 			}
@@ -428,7 +429,7 @@ func (e *encoderSimpleBytes) kStructSimple(f *encFnInfo, rv reflect.Value) {
 			e.e.EncodeStringNoEscape4Json(si.encName)
 			e.mapElemValue()
 			if si.encBuiltin {
-				e.encode(rv2i(si.fieldNoAlloc(rv, true)))
+				e.encodeR(si.fieldNoAlloc(rv, true))
 			} else {
 				e.encodeValue(si.fieldNoAlloc(rv, !chkCirRef), nil)
 			}
@@ -532,12 +533,12 @@ func (e *encoderSimpleBytes) kStruct(f *encFnInfo, rv reflect.Value) {
 				e.mapElemValue()
 				if sf.isRv {
 					if sf.builtin {
-						e.encode(rv2i(baseRVRV(sf.rv)))
+						e.encodeR(baseRVRV(sf.rv))
 					} else {
 						e.encodeValue(sf.rv, nil)
 					}
 				} else {
-					e.encode(sf.intf)
+					e.encodeI(sf.intf)
 				}
 			}
 		} else {
@@ -553,7 +554,7 @@ func (e *encoderSimpleBytes) kStruct(f *encFnInfo, rv reflect.Value) {
 				}
 				e.mapElemValue()
 				if kv.v.encBuiltin {
-					e.encode(rv2i(baseRVRV(kv.r)))
+					e.encodeR(baseRVRV(kv.r))
 				} else {
 					e.encodeValue(kv.r, nil)
 				}
@@ -563,7 +564,7 @@ func (e *encoderSimpleBytes) kStruct(f *encFnInfo, rv reflect.Value) {
 				e.e.WriteMapElemKey(j == 0)
 				e.kStructFieldKey(keytyp, v.v)
 				e.mapElemValue()
-				e.encode(v.i)
+				e.encodeI(v.i)
 				j++
 			}
 		}
@@ -600,7 +601,7 @@ func (e *encoderSimpleBytes) kStruct(f *encFnInfo, rv reflect.Value) {
 			if !kv.r.IsValid() {
 				e.e.EncodeNil()
 			} else if kv.v.encBuiltin {
-				e.encode(rv2i(baseRVRV(kv.r)))
+				e.encodeR(baseRVRV(kv.r))
 			} else {
 				e.encodeValue(kv.r, nil)
 			}
@@ -673,14 +674,14 @@ func (e *encoderSimpleBytes) kMap(f *encFnInfo, rv reflect.Value) {
 		if keyTypeIsString {
 			e.e.EncodeString(rvGetString(rv))
 		} else if kbuiltin {
-			e.encode(rv2i(baseRVRV(rv)))
+			e.encodeR(baseRVRV(rv))
 		} else {
 			e.encodeValue(rv, keyFn)
 		}
 		e.mapElemValue()
 		rv = it.Value()
 		if vbuiltin {
-			e.encode(rv2i(baseRVRV(rv)))
+			e.encodeR(baseRVRV(rv))
 		} else {
 			e.encodeValue(it.Value(), valFn)
 		}
@@ -841,7 +842,7 @@ func (e *encoderSimpleBytes) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, 
 				v := &mksbv[i]
 				l := len(mksv)
 				se.setContainerState(containerMapKey)
-				se.encode(rv2i(baseRVRV(k)))
+				se.encodeI(rv2i(baseRVRV(k)))
 				se.atEndOfEncode()
 				se.writerEnd()
 				v.r = k
@@ -916,7 +917,7 @@ func (e *encoderSimpleBytes) mustEncode(v interface{}) {
 	}
 
 	e.calls++
-	e.encode(v)
+	e.encodeI(v)
 	e.calls--
 	if e.calls == 0 {
 		e.e.atEndOfEncode()
@@ -924,10 +925,35 @@ func (e *encoderSimpleBytes) mustEncode(v interface{}) {
 	}
 }
 
-func (e *encoderSimpleBytes) encode(iv interface{}) {
+func (e *encoderSimpleBytes) encodeI(iv interface{}) {
 
-	rv, isnil := isNil(iv, true)
-	if isnil {
+	e.encodeIR(iv, reflect.ValueOf(iv))
+}
+
+func (e *encoderSimpleBytes) encodeR(base reflect.Value) {
+	e.encodeIR(rv2i(base), base)
+}
+
+func (e *encoderSimpleBytes) encodeIR(iv interface{}, rv reflect.Value) {
+
+	if iv == nil {
+		e.e.EncodeNil()
+		return
+	}
+
+	k := rv.Kind()
+
+	if isnilBitset.isset(byte(k)) && rvIsNil(rv) {
+		if e.h.NilCollectionToZeroLength {
+			switch k {
+			case reflect.Map:
+				e.e.WriteMapEmpty()
+				return
+			case reflect.Slice, reflect.Chan:
+				e.e.WriteArrayEmpty()
+				return
+			}
+		}
 		e.e.EncodeNil()
 		return
 	}
@@ -976,20 +1002,17 @@ func (e *encoderSimpleBytes) encode(iv interface{}) {
 	case time.Time:
 		e.e.EncodeTime(v)
 	case []byte:
-		if v != nil {
-			e.e.EncodeStringBytesRaw(v)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteArrayEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		e.e.EncodeBytes(v)
 	default:
 
 		if skipFastpathTypeSwitchInDirectCall || !e.dh.fastpathEncodeTypeSwitch(iv, e) {
-			if !rv.IsValid() {
-				rv = reflect.ValueOf(iv)
+
+			if k == reflect.Ptr || k == reflect.Interface {
+
+				e.encodeValue(rv.Elem(), nil)
+			} else {
+				e.encodeValueNonNil(rv, e.fn(rv.Type()))
 			}
-			e.encodeValue(rv, nil)
 		}
 	}
 }
@@ -1108,11 +1131,7 @@ func (e *encoderSimpleBytes) marshalAsis(bs []byte, fnerr error) {
 
 func (e *encoderSimpleBytes) marshalRaw(bs []byte, fnerr error) {
 	halt.onerror(fnerr)
-	if bs == nil {
-		e.e.EncodeNil()
-	} else {
-		e.e.EncodeStringBytesRaw(bs)
-	}
+	e.e.EncodeBytes(bs)
 }
 
 func (e *encoderSimpleBytes) rawBytes(vv Raw) {
@@ -3171,7 +3190,8 @@ func (e *simpleEncDriverBytes) EncodeExt(v interface{}, basetype reflect.Type, x
 		bs = ext.WriteExt(v)
 	}
 	if bs == nil {
-		e.EncodeNil()
+		e.encodeNilBytes()
+
 		goto END
 	}
 	e.encodeExtPreamble(uint8(xtag), len(bs))
@@ -3204,11 +3224,13 @@ func (e *simpleEncDriverBytes) WriteMapStart(length int) {
 }
 
 func (e *simpleEncDriverBytes) WriteArrayEmpty() {
-	e.WriteArrayStart(0)
+
+	e.w.writen1(simpleVdArray)
 }
 
 func (e *simpleEncDriverBytes) WriteMapEmpty() {
-	e.WriteMapStart(0)
+
+	e.w.writen1(simpleVdMap)
 }
 
 func (e *simpleEncDriverBytes) EncodeString(v string) {
@@ -3228,12 +3250,24 @@ func (e *simpleEncDriverBytes) EncodeStringNoEscape4Json(v string) { e.EncodeStr
 
 func (e *simpleEncDriverBytes) EncodeStringBytesRaw(v []byte) {
 
-	if v == nil {
-		e.EncodeNil()
-		return
-	}
 	e.encLen(simpleVdByteArray, len(v))
 	e.w.writeb(v)
+}
+
+func (e *simpleEncDriverBytes) EncodeBytes(v []byte) {
+	if v == nil {
+		e.encodeNilBytes()
+		return
+	}
+	e.EncodeStringBytesRaw(v)
+}
+
+func (e *simpleEncDriverBytes) encodeNilBytes() {
+	b := byte(simpleVdNil)
+	if e.h.NilCollectionToZeroLength {
+		b = simpleVdArray
+	}
+	e.w.writen1(b)
 }
 
 func (e *simpleEncDriverBytes) EncodeTime(t time.Time) {
@@ -3429,7 +3463,7 @@ func (d *simpleDecDriverBytes) DecodeBytes() (bs []byte, state dBytesAttachState
 	}
 	var cond bool
 
-	if d.bd >= simpleVdArray && d.bd <= simpleVdMap+4 {
+	if d.bd >= simpleVdArray && d.bd <= simpleVdArray+4 {
 		slen := d.ReadArrayStart()
 		bs, cond = usableByteSlice(d.d.buf, slen)
 		for i := 0; i < len(bs); i++ {
@@ -3442,6 +3476,7 @@ func (d *simpleDecDriverBytes) DecodeBytes() (bs []byte, state dBytesAttachState
 			d.d.buf = bs
 		}
 		state = dBytesAttachBuffer
+
 		return
 	}
 
@@ -3937,7 +3972,7 @@ func (e *encoderSimpleIO) kArrayWMbs(rv reflect.Value, ti *typeInfo, isSlice boo
 	for {
 		rvv := rvArrayIndex(rv, j, ti, isSlice)
 		if builtin {
-			e.encode(rv2i(baseRVRV(rvv)))
+			e.encodeR(baseRVRV(rvv))
 		} else {
 			e.encodeValue(rvv, fn)
 		}
@@ -3982,7 +4017,7 @@ func (e *encoderSimpleIO) kArrayW(rv reflect.Value, ti *typeInfo, isSlice bool) 
 	for {
 		rvv := rvArrayIndex(rv, j, ti, isSlice)
 		if builtin {
-			e.encode(rv2i(baseRVRV(rvv)))
+			e.encodeR(baseRVRV(rvv))
 		} else {
 			e.encodeValue(rvv, fn)
 		}
@@ -4020,7 +4055,8 @@ func (e *encoderSimpleIO) kSlice(f *encFnInfo, rv reflect.Value) {
 	if f.ti.mbs {
 		e.kArrayWMbs(rv, f.ti, true)
 	} else if f.ti.rtid == uint8SliceTypId || uint8TypId == rt2id(f.ti.elem) {
-		e.e.EncodeStringBytesRaw(rvGetBytes(rv))
+
+		e.e.EncodeBytes(rvGetBytes(rv))
 	} else {
 		e.kArrayW(rv, f.ti, true)
 	}
@@ -4075,7 +4111,7 @@ L1:
 		}
 	}
 
-	e.e.EncodeStringBytesRaw(bs)
+	e.e.EncodeBytes(bs)
 	e.blist.put(bs)
 	if !byteSliceSameData(bs0, bs) {
 		e.blist.put(bs0)
@@ -4115,7 +4151,7 @@ func (e *encoderSimpleIO) kStructSimple(f *encFnInfo, rv reflect.Value) {
 			e.c = containerArrayElem
 			e.e.WriteArrayElem(j == 0)
 			if si.encBuiltin {
-				e.encode(rv2i(si.fieldNoAlloc(rv, true)))
+				e.encodeR(si.fieldNoAlloc(rv, true))
 			} else {
 				e.encodeValue(si.fieldNoAlloc(rv, !chkCirRef), nil)
 			}
@@ -4137,7 +4173,7 @@ func (e *encoderSimpleIO) kStructSimple(f *encFnInfo, rv reflect.Value) {
 			e.e.EncodeStringNoEscape4Json(si.encName)
 			e.mapElemValue()
 			if si.encBuiltin {
-				e.encode(rv2i(si.fieldNoAlloc(rv, true)))
+				e.encodeR(si.fieldNoAlloc(rv, true))
 			} else {
 				e.encodeValue(si.fieldNoAlloc(rv, !chkCirRef), nil)
 			}
@@ -4241,12 +4277,12 @@ func (e *encoderSimpleIO) kStruct(f *encFnInfo, rv reflect.Value) {
 				e.mapElemValue()
 				if sf.isRv {
 					if sf.builtin {
-						e.encode(rv2i(baseRVRV(sf.rv)))
+						e.encodeR(baseRVRV(sf.rv))
 					} else {
 						e.encodeValue(sf.rv, nil)
 					}
 				} else {
-					e.encode(sf.intf)
+					e.encodeI(sf.intf)
 				}
 			}
 		} else {
@@ -4262,7 +4298,7 @@ func (e *encoderSimpleIO) kStruct(f *encFnInfo, rv reflect.Value) {
 				}
 				e.mapElemValue()
 				if kv.v.encBuiltin {
-					e.encode(rv2i(baseRVRV(kv.r)))
+					e.encodeR(baseRVRV(kv.r))
 				} else {
 					e.encodeValue(kv.r, nil)
 				}
@@ -4272,7 +4308,7 @@ func (e *encoderSimpleIO) kStruct(f *encFnInfo, rv reflect.Value) {
 				e.e.WriteMapElemKey(j == 0)
 				e.kStructFieldKey(keytyp, v.v)
 				e.mapElemValue()
-				e.encode(v.i)
+				e.encodeI(v.i)
 				j++
 			}
 		}
@@ -4309,7 +4345,7 @@ func (e *encoderSimpleIO) kStruct(f *encFnInfo, rv reflect.Value) {
 			if !kv.r.IsValid() {
 				e.e.EncodeNil()
 			} else if kv.v.encBuiltin {
-				e.encode(rv2i(baseRVRV(kv.r)))
+				e.encodeR(baseRVRV(kv.r))
 			} else {
 				e.encodeValue(kv.r, nil)
 			}
@@ -4382,14 +4418,14 @@ func (e *encoderSimpleIO) kMap(f *encFnInfo, rv reflect.Value) {
 		if keyTypeIsString {
 			e.e.EncodeString(rvGetString(rv))
 		} else if kbuiltin {
-			e.encode(rv2i(baseRVRV(rv)))
+			e.encodeR(baseRVRV(rv))
 		} else {
 			e.encodeValue(rv, keyFn)
 		}
 		e.mapElemValue()
 		rv = it.Value()
 		if vbuiltin {
-			e.encode(rv2i(baseRVRV(rv)))
+			e.encodeR(baseRVRV(rv))
 		} else {
 			e.encodeValue(it.Value(), valFn)
 		}
@@ -4550,7 +4586,7 @@ func (e *encoderSimpleIO) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, key
 				v := &mksbv[i]
 				l := len(mksv)
 				se.setContainerState(containerMapKey)
-				se.encode(rv2i(baseRVRV(k)))
+				se.encodeI(rv2i(baseRVRV(k)))
 				se.atEndOfEncode()
 				se.writerEnd()
 				v.r = k
@@ -4625,7 +4661,7 @@ func (e *encoderSimpleIO) mustEncode(v interface{}) {
 	}
 
 	e.calls++
-	e.encode(v)
+	e.encodeI(v)
 	e.calls--
 	if e.calls == 0 {
 		e.e.atEndOfEncode()
@@ -4633,10 +4669,35 @@ func (e *encoderSimpleIO) mustEncode(v interface{}) {
 	}
 }
 
-func (e *encoderSimpleIO) encode(iv interface{}) {
+func (e *encoderSimpleIO) encodeI(iv interface{}) {
 
-	rv, isnil := isNil(iv, true)
-	if isnil {
+	e.encodeIR(iv, reflect.ValueOf(iv))
+}
+
+func (e *encoderSimpleIO) encodeR(base reflect.Value) {
+	e.encodeIR(rv2i(base), base)
+}
+
+func (e *encoderSimpleIO) encodeIR(iv interface{}, rv reflect.Value) {
+
+	if iv == nil {
+		e.e.EncodeNil()
+		return
+	}
+
+	k := rv.Kind()
+
+	if isnilBitset.isset(byte(k)) && rvIsNil(rv) {
+		if e.h.NilCollectionToZeroLength {
+			switch k {
+			case reflect.Map:
+				e.e.WriteMapEmpty()
+				return
+			case reflect.Slice, reflect.Chan:
+				e.e.WriteArrayEmpty()
+				return
+			}
+		}
 		e.e.EncodeNil()
 		return
 	}
@@ -4685,20 +4746,17 @@ func (e *encoderSimpleIO) encode(iv interface{}) {
 	case time.Time:
 		e.e.EncodeTime(v)
 	case []byte:
-		if v != nil {
-			e.e.EncodeStringBytesRaw(v)
-		} else if e.h.NilCollectionToZeroLength {
-			e.e.WriteArrayEmpty()
-		} else {
-			e.e.EncodeNil()
-		}
+		e.e.EncodeBytes(v)
 	default:
 
 		if skipFastpathTypeSwitchInDirectCall || !e.dh.fastpathEncodeTypeSwitch(iv, e) {
-			if !rv.IsValid() {
-				rv = reflect.ValueOf(iv)
+
+			if k == reflect.Ptr || k == reflect.Interface {
+
+				e.encodeValue(rv.Elem(), nil)
+			} else {
+				e.encodeValueNonNil(rv, e.fn(rv.Type()))
 			}
-			e.encodeValue(rv, nil)
 		}
 	}
 }
@@ -4817,11 +4875,7 @@ func (e *encoderSimpleIO) marshalAsis(bs []byte, fnerr error) {
 
 func (e *encoderSimpleIO) marshalRaw(bs []byte, fnerr error) {
 	halt.onerror(fnerr)
-	if bs == nil {
-		e.e.EncodeNil()
-	} else {
-		e.e.EncodeStringBytesRaw(bs)
-	}
+	e.e.EncodeBytes(bs)
 }
 
 func (e *encoderSimpleIO) rawBytes(vv Raw) {
@@ -6880,7 +6934,8 @@ func (e *simpleEncDriverIO) EncodeExt(v interface{}, basetype reflect.Type, xtag
 		bs = ext.WriteExt(v)
 	}
 	if bs == nil {
-		e.EncodeNil()
+		e.encodeNilBytes()
+
 		goto END
 	}
 	e.encodeExtPreamble(uint8(xtag), len(bs))
@@ -6913,11 +6968,13 @@ func (e *simpleEncDriverIO) WriteMapStart(length int) {
 }
 
 func (e *simpleEncDriverIO) WriteArrayEmpty() {
-	e.WriteArrayStart(0)
+
+	e.w.writen1(simpleVdArray)
 }
 
 func (e *simpleEncDriverIO) WriteMapEmpty() {
-	e.WriteMapStart(0)
+
+	e.w.writen1(simpleVdMap)
 }
 
 func (e *simpleEncDriverIO) EncodeString(v string) {
@@ -6937,12 +6994,24 @@ func (e *simpleEncDriverIO) EncodeStringNoEscape4Json(v string) { e.EncodeString
 
 func (e *simpleEncDriverIO) EncodeStringBytesRaw(v []byte) {
 
-	if v == nil {
-		e.EncodeNil()
-		return
-	}
 	e.encLen(simpleVdByteArray, len(v))
 	e.w.writeb(v)
+}
+
+func (e *simpleEncDriverIO) EncodeBytes(v []byte) {
+	if v == nil {
+		e.encodeNilBytes()
+		return
+	}
+	e.EncodeStringBytesRaw(v)
+}
+
+func (e *simpleEncDriverIO) encodeNilBytes() {
+	b := byte(simpleVdNil)
+	if e.h.NilCollectionToZeroLength {
+		b = simpleVdArray
+	}
+	e.w.writen1(b)
 }
 
 func (e *simpleEncDriverIO) EncodeTime(t time.Time) {
@@ -7138,7 +7207,7 @@ func (d *simpleDecDriverIO) DecodeBytes() (bs []byte, state dBytesAttachState) {
 	}
 	var cond bool
 
-	if d.bd >= simpleVdArray && d.bd <= simpleVdMap+4 {
+	if d.bd >= simpleVdArray && d.bd <= simpleVdArray+4 {
 		slen := d.ReadArrayStart()
 		bs, cond = usableByteSlice(d.d.buf, slen)
 		for i := 0; i < len(bs); i++ {
@@ -7151,6 +7220,7 @@ func (d *simpleDecDriverIO) DecodeBytes() (bs []byte, state dBytesAttachState) {
 			d.d.buf = bs
 		}
 		state = dBytesAttachBuffer
+
 		return
 	}
 
