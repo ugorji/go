@@ -472,6 +472,12 @@ func TestCodecSuite(t *testing.T) {
 	fnRun("optionsFalse", testCodecGroup)
 
 	// --------------
+	testv.setBufsize(0)
+	testReinit()
+	testGroupResetHandles()
+	fnRun("optionsFalse-io", testCodecGroup)
+
+	// --------------
 	fnTrueV()
 	testReinit()
 	testGroupResetHandles()
