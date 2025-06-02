@@ -36,6 +36,9 @@ type wrapString string
 type wrapUint64Slice []wrapUint64
 type wrapStringSlice []wrapString
 
+type wrapMapStringUint64 map[string]uint64
+type wrapMapWrapStringWrapUint64 map[wrapString]wrapUint64
+
 // some other types
 
 type stringUint64T struct {
@@ -100,6 +103,9 @@ type testSimpleFields struct {
 	WrapSliceInt64  wrapSliceUint64
 	WrapSliceString wrapSliceString
 
+	WrapMapStringUint64         wrapMapStringUint64
+	WrapMapWrapStringWrapUint64 wrapMapWrapStringWrapUint64
+
 	Msint map[string]int
 }
 
@@ -141,6 +147,9 @@ type TestStrucCommon struct {
 
 	WrapSliceInt64  wrapSliceUint64
 	WrapSliceString wrapSliceString
+
+	WrapMapStringUint64         wrapMapStringUint64
+	WrapMapWrapStringWrapUint64 wrapMapWrapStringWrapUint64
 
 	Msint map[string]int
 
@@ -327,6 +336,9 @@ func populateTestStrucCommon(ts *TestStrucCommon, n int, bench, useInterface, us
 		WrapSliceInt64:  []uint64{4, 16, 64, 256},
 		WrapSliceString: []string{strRpt(n, "4"), strRpt(n, "16"), strRpt(n, "64"), strRpt(n, "256")},
 
+		WrapMapStringUint64:         map[string]uint64{"4": 4, "16": 16},
+		WrapMapWrapStringWrapUint64: map[wrapString]wrapUint64{"44": 44, "1616": 1616},
+
 		// R: Raw([]byte("goodbye")),
 		// Rext: RawExt{ 120, []byte("hello"), }, // MARKER: don't set this - it's hard to test
 
@@ -361,6 +373,9 @@ func populateTestStrucCommon(ts *TestStrucCommon, n int, bench, useInterface, us
 
 			WrapSliceInt64:  []uint64{4, 16, 64, 256},
 			WrapSliceString: []string{strRpt(n, "4"), strRpt(n, "16"), strRpt(n, "64"), strRpt(n, "256")},
+
+			WrapMapStringUint64:         map[string]uint64{"4": 4, "16": 16},
+			WrapMapWrapStringWrapUint64: map[wrapString]wrapUint64{"44": 44, "1616": 1616},
 		},
 
 		SstrUi64T:       make([]stringUint64T, numStrUi64T), // {{"1", 1}, {"2", 2}, {"3", 3}, {"4", 4}},

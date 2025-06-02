@@ -158,7 +158,7 @@ func (fastpathET[T]) {{ .MethodNamePfx "Enc" false }}V(v map[{{ .MapKey }}]{{ .E
 		e.e.WriteMapEmpty()
 		return
 	}
-		var i uint
+	var i uint
 	e.mapStart(len(v))
 	if e.h.Canonical { {{/* need to figure out .NoCanonical */}}
 		{{if eq .MapKey "interface{}"}}{{/* out of band */ -}}
@@ -270,7 +270,7 @@ func (d *decoder[T]) {{ .MethodNamePfx "fastpathDec" false }}R(f *decFnInfo, rv 
     if f.seq != seqTypeArray && rv.Kind() == reflect.Ptr {
     */ -}}
 	switch rv.Kind() {
-	case reflect.Ptr:
+	case reflect.Ptr: {{- /* this block is called for types that wrap a fastpath type e.g. wrapSliceUint64 */}}
 		v := rv2i(rv).(*[]{{ .Elem }})
 		if vv, changed := ft.{{ .MethodNamePfx "Dec" false }}Y(*v, d); changed {
 			*v = vv
@@ -398,7 +398,7 @@ Maps can change if they are
 func (d *decoder[T]) {{ .MethodNamePfx "fastpathDec" false }}R(f *decFnInfo, rv reflect.Value) {
 	var ft fastpathDT[T]
 	containerLen := d.mapStart(d.d.ReadMapStart())
-	if rv.Kind() == reflect.Ptr {
+	if rv.Kind() == reflect.Ptr { {{- /* this block is called for types that wrap a fastpath type e.g. wrapMapStringUint64 */}}
 		vp, _ := rv2i(rv).(*map[{{ .MapKey }}]{{ .Elem }})
 		if *vp == nil {
 			*vp = make(map[{{ .MapKey }}]{{ .Elem }}, decInferLen(containerLen, d.maxInitLen(), {{ .Size }}))

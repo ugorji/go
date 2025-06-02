@@ -199,6 +199,7 @@ import (
 	"math"
 	"reflect"
 	"runtime"
+	"runtime/debug"
 	"sort"
 	"strconv"
 	"strings"
@@ -356,6 +357,10 @@ var (
 
 	// sentinel value passed to panicValToErr, signifying to call recover yourself
 	callRecoverSentinel = new(byte)
+
+	// debugstackOnce is used to put a single debugStack at a certain point (during debugging).
+	// To use, just call debugstackOnce() wherever you need to see a stack only once.
+	debugstackOnce = sync.OnceFunc(debug.PrintStack)
 )
 
 var (
