@@ -53,12 +53,12 @@ jobs:
               "codec.notmono" "codec.notmono codec.safe" \
               "codec.notmono codec.notfastpath" "codec.notmono codec.safe codec.notfastpath" )
           for i in "${t[@]}"; do
-          ii="${i// /-}"
-          ii="${ii//codec./}"
-          go test "-tags=alltests codec.nobench ${i}" "-run=Suite" "-coverprofile=coverage.${{ matrix.go }}.${{ matrix.arch }}.${ii}.txt"
+          j="${i// /-}"
+          j="${j//codec./}"
+          go test "-tags=alltests codec.nobench ${i}" "-run=Suite" "-coverprofile=coverage.${{ matrix.go }}.${{ matrix.arch }}.${j}.txt"
           done
       - uses: codecov/codecov-action@v5
-        if: matrix.go == env.LATEST_GO_STABLE_VERSION 
+        if: matrix.go == env.LATEST_GO_STABLE_VERSION
         with:
           directory: ./codec
 
