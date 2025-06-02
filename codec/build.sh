@@ -88,6 +88,12 @@ _clean() {
        test_values.generated.go test_values_flex.generated.go
 }
 
+_xtrace() {
+    local -
+    set -x
+    "${@}"
+}
+
 _tests() {
     local vet="" # TODO: make it off
     local gover=$( ${gocmd} version | cut -f 3 -d ' ' )
@@ -106,38 +112,47 @@ _tests() {
     if [[ " ${zargs[@]} " =~ "-race" ]]; then
         cpus="$(nproc)"
     fi
+    local covfiles=()
+    local covfile=""
+    local bufsizes=("")
+    local covargs=()
     local a=( "" "codec.safe" "codec.notfastpath" "codec.safe codec.notfastpath"
               "codec.notmono" "codec.notmono codec.safe"
               "codec.notmono codec.notfastpath" "codec.notmono codec.safe codec.notfastpath" )
-    local b=()
-    local c=()
-    for i in "${a[@]}"
-    do
-        local i2=${i:-default}
+    for i in "${a[@]}"; do
+        local j=${i:-default}; j="${j// /-}"; j="${j//codec./}"
         [[ "$zwait" == "1" ]] && echo ">>>> TAGS: 'alltests $i'; RUN: 'TestCodecSuite'"
-        [[ "$zcover" == "1" ]] && c=( -coverprofile "${i2// /-}.cov.out" )
+        [[ "x$i" == "x" ]] && bufsizes=("-1" "1024" "0") || bufsizes=("-1")
         true &&
             ${gocmd} vet -printfuncs "errorf" "$@" &&
-            if [[ "$echo" == 1 ]]; then set -o xtrace; fi &&
-            ${gocmd} test ${zargs[*]} ${ztestargs[*]} -vet "$vet" -tags "alltests $i" -count $nc -cpu $cpus -run "TestCodecSuite" -tdiff "${c[@]}" "$@" &
-        if [[ "$echo" == 1 ]]; then set +o xtrace; fi
-        b+=("${i2// /-}.cov.out")
-        [[ "$zwait" == "1" ]] && wait
-            
+            for k in "${bufsizes[@]}"; do
+                if [[ "$zcover" == "1" ]]; then
+                    covfile="${j}.cov.out"
+                    covargs=( -coverprofile "$covfile" )
+                    covfiles+=( "$covfile");
+                fi
+                local g=( test ${zargs[*]} ${ztestargs[*]} ${covargs[*]} -vet "$vet" -tags "alltests $i" -count $nc -cpu $cpus -run "TestCodecSuite" -ti "$k" -tdiff )
+                if [[ "$echo" == 1 ]]; then
+                    _xtrace ${gocmd} "${g[@]}" "$@" &
+                else
+                    ${gocmd} "${g[@]}" "$@" &
+                fi
+                [[ "$zwait" == "1" ]] && wait
+            done
         # if [[ "$?" != 0 ]]; then return 1; fi
     done
     if [[ "$zextra" == "1" ]]; then
         [[ "$zwait" == "1" ]] && echo ">>>> TAGS: 'codec.notmono codec.notfastpath x'; RUN: 'Test.*X$'"
         [[ "$zcover" == "1" ]] && c=( -coverprofile "x.cov.out" )
         ${gocmd} test ${zargs[*]} ${ztestargs[*]} -vet "$vet" -tags "codec.notmono codec.notfastpath x" -count $nc -run 'Test.*X$' "${c[@]}" &
-        b+=("x.cov.out")
+        covfiles+=("x.cov.out")
         [[ "$zwait" == "1" ]] && wait
     fi
     wait
     # go tool cover is not supported for gccgo, gollvm, other non-standard go compilers
     [[ "$zcover" == "1" ]] &&
         command -v gocovmerge &&
-        gocovmerge "${b[@]}" > __merge.cov.out &&
+        gocovmerge "${covfiles[@]}" > __merge.cov.out &&
         ${gocmd} tool cover -html=__merge.cov.out
 }
 
