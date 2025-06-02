@@ -476,6 +476,13 @@ func (d *cborDecDriver[T]) DecodeBytes() (bs []byte, state dBytesAttachState) {
 	if d.h.SkipUnexpectedTags {
 		d.skipTags()
 	}
+	fnEnsureNonNilBytes := func() {
+		// buf is nil at first. Ensure a non-nil value is returned.
+		if bs == nil {
+			bs = zeroByteSlice
+			state = dBytesDetach
+		}
+	}
 	if d.bd == cborBdIndefiniteBytes || d.bd == cborBdIndefiniteString {
 		major := d.bd >> 5
 		val4str := d.h.ValidateUnicode && major == cborMajorString
@@ -499,11 +506,7 @@ func (d *cborDecDriver[T]) DecodeBytes() (bs []byte, state dBytesAttachState) {
 		d.bdRead = false
 		d.d.buf = bs
 		state = dBytesAttachBuffer
-		// buf is nil at first. Ensure a non-nil value is returned.
-		if bs == nil {
-			bs = zeroByteSlice
-			state = dBytesDetach
-		}
+		fnEnsureNonNilBytes()
 		return
 	}
 	if d.bd == cborBdIndefiniteArray {
@@ -514,6 +517,7 @@ func (d *cborDecDriver[T]) DecodeBytes() (bs []byte, state dBytesAttachState) {
 		}
 		d.d.buf = bs
 		state = dBytesAttachBuffer
+		fnEnsureNonNilBytes()
 		return
 	}
 	var cond bool
@@ -531,6 +535,7 @@ func (d *cborDecDriver[T]) DecodeBytes() (bs []byte, state dBytesAttachState) {
 			d.d.buf = bs
 		}
 		state = dBytesAttachBuffer
+		fnEnsureNonNilBytes()
 		return
 	}
 	clen := d.decLen()
