@@ -88,15 +88,24 @@ _clean() {
        test_values.generated.go test_values_flex.generated.go
 }
 
-_xtrace() {
+_tests_run_one() {
+    local tt="alltests $i"
+    local rr="TestCodecSuite"
+    if [[ "x$i" == "xx" ]]; then tt="codec.notmono codec.notfastpath x"; rr='Test.*X$'; fi
+    local g=( ${zargs[*]} ${ztestargs[*]} -count $nc -cpu $cpus -vet "$vet" -tags "$tt" -run "$rr" )
+    [[ "$zcover" == "1" ]] && g+=( -cover )
+    # g+=( -ti "$k" )
+    g+=( -tdiff )
+    [[ "$zcover" == "1" ]] && g+=( -test.gocoverdir $covdir )
     local -
     set -x
-    "${@}"
+    ${gocmd} test "${g[@]}" &
 }
 
 _tests() {
     local vet="" # TODO: make it off
     local gover=$( ${gocmd} version | cut -f 3 -d ' ' )
+    # go tool cover is not supported for gccgo, gollvm, other non-standard go compilers
     [[ $( ${gocmd} version ) == *"gccgo"* ]] && zcover=0
     [[ $( ${gocmd} version ) == *"gollvm"* ]] && zcover=0
     case $gover in
@@ -105,55 +114,32 @@ _tests() {
     esac
     # we test the following permutations wnich all execute different code paths as below.
     echo "TestCodecSuite: (fastpath/unsafe), (!fastpath/unsafe), (fastpath/!unsafe), (!fastpath/!unsafe)"
-    local echo=1
     local nc=2 # count
     local cpus="1,$(nproc)"
     # if using the race detector, then set nc to
     if [[ " ${zargs[@]} " =~ "-race" ]]; then
         cpus="$(nproc)"
     fi
-    local covfiles=()
-    local covfile=""
-    local bufsizes=("")
-    local covargs=()
+    local covdir=""
     local a=( "" "codec.safe" "codec.notfastpath" "codec.safe codec.notfastpath"
               "codec.notmono" "codec.notmono codec.safe"
               "codec.notmono codec.notfastpath" "codec.notmono codec.safe codec.notfastpath" )
+    [[ "$zextra" == "1" ]] && a+=( "x" )
+    [[ "$zcover" == "1" ]] && covdir=`mktemp -d`
+    ${gocmd} vet -printfuncs "errorf" "$@" || return 1
     for i in "${a[@]}"; do
         local j=${i:-default}; j="${j// /-}"; j="${j//codec./}"
         [[ "$zwait" == "1" ]] && echo ">>>> TAGS: 'alltests $i'; RUN: 'TestCodecSuite'"
-        [[ "x$i" == "x" ]] && bufsizes=("-1" "1024" "0") || bufsizes=("-1")
-        true &&
-            ${gocmd} vet -printfuncs "errorf" "$@" &&
-            for k in "${bufsizes[@]}"; do
-                if [[ "$zcover" == "1" ]]; then
-                    covfile="${j}.cov.out"
-                    covargs=( -coverprofile "$covfile" )
-                    covfiles+=( "$covfile");
-                fi
-                local g=( test ${zargs[*]} ${ztestargs[*]} ${covargs[*]} -vet "$vet" -tags "alltests $i" -count $nc -cpu $cpus -run "TestCodecSuite" -ti "$k" -tdiff )
-                if [[ "$echo" == 1 ]]; then
-                    _xtrace ${gocmd} "${g[@]}" "$@" &
-                else
-                    ${gocmd} "${g[@]}" "$@" &
-                fi
-                [[ "$zwait" == "1" ]] && wait
-            done
+        _tests_run_one
+        [[ "$zwait" == "1" ]] && wait
         # if [[ "$?" != 0 ]]; then return 1; fi
     done
-    if [[ "$zextra" == "1" ]]; then
-        [[ "$zwait" == "1" ]] && echo ">>>> TAGS: 'codec.notmono codec.notfastpath x'; RUN: 'Test.*X$'"
-        [[ "$zcover" == "1" ]] && c=( -coverprofile "x.cov.out" )
-        ${gocmd} test ${zargs[*]} ${ztestargs[*]} -vet "$vet" -tags "codec.notmono codec.notfastpath x" -count $nc -run 'Test.*X$' "${c[@]}" &
-        covfiles+=("x.cov.out")
-        [[ "$zwait" == "1" ]] && wait
-    fi
     wait
-    # go tool cover is not supported for gccgo, gollvm, other non-standard go compilers
     [[ "$zcover" == "1" ]] &&
-        command -v gocovmerge &&
-        gocovmerge "${covfiles[@]}" > __merge.cov.out &&
-        ${gocmd} tool cover -html=__merge.cov.out
+        echo "go tool covdata output" &&
+        ${gocmd} tool covdata percent -i $covdir &&
+        ${gocmd} tool covdata textfmt -i $covdir -o __cov.out &&
+        ${gocmd} tool cover -html=__cov.out
 }
 
 _usage() {
@@ -226,3 +212,8 @@ _main() {
 
 [ "." = `dirname $0` ] && _main "$@"
 
+# _xtrace() {
+#     local -
+#     set -x
+#     "${@}"
+# }
