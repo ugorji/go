@@ -361,7 +361,23 @@ func (d *cborDecDriver[T]) decFloat() (f float64, ok bool) {
 	case cborBdFloat64:
 		f = math.Float64frombits(bigen.Uint64(d.r.readn8()))
 	default:
-		ok = false
+		if d.bd>>5 == cborMajorTag {
+			// extension tag for bignum/decimal
+			switch d.bd & 0x1f { // tag
+			case 2:
+				f = d.decTagBigIntAsFloat(false)
+			case 3:
+				f = d.decTagBigIntAsFloat(true)
+			case 4:
+				f = d.decTagBigFloatAsFloat(true)
+			case 5:
+				f = d.decTagBigFloatAsFloat(false)
+			default:
+				ok = false
+			}
+		} else {
+			ok = false
+		}
 	}
 	return
 }
@@ -620,6 +636,44 @@ func (d *cborDecDriver[T]) DecodeExt(rv interface{}, basetype reflect.Type, xtag
 	}
 }
 
+func (d *cborDecDriver[T]) decTagBigIntAsFloat(neg bool) (f float64) {
+	bs, _ := d.DecodeBytes()
+	bi := new(big.Int).SetBytes(bs)
+	if neg { // neg big.Int
+		bi0 := bi
+		bi = new(big.Int).Sub(big.NewInt(-1), bi0)
+	}
+	f, _ = bi.Float64()
+	return
+}
+
+func (d *cborDecDriver[T]) decTagBigFloatAsFloat(decimal bool) (f float64) {
+	if nn := d.r.readn1(); nn != 82 {
+		halt.errorf("(%d) decoding decimal/big.Float: expected 2 numbers", nn)
+	}
+	exp := d.DecodeInt64()
+	mant := d.DecodeInt64()
+	if decimal { // m*(10**e)
+		// MARKER: if precision/other issues crop, consider using big.Float on base 10.
+		// The logic is more convoluted, which is why we leverage readFloatResult for now.
+		rf := readFloatResult{exp: int8(exp)}
+		if mant >= 0 {
+			rf.mantissa = uint64(mant)
+		} else {
+			rf.neg = true
+			rf.mantissa = uint64(-mant)
+		}
+		f, _ = parseFloat64_reader(rf)
+		// f = float64(mant) * math.Pow10(exp)
+	} else { // m*(2**e)
+		// f = float64(mant) * math.Pow(2, exp)
+		bfm := new(big.Float).SetPrec(64).SetInt64(mant)
+		bf := new(big.Float).SetPrec(64).SetMantExp(bfm, int(exp))
+		f, _ = bf.Float64()
+	}
+	return
+}
+
 func (d *cborDecDriver[T]) DecodeNaked() {
 	if !d.bdRead {
 		d.readNextBd()
@@ -661,42 +715,19 @@ func (d *cborDecDriver[T]) DecodeNaked() {
 			case 0, 1:
 				n.v = valueTypeTime
 				n.t = d.decodeTime(n.u)
-			case 2, 3: // (neg) big.Integer --> float
-				n.l, _ = d.DecodeBytes()
-				bi := new(big.Int).SetBytes(n.l)
-				if n.u == 3 { // neg big.Int
-					bi0 := bi
-					bi = new(big.Int).Sub(big.NewInt(-1), bi0)
-				}
-				n.f, _ = bi.Float64()
+			case 2:
+				n.f = d.decTagBigIntAsFloat(false)
 				n.v = valueTypeFloat
-			case 4, 5: // decimal/big.Float (array of 2 numbers: e, m)
-				if nn := d.r.readn1(); nn != 82 {
-					halt.errorf("(%d) decoding decimal/big.Float: expected 2 numbers", nn)
-				}
-				exp := d.DecodeInt64()
-				mant := d.DecodeInt64()
-				if n.u == 4 { // m*(10**e)
-					// MARKER: if precision/other issues crop, consider using big.Float on base 10.
-					// The logic is more convoluted, which is why we leverage readFloatResult for now.
-					rf := readFloatResult{exp: int8(exp)}
-					if mant >= 0 {
-						rf.mantissa = uint64(mant)
-					} else {
-						rf.neg = true
-						rf.mantissa = uint64(-mant)
-					}
-					n.f, _ = parseFloat64_reader(rf)
-					// n.f = float64(mant) * math.Pow10(exp)
-				} else { // m*(2**e)
-					// n.f = float64(mant) * math.Pow(2, exp)
-					bfm := new(big.Float).SetPrec(64).SetInt64(mant)
-					bf := new(big.Float).SetPrec(64).SetMantExp(bfm, int(exp))
-					n.f, _ = bf.Float64()
-				}
+			case 3:
+				n.f = d.decTagBigIntAsFloat(true)
 				n.v = valueTypeFloat
-			case 55799:
-				// skip
+			case 4:
+				n.f = d.decTagBigFloatAsFloat(true)
+				n.v = valueTypeFloat
+			case 5:
+				n.f = d.decTagBigFloatAsFloat(false)
+				n.v = valueTypeFloat
+			case 55799: // skip
 				d.DecodeNaked()
 			default:
 				if d.h.SkipUnexpectedTags {
