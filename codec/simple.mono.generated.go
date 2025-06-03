@@ -2837,9 +2837,11 @@ func (d *decoderSimpleBytes) arrayEnd() {
 }
 
 func (d *decoderSimpleBytes) interfaceExtConvertAndDecode(v interface{}, ext InterfaceExt) {
-	rv := d.interfaceExtConvertAndDecodeGetRV(v, ext)
-	d.decodeValue(rv, nil)
-	ext.UpdateExt(v, rv2i(rv))
+
+	var vv interface{}
+	d.decode(&vv)
+	ext.UpdateExt(v, vv)
+
 }
 
 func (d *decoderSimpleBytes) fn(t reflect.Type) *decFnSimpleBytes {
@@ -3191,7 +3193,6 @@ func (e *simpleEncDriverBytes) EncodeExt(v interface{}, basetype reflect.Type, x
 	}
 	if bs == nil {
 		e.encodeNilBytes()
-
 		goto END
 	}
 	e.encodeExtPreamble(uint8(xtag), len(bs))
@@ -6581,9 +6582,11 @@ func (d *decoderSimpleIO) arrayEnd() {
 }
 
 func (d *decoderSimpleIO) interfaceExtConvertAndDecode(v interface{}, ext InterfaceExt) {
-	rv := d.interfaceExtConvertAndDecodeGetRV(v, ext)
-	d.decodeValue(rv, nil)
-	ext.UpdateExt(v, rv2i(rv))
+
+	var vv interface{}
+	d.decode(&vv)
+	ext.UpdateExt(v, vv)
+
 }
 
 func (d *decoderSimpleIO) fn(t reflect.Type) *decFnSimpleIO {
@@ -6935,7 +6938,6 @@ func (e *simpleEncDriverIO) EncodeExt(v interface{}, basetype reflect.Type, xtag
 	}
 	if bs == nil {
 		e.encodeNilBytes()
-
 		goto END
 	}
 	e.encodeExtPreamble(uint8(xtag), len(bs))

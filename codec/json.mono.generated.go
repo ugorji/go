@@ -2848,9 +2848,11 @@ func (d *decoderJsonBytes) arrayEnd() {
 }
 
 func (d *decoderJsonBytes) interfaceExtConvertAndDecode(v interface{}, ext InterfaceExt) {
-	rv := d.interfaceExtConvertAndDecodeGetRV(v, ext)
-	d.decodeValue(rv, nil)
-	ext.UpdateExt(v, rv2i(rv))
+
+	var vv interface{}
+	d.decode(&vv)
+	ext.UpdateExt(v, vv)
+
 }
 
 func (d *decoderJsonBytes) fn(t reflect.Type) *decFnJsonBytes {
@@ -3174,7 +3176,7 @@ func (e *jsonEncDriverBytes) EncodeExt(rv interface{}, basetype reflect.Type, xt
 	if ext == SelfExt {
 		e.enc.encodeAs(rv, basetype, false)
 	} else if v := ext.ConvertExt(rv); v == nil {
-		e.EncodeNil()
+		e.encodeNilBytes()
 	} else {
 		e.enc.encodeI(v)
 	}
@@ -3307,14 +3309,18 @@ func (e *jsonEncDriverBytes) EncodeStringBytesRaw(v []byte) {
 
 func (e *jsonEncDriverBytes) EncodeBytes(v []byte) {
 	if v == nil {
-		bs := jsonNull
-		if e.h.NilCollectionToZeroLength {
-			bs = jsonArrayEmpty
-		}
-		e.w.writeb(bs)
+		e.encodeNilBytes()
 		return
 	}
 	e.EncodeStringBytesRaw(v)
+}
+
+func (e *jsonEncDriverBytes) encodeNilBytes() {
+	bs := jsonNull
+	if e.h.NilCollectionToZeroLength {
+		bs = jsonArrayEmpty
+	}
+	e.w.writeb(bs)
 }
 
 func (e *jsonEncDriverBytes) WriteArrayEmpty() {
@@ -6889,9 +6895,11 @@ func (d *decoderJsonIO) arrayEnd() {
 }
 
 func (d *decoderJsonIO) interfaceExtConvertAndDecode(v interface{}, ext InterfaceExt) {
-	rv := d.interfaceExtConvertAndDecodeGetRV(v, ext)
-	d.decodeValue(rv, nil)
-	ext.UpdateExt(v, rv2i(rv))
+
+	var vv interface{}
+	d.decode(&vv)
+	ext.UpdateExt(v, vv)
+
 }
 
 func (d *decoderJsonIO) fn(t reflect.Type) *decFnJsonIO {
@@ -7215,7 +7223,7 @@ func (e *jsonEncDriverIO) EncodeExt(rv interface{}, basetype reflect.Type, xtag 
 	if ext == SelfExt {
 		e.enc.encodeAs(rv, basetype, false)
 	} else if v := ext.ConvertExt(rv); v == nil {
-		e.EncodeNil()
+		e.encodeNilBytes()
 	} else {
 		e.enc.encodeI(v)
 	}
@@ -7348,14 +7356,18 @@ func (e *jsonEncDriverIO) EncodeStringBytesRaw(v []byte) {
 
 func (e *jsonEncDriverIO) EncodeBytes(v []byte) {
 	if v == nil {
-		bs := jsonNull
-		if e.h.NilCollectionToZeroLength {
-			bs = jsonArrayEmpty
-		}
-		e.w.writeb(bs)
+		e.encodeNilBytes()
 		return
 	}
 	e.EncodeStringBytesRaw(v)
+}
+
+func (e *jsonEncDriverIO) encodeNilBytes() {
+	bs := jsonNull
+	if e.h.NilCollectionToZeroLength {
+		bs = jsonArrayEmpty
+	}
+	e.w.writeb(bs)
 }
 
 func (e *jsonEncDriverIO) WriteArrayEmpty() {

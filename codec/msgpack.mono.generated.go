@@ -2838,9 +2838,11 @@ func (d *decoderMsgpackBytes) arrayEnd() {
 }
 
 func (d *decoderMsgpackBytes) interfaceExtConvertAndDecode(v interface{}, ext InterfaceExt) {
-	rv := d.interfaceExtConvertAndDecodeGetRV(v, ext)
-	d.decodeValue(rv, nil)
-	ext.UpdateExt(v, rv2i(rv))
+
+	var vv interface{}
+	d.decode(&vv)
+	ext.UpdateExt(v, vv)
+
 }
 
 func (d *decoderMsgpackBytes) fn(t reflect.Type) *decFnMsgpackBytes {
@@ -6837,9 +6839,11 @@ func (d *decoderMsgpackIO) arrayEnd() {
 }
 
 func (d *decoderMsgpackIO) interfaceExtConvertAndDecode(v interface{}, ext InterfaceExt) {
-	rv := d.interfaceExtConvertAndDecodeGetRV(v, ext)
-	d.decodeValue(rv, nil)
-	ext.UpdateExt(v, rv2i(rv))
+
+	var vv interface{}
+	d.decode(&vv)
+	ext.UpdateExt(v, vv)
+
 }
 
 func (d *decoderMsgpackIO) fn(t reflect.Type) *decFnMsgpackIO {

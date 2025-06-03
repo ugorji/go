@@ -10,6 +10,7 @@ import (
 
 	"io"
 	"math"
+	"math/big"
 	"reflect"
 	"slices"
 	"sort"
@@ -2838,9 +2839,11 @@ func (d *decoderCborBytes) arrayEnd() {
 }
 
 func (d *decoderCborBytes) interfaceExtConvertAndDecode(v interface{}, ext InterfaceExt) {
-	rv := d.interfaceExtConvertAndDecodeGetRV(v, ext)
-	d.decodeValue(rv, nil)
-	ext.UpdateExt(v, rv2i(rv))
+
+	var vv interface{}
+	d.decode(&vv)
+	ext.UpdateExt(v, vv)
+
 }
 
 func (d *decoderCborBytes) fn(t reflect.Type) *decFnCborBytes {
@@ -3190,7 +3193,7 @@ func (e *cborEncDriverBytes) EncodeExt(rv interface{}, basetype reflect.Type, xt
 	if ext == SelfExt {
 		e.enc.encodeAs(rv, basetype, false)
 	} else if v := ext.ConvertExt(rv); v == nil {
-		e.EncodeNil()
+		e.encodeNilBytes()
 	} else {
 		e.enc.encodeI(v)
 	}
@@ -3295,14 +3298,18 @@ func (e *cborEncDriverBytes) encStringBytesS(bb byte, v string) {
 
 func (e *cborEncDriverBytes) EncodeBytes(v []byte) {
 	if v == nil {
-		b := cborBdNil
-		if e.h.NilCollectionToZeroLength {
-			b = cborBaseArray
-		}
-		e.w.writen1(b)
+		e.encodeNilBytes()
 		return
 	}
 	e.EncodeStringBytesRaw(v)
+}
+
+func (e *cborEncDriverBytes) encodeNilBytes() {
+	b := cborBdNil
+	if e.h.NilCollectionToZeroLength {
+		b = cborBaseArray
+	}
+	e.w.writen1(b)
 }
 
 func (d *cborDecDriverBytes) readNextBd() {
@@ -3399,7 +3406,23 @@ func (d *cborDecDriverBytes) decFloat() (f float64, ok bool) {
 	case cborBdFloat64:
 		f = math.Float64frombits(bigen.Uint64(d.r.readn8()))
 	default:
-		ok = false
+		if d.bd>>5 == cborMajorTag {
+
+			switch d.bd & 0x1f {
+			case 2:
+				f = d.decTagBigIntAsFloat(false)
+			case 3:
+				f = d.decTagBigIntAsFloat(true)
+			case 4:
+				f = d.decTagBigFloatAsFloat(true)
+			case 5:
+				f = d.decTagBigFloatAsFloat(false)
+			default:
+				ok = false
+			}
+		} else {
+			ok = false
+		}
 	}
 	return
 }
@@ -3508,7 +3531,6 @@ func (d *cborDecDriverBytes) ReadArrayStart() (length int) {
 }
 
 func (d *cborDecDriverBytes) DecodeBytes() (bs []byte, state dBytesAttachState) {
-
 	if d.advanceNil() {
 		return
 	}
@@ -3655,6 +3677,43 @@ func (d *cborDecDriverBytes) DecodeExt(rv interface{}, basetype reflect.Type, xt
 	}
 }
 
+func (d *cborDecDriverBytes) decTagBigIntAsFloat(neg bool) (f float64) {
+	bs, _ := d.DecodeBytes()
+	bi := new(big.Int).SetBytes(bs)
+	if neg {
+		bi0 := bi
+		bi = new(big.Int).Sub(big.NewInt(-1), bi0)
+	}
+	f, _ = bi.Float64()
+	return
+}
+
+func (d *cborDecDriverBytes) decTagBigFloatAsFloat(decimal bool) (f float64) {
+	if nn := d.r.readn1(); nn != 82 {
+		halt.errorf("(%d) decoding decimal/big.Float: expected 2 numbers", nn)
+	}
+	exp := d.DecodeInt64()
+	mant := d.DecodeInt64()
+	if decimal {
+
+		rf := readFloatResult{exp: int8(exp)}
+		if mant >= 0 {
+			rf.mantissa = uint64(mant)
+		} else {
+			rf.neg = true
+			rf.mantissa = uint64(-mant)
+		}
+		f, _ = parseFloat64_reader(rf)
+
+	} else {
+
+		bfm := new(big.Float).SetPrec(64).SetInt64(mant)
+		bf := new(big.Float).SetPrec(64).SetMantExp(bfm, int(exp))
+		f, _ = bf.Float64()
+	}
+	return
+}
+
 func (d *cborDecDriverBytes) DecodeNaked() {
 	if !d.bdRead {
 		d.readNextBd()
@@ -3662,7 +3721,6 @@ func (d *cborDecDriverBytes) DecodeNaked() {
 
 	n := d.d.naked()
 	var decodeFurther bool
-
 	switch d.bd >> 5 {
 	case cborMajorUint:
 		if d.h.SignedInteger {
@@ -3689,17 +3747,37 @@ func (d *cborDecDriverBytes) DecodeNaked() {
 	case cborMajorTag:
 		n.v = valueTypeExt
 		n.u = d.decUint()
+		d.bdRead = false
 		n.l = nil
-		if n.u == 0 || n.u == 1 {
-			d.bdRead = false
-			n.v = valueTypeTime
-			n.t = d.decodeTime(n.u)
-		} else if d.h.SkipUnexpectedTags && d.h.getExtForTag(n.u) == nil {
+		xx := d.h.getExtForTag(n.u)
+		if xx == nil {
+			switch n.u {
+			case 0, 1:
+				n.v = valueTypeTime
+				n.t = d.decodeTime(n.u)
+			case 2:
+				n.f = d.decTagBigIntAsFloat(false)
+				n.v = valueTypeFloat
+			case 3:
+				n.f = d.decTagBigIntAsFloat(true)
+				n.v = valueTypeFloat
+			case 4:
+				n.f = d.decTagBigFloatAsFloat(true)
+				n.v = valueTypeFloat
+			case 5:
+				n.f = d.decTagBigFloatAsFloat(false)
+				n.v = valueTypeFloat
+			case 55799:
+				d.DecodeNaked()
+			default:
+				if d.h.SkipUnexpectedTags {
+					d.DecodeNaked()
+				}
 
-			d.bdRead = false
-			d.DecodeNaked()
+			}
 			return
 		}
+
 	case cborMajorSimpleOrFloat:
 		switch d.bd {
 		case cborBdNil, cborBdUndefined:
@@ -6731,9 +6809,11 @@ func (d *decoderCborIO) arrayEnd() {
 }
 
 func (d *decoderCborIO) interfaceExtConvertAndDecode(v interface{}, ext InterfaceExt) {
-	rv := d.interfaceExtConvertAndDecodeGetRV(v, ext)
-	d.decodeValue(rv, nil)
-	ext.UpdateExt(v, rv2i(rv))
+
+	var vv interface{}
+	d.decode(&vv)
+	ext.UpdateExt(v, vv)
+
 }
 
 func (d *decoderCborIO) fn(t reflect.Type) *decFnCborIO {
@@ -7083,7 +7163,7 @@ func (e *cborEncDriverIO) EncodeExt(rv interface{}, basetype reflect.Type, xtag 
 	if ext == SelfExt {
 		e.enc.encodeAs(rv, basetype, false)
 	} else if v := ext.ConvertExt(rv); v == nil {
-		e.EncodeNil()
+		e.encodeNilBytes()
 	} else {
 		e.enc.encodeI(v)
 	}
@@ -7188,14 +7268,18 @@ func (e *cborEncDriverIO) encStringBytesS(bb byte, v string) {
 
 func (e *cborEncDriverIO) EncodeBytes(v []byte) {
 	if v == nil {
-		b := cborBdNil
-		if e.h.NilCollectionToZeroLength {
-			b = cborBaseArray
-		}
-		e.w.writen1(b)
+		e.encodeNilBytes()
 		return
 	}
 	e.EncodeStringBytesRaw(v)
+}
+
+func (e *cborEncDriverIO) encodeNilBytes() {
+	b := cborBdNil
+	if e.h.NilCollectionToZeroLength {
+		b = cborBaseArray
+	}
+	e.w.writen1(b)
 }
 
 func (d *cborDecDriverIO) readNextBd() {
@@ -7292,7 +7376,23 @@ func (d *cborDecDriverIO) decFloat() (f float64, ok bool) {
 	case cborBdFloat64:
 		f = math.Float64frombits(bigen.Uint64(d.r.readn8()))
 	default:
-		ok = false
+		if d.bd>>5 == cborMajorTag {
+
+			switch d.bd & 0x1f {
+			case 2:
+				f = d.decTagBigIntAsFloat(false)
+			case 3:
+				f = d.decTagBigIntAsFloat(true)
+			case 4:
+				f = d.decTagBigFloatAsFloat(true)
+			case 5:
+				f = d.decTagBigFloatAsFloat(false)
+			default:
+				ok = false
+			}
+		} else {
+			ok = false
+		}
 	}
 	return
 }
@@ -7401,7 +7501,6 @@ func (d *cborDecDriverIO) ReadArrayStart() (length int) {
 }
 
 func (d *cborDecDriverIO) DecodeBytes() (bs []byte, state dBytesAttachState) {
-
 	if d.advanceNil() {
 		return
 	}
@@ -7548,6 +7647,43 @@ func (d *cborDecDriverIO) DecodeExt(rv interface{}, basetype reflect.Type, xtag 
 	}
 }
 
+func (d *cborDecDriverIO) decTagBigIntAsFloat(neg bool) (f float64) {
+	bs, _ := d.DecodeBytes()
+	bi := new(big.Int).SetBytes(bs)
+	if neg {
+		bi0 := bi
+		bi = new(big.Int).Sub(big.NewInt(-1), bi0)
+	}
+	f, _ = bi.Float64()
+	return
+}
+
+func (d *cborDecDriverIO) decTagBigFloatAsFloat(decimal bool) (f float64) {
+	if nn := d.r.readn1(); nn != 82 {
+		halt.errorf("(%d) decoding decimal/big.Float: expected 2 numbers", nn)
+	}
+	exp := d.DecodeInt64()
+	mant := d.DecodeInt64()
+	if decimal {
+
+		rf := readFloatResult{exp: int8(exp)}
+		if mant >= 0 {
+			rf.mantissa = uint64(mant)
+		} else {
+			rf.neg = true
+			rf.mantissa = uint64(-mant)
+		}
+		f, _ = parseFloat64_reader(rf)
+
+	} else {
+
+		bfm := new(big.Float).SetPrec(64).SetInt64(mant)
+		bf := new(big.Float).SetPrec(64).SetMantExp(bfm, int(exp))
+		f, _ = bf.Float64()
+	}
+	return
+}
+
 func (d *cborDecDriverIO) DecodeNaked() {
 	if !d.bdRead {
 		d.readNextBd()
@@ -7555,7 +7691,6 @@ func (d *cborDecDriverIO) DecodeNaked() {
 
 	n := d.d.naked()
 	var decodeFurther bool
-
 	switch d.bd >> 5 {
 	case cborMajorUint:
 		if d.h.SignedInteger {
@@ -7582,17 +7717,37 @@ func (d *cborDecDriverIO) DecodeNaked() {
 	case cborMajorTag:
 		n.v = valueTypeExt
 		n.u = d.decUint()
+		d.bdRead = false
 		n.l = nil
-		if n.u == 0 || n.u == 1 {
-			d.bdRead = false
-			n.v = valueTypeTime
-			n.t = d.decodeTime(n.u)
-		} else if d.h.SkipUnexpectedTags && d.h.getExtForTag(n.u) == nil {
+		xx := d.h.getExtForTag(n.u)
+		if xx == nil {
+			switch n.u {
+			case 0, 1:
+				n.v = valueTypeTime
+				n.t = d.decodeTime(n.u)
+			case 2:
+				n.f = d.decTagBigIntAsFloat(false)
+				n.v = valueTypeFloat
+			case 3:
+				n.f = d.decTagBigIntAsFloat(true)
+				n.v = valueTypeFloat
+			case 4:
+				n.f = d.decTagBigFloatAsFloat(true)
+				n.v = valueTypeFloat
+			case 5:
+				n.f = d.decTagBigFloatAsFloat(false)
+				n.v = valueTypeFloat
+			case 55799:
+				d.DecodeNaked()
+			default:
+				if d.h.SkipUnexpectedTags {
+					d.DecodeNaked()
+				}
 
-			d.bdRead = false
-			d.DecodeNaked()
+			}
 			return
 		}
+
 	case cborMajorSimpleOrFloat:
 		switch d.bd {
 		case cborBdNil, cborBdUndefined:
