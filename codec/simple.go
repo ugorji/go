@@ -118,8 +118,7 @@ func (e *simpleEncDriver[T]) EncodeExt(v interface{}, basetype reflect.Type, xta
 		bs = ext.WriteExt(v)
 	}
 	if bs == nil {
-		e.encodeNilBytes() // MARKER 2025
-		// e.EncodeNil()
+		e.encodeNilBytes()
 		goto END
 	}
 	e.encodeExtPreamble(uint8(xtag), len(bs))

@@ -162,7 +162,7 @@ func (e *msgpackEncDriver[T]) EncodeExt(v interface{}, basetype reflect.Type, xt
 		bs = ext.WriteExt(v)
 	}
 	if bs == nil {
-		e.encodeNilBytes() // e.EncodeNil() MARKER 2025???
+		e.encodeNilBytes()
 		goto END
 	}
 	if e.h.WriteExt {
