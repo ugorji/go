@@ -349,43 +349,33 @@ type TestRawValue struct {
 
 // ----
 
-type testUnixNanoTimeExt struct {
+type testUnixTimeExt struct {
 	// keep timestamp here, so that do not incur interface-conversion costs
 	// ts int64
 }
 
-func (x *testUnixNanoTimeExt) WriteExt(v interface{}) []byte {
+func (x *testUnixTimeExt) WriteExt(v interface{}) []byte {
 	v2 := v.(*time.Time)
 	bs := make([]byte, 8)
-	bigenstd.PutUint64(bs, uint64(v2.UnixNano()))
+	bigenstd.PutUint64(bs, uint64(v2.Unix()))
 	return bs
 }
-func (x *testUnixNanoTimeExt) ReadExt(v interface{}, bs []byte) {
+func (x *testUnixTimeExt) ReadExt(v interface{}, bs []byte) {
 	v2 := v.(*time.Time)
 	ui := bigenstd.Uint64(bs)
 	*v2 = time.Unix(0, int64(ui)).UTC()
 }
 
-type testUnixNanoTimeInterfaceExt struct{}
+type testUnixTimeInterfaceExt struct{}
 
-func (x testUnixNanoTimeInterfaceExt) ConvertExt(v interface{}) interface{} {
-	v2 := v.(*time.Time) // structs are encoded by passing the ptr
-	return v2.UTC().UnixNano()
+func (x testUnixTimeInterfaceExt) ConvertExt(v interface{}) (r interface{}) {
+	t := v.(*time.Time) // structs are encoded by passing the ptr
+	return customEncodeTimeAsNum(*t)
 }
 
-func (x testUnixNanoTimeInterfaceExt) UpdateExt(dest interface{}, v interface{}) {
+func (x testUnixTimeInterfaceExt) UpdateExt(dest interface{}, v interface{}) {
 	tt := dest.(*time.Time)
-	*tt = time.Unix(0, v.(int64)).UTC()
-	// switch v2 := v.(type) {
-	// case int64:
-	// 	*tt = time.Unix(0, v2).UTC()
-	// case uint64:
-	// 	*tt = time.Unix(0, int64(v2)).UTC()
-	// //case float64:
-	// //case string:
-	// default:
-	// 	panic(fmt.Errorf("unsupported format for time conversion: expecting int64/uint64; got %T", v))
-	// }
+	*tt = customDecodeTimeAsNum(v)
 }
 
 // ----
@@ -4011,7 +4001,7 @@ func testUpdateExts(nhs ...testNameBasicHandle) {
 	var tUintToBytesExt testUintToBytesExt
 	var tBytesExt wrapBytesExt
 	var tTimeBytesExt timeBytesExt
-	var tUnixTimeIntfExt testUnixNanoTimeInterfaceExt
+	var tUnixTimeIntfExt testUnixTimeInterfaceExt // testUnixNanoTimeInterfaceExt
 
 	timeExtEncFn := func(rv reflect.Value) ([]byte, error) { return basicTestExtEncFn(tTimeBytesExt, rv) }
 	timeExtDecFn := func(rv reflect.Value, bs []byte) error { return basicTestExtDecFn(tTimeBytesExt, rv, bs) }
@@ -4040,7 +4030,7 @@ func testUpdateExts(nhs ...testNameBasicHandle) {
 		// add extensions for time.Time, excl json and binc (which have builtin support)
 		switch nh.n {
 		case "cbor":
-			sx(timeTyp, 1, tUnixTimeIntfExt)
+			sx(timeTyp, 1, tUnixTimeIntfExt) // MARKER 2025 (need to test ext here - not depend on builtin support)
 		case "msgpack":
 			sx(timeTyp, 1, tTimeBytesExt)
 		case "simple":
@@ -4048,3 +4038,42 @@ func testUpdateExts(nhs ...testNameBasicHandle) {
 		}
 	}
 }
+
+// type testUnixNanoTimeExt struct {
+// 	// keep timestamp here, so that do not incur interface-conversion costs
+// 	// ts int64
+// }
+
+// func (x *testUnixNanoTimeExt) WriteExt(v interface{}) []byte {
+// 	v2 := v.(*time.Time)
+// 	bs := make([]byte, 8)
+// 	bigenstd.PutUint64(bs, uint64(v2.UnixNano()))
+// 	return bs
+// }
+// func (x *testUnixNanoTimeExt) ReadExt(v interface{}, bs []byte) {
+// 	v2 := v.(*time.Time)
+// 	ui := bigenstd.Uint64(bs)
+// 	*v2 = time.Unix(0, int64(ui)).UTC()
+// }
+
+// type testUnixNanoTimeInterfaceExt struct{}
+
+// func (x testUnixNanoTimeInterfaceExt) ConvertExt(v interface{}) interface{} {
+// 	v2 := v.(*time.Time) // structs are encoded by passing the ptr
+// 	return v2.UTC().UnixNano()
+// }
+
+// func (x testUnixNanoTimeInterfaceExt) UpdateExt(dest interface{}, v interface{}) {
+// 	tt := dest.(*time.Time)
+// 	*tt = time.Unix(0, v.(int64)).UTC()
+// 	// switch v2 := v.(type) {
+// 	// case int64:
+// 	// 	*tt = time.Unix(0, v2).UTC()
+// 	// case uint64:
+// 	// 	*tt = time.Unix(0, int64(v2)).UTC()
+// 	// //case float64:
+// 	// //case string:
+// 	// default:
+// 	// 	panic(fmt.Errorf("unsupported format for time conversion: expecting int64/uint64; got %T", v))
+// 	// }
+// }

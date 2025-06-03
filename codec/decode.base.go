@@ -745,47 +745,6 @@ func (d *decoderBase) arrayStart(v int) int {
 	return v
 }
 
-func (d *decoderBase) interfaceExtConvertAndDecodeGetRV(v interface{}, ext InterfaceExt) reflect.Value {
-	// var v interface{} = ext.ConvertExt(rv)
-	// d.d.decode(&v)
-	// ext.UpdateExt(rv, v)
-
-	// assume v is a pointer:
-	// - if struct|array, pass as is to ConvertExt
-	// - else make it non-addressable and pass to ConvertExt
-	// - make return value from ConvertExt addressable
-	// - decode into it
-	// - return the interface for passing into UpdateExt.
-	// - interface should be a pointer if struct|array, else a value
-
-	var s interface{}
-	rv := reflect.ValueOf(v)
-	rv2 := rv.Elem()
-	rvk := rv2.Kind()
-	if rvk == reflect.Struct || rvk == reflect.Array {
-		s = ext.ConvertExt(v)
-	} else {
-		s = ext.ConvertExt(rv2i(rv2))
-	}
-	rv = reflect.ValueOf(s)
-
-	// We cannot use isDecodeable here, as the value converted may be nil,
-	// or it may not be nil but is not addressable and thus we cannot extend it, etc.
-	// Instead, we just ensure that the value is addressable.
-
-	if !rv.CanAddr() {
-		rvk = rv.Kind()
-		rv2 = d.oneShotAddrRV(rv.Type(), rvk)
-		if rvk == reflect.Interface {
-			rvSetIntf(rv2, rv)
-		} else {
-			rvSetDirect(rv2, rv)
-		}
-		rv = rv2
-	}
-	return rv
-}
-
 func (d *decoderBase) oneShotAddrRV(rvt reflect.Type, rvk reflect.Kind) reflect.Value {
 	// MARKER 2025: is this slow for calling oneShot?
 	if decUseTransient && d.h.getTypeInfo4RT(baseRT(rvt)).flagCanTransient {
@@ -815,12 +774,10 @@ func (x decNegintPosintFloatNumberHelper) uint64TryFloat(neg bool) (ui uint64) {
 		halt.errorStr("assigning negative signed value to unsigned type")
 	}
 	f, ok := x.d.decFloat()
-	if ok && f >= 0 && noFrac64(math.Float64bits(f)) {
-		ui = uint64(f)
-	} else {
+	if !(ok && f >= 0 && noFrac64(math.Float64bits(f))) {
 		halt.errorStr2("invalid number loading uint64, with descriptor: ", x.d.descBd())
 	}
-	return ui
+	return uint64(f)
 }
 
 func (x decNegintPosintFloatNumberHelper) int64(ui uint64, neg, ok, cbor bool) (i int64) {
@@ -831,12 +788,10 @@ func (x decNegintPosintFloatNumberHelper) int64(ui uint64, neg, ok, cbor bool) (
 	// }
 	// func (x decNegintPosintFloatNumberHelper) int64TryFloat() (i int64) {
 	f, ok := x.d.decFloat()
-	if ok && noFrac64(math.Float64bits(f)) {
-		i = int64(f)
-	} else {
-		halt.errorStr2("invalid number loading uint64, with descriptor: ", x.d.descBd())
+	if !(ok && noFrac64(math.Float64bits(f))) {
+		halt.errorf("invalid number loading uint64 (%v), with descriptor: %s", f, x.d.descBd())
 	}
-	return
+	return int64(f)
 }
 
 func (x decNegintPosintFloatNumberHelper) float64(f float64, ok, cbor bool) float64 {
@@ -1022,4 +977,50 @@ func bytesOKs(bs []byte, _ dBytesAttachState) []byte {
 // 		return string(v)
 // 	}
 // 	return d.is.string(v)
+// }
+
+// func (x decNegintPosintFloatNumberHelper) roundFloat(v float64, prec int) float64 {
+// 	ratio := math.Pow(10, float64(prec))
+// 	return math.Round(v*ratio) / ratio
+// }
+
+// func (d *decoderBase) interfaceExtConvertAndDecodeGetRV(v interface{}, ext InterfaceExt) reflect.Value {
+// 	// var v interface{} = ext.ConvertExt(rv)
+// 	// d.d.decode(&v)
+// 	// ext.UpdateExt(rv, v)
+
+// 	// assume v is a pointer:
+// 	// - if struct|array, pass as is to ConvertExt
+// 	// - else make it non-addressable and pass to ConvertExt
+// 	// - make return value from ConvertExt addressable
+// 	// - decode into it
+// 	// - return the interface for passing into UpdateExt.
+// 	// - interface should be a pointer if struct|array, else a value
+
+// 	var s interface{}
+// 	rv := reflect.ValueOf(v)
+// 	rv2 := rv.Elem()
+// 	rvk := rv2.Kind()
+// 	if rvk == reflect.Struct || rvk == reflect.Array {
+// 		s = ext.ConvertExt(v)
+// 	} else {
+// 		s = ext.ConvertExt(rv2i(rv2))
+// 	}
+// 	rv = reflect.ValueOf(s)
+
+// 	// We cannot use isDecodeable here, as the value converted may be nil,
+// 	// or it may not be nil but is not addressable and thus we cannot extend it, etc.
+// 	// Instead, we just ensure that the value is addressable.
+
+// 	if !rv.CanAddr() {
+// 		rvk = rv.Kind()
+// 		rv2 = d.oneShotAddrRV(rv.Type(), rvk)
+// 		if rvk == reflect.Interface {
+// 			rvSetIntf(rv2, rv)
+// 		} else {
+// 			rvSetDirect(rv2, rv)
+// 		}
+// 		rv = rv2
+// 	}
+// 	return rv
 // }

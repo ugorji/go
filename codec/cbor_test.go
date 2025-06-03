@@ -154,17 +154,17 @@ type testCborGolden struct {
 
 // Some tests are skipped because they include numbers outside the range of int64/uint64
 func TestCborGoldens(t *testing.T) {
-	var h Handle = testCborH
+	ch := testCborH
+	var h Handle = ch
 	defer testSetup2(t, &h)()
 	bh := testBasicHandle(h)
-	defer func(oldMapType reflect.Type, oldRawToString, oldSignedInteger bool) {
-		bh.MapType = oldMapType
-		bh.RawToString = oldRawToString
-		bh.SignedInteger = oldSignedInteger
-	}(bh.MapType, bh.RawToString, bh.SignedInteger)
+	defer func(a reflect.Type, b, c, d bool) {
+		bh.MapType, bh.RawToString, bh.SignedInteger, ch.SkipUnexpectedTags = a, b, c, d
+	}(bh.MapType, bh.RawToString, bh.SignedInteger, ch.SkipUnexpectedTags)
 	bh.MapType = testMapStrIntfTyp
 	bh.RawToString = false
 	bh.SignedInteger = false
+	// ch.SkipUnexpectedTags = false // MARKER 2025 - shouldn't be needed
 
 	// decode test-cbor-goldens.json into a list of []*testCborGolden
 	// for each one,
@@ -195,6 +195,7 @@ func TestCborGoldens(t *testing.T) {
 
 	tagregex := regexp.MustCompile(`[\d]+\(.+?\)`)
 	hexregex := regexp.MustCompile(`h'([0-9a-fA-F]*)'`)
+	var bs []byte
 	for i, g := range gs {
 		// skip tags or simple or those with prefix, as we can't verify them.
 		if g.Skip || strings.HasPrefix(g.Diagnostic, "simple(") || tagregex.MatchString(g.Diagnostic) {
@@ -211,11 +212,12 @@ func TestCborGoldens(t *testing.T) {
 				g.Decoded = bs2
 			}
 		}
-		bs, err := hex.DecodeString(g.Hex)
+		bs, err = hex.DecodeString(g.Hex)
 		if err != nil {
 			t.Logf("[%v] error hex decoding %s [%v]: %v", i, g.Hex, g.Hex, err)
 			t.FailNow()
 		}
+		// debugf("cbor-goldens: bs: (%d) % x", hlRED, len(bs), bs)
 		var v interface{}
 		NewDecoderBytes(bs, h).MustDecode(&v)
 		switch v.(type) {
@@ -225,32 +227,36 @@ func TestCborGoldens(t *testing.T) {
 			continue
 		}
 		// check the diagnostics to compare
+		var b bool
+		var v0 interface{}
 		switch g.Diagnostic {
 		case "Infinity":
-			b := math.IsInf(v.(float64), 1)
-			testCborError(t, i, math.Inf(1), v, nil, &b)
+			b = math.IsInf(v.(float64), 1)
+			v0 = math.Inf(1)
 		case "-Infinity":
-			b := math.IsInf(v.(float64), -1)
-			testCborError(t, i, math.Inf(-1), v, nil, &b)
+			b = math.IsInf(v.(float64), -1)
+			v0 = math.Inf(-1)
 		case "NaN":
 			// println(i, "checking NaN")
-			b := math.IsNaN(v.(float64))
-			testCborError(t, i, math.NaN(), v, nil, &b)
+			b = math.IsNaN(v.(float64))
+			v0 = math.NaN()
 		case "undefined":
-			b := v == nil
-			testCborError(t, i, nil, v, nil, &b)
+			b = v == nil
 		default:
-			v0 := g.Decoded
+			v0 = g.Decoded
+			err = testEqual(v0, v)
+			b = true
 			// testCborCoerceJsonNumber(reflect.ValueOf(&v0))
-			testCborError(t, i, v0, v, testEqual(v0, v), nil)
 		}
+		testCborError(t, g.Diagnostic, i, v0, v, err, b)
 	}
 }
 
-func testCborError(t *testing.T, i int, v0, v1 interface{}, err error, equal *bool) {
-	if err == nil && equal == nil {
-		return
-	}
+func testCborError(t *testing.T, diagnostic string, i int, v0, v1 interface{}, err error, equal bool) {
+	// only err or equal is set
+	// if err == nil && equal {
+	// 	return
+	// }
 	if err != nil {
 		t.Logf("[%v] testEqual error: %v", i, err)
 		if testv.Verbose {
@@ -258,14 +264,16 @@ func testCborError(t *testing.T, i int, v0, v1 interface{}, err error, equal *bo
 			t.Logf("    ....... DECODED: (%T) %#v", v1, v1)
 		}
 		t.FailNow()
+		return
 	}
-	if equal != nil && !*equal {
+	if !equal {
 		t.Logf("[%v] values not equal", i)
 		if testv.Verbose {
 			t.Logf("    ....... GOLDEN:  (%T) %#v", v0, v0)
 			t.Logf("    ....... DECODED: (%T) %#v", v1, v1)
 		}
 		t.FailNow()
+		return
 	}
 }
 

@@ -3,7 +3,10 @@
 
 package codec
 
-import "time"
+import (
+	"math"
+	"time"
+)
 
 // EncodeTime encodes a time.Time as a []byte, including
 // information on the instant in time and UTC offset.
@@ -155,5 +158,34 @@ func customDecodeTime(bs []byte) (tt time.Time, err error) {
 		// var zoneName = timeLocUTCName(tzint)
 		tt = time.Unix(tsec, int64(tnsec)).In(time.FixedZone("", int(tzint)*60))
 	}
+	return
+}
+
+// customEncodeTimeAsNum encodes time.Time exactly as cbor does.
+func customEncodeTimeAsNum(t time.Time) (r interface{}) {
+	t = t.UTC().Round(time.Microsecond)
+	sec, nsec := t.Unix(), uint64(t.Nanosecond())
+	if nsec == 0 {
+		r = sec
+	} else {
+		r = float64(sec) + float64(nsec)/1e9
+	}
+	return r
+}
+
+// customDecodeTimeAsNum decodes time.Time exactly as cbor does.
+func customDecodeTimeAsNum(v interface{}) (t time.Time) {
+	switch vv := v.(type) {
+	case int64:
+		t = time.Unix(vv, 0)
+	case uint64:
+		t = time.Unix((int64)(vv), 0)
+	case float64:
+		f1, f2 := math.Modf(vv)
+		t = time.Unix(int64(f1), int64(f2*1e9))
+	default:
+		halt.errorf("expect int64/float64 for time.Time ext: got %T", v)
+	}
+	t = t.UTC().Round(time.Microsecond)
 	return
 }

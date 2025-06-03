@@ -1676,9 +1676,16 @@ func (d *decoder[T]) arrayEnd() {
 }
 
 func (d *decoder[T]) interfaceExtConvertAndDecode(v interface{}, ext InterfaceExt) {
-	rv := d.interfaceExtConvertAndDecodeGetRV(v, ext)
-	d.decodeValue(rv, nil)
-	ext.UpdateExt(v, rv2i(rv))
+	// The ext may support different types for performance e.g. int if no fractions, else float64
+	// Consequently, best mode is:
+	// - decode next value into an interface{}
+	// - pass it to the UpdateExt
+	var vv interface{}
+	d.decode(&vv)
+	ext.UpdateExt(v, vv)
+	// rv := d.interfaceExtConvertAndDecodeGetRV(v, ext)
+	// d.decodeValue(rv, nil)
+	// ext.UpdateExt(v, rv2i(rv))
 }
 
 func (d *decoder[T]) fn(t reflect.Type) *decFn[T] {

@@ -462,7 +462,7 @@ func TestCodecSuite(t *testing.T) {
 		testMsgpackH.NoFixedNum = true
 		testMsgpackH.PositiveIntUnsigned = true
 		testCborH.IndefiniteLength = true
-		// testCborH.SkipUnexpectedTags = true // MARKER 2025 failing
+		testCborH.SkipUnexpectedTags = true
 	}
 	// --------------
 	testGroupResetBase()

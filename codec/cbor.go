@@ -8,6 +8,7 @@ package codec
 import (
 	"io"
 	"math"
+	"math/big"
 	"reflect"
 	"time"
 	"unicode/utf8"
@@ -469,7 +470,6 @@ func (d *cborDecDriver[T]) ReadArrayStart() (length int) {
 // Safe to use freely here only.
 
 func (d *cborDecDriver[T]) DecodeBytes() (bs []byte, state dBytesAttachState) {
-	// defer func() { debugf("DecodeBytes: returning: (%v) bs: %s", bs == nil, bs) }()
 	if d.advanceNil() {
 		return
 	}
@@ -623,7 +623,6 @@ func (d *cborDecDriver[T]) DecodeNaked() {
 
 	n := d.d.naked()
 	var decodeFurther bool
-
 	switch d.bd >> 5 {
 	case cborMajorUint:
 		if d.h.SignedInteger {
@@ -650,17 +649,69 @@ func (d *cborDecDriver[T]) DecodeNaked() {
 	case cborMajorTag:
 		n.v = valueTypeExt
 		n.u = d.decUint()
+		d.bdRead = false
 		n.l = nil
-		if n.u == 0 || n.u == 1 {
-			d.bdRead = false
-			n.v = valueTypeTime
-			n.t = d.decodeTime(n.u)
-		} else if d.h.SkipUnexpectedTags && d.h.getExtForTag(n.u) == nil {
-			// d.skipTags() // no need to call this - tags already skipped
-			d.bdRead = false
-			d.DecodeNaked()
-			return // return when done (as true recursive function)
+		xx := d.h.getExtForTag(n.u)
+		if xx == nil {
+			switch n.u {
+			case 0, 1:
+				n.v = valueTypeTime
+				n.t = d.decodeTime(n.u)
+			case 2, 3: // (neg) big.Integer --> float
+				n.l, _ = d.DecodeBytes()
+				bi := new(big.Int).SetBytes(n.l)
+				if n.u == 3 { // neg big.Int
+					bi0 := bi
+					bi = new(big.Int).Sub(big.NewInt(-1), bi0)
+				}
+				n.f, _ = bi.Float64()
+				n.v = valueTypeFloat
+			case 4, 5: // decimal/big.Float (array of 2 numbers: e, m)
+				if nn := d.r.readn1(); nn != 82 {
+					halt.errorf("(%d) decoding decimal/big.Float: expected 2 numbers", nn)
+				}
+				exp := d.DecodeInt64()
+				mant := d.DecodeInt64()
+				if n.u == 4 { // m*(10**e)
+					// MARKER: if precision/other issues crop, consider using big.Float on base 10.
+					// The logic is more convoluted, which is why we leverage readFloatResult for now.
+					rf := readFloatResult{exp: int8(exp)}
+					if mant >= 0 {
+						rf.mantissa = uint64(mant)
+					} else {
+						rf.neg = true
+						rf.mantissa = uint64(-mant)
+					}
+					n.f, _ = parseFloat64_reader(rf)
+					// n.f = float64(mant) * math.Pow10(exp)
+				} else { // m*(2**e)
+					// n.f = float64(mant) * math.Pow(2, exp)
+					bfm := new(big.Float).SetPrec(64).SetInt64(mant)
+					bf := new(big.Float).SetPrec(64).SetMantExp(bfm, int(exp))
+					n.f, _ = bf.Float64()
+				}
+				n.v = valueTypeFloat
+			case 55799:
+				// skip
+				d.DecodeNaked()
+			default:
+				if d.h.SkipUnexpectedTags {
+					d.DecodeNaked()
+				}
+				// else we will use standard mode to decode ext e.g. into a RawExt
+			}
+			return
 		}
+		// if n.u == 0 || n.u == 1 {
+		// 	d.bdRead = false
+		// 	n.v = valueTypeTime
+		// 	n.t = d.decodeTime(n.u)
+		// } else if d.h.SkipUnexpectedTags && d.h.getExtForTag(n.u) == nil {
+		// 	// d.skipTags() // no need to call this - tags already skipped
+		// 	d.bdRead = false
+		// 	d.DecodeNaked()
+		// 	return // return when done (as true recursive function)
+		// }
 	case cborMajorSimpleOrFloat:
 		switch d.bd {
 		case cborBdNil, cborBdUndefined:
