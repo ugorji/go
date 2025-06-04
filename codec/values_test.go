@@ -20,6 +20,7 @@ import (
 	"math"
 	"strconv"
 	"strings"
+	"sync"
 )
 
 // func init() {
@@ -431,8 +432,10 @@ func newTestStruc(depth, n int, bench, useInterface, useStringKeyOnly bool) (ts 
 }
 
 var testStrRptMap = make(map[int]map[string]string)
+var testStrRptMapMu sync.Mutex
 
 func strRpt(n int, s string) string {
+	testStrRptMapMu.Lock()
 	// if false {
 	// 	return strings.Repeat(s, n)
 	// }
@@ -446,6 +449,7 @@ func strRpt(n int, s string) string {
 		v1 = strings.Repeat(s, n)
 		m1[s] = v1
 	}
+	testStrRptMapMu.Unlock()
 	return v1
 }
 
