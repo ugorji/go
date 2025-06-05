@@ -382,9 +382,10 @@ func TestCodecSuite(t *testing.T) {
 	}
 
 	testGroupResetBase := func() {
-		testv.D = DecodeOptions{}
-		testv.E = EncodeOptions{}
-		testv.updateHandleOptions()
+		tbvars.D = DecodeOptions{}
+		tbvars.E = EncodeOptions{}
+		tbvars.R = RPCOptions{}
+		tbvars.updateHandleOptions()
 
 		testv.RpcBufsize = 2048
 		testv.UseReset = false
@@ -414,7 +415,7 @@ func TestCodecSuite(t *testing.T) {
 
 	fnTrueV := func() {
 		testGroupResetBase()
-		testv.setBufsize(0)
+		tbvars.setBufsize(0)
 		testv.UseReset = true
 		testv.UseParallel = true
 
@@ -466,13 +467,13 @@ func TestCodecSuite(t *testing.T) {
 	}
 	// --------------
 	testGroupResetBase()
-	testv.setBufsize(-1)
+	tbvars.setBufsize(-1)
 	testReinit()
 	testGroupResetHandles()
 	fnRun("optionsFalse", testCodecGroup)
 
 	// --------------
-	testv.setBufsize(0)
+	tbvars.setBufsize(0)
 	testReinit()
 	testGroupResetHandles()
 	fnRun("optionsFalse-io", testCodecGroup)
@@ -511,7 +512,7 @@ func TestCodecSuite(t *testing.T) {
 	// will require a re-fill, and test out bufioEncWriter.writeqstr well.
 	// Due to last requirement, we prefer 16 to 128.
 	testv.SkipRPCTests = true
-	testv.setBufsize(16)
+	tbvars.setBufsize(16)
 	// tbvars.D.ReaderBufferSize = 128
 	// tbvars.E.WriterBufferSize = 128
 	testReinit()
@@ -524,7 +525,7 @@ func TestCodecSuite(t *testing.T) {
 	// tbvars.D.ReaderBufferSize = 0
 	// tbvars.E.WriterBufferSize = 0
 	testv.SkipRPCTests = false
-	testv.setBufsize(-1)
+	tbvars.setBufsize(-1)
 	// ---
 	testv.NumRepeatString = 32
 	testReinit()
@@ -565,10 +566,10 @@ func TestCodecSuite(t *testing.T) {
 	fnRun("simple-enczeroasnil", testSimpleMammothGroup) // testSimpleGroup
 
 	// --------------
-	defer testv.setBufsize((int)(testv.bufsize))
-	defer func(b bool) { testv.R.RPCNoBuffer = b }(testv.R.RPCNoBuffer)
-	testv.setBufsize(16)
-	testv.R.RPCNoBuffer = false
+	defer tbvars.setBufsize((int)(testv.bufsize))
+	defer func(b bool) { tbvars.R.RPCNoBuffer = b }(tbvars.R.RPCNoBuffer)
+	tbvars.setBufsize(16)
+	tbvars.R.RPCNoBuffer = false
 	testReinit()
 	testGroupResetHandles()
 	testv.RpcBufsize = 0
@@ -581,7 +582,7 @@ func TestCodecSuite(t *testing.T) {
 	fnRun("rpc-buf-16", testRpcGroup)
 	testv.RpcBufsize = 2048
 	fnRun("rpc-buf-2048", testRpcGroup)
-	testv.R.RPCNoBuffer = true
+	tbvars.R.RPCNoBuffer = true
 	testv.RpcBufsize = 0
 	fnRun("rpc-buf-0-rpcNoBuffer", testRpcGroup)
 	testv.RpcBufsize = 0

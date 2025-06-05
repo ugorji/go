@@ -43,26 +43,26 @@ func benchmarkSuiteNoop(b *testing.B) {
 }
 
 func benchmarkSuite(t *testing.B, fns ...func(t *testing.B)) {
-	defer testv.setBufsize((int)(testv.bufsize))
+	defer tbvars.setBufsize((int)(testv.bufsize))
 
 	f := benchmarkOneFn(fns)
 	// find . -name "*_test.go" | xargs grep -e 'flag.' | cut -d '&' -f 2 | cut -d ',' -f 1 | grep -e '^bench'
 
 	testReinit()
-	testv.setBufsize(-1)
+	tbvars.setBufsize(-1)
 	testReinit()
 	t.Run("use-bytes.......", f)
 
-	testv.setBufsize(1024)
+	tbvars.setBufsize(1024)
 	testReinit()
 	t.Run("use-io-1024-....", f)
 }
 
 func benchmarkVeryQuickSuite(t *testing.B, name string, fns ...func(t *testing.B)) {
-	defer testv.setBufsize((int)(testv.bufsize))
+	defer tbvars.setBufsize((int)(testv.bufsize))
 	benchmarkDivider()
 
-	testv.setBufsize(-1)
+	tbvars.setBufsize(-1)
 	// testv.Depth = depth
 	testReinit()
 
@@ -70,16 +70,16 @@ func benchmarkVeryQuickSuite(t *testing.B, name string, fns ...func(t *testing.B
 }
 
 func benchmarkQuickSuite(t *testing.B, name string, fns ...func(t *testing.B)) {
-	defer testv.setBufsize((int)(testv.bufsize))
+	defer tbvars.setBufsize((int)(testv.bufsize))
 	benchmarkVeryQuickSuite(t, name, fns...)
 
 	// encoded size of TestStruc is between 20K and 30K for bd=1 // consider buffer=1024 * 16 * testv.Depth
-	testv.setBufsize(1024) // (value of byteBufSize): use smaller buffer, and more flushes - it's ok.
+	tbvars.setBufsize(1024) // (value of byteBufSize): use smaller buffer, and more flushes - it's ok.
 	// testv.Depth = depth
 	testReinit()
 	t.Run(name+"-bd"+strconv.Itoa(testv.Depth)+"-buf"+strconv.Itoa((int)(testv.bufsize)), benchmarkOneFn(fns))
 
-	testv.setBufsize(0)
+	tbvars.setBufsize(0)
 	// testv.Depth = depth
 	testReinit()
 	t.Run(name+"-bd"+strconv.Itoa(testv.Depth)+"-io.....", benchmarkOneFn(fns))
