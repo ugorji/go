@@ -15,6 +15,30 @@ import (
 	gocmp "github.com/google/go-cmp/cmp"
 )
 
+type testBenchVars struct {
+	*testVars
+
+	// variables that are not flags, but which can configure the handles
+	E EncodeOptions
+	D DecodeOptions
+	R RPCOptions
+}
+
+func (x *testBenchVars) setBufsize(v int) {
+	x.E.WriterBufferSize = v
+	x.D.ReaderBufferSize = v
+}
+
+func (x *testBenchVars) updateHandleOptions() {
+	x.D.MaxInitLen = testv.maxInitLen
+	x.D.ZeroCopy = testv.zeroCopy
+	x.setBufsize((int)(x.bufsize))
+}
+
+var tbvars = testBenchVars{
+	testVars: &testv,
+}
+
 type testHED struct {
 	H   Handle
 	Eb  *Encoder
@@ -59,12 +83,16 @@ var (
 
 func init() {
 	// doTestInit()
-	testPreInitFns = append(testPreInitFns, doTestInit)
+	testPreInitFns = append(testPreInitFns, doTestUpdateHandleOptions, doTestInit)
 	testPostInitFns = append(testPostInitFns, doTestPostInit)
 	// doTestInit MUST be the first function executed during a reinit
 	// testReInitFns = slices.Insert(testReInitFns, 0, doTestInit)
 	// testReInitFns = slices.Insert(testReInitFns, 0, doTestReinit)
 	testReInitFns = append(testReInitFns, doTestInit, doTestPostInit)
+}
+
+func doTestUpdateHandleOptions() {
+	tbvars.updateHandleOptions()
 }
 
 func doTestInit() {
@@ -131,7 +159,7 @@ func testSharedCodecEncode(ts interface{}, bsIn []byte,
 	// bs = make([]byte, 0, approxSize)
 	var e *Encoder
 	var buf *bytes.Buffer
-	useIO := testv.E.WriterBufferSize >= 0
+	useIO := tbvars.E.WriterBufferSize >= 0
 	if testv.UseReset && !testv.UseParallel {
 		hed := testHEDGet(h)
 		if useIO {
@@ -170,7 +198,7 @@ func testSharedCodecEncode(ts interface{}, bsIn []byte,
 
 func testSharedCodecDecoder(bs []byte, h Handle) (d *Decoder) {
 	// var buf *bytes.Reader
-	useIO := testv.D.ReaderBufferSize >= 0
+	useIO := tbvars.D.ReaderBufferSize >= 0
 	if testv.UseReset && !testv.UseParallel {
 		hed := testHEDGet(h)
 		if useIO {
@@ -210,13 +238,17 @@ func testUpdateBasicHandleOptions(bh *BasicHandle) {
 	// cleanInited() not needed, as we re-create the Handles on each reinit
 	// bh.clearInited() // so it is reinitialized next time around
 	// pre-fill them first
-	bh.EncodeOptions = testv.E
-	bh.DecodeOptions = testv.D
-	bh.RPCOptions = testv.R
+	bh.EncodeOptions = tbvars.E
+	bh.DecodeOptions = tbvars.D
+	bh.RPCOptions = tbvars.R
 	// bh.InterfaceReset = true
 	// bh.PreferArrayOverSlice = true
 	// modify from flag'ish things
 	// bh.MaxInitLen = testMaxInitLen
+}
+
+func testUseIO() bool {
+	return tbvars.D.ReaderBufferSize >= 0
 }
 
 var errDeepEqualNotMatch = errors.New("not match")
@@ -241,194 +273,3 @@ func testEqual(v1, v2 interface{}) (err error) {
 	}
 	return
 }
-
-// perform a comparison taking Handle fields into consideration
-func testEqualH(v1, v2 interface{}, h Handle) (err error) {
-	var preferFloat, zeroAsNil, mapKeyAsStr, isJson bool
-	_, _, _, _ = preferFloat, zeroAsNil, mapKeyAsStr, isJson
-	// var nilColAsZeroLen, str2Raw, intAsStr bool
-	bh := testBasicHandle(h)
-	switch x := h.(type) {
-	case *SimpleHandle:
-		zeroAsNil = x.EncZeroValuesAsNil
-	case *JsonHandle:
-		mapKeyAsStr = x.MapKeyAsString
-		preferFloat = x.PreferFloat
-		isJson = true
-	}
-
-	// create a clone that honors the Handle options
-	// then compare that using reflect.DeepEqual
-
-	const structExportedFieldsOnly = false
-
-	visited := make(map[uintptr]reflect.Value)
-
-	var rcopy func(src, target reflect.Value)
-	rcopy = func(src, target reflect.Value) {
-	TOP:
-		switch src.Kind() {
-		case reflect.Interface:
-			if src.IsNil() {
-				return
-			}
-			src = src.Elem()
-			goto TOP
-		case reflect.Ptr:
-			if src.IsNil() {
-				return // target remains zero, which is correct for a nil pointer
-			}
-			addr := src.Pointer()
-			if copiedPtr, ok := visited[addr]; ok {
-				if target.Type() == copiedPtr.Type() {
-					target.Set(copiedPtr) // Set target to the already copied pointer
-				} else if target.Type() == copiedPtr.Elem().Type() && copiedPtr.Kind() == reflect.Ptr {
-					target.Set(copiedPtr.Elem()) // If target is value, set to copied pointer's element
-				}
-				return
-			}
-			// New pointer needed for the field/element
-			elemCopy := reflect.New(src.Elem().Type())
-			visited[addr] = elemCopy // Store the new pointer
-			rcopy(src.Elem(), elemCopy.Elem())
-			target.Set(elemCopy)
-		case reflect.Array:
-			target.Set(src)
-			for i, slen := 0, src.Len(); i < slen; i++ {
-				rcopy(src.Index(i), target.Index(i))
-			}
-		case reflect.Slice:
-			if src.IsNil() {
-				if bh.NilCollectionToZeroLength {
-					target.Set(reflect.MakeSlice(src.Type(), 0, 0))
-				}
-				return
-				// debugf("slice: %T: %v", hlBLUE, rv.Interface(), rv.Interface())
-			}
-			slen := src.Len()
-			target.Set(reflect.MakeSlice(src.Type(), slen, src.Cap()))
-			for i := 0; i < slen; i++ {
-				rcopy(src.Index(i), target.Index(i))
-			}
-		case reflect.Map:
-			if src.IsNil() {
-				if bh.NilCollectionToZeroLength {
-					target.Set(reflect.MakeMapWithSize(src.Type(), 0))
-				}
-				return
-				// debugf("map: %T: %v", hlBLUE, rv.Interface(), rv.Interface())
-			}
-			target.Set(reflect.MakeMapWithSize(src.Type(), src.Len()))
-			iter := src.MapRange()
-			for iter.Next() {
-				kSrc := iter.Key()
-				vSrc := iter.Value()
-				kTarget := reflect.New(kSrc.Type()).Elem()
-				vTarget := reflect.New(vSrc.Type()).Elem()
-				rcopy(kSrc, kTarget)
-				rcopy(vSrc, vTarget)
-				target.SetMapIndex(kTarget, vTarget)
-			}
-		case reflect.Chan:
-			if src.IsNil() {
-				if bh.NilCollectionToZeroLength {
-					target.Set(reflect.MakeChan(src.Type(), 0))
-				}
-				return
-			}
-		case reflect.Struct:
-			tt := src.Type()
-			for i, n := 0, src.NumField(); i < n; i++ {
-				if !structExportedFieldsOnly || tt.Field(i).IsExported() {
-					// rv2 := rv.Field(i)
-					// if kk := rv2.Kind(); (kk == reflect.Slice || kk == reflect.Map) && rv2.IsNil() {
-					// 	// debugf("struct field: [%v/%s] (%v) nil: %v", hlYELLOW, tt, sf.Name, rv2.Type(), rv2.IsNil())
-					// }
-					rcopy(src.Field(i), target.Field(i))
-				}
-			}
-		case reflect.String:
-			// MARKER 2025 - need to all use same functions to compare
-			// s := src.String()
-			// if isJson && bh.StringToRaw {
-			// 	s = base64.StdEncoding.EncodeToString(bytesView(s))
-			// 	// dbuf := make([]byte, base64.StdEncoding.DecodedLen(len(s)))
-			// 	// n, err := base64.StdEncoding.Decode(dbuf, bytesView(s))
-			// 	// if err == nil {
-			// 	// 	s = stringView(dbuf[:n])
-			// 	// }
-			// }
-			// target.SetString(s)
-			target.Set(src)
-		default: // Basic types: int, string, bool, etc.
-			target.Set(src)
-			// if src.Type().AssignableTo(target.Type()) {
-			// 	target.Set(src)
-			// }
-		}
-	}
-
-	deepcopy := func(in interface{}) (rv reflect.Value) {
-		// debugf("start transform: %T(%p) (isnil: %v)", hlGREEN, in, in, in == nil)
-		clear(visited)
-		src := reflect.ValueOf(in)
-		if src.Kind() == reflect.Ptr {
-			if src.IsNil() {
-				rv = reflect.Zero(src.Type()) // or nil for typed nil
-			} else {
-				rv = reflect.New(src.Type().Elem())
-				visited[src.Pointer()] = rv
-				rcopy(src.Elem(), rv.Elem())
-			}
-		} else {
-			rv = reflect.New(src.Type()).Elem()
-			rcopy(src, rv)
-		}
-		// debugf("transforming %T(%p) --> %T(%p) (isnil: %v)", hlGREEN, in, in, out, out, out == nil)
-		return
-	}
-
-	if v1 != nil {
-		v1 = deepcopy(v1).Interface()
-	}
-	if !reflect.DeepEqual(v1, v2) {
-		if testv.UseDiff {
-			err = errors.New(gocmp.Diff(v1, v2))
-		} else {
-			err = errDeepEqualNotMatch
-		}
-	}
-	return
-}
-
-// func testEqualH(v1, v2 interface{}, h Handle) (err error) {
-// 	// ...
-// 	//
-// 	// var o gocmp.Option
-// 	// var p []gocmp.Option
-// 	// if zeroAsNil {
-// 	// }
-// 	// if mapKeyAsStr {
-// 	// }
-// 	// if bh.NilCollectionToZeroLength {
-// 	//
-// 	// ...
-// 	//
-// 	// o = gocmpopts.AcyclicTransformer("T1", f)
-// 	// p = append(p, o)
-// 	// if !gocmp.Equal(v1, v2, p...) {
-// 	// 	if testv.UseDiff {
-// 	// 		err = errors.New(gocmp.Diff(v1, v2, p...))
-// 	// 	} else {
-// 	// 		err = errDeepEqualNotMatch
-// 	// 	}
-// 	// }
-// 	// return
-// 	//
-// 	// ...
-// 	//
-// 	// o = cmp.Transformer("T1", func(in interface{}) (out interface{}) {
-// 	// 	out.Real, out.Imag = real(in), imag(in)
-// 	// 	return out
-// 	// })
-// }

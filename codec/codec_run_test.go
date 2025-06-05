@@ -50,6 +50,8 @@ import (
 	"sync/atomic"
 	"testing"
 	"time"
+
+	gocmp "github.com/google/go-cmp/cmp"
 )
 
 func init() {
@@ -3519,7 +3521,7 @@ func doTestNextValueBytes(t *testing.T, h Handle) {
 	var valueBytes2 = make([][]byte, len(inputs))
 
 	fnUncontested := func(v []byte) []byte {
-		if testv.D.ReaderBufferSize >= 0 { // useIO
+		if tbvars.D.ReaderBufferSize >= 0 { // useIO
 			v2 := make([]byte, len(v))
 			copy(v2, v)
 			v = v2
@@ -4038,6 +4040,197 @@ func testUpdateExts(nhs ...testNameBasicHandle) {
 		}
 	}
 }
+
+// perform a comparison taking Handle fields into consideration
+func testEqualH(v1, v2 interface{}, h Handle) (err error) {
+	var preferFloat, zeroAsNil, mapKeyAsStr, isJson bool
+	_, _, _, _ = preferFloat, zeroAsNil, mapKeyAsStr, isJson
+	// var nilColAsZeroLen, str2Raw, intAsStr bool
+	bh := testBasicHandle(h)
+	switch x := h.(type) {
+	case *SimpleHandle:
+		zeroAsNil = x.EncZeroValuesAsNil
+	case *JsonHandle:
+		mapKeyAsStr = x.MapKeyAsString
+		preferFloat = x.PreferFloat
+		isJson = true
+	}
+
+	// create a clone that honors the Handle options
+	// then compare that using reflect.DeepEqual
+
+	const structExportedFieldsOnly = false
+
+	visited := make(map[uintptr]reflect.Value)
+
+	var rcopy func(src, target reflect.Value)
+	rcopy = func(src, target reflect.Value) {
+	TOP:
+		switch src.Kind() {
+		case reflect.Interface:
+			if src.IsNil() {
+				return
+			}
+			src = src.Elem()
+			goto TOP
+		case reflect.Ptr:
+			if src.IsNil() {
+				return // target remains zero, which is correct for a nil pointer
+			}
+			addr := src.Pointer()
+			if copiedPtr, ok := visited[addr]; ok {
+				if target.Type() == copiedPtr.Type() {
+					target.Set(copiedPtr) // Set target to the already copied pointer
+				} else if target.Type() == copiedPtr.Elem().Type() && copiedPtr.Kind() == reflect.Ptr {
+					target.Set(copiedPtr.Elem()) // If target is value, set to copied pointer's element
+				}
+				return
+			}
+			// New pointer needed for the field/element
+			elemCopy := reflect.New(src.Elem().Type())
+			visited[addr] = elemCopy // Store the new pointer
+			rcopy(src.Elem(), elemCopy.Elem())
+			target.Set(elemCopy)
+		case reflect.Array:
+			target.Set(src)
+			for i, slen := 0, src.Len(); i < slen; i++ {
+				rcopy(src.Index(i), target.Index(i))
+			}
+		case reflect.Slice:
+			if src.IsNil() {
+				if bh.NilCollectionToZeroLength {
+					target.Set(reflect.MakeSlice(src.Type(), 0, 0))
+				}
+				return
+				// debugf("slice: %T: %v", hlBLUE, rv.Interface(), rv.Interface())
+			}
+			slen := src.Len()
+			target.Set(reflect.MakeSlice(src.Type(), slen, src.Cap()))
+			for i := 0; i < slen; i++ {
+				rcopy(src.Index(i), target.Index(i))
+			}
+		case reflect.Map:
+			if src.IsNil() {
+				if bh.NilCollectionToZeroLength {
+					target.Set(reflect.MakeMapWithSize(src.Type(), 0))
+				}
+				return
+				// debugf("map: %T: %v", hlBLUE, rv.Interface(), rv.Interface())
+			}
+			target.Set(reflect.MakeMapWithSize(src.Type(), src.Len()))
+			iter := src.MapRange()
+			for iter.Next() {
+				kSrc := iter.Key()
+				vSrc := iter.Value()
+				kTarget := reflect.New(kSrc.Type()).Elem()
+				vTarget := reflect.New(vSrc.Type()).Elem()
+				rcopy(kSrc, kTarget)
+				rcopy(vSrc, vTarget)
+				target.SetMapIndex(kTarget, vTarget)
+			}
+		case reflect.Chan:
+			if src.IsNil() {
+				if bh.NilCollectionToZeroLength {
+					target.Set(reflect.MakeChan(src.Type(), 0))
+				}
+				return
+			}
+		case reflect.Struct:
+			tt := src.Type()
+			for i, n := 0, src.NumField(); i < n; i++ {
+				if !structExportedFieldsOnly || tt.Field(i).IsExported() {
+					// rv2 := rv.Field(i)
+					// if kk := rv2.Kind(); (kk == reflect.Slice || kk == reflect.Map) && rv2.IsNil() {
+					// 	// debugf("struct field: [%v/%s] (%v) nil: %v", hlYELLOW, tt, sf.Name, rv2.Type(), rv2.IsNil())
+					// }
+					rcopy(src.Field(i), target.Field(i))
+				}
+			}
+		case reflect.String:
+			// MARKER 2025 - need to all use same functions to compare
+			// s := src.String()
+			// if isJson && bh.StringToRaw {
+			// 	s = base64.StdEncoding.EncodeToString(bytesView(s))
+			// 	// dbuf := make([]byte, base64.StdEncoding.DecodedLen(len(s)))
+			// 	// n, err := base64.StdEncoding.Decode(dbuf, bytesView(s))
+			// 	// if err == nil {
+			// 	// 	s = stringView(dbuf[:n])
+			// 	// }
+			// }
+			// target.SetString(s)
+			target.Set(src)
+		default: // Basic types: int, string, bool, etc.
+			target.Set(src)
+			// if src.Type().AssignableTo(target.Type()) {
+			// 	target.Set(src)
+			// }
+		}
+	}
+
+	deepcopy := func(in interface{}) (rv reflect.Value) {
+		// debugf("start transform: %T(%p) (isnil: %v)", hlGREEN, in, in, in == nil)
+		clear(visited)
+		src := reflect.ValueOf(in)
+		if src.Kind() == reflect.Ptr {
+			if src.IsNil() {
+				rv = reflect.Zero(src.Type()) // or nil for typed nil
+			} else {
+				rv = reflect.New(src.Type().Elem())
+				visited[src.Pointer()] = rv
+				rcopy(src.Elem(), rv.Elem())
+			}
+		} else {
+			rv = reflect.New(src.Type()).Elem()
+			rcopy(src, rv)
+		}
+		// debugf("transforming %T(%p) --> %T(%p) (isnil: %v)", hlGREEN, in, in, out, out, out == nil)
+		return
+	}
+
+	if v1 != nil {
+		v1 = deepcopy(v1).Interface()
+	}
+	if !reflect.DeepEqual(v1, v2) {
+		if testv.UseDiff {
+			err = errors.New(gocmp.Diff(v1, v2))
+		} else {
+			err = errDeepEqualNotMatch
+		}
+	}
+	return
+}
+
+// func testEqualH(v1, v2 interface{}, h Handle) (err error) {
+// 	// ...
+// 	//
+// 	// var o gocmp.Option
+// 	// var p []gocmp.Option
+// 	// if zeroAsNil {
+// 	// }
+// 	// if mapKeyAsStr {
+// 	// }
+// 	// if bh.NilCollectionToZeroLength {
+// 	//
+// 	// ...
+// 	//
+// 	// o = gocmpopts.AcyclicTransformer("T1", f)
+// 	// p = append(p, o)
+// 	// if !gocmp.Equal(v1, v2, p...) {
+// 	// 	if testv.UseDiff {
+// 	// 		err = errors.New(gocmp.Diff(v1, v2, p...))
+// 	// 	} else {
+// 	// 		err = errDeepEqualNotMatch
+// 	// 	}
+// 	// }
+// 	// return
+// 	//
+// 	// ...
+// 	//
+// 	// o = cmp.Transformer("T1", func(in interface{}) (out interface{}) {
+// 	// 	out.Real, out.Imag = real(in), imag(in)
+// 	// 	return out
+// 	// })
+// }
 
 // type testUnixNanoTimeExt struct {
 // 	// keep timestamp here, so that do not incur interface-conversion costs

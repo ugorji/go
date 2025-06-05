@@ -113,25 +113,16 @@ type testVars struct {
 	maxInitLen int
 	zeroCopy   bool
 
-	// variables that are not flags, but which can configure the handles
-	E EncodeOptions
-	D DecodeOptions
-	R RPCOptions
-
 	// MaxInitLen int
 	// ZeroCopy         bool
 	// UseIoEncDec  int
 }
 
-func (x *testVars) setBufsize(v int) {
-	x.E.WriterBufferSize = v
-	x.D.ReaderBufferSize = v
-}
-
-func (x *testVars) updateHandleOptions() {
-	x.D.MaxInitLen = testv.maxInitLen
-	x.D.ZeroCopy = testv.zeroCopy
-	x.setBufsize((int)(x.bufsize))
+var testv = testVars{
+	bufsize:         -1,
+	maxInitLen:      1024,
+	zeroCopy:        true,
+	NumRepeatString: 8,
 }
 
 type testBufioSizeFlag int
@@ -143,17 +134,9 @@ func (x *testBufioSizeFlag) Set(s string) (err error) {
 		v = -1
 	}
 	*x = testBufioSizeFlag(v)
-	testv.setBufsize((int)(v))
 	return
 }
 func (x *testBufioSizeFlag) Get() interface{} { return int(*x) }
-
-var testv = testVars{
-	bufsize:         -1,
-	maxInitLen:      1024,
-	zeroCopy:        true,
-	NumRepeatString: 8,
-}
 
 func testInitFlags() {
 	var bIgnore bool
@@ -190,7 +173,6 @@ func testParseFlags() {
 	if !flag.Parsed() {
 		flag.Parse()
 	}
-	testv.updateHandleOptions()
 }
 
 func testReinit() {

@@ -418,26 +418,26 @@ func TestCodecSuite(t *testing.T) {
 		testv.UseReset = true
 		testv.UseParallel = true
 
-		testv.D.ZeroCopy = true
-		testv.D.InternString = true
-		testv.D.MapValueReset = true
+		tbvars.D.ZeroCopy = true
+		tbvars.D.InternString = true
+		tbvars.D.MapValueReset = true
 
-		// testv.D.ErrorIfNoField = true // error, as expected fields not there
-		// testv.D.ErrorIfNoArrayExpand = true // no error, but no error case either
-		// testv.D.PreferArrayOverSlice = true // error??? because slice != array.
-		testv.D.SignedInteger = true // error as deepEqual compares int64 to uint64
-		testv.D.SliceElementReset = true
-		testv.D.InterfaceReset = true
-		testv.D.RawToString = true
-		testv.D.PreferPointerForStructOrArray = true
+		// tbvars.D.ErrorIfNoField = true // error, as expected fields not there
+		// tbvars.D.ErrorIfNoArrayExpand = true // no error, but no error case either
+		// tbvars.D.PreferArrayOverSlice = true // error??? because slice != array.
+		tbvars.D.SignedInteger = true // error as deepEqual compares int64 to uint64
+		tbvars.D.SliceElementReset = true
+		tbvars.D.InterfaceReset = true
+		tbvars.D.RawToString = true
+		tbvars.D.PreferPointerForStructOrArray = true
 
-		testv.E.StructToArray = true
-		testv.E.Canonical = true
-		testv.E.CheckCircularRef = true
-		testv.E.RecursiveEmptyCheck = true
-		testv.E.OptimumSize = true
-		testv.E.NilCollectionToZeroLength = true
-		// testv.E.StringToRaw = true // MARKER 2025 - testing this
+		tbvars.E.StructToArray = true
+		tbvars.E.Canonical = true
+		tbvars.E.CheckCircularRef = true
+		tbvars.E.RecursiveEmptyCheck = true
+		tbvars.E.OptimumSize = true
+		tbvars.E.NilCollectionToZeroLength = true
+		// tbvars.E.StringToRaw = true // MARKER 2025 - testing this
 		// MARKER: we cannot test these below, as they will not encode as expected
 		// meaning a decoded value will look different than expected.
 		// e.g. encode nil slice, and get a decoded stream with zero-length array
@@ -445,8 +445,8 @@ func TestCodecSuite(t *testing.T) {
 		// Consequently, we don't modify these here.
 		// Standalone unit tests will test these out in codec_run_test.go
 		//
-		// testv.E.Raw = true
-		// testv.E.StringToRaw = true
+		// tbvars.E.Raw = true
+		// tbvars.E.StringToRaw = true
 	}
 
 	fnTrueH := func() {
@@ -494,7 +494,7 @@ func TestCodecSuite(t *testing.T) {
 	// --------------
 	fnTrueV()
 	testv.Depth = 0
-	// testv.E.AsSymbols = AsSymbolAll
+	// tbvars.E.AsSymbols = AsSymbolAll
 	testv.UseIoWrapper = true
 	testReinit()
 	testGroupResetHandles()
@@ -512,8 +512,8 @@ func TestCodecSuite(t *testing.T) {
 	// Due to last requirement, we prefer 16 to 128.
 	testv.SkipRPCTests = true
 	testv.setBufsize(16)
-	// testv.D.ReaderBufferSize = 128
-	// testv.E.WriterBufferSize = 128
+	// tbvars.D.ReaderBufferSize = 128
+	// tbvars.E.WriterBufferSize = 128
 	testReinit()
 	testGroupResetHandles()
 	fnTrueH()
@@ -521,8 +521,8 @@ func TestCodecSuite(t *testing.T) {
 
 	// --------------
 	fnTrueV()
-	// testv.D.ReaderBufferSize = 0
-	// testv.E.WriterBufferSize = 0
+	// tbvars.D.ReaderBufferSize = 0
+	// tbvars.E.WriterBufferSize = 0
 	testv.SkipRPCTests = false
 	testv.setBufsize(-1)
 	// ---
@@ -536,12 +536,12 @@ func TestCodecSuite(t *testing.T) {
 	testGroupResetBase()
 	testv.NumRepeatString = 8
 	defer func(ml int, d int8, hca, mkas bool) {
-		testv.D.MaxInitLen = ml
+		tbvars.D.MaxInitLen = ml
 		testJsonH.Indent = d
 		testJsonH.HTMLCharsAsIs = hca
 		testJsonH.MapKeyAsString = mkas
-	}(testv.D.MaxInitLen, testJsonH.Indent, testJsonH.HTMLCharsAsIs, testJsonH.MapKeyAsString)
-	testv.D.MaxInitLen = 10
+	}(tbvars.D.MaxInitLen, testJsonH.Indent, testJsonH.HTMLCharsAsIs, testJsonH.MapKeyAsString)
+	tbvars.D.MaxInitLen = 10
 	testReinit()
 	testGroupResetHandles()
 	testJsonH.MapKeyAsString = true
