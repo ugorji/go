@@ -1,5 +1,3 @@
-// comment this out // // + build testing
-
 // Copyright (c) 2012-2020 Ugorji Nwoke. All rights reserved.
 // Use of this source code is governed by a MIT license found in the LICENSE file.
 
@@ -11,6 +9,14 @@ import (
 	"strings"
 	"time"
 )
+
+func init() {
+	var testARepeated512 [512]byte
+	for i := range testARepeated512 {
+		testARepeated512[i] = 'A'
+	}
+	testWRepeated512 = wrapBytes(testARepeated512[:])
+}
 
 const teststrucflexChanCap = 64
 
@@ -247,13 +253,10 @@ type TestTwoNakedInterfaces struct {
 var testWRepeated512 wrapBytes
 var testStrucTime = time.Date(2012, 2, 2, 2, 2, 2, 2000, time.UTC).UTC()
 
-func init() {
-	var testARepeated512 [512]byte
-	for i := range testARepeated512 {
-		testARepeated512[i] = 'A'
-	}
-	testWRepeated512 = wrapBytes(testARepeated512[:])
-}
+// MARKER mapiterinit for a type like this causes some unexpected allocation.
+// This is why this wrapMapWrapStringWrapUint64 type is in values_flex_test.go (not values_test.go).
+
+type wrapMapWrapStringWrapUint64 map[wrapString]wrapUint64
 
 type TestStrucFlex struct {
 	_struct struct{} `codec:",omitempty"` //set omitempty for every field
@@ -272,6 +275,8 @@ type TestStrucFlex struct {
 	Mfwss   map[float64]wrapStringSlice
 	Mf32wss map[float32]wrapStringSlice
 	Mui2wss map[uint64]wrapStringSlice
+
+	Wmwswu64 wrapMapWrapStringWrapUint64
 
 	// DecodeNaked bombs because stringUint64T is decoded as a map,
 	// and a map cannot be the key type of a map.
@@ -338,6 +343,8 @@ func newTestStrucFlex(depth, n int, bench, useInterface, useStringKeyOnly bool) 
 			5: []wrapString{"1.0", "2.0", "3.0", "4.0", "5.0"},
 			3: []wrapString{"1.0", "2.0", "3.0"},
 		},
+
+		Wmwswu64: map[wrapString]wrapUint64{"44": 44, "1616": 1616},
 
 		Mfwss: map[float64]wrapStringSlice{
 			5.0: []wrapString{"1.0", "2.0", "3.0", "4.0", "5.0"},
