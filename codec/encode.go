@@ -205,7 +205,7 @@ func (e *encoder[T]) kArrayWMbs(rv reflect.Value, ti *typeInfo, isSlice bool) {
 	for {
 		rvv := rvArrayIndex(rv, j, ti, isSlice)
 		if builtin {
-			e.encodeIbuiltin(rv2i(baseRVRV(rvv)))
+			e.encodeIB(rv2i(baseRVRV(rvv)))
 		} else {
 			e.encodeValue(rvv, fn)
 		}
@@ -264,7 +264,7 @@ func (e *encoder[T]) kArrayW(rv reflect.Value, ti *typeInfo, isSlice bool) {
 	for {
 		rvv := rvArrayIndex(rv, j, ti, isSlice)
 		if builtin {
-			e.encodeIbuiltin(rv2i(baseRVRV(rvv)))
+			e.encodeIB(rv2i(baseRVRV(rvv)))
 		} else {
 			e.encodeValue(rvv, fn)
 		}
@@ -420,7 +420,7 @@ func (e *encoder[T]) kStructSimple(f *encFnInfo, rv reflect.Value) {
 			e.c = containerArrayElem
 			e.e.WriteArrayElem(j == 0)
 			if si.encBuiltin {
-				e.encodeIbuiltin(rv2i(si.fieldNoAlloc(rv, true)))
+				e.encodeIB(rv2i(si.fieldNoAlloc(rv, true)))
 			} else {
 				e.encodeValue(si.fieldNoAlloc(rv, !chkCirRef), nil)
 			}
@@ -442,7 +442,7 @@ func (e *encoder[T]) kStructSimple(f *encFnInfo, rv reflect.Value) {
 			e.e.EncodeStringNoEscape4Json(si.encName)
 			e.mapElemValue()
 			if si.encBuiltin {
-				e.encodeIbuiltin(rv2i(si.fieldNoAlloc(rv, true)))
+				e.encodeIB(rv2i(si.fieldNoAlloc(rv, true)))
 			} else {
 				e.encodeValue(si.fieldNoAlloc(rv, !chkCirRef), nil)
 			}
@@ -554,7 +554,7 @@ func (e *encoder[T]) kStruct(f *encFnInfo, rv reflect.Value) {
 				e.mapElemValue()
 				if sf.isRv {
 					if sf.builtin {
-						e.encodeIbuiltin(rv2i(baseRVRV(sf.rv)))
+						e.encodeIB(rv2i(baseRVRV(sf.rv)))
 					} else {
 						e.encodeValue(sf.rv, nil)
 					}
@@ -575,7 +575,7 @@ func (e *encoder[T]) kStruct(f *encFnInfo, rv reflect.Value) {
 				}
 				e.mapElemValue()
 				if kv.v.encBuiltin {
-					e.encodeIbuiltin(rv2i(baseRVRV(kv.r)))
+					e.encodeIB(rv2i(baseRVRV(kv.r)))
 				} else {
 					e.encodeValue(kv.r, nil)
 				}
@@ -625,7 +625,7 @@ func (e *encoder[T]) kStruct(f *encFnInfo, rv reflect.Value) {
 			if !kv.r.IsValid() {
 				e.e.EncodeNil()
 			} else if kv.v.encBuiltin {
-				e.encodeIbuiltin(rv2i(baseRVRV(kv.r)))
+				e.encodeIB(rv2i(baseRVRV(kv.r)))
 			} else {
 				e.encodeValue(kv.r, nil)
 			}
@@ -709,14 +709,14 @@ func (e *encoder[T]) kMap(f *encFnInfo, rv reflect.Value) {
 		if keyTypeIsString {
 			e.e.EncodeString(rvGetString(rv))
 		} else if kbuiltin {
-			e.encodeIbuiltin(rv2i(baseRVRV(rv)))
+			e.encodeIB(rv2i(baseRVRV(rv)))
 		} else {
 			e.encodeValue(rv, keyFn)
 		}
 		e.mapElemValue()
 		rv = it.Value()
 		if vbuiltin {
-			e.encodeIbuiltin(rv2i(baseRVRV(rv)))
+			e.encodeIB(rv2i(baseRVRV(rv)))
 		} else {
 			e.encodeValue(it.Value(), valFn)
 		}
@@ -1077,6 +1077,15 @@ func (e *encoder[T]) mustEncode(v interface{}) {
 func (e *encoder[T]) encodeI(iv interface{}) {
 	if !e.encodeIbuiltin(iv) {
 		e.encodeR(reflect.ValueOf(iv))
+	}
+}
+
+func (e *encoder[T]) encodeIB(iv interface{}) {
+	if !e.encodeIbuiltin(iv) {
+		// panic("invalid type passed to encodeIbuiltin")
+		// halt.errorf("invalid type passed to encodeIbuiltin: %T", iv)
+		// MARKER: calling halt.errorf pulls in fmt.Sprintf/Errorf which makes this non-inlineable
+		halt.errorStr("[should not happen] invalid type passed to encodeIbuiltin")
 	}
 }
 

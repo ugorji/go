@@ -162,7 +162,7 @@ func testSharedCodecEncode(ts interface{}, bsIn []byte,
 	} else {
 		err = e.Encode(ts)
 	}
-	if testv.E.WriterBufferSize >= 0 {
+	if useIO {
 		bs = buf.Bytes()
 	}
 	return
