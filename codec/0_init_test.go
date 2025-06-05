@@ -190,7 +190,6 @@ func testParseFlags() {
 	if !flag.Parsed() {
 		flag.Parse()
 	}
-	testv.setBufsize((int)(testv.bufsize))
 	testv.updateHandleOptions()
 }
 
