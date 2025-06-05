@@ -162,7 +162,7 @@ func (e *msgpackEncDriver[T]) EncodeExt(v interface{}, basetype reflect.Type, xt
 		bs = ext.WriteExt(v)
 	}
 	if bs == nil {
-		e.encodeNilBytes()
+		e.writeNilBytes()
 		goto END
 	}
 	if e.h.WriteExt {
@@ -260,18 +260,29 @@ func (e *msgpackEncDriver[T]) EncodeStringBytesRaw(bs []byte) {
 
 func (e *msgpackEncDriver[T]) EncodeBytes(v []byte) {
 	if v == nil {
-		e.encodeNilBytes()
+		e.writeNilBytes()
 		return
 	}
 	e.EncodeStringBytesRaw(v)
 }
 
-func (e *msgpackEncDriver[T]) encodeNilBytes() {
-	b := mpNil
-	if e.h.NilCollectionToZeroLength {
-		b = mpFixArrayMin
+func (e *msgpackEncDriver[T]) writeNilOr(v byte) {
+	if !e.h.NilCollectionToZeroLength {
+		v = mpNil
 	}
-	e.w.writen1(b)
+	e.w.writen1(v)
+}
+
+func (e *msgpackEncDriver[T]) writeNilArray() {
+	e.writeNilOr(mpFixArrayMin)
+}
+
+func (e *msgpackEncDriver[T]) writeNilMap() {
+	e.writeNilOr(mpFixMapMin)
+}
+
+func (e *msgpackEncDriver[T]) writeNilBytes() {
+	e.writeNilOr(mpFixStrMin)
 }
 
 func (e *msgpackEncDriver[T]) writeContainerLen(ct msgpackContainerType, l int) {

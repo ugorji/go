@@ -125,7 +125,7 @@ func (e *cborEncDriver[T]) EncodeExt(rv interface{}, basetype reflect.Type, xtag
 	if ext == SelfExt {
 		e.enc.encodeAs(rv, basetype, false)
 	} else if v := ext.ConvertExt(rv); v == nil {
-		e.encodeNilBytes()
+		e.writeNilBytes()
 	} else {
 		e.enc.encodeI(v)
 	}
@@ -230,18 +230,29 @@ func (e *cborEncDriver[T]) encStringBytesS(bb byte, v string) {
 
 func (e *cborEncDriver[T]) EncodeBytes(v []byte) {
 	if v == nil {
-		e.encodeNilBytes()
+		e.writeNilBytes()
 		return
 	}
 	e.EncodeStringBytesRaw(v)
 }
 
-func (e *cborEncDriver[T]) encodeNilBytes() {
-	b := cborBdNil
-	if e.h.NilCollectionToZeroLength {
-		b = cborBaseArray
+func (e *cborEncDriver[T]) writeNilOr(v byte) {
+	if !e.h.NilCollectionToZeroLength {
+		v = cborBdNil
 	}
-	e.w.writen1(b)
+	e.w.writen1(v)
+}
+
+func (e *cborEncDriver[T]) writeNilArray() {
+	e.writeNilOr(cborBaseArray)
+}
+
+func (e *cborEncDriver[T]) writeNilMap() {
+	e.writeNilOr(cborBaseMap)
+}
+
+func (e *cborEncDriver[T]) writeNilBytes() {
+	e.writeNilOr(cborBaseBytes)
 }
 
 // ----------------------

@@ -155,7 +155,7 @@ func (e *bincEncDriver[T]) EncodeExt(v interface{}, basetype reflect.Type, xtag 
 		bs = ext.WriteExt(v)
 	}
 	if bs == nil {
-		e.encodeNilBytes()
+		e.writeNilBytes()
 		goto END
 	}
 	e.encodeExtPreamble(uint8(xtag), len(bs))
@@ -288,18 +288,29 @@ func (e *bincEncDriver[T]) EncodeStringBytesRaw(v []byte) {
 
 func (e *bincEncDriver[T]) EncodeBytes(v []byte) {
 	if v == nil {
-		e.encodeNilBytes()
+		e.writeNilBytes()
 		return
 	}
 	e.EncodeStringBytesRaw(v)
 }
 
-func (e *bincEncDriver[T]) encodeNilBytes() {
-	b := byte(bincBdNil)
-	if e.h.NilCollectionToZeroLength {
-		b = bincVdArray<<4 | uint8(0+4)
+func (e *bincEncDriver[T]) writeNilOr(v byte) {
+	if !e.h.NilCollectionToZeroLength {
+		v = bincBdNil
 	}
-	e.w.writen1(b)
+	e.w.writen1(v)
+}
+
+func (e *bincEncDriver[T]) writeNilArray() {
+	e.writeNilOr(bincVdArray<<4 | uint8(0+4))
+}
+
+func (e *bincEncDriver[T]) writeNilMap() {
+	e.writeNilOr(bincVdMap<<4 | uint8(0+4))
+}
+
+func (e *bincEncDriver[T]) writeNilBytes() {
+	e.writeNilOr(bincVdArray<<4 | uint8(0+4))
 }
 
 func (e *bincEncDriver[T]) encBytesLen(c charEncoding, length uint64) {

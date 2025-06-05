@@ -136,7 +136,7 @@ func (e *jsonEncDriver[T]) EncodeExt(rv interface{}, basetype reflect.Type, xtag
 	if ext == SelfExt {
 		e.enc.encodeAs(rv, basetype, false)
 	} else if v := ext.ConvertExt(rv); v == nil {
-		e.encodeNilBytes()
+		e.writeNilBytes()
 	} else {
 		e.enc.encodeI(v)
 	}
@@ -272,18 +272,29 @@ func (e *jsonEncDriver[T]) EncodeStringBytesRaw(v []byte) {
 
 func (e *jsonEncDriver[T]) EncodeBytes(v []byte) {
 	if v == nil {
-		e.encodeNilBytes()
+		e.writeNilBytes()
 		return
 	}
 	e.EncodeStringBytesRaw(v)
 }
 
-func (e *jsonEncDriver[T]) encodeNilBytes() {
-	bs := jsonNull
-	if e.h.NilCollectionToZeroLength {
-		bs = jsonArrayEmpty
+func (e *jsonEncDriver[T]) writeNilOr(v []byte) {
+	if !e.h.NilCollectionToZeroLength {
+		v = jsonNull
 	}
-	e.w.writeb(bs)
+	e.w.writeb(v)
+}
+
+func (e *jsonEncDriver[T]) writeNilBytes() {
+	e.writeNilOr(jsonArrayEmpty)
+}
+
+func (e *jsonEncDriver[T]) writeNilArray() {
+	e.writeNilOr(jsonArrayEmpty)
+}
+
+func (e *jsonEncDriver[T]) writeNilMap() {
+	e.writeNilOr(jsonMapEmpty)
 }
 
 // indent is done as below:

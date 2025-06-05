@@ -1075,242 +1075,17 @@ func (e *encoder[T]) mustEncode(v interface{}) {
 }
 
 func (e *encoder[T]) encodeI(iv interface{}) {
-	// reflect.ValueOf(iv) is cheap if iv == nil, so let it be handled there
-	e.encodeIRF(iv, reflect.Value{}, nil, true, iv == nil)
+	if !e.encodeIbuiltin(iv) {
+		e.encodeR(reflect.ValueOf(iv))
+	}
 }
 
 func (e *encoder[T]) encodeR(base reflect.Value) {
-	e.encodeIRF(nil, base, nil, false, !base.IsValid())
+	e.encodeValue(base, nil)
 }
 
-// func (e *encoder[T]) encodeIR(rv reflect.Value) {
-// 	e.encodeIRF(nil, rv, nil, true, !base.IsValid())
-// }
-
-func (e *encoder[T]) encodeRF(rv reflect.Value, fn *encFn[T]) {
-	e.encodeIRF(nil, rv, fn, false, !rv.IsValid())
-}
-
-func (e *encoder[T]) encodeIRF(iv interface{}, rv reflect.Value, fn *encFn[T], checkIntfFirst, definitelyNil bool) {
-	_ = e.e // early asserts e, e.e are not nil once
-	// if a valid fn is passed, it MUST BE for the dereferenced type of rv
-
-	// MARKER: We check if value is nil here, so that the kXXX method do not have to.
-	// if a valid fn is passed, it MUST BE for the dereferenced type of rv
-
-	var ciPushes int
-	// if e.h.CheckCircularRef {
-	// 	ciPushes = e.ci.pushRV(rv)
-	// }
-
-	// if iv == nil && !rv.IsValid() {
-	if definitelyNil {
-		e.e.EncodeNil()
-		return
-	}
-
-	// if iv == nil {
-	// 	if !rv.IsValid() {
-	// 		e.e.EncodeNil()
-	// 		return
-	// 	}
-	// 	// if iv == nil: just use the reflect.Value directly
-	// 	// update = true
-	// } else if !rv.IsValid() {
-	// 	if iv == nil {
-	// 		e.e.EncodeNil()
-	// 		return
-	// 	}
-	// 	rv = reflect.ValueOf(iv)
-	// }
-
-	var k reflect.Kind
-	var rvp reflect.Value
-	var rvpValid bool
-	// var update bool
-
-	// either iv == nil || rv.IsValid == false
-	// if !rv.IsValid() {
-	if checkIntfFirst {
-		if iv == nil {
-			iv = rv2i(rv)
-		}
-		goto IV
-	}
-
-RV:
-	// debugf("encodeIRF: type: %v", hlRED, rv.Type())
-	k = rv.Kind()
-	switch k {
-	case reflect.Ptr:
-		if rvIsNil(rv) {
-			e.e.EncodeNil()
-			goto END
-		}
-		rvpValid = true
-		rvp = rv
-		rv = rv.Elem()
-		iv = nil
-		// iv = rv2i(rv)
-		// fn = nil // underlying type still same - no change
-		if e.h.CheckCircularRef && e.ci.canPushElemKind(rv.Kind()) {
-			e.ci.push(rv2i(rvp))
-			ciPushes++
-		}
-		goto RV
-	case reflect.Interface:
-		if rvIsNil(rv) {
-			e.e.EncodeNil()
-			goto END
-		}
-		rvpValid = false
-		rvp = reflect.Value{}
-		rv = rv.Elem()
-		iv = nil
-		// iv = rv2i(rv)
-		fn = nil // underlying type may change, so prompt a reset
-		goto RV
-	case reflect.Map:
-		if rvIsNil(rv) {
-			if e.h.NilCollectionToZeroLength {
-				e.e.WriteMapEmpty()
-			} else {
-				e.e.EncodeNil()
-			}
-			goto END
-		}
-	case reflect.Slice, reflect.Chan:
-		if rvIsNil(rv) {
-			if e.h.NilCollectionToZeroLength {
-				e.e.WriteArrayEmpty()
-			} else {
-				e.e.EncodeNil()
-			}
-			goto END
-		}
-	case reflect.Invalid, reflect.Func:
-		e.e.EncodeNil()
-		goto END
-	}
-
-	if iv == nil {
-		goto FN
-	}
-
-	// if update {
-	// 	iv = rv2i(rv)
-	// } else if iv == nil {
-	// 	goto FN
-	// }
-
-	// MARKER: a switch with only concrete types can be optimized.
-	// consequently, we deal with nil and interfaces outside the switch.
-
-IV:
-	// iv is non-nil at this point
-	switch v := iv.(type) {
-	// case nil:
-	// case Selfer:
-	case string:
-		e.e.EncodeString(v)
-	case bool:
-		e.e.EncodeBool(v)
-	case int:
-		e.e.EncodeInt(int64(v))
-	case int8:
-		e.e.EncodeInt(int64(v))
-	case int16:
-		e.e.EncodeInt(int64(v))
-	case int32:
-		e.e.EncodeInt(int64(v))
-	case int64:
-		e.e.EncodeInt(v)
-	case uint:
-		e.e.EncodeUint(uint64(v))
-	case uint8:
-		e.e.EncodeUint(uint64(v))
-	case uint16:
-		e.e.EncodeUint(uint64(v))
-	case uint32:
-		e.e.EncodeUint(uint64(v))
-	case uint64:
-		e.e.EncodeUint(v)
-	case uintptr:
-		e.e.EncodeUint(uint64(v))
-	case float32:
-		e.e.EncodeFloat32(v)
-	case float64:
-		e.e.EncodeFloat64(v)
-	case complex64:
-		e.encodeComplex64(v)
-	case complex128:
-		e.encodeComplex128(v)
-	case time.Time:
-		e.e.EncodeTime(v)
-	case []byte:
-		e.e.EncodeBytes(v) // e.e.EncodeStringBytesRaw(v)
-	case Raw:
-		e.rawBytes(v)
-	case reflect.Value:
-		rv = v
-		iv = nil
-		goto RV
-	default:
-		// we can't check non-predefined types, as they might be a Selfer or extension.
-		if skipFastpathTypeSwitchInDirectCall || !e.dh.fastpathEncodeTypeSwitch(iv, e) {
-			if rv.IsValid() {
-				goto FN
-			} else {
-				rv = reflect.ValueOf(iv)
-				iv = nil // so that IV block is skipped
-				goto RV
-			}
-		}
-	}
-	goto END
-
-FN:
-	if fn == nil {
-		fn = e.fn(rv.Type())
-	}
-
-	if !fn.i.addrE { // typically, addrE = false, so check it first
-		// keep rv same
-	} else if rvpValid {
-		rv = rvp
-	} else if rv.CanAddr() {
-		rv = rvAddr(rv, fn.i.ti.ptr)
-	} else {
-		rv = e.addrRV(rv, fn.i.ti.rt, fn.i.ti.ptr)
-	}
-	fn.fe(e, &fn.i, rv)
-
-END:
-	if ciPushes > 0 {
-		e.ci.pop(ciPushes)
-	}
-}
-
-func (e *encoder[T]) encodeRFdirect(rv reflect.Value, fn *encFn[T]) {
-	// only call this if a primitive (number, bool, string) OR
-	// a non-nil collection (map/slice/chan).
-	//
-	// Expects fn to be non-nil
-	if fn.i.addrE { // typically, addrE = false, so check it first
-		if rv.CanAddr() {
-			rv = rvAddr(rv, fn.i.ti.ptr)
-		} else {
-			rv = e.addrRV(rv, fn.i.ti.rt, fn.i.ti.ptr)
-		}
-	}
-	fn.fe(e, &fn.i, rv)
-}
-
-func (e *encoder[T]) encodeIbuiltin(iv interface{}) {
-	// if iv == nil {
-	// 	e.e.EncodeNil()
-	// 	return
-	// }
+func (e *encoder[T]) encodeIbuiltin(iv interface{}) (ok bool) {
+	ok = true
 	switch v := iv.(type) {
 	case nil:
 		e.e.EncodeNil()
@@ -1357,10 +1132,9 @@ func (e *encoder[T]) encodeIbuiltin(iv interface{}) {
 		e.e.EncodeBytes(v) // e.e.EncodeStringBytesRaw(v)
 	default:
 		// we can't check non-predefined types, as they might be a Selfer or extension.
-		if skipFastpathTypeSwitchInDirectCall || !e.dh.fastpathEncodeTypeSwitch(iv, e) {
-			halt.errorf("invalid type passed to encodeIbuiltin: %T", iv)
-		}
+		ok = !skipFastpathTypeSwitchInDirectCall && e.dh.fastpathEncodeTypeSwitch(iv, e)
 	}
+	return
 }
 
 // encodeValue will encode a value.
@@ -1368,11 +1142,100 @@ func (e *encoder[T]) encodeIbuiltin(iv interface{}) {
 // Note that encodeValue will handle nil in the stream early, so that the
 // subsequent calls i.e. kXXX methods, etc do not have to handle it themselves.
 func (e *encoder[T]) encodeValue(rv reflect.Value, fn *encFn[T]) {
-	e.encodeRF(rv, fn)
+	// MARKER: We check if value is nil here, so that the kXXX method do not have to.
+	// if a valid fn is passed, it MUST BE for the dereferenced type of rv
+
+	var ciPushes int
+	// if e.h.CheckCircularRef {
+	// 	ciPushes = e.ci.pushRV(rv)
+	// }
+
+	var rvp reflect.Value
+	var rvpValid bool
+
+RV:
+	switch rv.Kind() {
+	case reflect.Ptr:
+		if rvIsNil(rv) {
+			e.e.EncodeNil()
+			goto END
+		}
+		rvpValid = true
+		rvp = rv
+		rv = rv.Elem()
+		// fn = nil // underlying type still same - no change
+		if e.h.CheckCircularRef && e.ci.canPushElemKind(rv.Kind()) {
+			e.ci.push(rv2i(rvp))
+			ciPushes++
+		}
+		goto RV
+	case reflect.Interface:
+		if rvIsNil(rv) {
+			e.e.EncodeNil()
+			goto END
+		}
+		rvpValid = false
+		rvp = reflect.Value{}
+		rv = rv.Elem()
+		fn = nil // underlying type may change, so prompt a reset
+		goto RV
+	case reflect.Map:
+		if rvIsNil(rv) {
+			if e.h.NilCollectionToZeroLength {
+				e.e.WriteMapEmpty()
+			} else {
+				e.e.EncodeNil()
+			}
+			goto END
+		}
+	case reflect.Slice, reflect.Chan:
+		if rvIsNil(rv) {
+			if e.h.NilCollectionToZeroLength {
+				e.e.WriteArrayEmpty()
+			} else {
+				e.e.EncodeNil()
+			}
+			goto END
+		}
+	case reflect.Invalid, reflect.Func:
+		e.e.EncodeNil()
+		goto END
+	}
+
+	if fn == nil {
+		fn = e.fn(rv.Type())
+	}
+
+	if !fn.i.addrE { // typically, addrE = false, so check it first
+		// keep rv same
+	} else if rvpValid {
+		rv = rvp
+	} else if rv.CanAddr() {
+		rv = rvAddr(rv, fn.i.ti.ptr)
+	} else {
+		rv = e.addrRV(rv, fn.i.ti.rt, fn.i.ti.ptr)
+	}
+	fn.fe(e, &fn.i, rv)
+
+END:
+	if ciPushes > 0 {
+		e.ci.pop(ciPushes)
+	}
 }
 
 func (e *encoder[T]) encodeValueNonNil(rv reflect.Value, fn *encFn[T]) {
-	e.encodeRFdirect(rv, fn)
+	// only call this if a primitive (number, bool, string) OR
+	// a non-nil collection (map/slice/chan).
+	//
+	// Expects fn to be non-nil
+	if fn.i.addrE { // typically, addrE = false, so check it first
+		if rv.CanAddr() {
+			rv = rvAddr(rv, fn.i.ti.ptr)
+		} else {
+			rv = e.addrRV(rv, fn.i.ti.rt, fn.i.ti.ptr)
+		}
+	}
+	fn.fe(e, &fn.i, rv)
 }
 
 func (e *encoder[T]) encodeAs(v interface{}, t reflect.Type, ext bool) {
@@ -1885,4 +1748,212 @@ func (dh helperEncDriver[T]) encFnLoad(rt reflect.Type, rtid uintptr, tinfos *Ty
 // 			}
 // 		}
 // 	}
+// }
+
+// func (e *encoder[T]) encodeIRF(iv interface{}, rv reflect.Value, fn *encFn[T], checkIntfFirst, definitelyNil bool) {
+// 	_ = e.e // early asserts e, e.e are not nil once
+// 	// if a valid fn is passed, it MUST BE for the dereferenced type of rv
+//
+// 	// MARKER: We check if value is nil here, so that the kXXX method do not have to.
+// 	// if a valid fn is passed, it MUST BE for the dereferenced type of rv
+//
+// 	var ciPushes int
+// 	// if e.h.CheckCircularRef {
+// 	// 	ciPushes = e.ci.pushRV(rv)
+// 	// }
+//
+// 	// if iv == nil && !rv.IsValid() {
+// 	if definitelyNil {
+// 		e.e.EncodeNil()
+// 		return
+// 	}
+//
+// 	// if iv == nil {
+// 	// 	if !rv.IsValid() {
+// 	// 		e.e.EncodeNil()
+// 	// 		return
+// 	// 	}
+// 	// 	// if iv == nil: just use the reflect.Value directly
+// 	// 	// update = true
+// 	// } else if !rv.IsValid() {
+// 	// 	if iv == nil {
+// 	// 		e.e.EncodeNil()
+// 	// 		return
+// 	// 	}
+// 	// 	rv = reflect.ValueOf(iv)
+// 	// }
+//
+// 	var k reflect.Kind
+// 	var rvp reflect.Value
+// 	var rvpValid bool
+// 	// var update bool
+//
+// 	// either iv == nil || rv.IsValid == false
+// 	// if !rv.IsValid() {
+// 	if checkIntfFirst {
+// 		if iv == nil {
+// 			iv = rv2i(rv)
+// 		}
+// 		goto IV
+// 	}
+//
+// RV:
+// 	// debugf("encodeIRF: type: %v", hlRED, rv.Type())
+// 	k = rv.Kind()
+// 	switch k {
+// 	case reflect.Ptr:
+// 		if rvIsNil(rv) {
+// 			e.e.EncodeNil()
+// 			goto END
+// 		}
+// 		rvpValid = true
+// 		rvp = rv
+// 		rv = rv.Elem()
+// 		iv = nil
+// 		// iv = rv2i(rv)
+// 		// fn = nil // underlying type still same - no change
+// 		if e.h.CheckCircularRef && e.ci.canPushElemKind(rv.Kind()) {
+// 			e.ci.push(rv2i(rvp))
+// 			ciPushes++
+// 		}
+// 		goto RV
+// 	case reflect.Interface:
+// 		if rvIsNil(rv) {
+// 			e.e.EncodeNil()
+// 			goto END
+// 		}
+// 		rvpValid = false
+// 		rvp = reflect.Value{}
+// 		rv = rv.Elem()
+// 		iv = nil
+// 		// iv = rv2i(rv)
+// 		fn = nil // underlying type may change, so prompt a reset
+// 		goto RV
+// 	case reflect.Map:
+// 		if rvIsNil(rv) {
+// 			if e.h.NilCollectionToZeroLength {
+// 				e.e.WriteMapEmpty()
+// 			} else {
+// 				e.e.EncodeNil()
+// 			}
+// 			goto END
+// 		}
+// 	case reflect.Slice, reflect.Chan:
+// 		if rvIsNil(rv) {
+// 			if e.h.NilCollectionToZeroLength {
+// 				e.e.WriteArrayEmpty()
+// 			} else {
+// 				e.e.EncodeNil()
+// 			}
+// 			goto END
+// 		}
+// 	case reflect.Invalid, reflect.Func:
+// 		e.e.EncodeNil()
+// 		goto END
+// 	}
+//
+// 	if iv == nil {
+// 		goto FN
+// 	}
+//
+// 	// if update {
+// 	// 	iv = rv2i(rv)
+// 	// } else if iv == nil {
+// 	// 	goto FN
+// 	// }
+//
+// 	// MARKER: a switch with only concrete types can be optimized.
+// 	// consequently, we deal with nil and interfaces outside the switch.
+//
+// IV:
+// 	// iv is non-nil at this point
+// 	switch v := iv.(type) {
+// 	// case nil:
+// 	// case Selfer:
+// 	case string:
+// 		e.e.EncodeString(v)
+// 	case bool:
+// 		e.e.EncodeBool(v)
+// 	case int:
+// 		e.e.EncodeInt(int64(v))
+// 	case int8:
+// 		e.e.EncodeInt(int64(v))
+// 	case int16:
+// 		e.e.EncodeInt(int64(v))
+// 	case int32:
+// 		e.e.EncodeInt(int64(v))
+// 	case int64:
+// 		e.e.EncodeInt(v)
+// 	case uint:
+// 		e.e.EncodeUint(uint64(v))
+// 	case uint8:
+// 		e.e.EncodeUint(uint64(v))
+// 	case uint16:
+// 		e.e.EncodeUint(uint64(v))
+// 	case uint32:
+// 		e.e.EncodeUint(uint64(v))
+// 	case uint64:
+// 		e.e.EncodeUint(v)
+// 	case uintptr:
+// 		e.e.EncodeUint(uint64(v))
+// 	case float32:
+// 		e.e.EncodeFloat32(v)
+// 	case float64:
+// 		e.e.EncodeFloat64(v)
+// 	case complex64:
+// 		e.encodeComplex64(v)
+// 	case complex128:
+// 		e.encodeComplex128(v)
+// 	case time.Time:
+// 		e.e.EncodeTime(v)
+// 	case []byte:
+// 		e.e.EncodeBytes(v) // e.e.EncodeStringBytesRaw(v)
+// 	case Raw:
+// 		e.rawBytes(v)
+// 	case reflect.Value:
+// 		rv = v
+// 		iv = nil
+// 		goto RV
+// 	default:
+// 		// we can't check non-predefined types, as they might be a Selfer or extension.
+// 		if skipFastpathTypeSwitchInDirectCall || !e.dh.fastpathEncodeTypeSwitch(iv, e) {
+// 			if rv.IsValid() {
+// 				goto FN
+// 			} else {
+// 				rv = reflect.ValueOf(iv)
+// 				iv = nil // so that IV block is skipped
+// 				goto RV
+// 			}
+// 		}
+// 	}
+// 	goto END
+//
+// FN:
+// 	if fn == nil {
+// 		fn = e.fn(rv.Type())
+// 	}
+//
+// 	if !fn.i.addrE { // typically, addrE = false, so check it first
+// 		// keep rv same
+// 	} else if rvpValid {
+// 		rv = rvp
+// 	} else if rv.CanAddr() {
+// 		rv = rvAddr(rv, fn.i.ti.ptr)
+// 	} else {
+// 		rv = e.addrRV(rv, fn.i.ti.rt, fn.i.ti.ptr)
+// 	}
+// 	fn.fe(e, &fn.i, rv)
+//
+// END:
+// 	if ciPushes > 0 {
+// 		e.ci.pop(ciPushes)
+// 	}
+// }
+
+// func (e *encoder[T]) encodeIR(rv reflect.Value) {
+// 	e.encodeIRF(nil, rv, nil, true, !base.IsValid())
+// }
+
+// func (e *encoder[T]) encodeRF(rv reflect.Value, fn *encFn[T]) {
+// 	e.encodeIRF(nil, rv, fn, false, !rv.IsValid())
 // }

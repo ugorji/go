@@ -76,6 +76,10 @@ type encDriverI interface {
 	WriteMapEmpty()
 	WriteArrayEmpty()
 
+	writeNilMap()
+	writeNilArray()
+	writeNilBytes()
+
 	// these are no-op except for json
 	encDriverContainerTracker
 

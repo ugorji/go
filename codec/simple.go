@@ -118,7 +118,7 @@ func (e *simpleEncDriver[T]) EncodeExt(v interface{}, basetype reflect.Type, xta
 		bs = ext.WriteExt(v)
 	}
 	if bs == nil {
-		e.encodeNilBytes()
+		e.writeNilBytes()
 		goto END
 	}
 	e.encodeExtPreamble(uint8(xtag), len(bs))
@@ -183,7 +183,7 @@ func (e *simpleEncDriver[T]) EncodeStringBytesRaw(v []byte) {
 
 func (e *simpleEncDriver[T]) EncodeBytes(v []byte) {
 	if v == nil {
-		e.encodeNilBytes()
+		e.writeNilBytes()
 		return
 	}
 	e.EncodeStringBytesRaw(v)
@@ -195,6 +195,25 @@ func (e *simpleEncDriver[T]) encodeNilBytes() {
 		b = simpleVdArray
 	}
 	e.w.writen1(b)
+}
+
+func (e *simpleEncDriver[T]) writeNilOr(v byte) {
+	if !e.h.NilCollectionToZeroLength {
+		v = simpleVdNil
+	}
+	e.w.writen1(v)
+}
+
+func (e *simpleEncDriver[T]) writeNilArray() {
+	e.writeNilOr(simpleVdArray)
+}
+
+func (e *simpleEncDriver[T]) writeNilMap() {
+	e.writeNilOr(simpleVdMap)
+}
+
+func (e *simpleEncDriver[T]) writeNilBytes() {
+	e.writeNilOr(simpleVdByteArray)
 }
 
 func (e *simpleEncDriver[T]) EncodeTime(t time.Time) {
