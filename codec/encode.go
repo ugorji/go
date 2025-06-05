@@ -397,6 +397,7 @@ func (e *encoder[T]) kStructFieldKey(keyType valueType, encName string) {
 }
 
 func (e *encoder[T]) kStructSimple(f *encFnInfo, rv reflect.Value) {
+	_ = e.e // early asserts e, e.e are not nil once
 	tisfi := f.ti.sfi.source()
 
 	// To bypass encodeValue, we need to handle cases where
@@ -452,6 +453,7 @@ func (e *encoder[T]) kStructSimple(f *encFnInfo, rv reflect.Value) {
 }
 
 func (e *encoder[T]) kStruct(f *encFnInfo, rv reflect.Value) {
+	_ = e.e // early asserts e, e.e are not nil once
 	ti := f.ti
 	toMap := !(ti.toArray || e.h.StructToArray)
 	var mf map[string]interface{}
@@ -640,6 +642,7 @@ END:
 }
 
 func (e *encoder[T]) kMap(f *encFnInfo, rv reflect.Value) {
+	_ = e.e // early asserts e, e.e are not nil once
 	l := rvLenMap(rv)
 	if l == 0 {
 		e.e.WriteMapEmpty()
@@ -725,6 +728,7 @@ func (e *encoder[T]) kMap(f *encFnInfo, rv reflect.Value) {
 }
 
 func (e *encoder[T]) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, keyFn, valFn *encFn[T]) {
+	_ = e.e // early asserts e, e.e are not nil once
 	// The base kind of the type of the map key is sufficient for ordering.
 	// We only do out of band if that kind is not ordered (number or string), bool or time.Time.
 	// If the key is a predeclared type, directly call methods on encDriver e.g. EncodeString
@@ -1083,6 +1087,7 @@ func (e *encoder[T]) encodeIR(iv interface{}, rv reflect.Value) {
 	// MARKER: a switch with only concrete types can be optimized.
 	// consequently, we deal with nil and interfaces outside the switch.
 
+	_ = e.e // early asserts e, e.e are not nil once
 	if iv == nil {
 		e.e.EncodeNil()
 		return

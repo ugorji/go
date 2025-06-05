@@ -370,6 +370,7 @@ func (d *decoder[T]) kStructField(si *structFieldInfo, rv reflect.Value) {
 }
 
 func (d *decoder[T]) kStructSimple(f *decFnInfo, rv reflect.Value) {
+	_ = d.d // early asserts d, d.d are not nil once
 	ctyp := d.d.ContainerType()
 	ti := f.ti
 	if ctyp == valueTypeMap {
@@ -420,6 +421,7 @@ func (d *decoder[T]) kStructSimple(f *decFnInfo, rv reflect.Value) {
 }
 
 func (d *decoder[T]) kStruct(f *decFnInfo, rv reflect.Value) {
+	_ = d.d // early asserts d, d.d are not nil once
 	ctyp := d.d.ContainerType()
 	ti := f.ti
 	var mf MissingFielder
@@ -500,6 +502,7 @@ func (d *decoder[T]) kStruct(f *decFnInfo, rv reflect.Value) {
 }
 
 func (d *decoder[T]) kSlice(f *decFnInfo, rv reflect.Value) {
+	_ = d.d // early asserts d, d.d are not nil once
 	// A slice can be set from a map or array in stream.
 	// This way, the order can be kept (as order is lost with map).
 
@@ -720,6 +723,7 @@ func (d *decoder[T]) kSlice(f *decFnInfo, rv reflect.Value) {
 }
 
 func (d *decoder[T]) kArray(f *decFnInfo, rv reflect.Value) {
+	_ = d.d // early asserts d, d.d are not nil once
 	// An array can be set from a map or array in stream.
 	ti := f.ti
 	ctyp := d.d.ContainerType()
@@ -825,6 +829,7 @@ func (d *decoder[T]) kArray(f *decFnInfo, rv reflect.Value) {
 }
 
 func (d *decoder[T]) kChan(f *decFnInfo, rv reflect.Value) {
+	_ = d.d // early asserts d, d.d are not nil once
 	// A slice can be set from a map or array in stream.
 	// This way, the order can be kept (as order is lost with map).
 
@@ -946,6 +951,7 @@ func (d *decoder[T]) kChan(f *decFnInfo, rv reflect.Value) {
 }
 
 func (d *decoder[T]) kMap(f *decFnInfo, rv reflect.Value) {
+	_ = d.d // early asserts d, d.d are not nil once
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	ti := f.ti
 	if rvIsNil(rv) {
@@ -1429,6 +1435,7 @@ func (d *decoder[T]) nextValueBytes() []byte {
 }
 
 func (d *decoder[T]) decode(iv interface{}) {
+	_ = d.d // early asserts d, d.d are not nil once
 	// a switch with only concrete types can be optimized.
 	// consequently, we deal with nil and interfaces outside the switch.
 
