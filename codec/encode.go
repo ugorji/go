@@ -559,7 +559,10 @@ func (e *encoder[T]) kStruct(f *encFnInfo, rv reflect.Value) {
 						e.encodeValue(sf.rv, nil)
 					}
 				} else {
-					e.encodeI(sf.intf)
+					if !e.encodeBuiltin(sf.intf) {
+						e.encodeR(reflect.ValueOf(sf.intf))
+					}
+					//e.encodeI(sf.intf) // MARKER inlined
 				}
 			}
 		} else {
@@ -585,7 +588,10 @@ func (e *encoder[T]) kStruct(f *encFnInfo, rv reflect.Value) {
 				e.e.WriteMapElemKey(j == 0)
 				e.kStructFieldKey(keytyp, v.v)
 				e.mapElemValue()
-				e.encodeI(v.i)
+				if !e.encodeBuiltin(v.i) {
+					e.encodeR(reflect.ValueOf(v.i))
+				}
+				// e.encodeI(v.i) // MARKER inlined
 				j++
 			}
 		}
@@ -1066,7 +1072,10 @@ func (e *encoder[T]) mustEncode(v interface{}) {
 	}
 
 	e.calls++
-	e.encodeI(v)
+	if !e.encodeBuiltin(v) {
+		e.encodeR(reflect.ValueOf(v))
+	}
+	// e.encodeI(v) // MARKER inlined
 	e.calls--
 	if e.calls == 0 {
 		e.e.atEndOfEncode()
@@ -1075,17 +1084,17 @@ func (e *encoder[T]) mustEncode(v interface{}) {
 }
 
 func (e *encoder[T]) encodeI(iv interface{}) {
-	if !e.encodeIbuiltin(iv) {
+	if !e.encodeBuiltin(iv) {
 		e.encodeR(reflect.ValueOf(iv))
 	}
 }
 
 func (e *encoder[T]) encodeIB(iv interface{}) {
-	if !e.encodeIbuiltin(iv) {
-		// panic("invalid type passed to encodeIbuiltin")
-		// halt.errorf("invalid type passed to encodeIbuiltin: %T", iv)
+	if !e.encodeBuiltin(iv) {
+		// panic("invalid type passed to encodeBuiltin")
+		// halt.errorf("invalid type passed to encodeBuiltin: %T", iv)
 		// MARKER: calling halt.errorf pulls in fmt.Sprintf/Errorf which makes this non-inlineable
-		halt.errorStr("[should not happen] invalid type passed to encodeIbuiltin")
+		halt.errorStr("[should not happen] invalid type passed to encodeBuiltin")
 	}
 }
 
@@ -1093,7 +1102,7 @@ func (e *encoder[T]) encodeR(base reflect.Value) {
 	e.encodeValue(base, nil)
 }
 
-func (e *encoder[T]) encodeIbuiltin(iv interface{}) (ok bool) {
+func (e *encoder[T]) encodeBuiltin(iv interface{}) (ok bool) {
 	ok = true
 	switch v := iv.(type) {
 	case nil:

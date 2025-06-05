@@ -9,6 +9,7 @@ import (
 	"bytes"
 	"encoding/base32"
 	"errors"
+	"fmt"
 	"go/format"
 	"io"
 	"os"
@@ -187,7 +188,8 @@ func genTmplEncCommandAsString(s string, vname string) string {
 	// case "symbol":
 	// 	return "e.e.EncodeSymbol(" + vname + ")"
 	default:
-		return "e.encodeI(" + vname + ")"
+		return fmt.Sprintf("if !e.encodeBuiltin(%s) { e.encodeR(reflect.ValueOf(%s)) }", vname, vname)
+		// return "e.encodeI(" + vname + ")"
 	}
 }
 
