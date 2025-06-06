@@ -62,13 +62,22 @@ type jsonEncDriverBytes struct {
 
 	enc encoderI
 
-	jsonEncState
+	timeFmtLayout string
+	byteFmter     jsonBytesFmter
+
+	timeFmt  jsonTimeFmt
+	bytesFmt jsonBytesFmt
+
+	di int8
+	d  bool
+	dl uint16
 
 	ks bool
 	is byte
 
 	typical bool
-	rawext  bool
+
+	rawext bool
 
 	b [48]byte
 }
@@ -79,7 +88,15 @@ type jsonDecDriverBytes struct {
 	d *decoderBase
 
 	r bytesDecReader
-	jsonDecState
+
+	buf []byte
+
+	tok  uint8
+	_    bool
+	_    byte
+	bstr [4]byte
+
+	jsonHandleOpts
 
 	dec decoderI
 }
@@ -3161,15 +3178,34 @@ func (e *jsonEncDriverBytes) EncodeNil() {
 	e.w.writeb(jsonNull)
 }
 
+func (e *jsonEncDriverBytes) encodeIntAsUint(v int64, quotes bool) {
+	neg := v < 0
+	if neg {
+		v = -v
+	}
+	e.encodeUint(neg, quotes, uint64(v))
+}
+
 func (e *jsonEncDriverBytes) EncodeTime(t time.Time) {
 
 	if t.IsZero() {
 		e.EncodeNil()
-	} else {
+		return
+	}
+	switch e.timeFmt {
+	case jsonTimeFmtStringLayout:
 		e.b[0] = '"'
-		b := t.AppendFormat(e.b[1:1], time.RFC3339Nano)
+		b := t.AppendFormat(e.b[1:1], e.timeFmtLayout)
 		e.b[len(b)+1] = '"'
 		e.w.writeb(e.b[:len(b)+2])
+	case jsonTimeFmtUnix:
+		e.encodeIntAsUint(t.Unix(), false)
+	case jsonTimeFmtUnixMilli:
+		e.encodeIntAsUint(t.UnixMilli(), false)
+	case jsonTimeFmtUnixMicro:
+		e.encodeIntAsUint(t.UnixMicro(), false)
+	case jsonTimeFmtUnixNano:
+		e.encodeIntAsUint(t.UnixNano(), false)
 	}
 }
 
@@ -3297,12 +3333,32 @@ func (e *jsonEncDriverBytes) EncodeStringBytesRaw(v []byte) {
 		return
 	}
 
-	slen := base64.StdEncoding.EncodedLen(len(v)) + 2
+	if e.bytesFmt == jsonBytesFmtArray {
+		e.WriteArrayStart(len(v))
+		for j := range v {
+			e.WriteArrayElem(j == 0)
+			e.encodeUint(false, false, uint64(v[j]))
+		}
+		e.WriteArrayEnd()
+		return
+	}
 
-	bs := e.e.blist.peek(slen, false)
-	bs = bs[:slen]
+	var slen int
+	if e.bytesFmt == jsonBytesFmtBase64 {
+		slen = base64.StdEncoding.EncodedLen(len(v))
+	} else {
+		slen = e.byteFmter.EncodedLen(len(v))
+	}
+	slen += 2
 
-	base64.StdEncoding.Encode(bs[1:], v)
+	bs := e.e.blist.peek(slen, false)[:slen]
+
+	if e.bytesFmt == jsonBytesFmtBase64 {
+		base64.StdEncoding.Encode(bs[1:], v)
+	} else {
+		e.byteFmter.Encode(bs[1:], v)
+	}
+
 	bs[len(bs)-1] = '"'
 	bs[0] = '"'
 	e.w.writeb(bs)
@@ -3391,7 +3447,6 @@ func (e *jsonEncDriverBytes) quoteStr(s string) {
 			if start < i {
 				e.w.writestr(s[start:i])
 			}
-
 			switch b {
 			case '\\':
 				e.w.writen2('\\', '\\')
@@ -3411,7 +3466,6 @@ func (e *jsonEncDriverBytes) quoteStr(s string) {
 				e.w.writestr(`\u00`)
 				e.w.writen2(hex[b>>4], hex[b&0xF])
 			}
-
 			i++
 			start = i
 			continue
@@ -3636,8 +3690,27 @@ func (d *jsonDecDriverBytes) DecodeTime() (t time.Time) {
 		d.checkLit3([3]byte{'u', 'l', 'l'}, d.r.readn3())
 		return
 	}
-	d.ensureReadingString()
-	bs := d.readUnescapedString()
+	var bs []byte
+
+	if d.tok != '"' {
+		bs, d.tok = d.r.jsonReadNum()
+		i := d.parseInt64(bs)
+		switch d.timeFmtNum {
+		case jsonTimeFmtUnix:
+			t = time.Unix(i, 0)
+		case jsonTimeFmtUnixMilli:
+			t = time.UnixMilli(i)
+		case jsonTimeFmtUnixMicro:
+			t = time.UnixMicro(i)
+		case jsonTimeFmtUnixNano:
+			t = time.Unix(0, i)
+		default:
+			halt.errorStr("invalid timeFmtNum")
+		}
+		return
+	}
+
+	bs = d.readUnescapedString()
 	t, err := time.Parse(time.RFC3339, stringView(bs))
 	halt.onerror(err)
 	return
@@ -3686,7 +3759,10 @@ func (d *jsonDecDriverBytes) DecodeUint64() (u uint64) {
 }
 
 func (d *jsonDecDriverBytes) DecodeInt64() (v int64) {
-	b := d.decNumBytes()
+	return d.parseInt64(d.decNumBytes())
+}
+
+func (d *jsonDecDriverBytes) parseInt64(b []byte) (v int64) {
 	u, neg, ok := parseInteger_bytes(b)
 	if !ok {
 		halt.onerror(strconvParseErr(b, "ParseInt"))
@@ -3795,6 +3871,7 @@ func (d *jsonDecDriverBytes) DecodeBytes() (bs []byte, state dBytesAttachState) 
 
 	d.ensureReadingString()
 	bs1 := d.readUnescapedString()
+
 	slen := base64.StdEncoding.DecodedLen(len(bs1))
 	if slen == 0 {
 		bs = zeroByteSlice
@@ -3805,13 +3882,16 @@ func (d *jsonDecDriverBytes) DecodeBytes() (bs []byte, state dBytesAttachState) 
 		d.buf = d.d.blist.putGet(d.buf, slen)[:slen]
 		bs = d.buf
 	}
-	slen2, err := base64.StdEncoding.Decode(bs, bs1)
-	if err != nil {
-		halt.errorf("error decoding base64 binary '%s': %v", any(bs1), err)
+	var err error
+	for _, v := range d.byteFmters {
+
+		slen, err = v.Decode(bs, bs1)
+		if err == nil {
+			bs = bs[:slen]
+			return
+		}
 	}
-	if slen != slen2 {
-		bs = bs[:slen2]
-	}
+	halt.errorf("error decoding base64 binary '%s': %v", any(bs1), err)
 	return
 }
 
@@ -3997,18 +4077,25 @@ func (e *jsonEncDriverBytes) reset() {
 	} else {
 		e.s = &jsonCharHtmlSafeBitset
 	}
-	e.rawext = e.h.RawBytesExt != nil
 	e.di = int8(e.h.Indent)
 	e.d = e.h.Indent != 0
 	e.ks = e.h.MapKeyAsString
 	e.is = e.h.IntegerAsString
+
+	var ho jsonHandleOpts
+	ho.reset(e.h)
+	e.timeFmt = ho.timeFmt
+	e.bytesFmt = ho.bytesFmt
+	e.timeFmtLayout = ho.timeFmtLayouts[0]
+	e.byteFmter = ho.byteFmters[0]
+	e.rawext = ho.rawext
 }
 
 func (d *jsonDecDriverBytes) reset() {
 	d.buf = d.d.blist.check(d.buf, 256)
 	d.tok = 0
 
-	d.rawext = d.h.RawBytesExt != nil
+	d.jsonHandleOpts.reset(d.h)
 }
 
 func (d *jsonEncDriverBytes) init(hh Handle, shared *encoderBase, enc encoderI) (fp interface{}) {
@@ -4121,13 +4208,22 @@ type jsonEncDriverIO struct {
 
 	enc encoderI
 
-	jsonEncState
+	timeFmtLayout string
+	byteFmter     jsonBytesFmter
+
+	timeFmt  jsonTimeFmt
+	bytesFmt jsonBytesFmt
+
+	di int8
+	d  bool
+	dl uint16
 
 	ks bool
 	is byte
 
 	typical bool
-	rawext  bool
+
+	rawext bool
 
 	b [48]byte
 }
@@ -4138,7 +4234,15 @@ type jsonDecDriverIO struct {
 	d *decoderBase
 
 	r ioDecReader
-	jsonDecState
+
+	buf []byte
+
+	tok  uint8
+	_    bool
+	_    byte
+	bstr [4]byte
+
+	jsonHandleOpts
 
 	dec decoderI
 }
@@ -7220,15 +7324,34 @@ func (e *jsonEncDriverIO) EncodeNil() {
 	e.w.writeb(jsonNull)
 }
 
+func (e *jsonEncDriverIO) encodeIntAsUint(v int64, quotes bool) {
+	neg := v < 0
+	if neg {
+		v = -v
+	}
+	e.encodeUint(neg, quotes, uint64(v))
+}
+
 func (e *jsonEncDriverIO) EncodeTime(t time.Time) {
 
 	if t.IsZero() {
 		e.EncodeNil()
-	} else {
+		return
+	}
+	switch e.timeFmt {
+	case jsonTimeFmtStringLayout:
 		e.b[0] = '"'
-		b := t.AppendFormat(e.b[1:1], time.RFC3339Nano)
+		b := t.AppendFormat(e.b[1:1], e.timeFmtLayout)
 		e.b[len(b)+1] = '"'
 		e.w.writeb(e.b[:len(b)+2])
+	case jsonTimeFmtUnix:
+		e.encodeIntAsUint(t.Unix(), false)
+	case jsonTimeFmtUnixMilli:
+		e.encodeIntAsUint(t.UnixMilli(), false)
+	case jsonTimeFmtUnixMicro:
+		e.encodeIntAsUint(t.UnixMicro(), false)
+	case jsonTimeFmtUnixNano:
+		e.encodeIntAsUint(t.UnixNano(), false)
 	}
 }
 
@@ -7356,12 +7479,32 @@ func (e *jsonEncDriverIO) EncodeStringBytesRaw(v []byte) {
 		return
 	}
 
-	slen := base64.StdEncoding.EncodedLen(len(v)) + 2
+	if e.bytesFmt == jsonBytesFmtArray {
+		e.WriteArrayStart(len(v))
+		for j := range v {
+			e.WriteArrayElem(j == 0)
+			e.encodeUint(false, false, uint64(v[j]))
+		}
+		e.WriteArrayEnd()
+		return
+	}
 
-	bs := e.e.blist.peek(slen, false)
-	bs = bs[:slen]
+	var slen int
+	if e.bytesFmt == jsonBytesFmtBase64 {
+		slen = base64.StdEncoding.EncodedLen(len(v))
+	} else {
+		slen = e.byteFmter.EncodedLen(len(v))
+	}
+	slen += 2
 
-	base64.StdEncoding.Encode(bs[1:], v)
+	bs := e.e.blist.peek(slen, false)[:slen]
+
+	if e.bytesFmt == jsonBytesFmtBase64 {
+		base64.StdEncoding.Encode(bs[1:], v)
+	} else {
+		e.byteFmter.Encode(bs[1:], v)
+	}
+
 	bs[len(bs)-1] = '"'
 	bs[0] = '"'
 	e.w.writeb(bs)
@@ -7450,7 +7593,6 @@ func (e *jsonEncDriverIO) quoteStr(s string) {
 			if start < i {
 				e.w.writestr(s[start:i])
 			}
-
 			switch b {
 			case '\\':
 				e.w.writen2('\\', '\\')
@@ -7470,7 +7612,6 @@ func (e *jsonEncDriverIO) quoteStr(s string) {
 				e.w.writestr(`\u00`)
 				e.w.writen2(hex[b>>4], hex[b&0xF])
 			}
-
 			i++
 			start = i
 			continue
@@ -7695,8 +7836,27 @@ func (d *jsonDecDriverIO) DecodeTime() (t time.Time) {
 		d.checkLit3([3]byte{'u', 'l', 'l'}, d.r.readn3())
 		return
 	}
-	d.ensureReadingString()
-	bs := d.readUnescapedString()
+	var bs []byte
+
+	if d.tok != '"' {
+		bs, d.tok = d.r.jsonReadNum()
+		i := d.parseInt64(bs)
+		switch d.timeFmtNum {
+		case jsonTimeFmtUnix:
+			t = time.Unix(i, 0)
+		case jsonTimeFmtUnixMilli:
+			t = time.UnixMilli(i)
+		case jsonTimeFmtUnixMicro:
+			t = time.UnixMicro(i)
+		case jsonTimeFmtUnixNano:
+			t = time.Unix(0, i)
+		default:
+			halt.errorStr("invalid timeFmtNum")
+		}
+		return
+	}
+
+	bs = d.readUnescapedString()
 	t, err := time.Parse(time.RFC3339, stringView(bs))
 	halt.onerror(err)
 	return
@@ -7745,7 +7905,10 @@ func (d *jsonDecDriverIO) DecodeUint64() (u uint64) {
 }
 
 func (d *jsonDecDriverIO) DecodeInt64() (v int64) {
-	b := d.decNumBytes()
+	return d.parseInt64(d.decNumBytes())
+}
+
+func (d *jsonDecDriverIO) parseInt64(b []byte) (v int64) {
 	u, neg, ok := parseInteger_bytes(b)
 	if !ok {
 		halt.onerror(strconvParseErr(b, "ParseInt"))
@@ -7854,6 +8017,7 @@ func (d *jsonDecDriverIO) DecodeBytes() (bs []byte, state dBytesAttachState) {
 
 	d.ensureReadingString()
 	bs1 := d.readUnescapedString()
+
 	slen := base64.StdEncoding.DecodedLen(len(bs1))
 	if slen == 0 {
 		bs = zeroByteSlice
@@ -7864,13 +8028,16 @@ func (d *jsonDecDriverIO) DecodeBytes() (bs []byte, state dBytesAttachState) {
 		d.buf = d.d.blist.putGet(d.buf, slen)[:slen]
 		bs = d.buf
 	}
-	slen2, err := base64.StdEncoding.Decode(bs, bs1)
-	if err != nil {
-		halt.errorf("error decoding base64 binary '%s': %v", any(bs1), err)
+	var err error
+	for _, v := range d.byteFmters {
+
+		slen, err = v.Decode(bs, bs1)
+		if err == nil {
+			bs = bs[:slen]
+			return
+		}
 	}
-	if slen != slen2 {
-		bs = bs[:slen2]
-	}
+	halt.errorf("error decoding base64 binary '%s': %v", any(bs1), err)
 	return
 }
 
@@ -8056,18 +8223,25 @@ func (e *jsonEncDriverIO) reset() {
 	} else {
 		e.s = &jsonCharHtmlSafeBitset
 	}
-	e.rawext = e.h.RawBytesExt != nil
 	e.di = int8(e.h.Indent)
 	e.d = e.h.Indent != 0
 	e.ks = e.h.MapKeyAsString
 	e.is = e.h.IntegerAsString
+
+	var ho jsonHandleOpts
+	ho.reset(e.h)
+	e.timeFmt = ho.timeFmt
+	e.bytesFmt = ho.bytesFmt
+	e.timeFmtLayout = ho.timeFmtLayouts[0]
+	e.byteFmter = ho.byteFmters[0]
+	e.rawext = ho.rawext
 }
 
 func (d *jsonDecDriverIO) reset() {
 	d.buf = d.d.blist.check(d.buf, 256)
 	d.tok = 0
 
-	d.rawext = d.h.RawBytesExt != nil
+	d.jsonHandleOpts.reset(d.h)
 }
 
 func (d *jsonEncDriverIO) init(hh Handle, shared *encoderBase, enc encoderI) (fp interface{}) {
