@@ -164,7 +164,7 @@ func TestCborGoldens(t *testing.T) {
 	bh.MapType = testMapStrIntfTyp
 	bh.RawToString = false
 	bh.SignedInteger = false
-	// ch.SkipUnexpectedTags = false // MARKER 2025 - shouldn't be needed
+	ch.SkipUnexpectedTags = false
 
 	// decode test-cbor-goldens.json into a list of []*testCborGolden
 	// for each one,

@@ -4032,7 +4032,8 @@ func testUpdateExts(nhs ...testNameBasicHandle) {
 		// add extensions for time.Time, excl json and binc (which have builtin support)
 		switch nh.n {
 		case "cbor":
-			sx(timeTyp, 1, tUnixTimeIntfExt) // MARKER 2025 (need to test ext here - not depend on builtin support)
+			// explicitly test ext here - not depend on builtin support)
+			sx(timeTyp, 1, tUnixTimeIntfExt)
 		case "msgpack":
 			sx(timeTyp, 1, tTimeBytesExt)
 		case "simple":
@@ -4146,19 +4147,19 @@ func testEqualH(v1, v2 interface{}, h Handle) (err error) {
 					rcopy(src.Field(i), target.Field(i))
 				}
 			}
-		case reflect.String:
-			// MARKER 2025 - need to all use same functions to compare
-			// s := src.String()
-			// if isJson && bh.StringToRaw {
-			// 	s = base64.StdEncoding.EncodeToString(bytesView(s))
-			// 	// dbuf := make([]byte, base64.StdEncoding.DecodedLen(len(s)))
-			// 	// n, err := base64.StdEncoding.Decode(dbuf, bytesView(s))
-			// 	// if err == nil {
-			// 	// 	s = stringView(dbuf[:n])
-			// 	// }
-			// }
-			// target.SetString(s)
-			target.Set(src)
+		// case reflect.String:
+		// 	// MARKER 2025 - need to all use same functions to compare
+		// 	// s := src.String()
+		// 	// if isJson && bh.StringToRaw {
+		// 	// 	s = base64.StdEncoding.EncodeToString(bytesView(s))
+		// 	// 	// dbuf := make([]byte, base64.StdEncoding.DecodedLen(len(s)))
+		// 	// 	// n, err := base64.StdEncoding.Decode(dbuf, bytesView(s))
+		// 	// 	// if err == nil {
+		// 	// 	// 	s = stringView(dbuf[:n])
+		// 	// 	// }
+		// 	// }
+		// 	// target.SetString(s)
+		// 	target.Set(src)
 		default: // Basic types: int, string, bool, etc.
 			target.Set(src)
 			// if src.Type().AssignableTo(target.Type()) {

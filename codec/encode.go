@@ -1678,15 +1678,15 @@ func (dh helperEncDriver[T]) encFnLoad(rt reflect.Type, rtid uintptr, tinfos *Ty
 // func (e *encoder[T]) encodeIR(iv interface{}, rv reflect.Value) {
 // 	// MARKER: a switch with only concrete types can be optimized.
 // 	// consequently, we deal with nil and interfaces outside the switch.
-
+//
 // 	_ = e.e // early asserts e, e.e are not nil once
 // 	if iv == nil {
 // 		e.e.EncodeNil()
 // 		return
 // 	}
-
+//
 // 	k := rv.Kind()
-
+//
 // 	if isnilBitset.isset(byte(k)) && rvIsNil(rv) {
 // 		if e.h.NilCollectionToZeroLength {
 // 			switch k {
@@ -1701,13 +1701,13 @@ func (dh helperEncDriver[T]) encFnLoad(rt reflect.Type, rtid uintptr, tinfos *Ty
 // 		e.e.EncodeNil()
 // 		return
 // 	}
-
+//
 // 	// rv, isnil := isNil(iv, true) // fast isNil check (e.g. for nil intf or nil pointers)
 // 	// if isnil {
-// 	// 	e.e.EncodeNil() // problem here MARKER 2025
+// 	// 	e.e.EncodeNil() // problem here
 // 	// 	return
 // 	// }
-
+//
 // 	switch v := iv.(type) {
 // 	// case nil:
 // 	// case Selfer:
@@ -1715,7 +1715,7 @@ func (dh helperEncDriver[T]) encFnLoad(rt reflect.Type, rtid uintptr, tinfos *Ty
 // 		e.rawBytes(v)
 // 	case reflect.Value:
 // 		e.encodeValue(v, nil)
-
+//
 // 	case string:
 // 		e.e.EncodeString(v)
 // 	case bool:
