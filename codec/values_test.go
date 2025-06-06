@@ -26,6 +26,7 @@ import (
 // 	defTypeInfos.get(rt2id(rt), rt)
 // }
 
+const testLongSentence = `some really really cool names that are nigerian and american like "ugorji melody nwoke" - get it? `
 const numStrUi64T = 32 // use 8, prefer 32, test with 1024
 
 type wrapSliceUint64 []uint64
@@ -284,7 +285,7 @@ func populateTestStrucCommon(ts *TestStrucCommon, n int, bench, useInterface, us
 		a.AUi64slice = append(a.AUi64slice, math.MaxUint64, math.MaxUint64-4)
 	}
 	*ts = TestStrucCommon{
-		S: strRpt(n, `some really really cool names that are nigerian and american like "ugorji melody nwoke" - get it? `),
+		S: strRpt(n, testLongSentence),
 
 		// set the numbers close to the limits
 		I8:   math.MaxInt8 * 2 / 3,  // 8,
@@ -340,7 +341,7 @@ func populateTestStrucCommon(ts *TestStrucCommon, n int, bench, useInterface, us
 		// make Simplef same as top-level
 		// MARKER: should this have slightly different values???
 		Simplef: testSimpleFields{
-			S: strRpt(n, `some really really cool names that are nigerian and american like "ugorji melody nwoke" - get it? `),
+			S: strRpt(n, testLongSentence),
 
 			// set the numbers close to the limits
 			I8:  math.MaxInt8 * 2 / 3,  // 8,
