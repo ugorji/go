@@ -193,6 +193,7 @@ import (
 	"bytes"
 	"encoding"
 	"encoding/binary"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"io"
@@ -3256,6 +3257,22 @@ func (x internerMap) string(v []byte) (s string) {
 	}
 	return
 }
+
+// ----
+
+type bytesEncoder interface {
+	Encode(dst, src []byte)
+	Decode(dst, src []byte) (n int, err error)
+	EncodedLen(n int) int
+	DecodedLen(n int) int
+}
+
+type hexEncoder struct{}
+
+func (hexEncoder) Encode(dst, src []byte)                    { hex.Encode(dst, src) }
+func (hexEncoder) Decode(dst, src []byte) (n int, err error) { return hex.Decode(dst, src) }
+func (hexEncoder) EncodedLen(n int) int                      { return hex.EncodedLen(n) }
+func (hexEncoder) DecodedLen(n int) int                      { return hex.DecodedLen(n) }
 
 // type bytesIntf struct {
 // 	v []byte

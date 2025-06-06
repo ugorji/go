@@ -4,9 +4,12 @@
 package codec
 
 import (
+	"encoding/base32"
+	"encoding/base64"
 	"errors"
 	"math"
 	"reflect"
+	"time"
 	"unicode"
 )
 
@@ -76,8 +79,9 @@ const (
 
 var (
 	// jsonTabs and jsonSpaces are used as caches for indents
-	jsonTabs   [32]byte
-	jsonSpaces [128]byte
+	jsonTabs       [32]byte
+	jsonSpaces     [128]byte
+	jsonTimeLayout time.Time
 )
 
 func init() {
@@ -87,15 +91,141 @@ func init() {
 	for i := 0; i < len(jsonSpaces); i++ {
 		jsonSpaces[i] = ' '
 	}
+	jsonTimeLayout, err := time.Parse(time.Layout, time.Layout)
+	halt.onerror(err)
+	jsonTimeLayout = jsonTimeLayout.Round(time.Second).UTC()
 }
 
 // ----------------
 
-type jsonEncState struct {
-	di int8   // indent per: if negative, use tabs
-	d  bool   // indenting?
-	dl uint16 // indent level
+type jsonBytesFmt uint8
+
+const (
+	jsonBytesFmtArray jsonBytesFmt = iota + 1
+	jsonBytesFmtBase64
+	jsonBytesFmtBase64url
+	jsonBytesFmtBase32
+	jsonBytesFmtBase32hex
+	jsonBytesFmtBase16
+
+	jsonBytesFmtHex = jsonBytesFmtBase16
+)
+
+type jsonTimeFmt uint8
+
+const (
+	jsonTimeFmtStringLayout jsonTimeFmt = iota + 1
+	jsonTimeFmtUnix
+	jsonTimeFmtUnixMilli
+	jsonTimeFmtUnixMicro
+	jsonTimeFmtUnixNano
+)
+
+type jsonBytesFmter = bytesEncoder
+
+type jsonHandleOpts struct {
+	rawext bool
+
+	// encBytesAsArray bool
+	// encTimeAsNum    bool
+
+	bytesFmt jsonBytesFmt
+	// timeFmt used during encode to determine how to encode a time.Time
+	timeFmt jsonTimeFmt
+	// timeFmtNum used during decode to decode a time.Time from an int64 in the stream
+	timeFmtNum jsonTimeFmt
+	// timeFmtLayouts used on decode, to try to parse time.Time until successful
+	timeFmtLayouts []string
+	// byteFmters used on decode, to try to parse []byte from a UTF-8 string encoding (e.g. base64)
+	byteFmters []jsonBytesFmter
+	// This should map to the byteFmter with the largest size among the listed ones.
+	// This way: we always use the one array for all Encode/Decode calls
+	// byteFmtLener byteFmtLener
 }
+
+var jsonHexEncoder hexEncoder
+
+func (x *jsonHandleOpts) reset(h *JsonHandle) {
+	if len(h.TimeFormat) == 0 {
+		// x.encTimeAsNum = false
+		x.timeFmt = jsonTimeFmtStringLayout
+		x.timeFmtLayouts = append(x.timeFmtLayouts[:0], time.RFC3339Nano)
+	} else {
+		// x.encTimeAsNum = true
+		x.timeFmt = jsonTimeFmtUnix
+		x.timeFmtLayouts = x.timeFmtLayouts[:0]
+		for i, v := range h.TimeFormat {
+			switch v {
+			case "unix":
+				x.timeFmt = jsonTimeFmtUnix
+			case "unixmilli":
+				x.timeFmt = jsonTimeFmtUnixMilli
+			case "unixmicro":
+				x.timeFmt = jsonTimeFmtUnixMicro
+			case "unixnano":
+				x.timeFmt = jsonTimeFmtUnixNano
+			default:
+				if i == 0 {
+					// x.encTimeAsNum = false
+					x.timeFmt = jsonTimeFmtStringLayout
+				}
+				x.timeFmtLayouts = append(x.timeFmtLayouts, v)
+			}
+		}
+		x.timeFmtNum = x.timeFmt
+		if x.timeFmt == jsonTimeFmtStringLayout {
+			x.timeFmtNum = jsonTimeFmtUnix
+		}
+	}
+
+	// x.encBytesAsArray = false
+	x.bytesFmt = jsonBytesFmtBase64
+	if len(h.BytesFormat) == 0 {
+		x.byteFmters = append(x.byteFmters[:0], base64.StdEncoding)
+		// x.byteFmtLener = base64.StdEncoding
+	} else {
+		x.byteFmters = x.byteFmters[:0]
+		switch h.BytesFormat[0] {
+		case "array":
+			x.bytesFmt = jsonBytesFmtArray
+			// x.encBytesAsArray = true
+		case "base64":
+			x.bytesFmt = jsonBytesFmtBase64
+		case "base64url":
+			x.bytesFmt = jsonBytesFmtBase64url
+		case "base32":
+			x.bytesFmt = jsonBytesFmtBase32
+		case "base32hex":
+			x.bytesFmt = jsonBytesFmtBase32hex
+		case "base16", "hex":
+			x.bytesFmt = jsonBytesFmtBase16
+		}
+		for _, v := range h.BytesFormat {
+			switch v {
+			// case "array":
+			case "base64":
+				x.byteFmters = append(x.byteFmters, base64.StdEncoding)
+			case "base64url":
+				x.byteFmters = append(x.byteFmters, base64.URLEncoding)
+			case "base32":
+				x.byteFmters = append(x.byteFmters, base32.StdEncoding)
+			case "base32hex":
+				x.byteFmters = append(x.byteFmters, base32.HexEncoding)
+			case "base16", "hex":
+				x.byteFmters = append(x.byteFmters, &jsonHexEncoder)
+			}
+		}
+	}
+
+	// ----
+	x.rawext = h.RawBytesExt != nil
+}
+
+// type jsonEncState struct {
+// 	di int8   // indent per: if negative, use tabs
+// 	d  bool   // indenting?
+// 	dl uint16 // indent level
+// }
 
 // func (x jsonEncState) captureState() interface{}   { return x }
 // func (x *jsonEncState) restoreState(v interface{}) { *x = v.(jsonEncState) }
@@ -303,6 +433,31 @@ type JsonHandle struct {
 	// RawBytesExt, if configured, is used to encode and decode raw bytes in a custom way.
 	// If not configured, raw bytes are encoded to/from base64 text.
 	RawBytesExt InterfaceExt
+
+	// TimeFormat is an array of strings representing a time.Time format, with each one being either
+	// a layout that honor the time.Time.Format specification.
+	// In addition, at most one of the set below (unix, unixmilli, unixmicro, unixnana) can be specified
+	// supporting encoding and decoding time as a number relative to the time epoch of Jan 1, 1970.
+	//
+	// During encode of a time.Time, the first entry in the array is used (defaults to RFC 3339).
+	//
+	// During decode,
+	// - if a string, then each of the layout formats will be tried in order until a time.Time is decoded.
+	// - if a number, then the sole unix entry is used.
+	TimeFormat []string
+
+	// BytesFormat is an array of strings representing how bytes are encoded.
+	//
+	// Supported values are base64 (default), base64url, base32, base32hex, base16 (synonymous with hex) and array.
+	//
+	// array is a special value configuring that bytes are encoded as a sequence of numbers.
+	//
+	// During encode of a []byte, the first entry is used (defaults to base64 if none specified).
+	//
+	// During decode
+	// - if a string, then attempt decoding using each format in sequence until successful.
+	// - if an array, then decode normally
+	BytesFormat []string
 }
 
 func (h *JsonHandle) isJson() bool { return true }
