@@ -9,6 +9,7 @@ import (
 	"errors"
 	"math"
 	"reflect"
+	"strings"
 	"time"
 	"unicode"
 )
@@ -71,17 +72,20 @@ const (
 	// Both technically valid JSON, but bomb on JSONP, so fix here unconditionally.
 	jsonEscapeMultiByteUnicodeSep = true
 
-	// jsonRecognizeBoolNullInQuotedStr is used during decoding into a blank interface{}
+	// jsonNakedBoolNumInQuotedStr is used during decoding into a blank interface{}
 	// to control whether we detect quoted values of bools and null where a map key is expected,
 	// and treat as nil, true or false.
-	jsonNakedBoolNullInQuotedStr = true
+	jsonNakedBoolNumInQuotedStr = true
 )
 
 var (
 	// jsonTabs and jsonSpaces are used as caches for indents
-	jsonTabs       [32]byte
-	jsonSpaces     [128]byte
-	jsonTimeLayout time.Time
+	jsonTabs   [32]byte
+	jsonSpaces [128]byte
+	// jsonTimeLayout is used to validate time layouts.
+	// Unfortunately, we couldn't compare time.Time effectively, so punted.
+	// jsonTimeLayout time.Time
+	jsonHexEncoder hexEncoder
 )
 
 func init() {
@@ -91,9 +95,9 @@ func init() {
 	for i := 0; i < len(jsonSpaces); i++ {
 		jsonSpaces[i] = ' '
 	}
-	jsonTimeLayout, err := time.Parse(time.Layout, time.Layout)
-	halt.onerror(err)
-	jsonTimeLayout = jsonTimeLayout.Round(time.Second).UTC()
+	// jsonTimeLayout, err := time.Parse(time.Layout, time.Layout)
+	// halt.onerror(err)
+	// jsonTimeLayout = jsonTimeLayout.Round(time.Second).UTC()
 }
 
 // ----------------
@@ -125,10 +129,7 @@ type jsonBytesFmter = bytesEncoder
 
 type jsonHandleOpts struct {
 	rawext bool
-
-	// encBytesAsArray bool
-	// encTimeAsNum    bool
-
+	// bytesFmt used during encode to determine how to encode []byte
 	bytesFmt jsonBytesFmt
 	// timeFmt used during encode to determine how to encode a time.Time
 	timeFmt jsonTimeFmt
@@ -143,52 +144,56 @@ type jsonHandleOpts struct {
 	// byteFmtLener byteFmtLener
 }
 
-var jsonHexEncoder hexEncoder
+func jsonCheckTimeLayout(s string) (ok bool) {
+	// t, err := time.Parse(s, s)
+	// defer func() {
+	// 	debugf("chktime: ok: %v, t: %v, err: %v, equal: %v",
+	// 		hlYELLOW, ok, t, err, t.Round(time.Second).UTC().Equal(jsonTimeLayout))
+	// }()
+	// return err == nil && t.Round(time.Second).UTC().Equal(jsonTimeLayout)
+
+	// t...Equal(jsonTimeLayout) always returns false - unsure why
+	_, err := time.Parse(s, s)
+	return err == nil
+}
 
 func (x *jsonHandleOpts) reset(h *JsonHandle) {
-	if len(h.TimeFormat) == 0 {
-		// x.encTimeAsNum = false
-		x.timeFmt = jsonTimeFmtStringLayout
-		x.timeFmtLayouts = append(x.timeFmtLayouts[:0], time.RFC3339Nano)
-	} else {
-		// x.encTimeAsNum = true
-		x.timeFmt = jsonTimeFmtUnix
-		x.timeFmtLayouts = x.timeFmtLayouts[:0]
-		for i, v := range h.TimeFormat {
-			switch v {
-			case "unix":
-				x.timeFmt = jsonTimeFmtUnix
-			case "unixmilli":
-				x.timeFmt = jsonTimeFmtUnixMilli
-			case "unixmicro":
-				x.timeFmt = jsonTimeFmtUnixMicro
-			case "unixnano":
-				x.timeFmt = jsonTimeFmtUnixNano
-			default:
-				if i == 0 {
-					// x.encTimeAsNum = false
-					x.timeFmt = jsonTimeFmtStringLayout
-				}
+	x.timeFmt = 0
+	x.timeFmtNum = 0
+	x.timeFmtLayouts = x.timeFmtLayouts[:0]
+	if len(h.TimeFormat) != 0 {
+		switch h.TimeFormat[0] {
+		case "unix":
+			x.timeFmt = jsonTimeFmtUnix
+		case "unixmilli":
+			x.timeFmt = jsonTimeFmtUnixMilli
+		case "unixmicro":
+			x.timeFmt = jsonTimeFmtUnixMicro
+		case "unixnano":
+			x.timeFmt = jsonTimeFmtUnixNano
+		}
+		x.timeFmtNum = x.timeFmt
+		for _, v := range h.TimeFormat {
+			if !strings.HasPrefix(v, "unix") && jsonCheckTimeLayout(v) {
 				x.timeFmtLayouts = append(x.timeFmtLayouts, v)
 			}
 		}
-		x.timeFmtNum = x.timeFmt
-		if x.timeFmt == jsonTimeFmtStringLayout {
-			x.timeFmtNum = jsonTimeFmtUnix
+	}
+	if x.timeFmt == 0 { // both timeFmt and timeFmtNum are 0
+		x.timeFmtNum = jsonTimeFmtUnix
+		x.timeFmt = jsonTimeFmtStringLayout
+		if len(x.timeFmtLayouts) == 0 {
+			x.timeFmtLayouts = append(x.timeFmtLayouts, time.RFC3339Nano)
 		}
 	}
 
-	// x.encBytesAsArray = false
-	x.bytesFmt = jsonBytesFmtBase64
-	if len(h.BytesFormat) == 0 {
-		x.byteFmters = append(x.byteFmters[:0], base64.StdEncoding)
-		// x.byteFmtLener = base64.StdEncoding
-	} else {
-		x.byteFmters = x.byteFmters[:0]
+	x.bytesFmt = 0
+	x.byteFmters = x.byteFmters[:0]
+	var b64 bool
+	if len(h.BytesFormat) != 0 {
 		switch h.BytesFormat[0] {
 		case "array":
 			x.bytesFmt = jsonBytesFmtArray
-			// x.encBytesAsArray = true
 		case "base64":
 			x.bytesFmt = jsonBytesFmtBase64
 		case "base64url":
@@ -205,6 +210,7 @@ func (x *jsonHandleOpts) reset(h *JsonHandle) {
 			// case "array":
 			case "base64":
 				x.byteFmters = append(x.byteFmters, base64.StdEncoding)
+				b64 = true
 			case "base64url":
 				x.byteFmters = append(x.byteFmters, base64.URLEncoding)
 			case "base32":
@@ -216,7 +222,17 @@ func (x *jsonHandleOpts) reset(h *JsonHandle) {
 			}
 		}
 	}
-
+	if x.bytesFmt == 0 {
+		// either len==0 OR gibberish was in the first element; resolve here
+		x.bytesFmt = jsonBytesFmtBase64
+		if !b64 { // not present - so insert into pos 0
+			x.byteFmters = append(x.byteFmters, nil)
+			copy(x.byteFmters[1:], x.byteFmters[0:])
+			x.byteFmters[0] = base64.StdEncoding
+		}
+	}
+	// debugf("jsonHandleOpts.reset: bytesFmt: %d, byteFmters (%d), timeFmt: %d, timeFmtLayouts (%d)",
+	// 	hlRED, x.bytesFmt, len(x.byteFmters), x.timeFmt, len(x.timeFmtLayouts))
 	// ----
 	x.rawext = h.RawBytesExt != nil
 }

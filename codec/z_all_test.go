@@ -153,6 +153,8 @@ func testJsonGroup(t *testing.T) {
 	t.Run("TestJsonAllErrWriter", TestJsonAllErrWriter)
 	t.Run("TestJsonMammoth", TestJsonMammoth)
 	t.Run("TestJsonMammothMapsAndSlices", TestJsonMammothMapsAndSlices)
+
+	t.Run("TestJsonTimeAndBytesOptions", TestJsonTimeAndBytesOptions)
 }
 
 func testJsonGroupV(t *testing.T) {
@@ -161,6 +163,7 @@ func testJsonGroupV(t *testing.T) {
 	t.Run("TestJsonSwallowAndZero", TestJsonSwallowAndZero)
 	t.Run("TestJsonNextValueBytes", TestJsonNextValueBytes)
 	t.Run("TestJsonStrucEncDec", TestJsonStrucEncDec)
+	t.Run("TestJsonTimeAndBytesOptions", TestJsonTimeAndBytesOptions)
 }
 
 func testBincGroup(t *testing.T) {
@@ -438,7 +441,6 @@ func TestCodecSuite(t *testing.T) {
 		tbvars.E.RecursiveEmptyCheck = true
 		tbvars.E.OptimumSize = true
 		tbvars.E.NilCollectionToZeroLength = true
-		// tbvars.E.StringToRaw = true // MARKER 2025 - testing this
 		// MARKER: we cannot test these below, as they will not encode as expected
 		// meaning a decoded value will look different than expected.
 		// e.g. encode nil slice, and get a decoded stream with zero-length array

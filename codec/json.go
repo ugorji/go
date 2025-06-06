@@ -729,8 +729,14 @@ func (d *jsonDecDriver[T]) DecodeTime() (t time.Time) {
 	// d.tok is now '"'
 	// d.ensureReadingString()
 	bs = d.readUnescapedString()
-	t, err := time.Parse(time.RFC3339, stringView(bs))
-	halt.onerror(err)
+	var err error
+	for _, v := range d.timeFmtLayouts {
+		t, err = time.Parse(v, stringView(bs))
+		if err == nil {
+			return
+		}
+	}
+	halt.errorStr("error decoding time")
 	return
 }
 
@@ -897,7 +903,7 @@ func (d *jsonDecDriver[T]) DecodeBytes() (bs []byte, state dBytesAttachState) {
 
 	d.ensureReadingString()
 	bs1 := d.readUnescapedString()
-	// base64 is most compact of supported formats, so it's decodedlen is sufficient for all supported formats.
+	// base64 is most compact of supported formats; it's decodedlen is sufficient for all
 	slen := base64.StdEncoding.DecodedLen(len(bs1))
 	if slen == 0 {
 		bs = zeroByteSlice
@@ -917,7 +923,7 @@ func (d *jsonDecDriver[T]) DecodeBytes() (bs []byte, state dBytesAttachState) {
 			return
 		}
 	}
-	halt.errorf("error decoding base64 binary '%s': %v", any(bs1), err)
+	halt.errorf("error decoding byte string '%s': %v", any(bs1), err)
 	return
 }
 
@@ -1041,6 +1047,7 @@ func (d *jsonDecDriver[T]) DecodeNaked() {
 
 	d.advance()
 	var bs []byte
+	var err error
 	switch d.tok {
 	case 'n':
 		d.checkLit3([3]byte{'u', 'l', 'l'}, d.r.readn3())
@@ -1062,7 +1069,7 @@ func (d *jsonDecDriver[T]) DecodeNaked() {
 		d.tok = 0
 		bs, z.b = d.dblQuoteStringAsBytes()
 		att := d.d.attachState(z.b)
-		if jsonNakedBoolNullInQuotedStr &&
+		if jsonNakedBoolNumInQuotedStr &&
 			d.h.MapKeyAsString && len(bs) > 0 && d.d.c == containerMapKey {
 			switch string(bs) {
 			// case "null": // nil is never quoted
@@ -1073,9 +1080,8 @@ func (d *jsonDecDriver[T]) DecodeNaked() {
 			case "false":
 				z.v = valueTypeBool
 				z.b = false
-			default:
-				// check if a number: float, int or uint
-				if err := jsonNakedNum(z, bs, d.h.PreferFloat, d.h.SignedInteger); err != nil {
+			default: // check if a number: float, int or uint
+				if err = jsonNakedNum(z, bs, d.h.PreferFloat, d.h.SignedInteger); err != nil {
 					z.v = valueTypeString
 					z.s = d.d.detach2Str(bs, att)
 				}
@@ -1089,7 +1095,7 @@ func (d *jsonDecDriver[T]) DecodeNaked() {
 		if len(bs) == 0 {
 			halt.errorStr("decode number from empty string")
 		}
-		if err := jsonNakedNum(z, bs, d.h.PreferFloat, d.h.SignedInteger); err != nil {
+		if err = jsonNakedNum(z, bs, d.h.PreferFloat, d.h.SignedInteger); err != nil {
 			halt.errorf("decode number from %s: %v", any(bs), err)
 		}
 	}
@@ -1115,8 +1121,14 @@ func (e *jsonEncDriver[T]) reset() {
 	ho.reset(e.h)
 	e.timeFmt = ho.timeFmt
 	e.bytesFmt = ho.bytesFmt
-	e.timeFmtLayout = ho.timeFmtLayouts[0]
-	e.byteFmter = ho.byteFmters[0]
+	e.timeFmtLayout = ""
+	e.byteFmter = nil
+	if len(ho.timeFmtLayouts) > 0 {
+		e.timeFmtLayout = ho.timeFmtLayouts[0]
+	}
+	if len(ho.byteFmters) > 0 {
+		e.byteFmter = ho.byteFmters[0]
+	}
 	e.rawext = ho.rawext
 }
 
