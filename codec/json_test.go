@@ -10,7 +10,6 @@ import (
 	"io"
 	"math"
 	"reflect"
-	"runtime"
 	"strconv"
 	"strings"
 	"testing"
@@ -623,23 +622,17 @@ func doTestJsonTimeAndBytesOptions(t *testing.T, h Handle) {
 		{[]string{}, []string{}, `{"Bytes":"c29tZSByZWFsbHkgcmVhbGx5IGNvb2wgbmFtZXMgdGhhdCBhcmUgbmlnZXJpYW4gYW5kIGFtZXJpY2FuIGxpa2UgInVnb3JqaSBtZWxvZHkgbndva2UiIC0gZ2V0IGl0PyA=","Time":"2025-06-19T14:32:49Z"}`},
 		{[]string{time.RFC3339, time.RFC1123Z}, []string{"array"}, `{"Bytes":[115,111,109,101,32,114,101,97,108,108,121,32,114,101,97,108,108,121,32,99,111,111,108,32,110,97,109,101,115,32,116,104,97,116,32,97,114,101,32,110,105,103,101,114,105,97,110,32,97,110,100,32,97,109,101,114,105,99,97,110,32,108,105,107,101,32,34,117,103,111,114,106,105,32,109,101,108,111,100,121,32,110,119,111,107,101,34,32,45,32,103,101,116,32,105,116,63,32],"Time":"Thu, 19 Jun 2025 14:32:49 +0000"}`},
 		{[]string{time.RFC1123Z, time.RFC850}, []string{"base32", "hex"}, `{"Bytes":"ONXW2ZJAOJSWC3DMPEQHEZLBNRWHSIDDN5XWYIDOMFWWK4ZAORUGC5BAMFZGKIDONFTWK4TJMFXCAYLOMQQGC3LFOJUWGYLOEBWGS23FEARHKZ3POJVGSIDNMVWG6ZDZEBXHO33LMURCALJAM5SXIIDJOQ7SA===","Time":"Thu, 19 Jun 2025 14:32:49 +0000"}`},
-	}
-	if runtime.GOARCH != "386" {
-		// 386 only has 32 bits, and cannot adequately capture time-milli since 1970. skip it.
-		table = append(table, params{[]string{"unixmilli", time.RFC1123Z}, []string{"hex", "base32hex"}, `{"Bytes":"736f6d65207265616c6c79207265616c6c7920636f6f6c206e616d6573207468617420617265206e6967657269616e20616e6420616d65726963616e206c696b65202275676f726a69206d656c6f6479206e776f6b6522202d206765742069743f20","Time":1750343569000}`})
+		{[]string{"unixmilli", time.RFC1123Z}, []string{"hex", "base32hex"}, `{"Bytes":"736f6d65207265616c6c79207265616c6c7920636f6f6c206e616d6573207468617420617265206e6967657269616e20616e6420616d65726963616e206c696b65202275676f726a69206d656c6f6479206e776f6b6522202d206765742069743f20","Time":1750343569000}`},
 	}
 	for i, v := range table {
 		jh.TimeFormat = v.TimeFormat
 		jh.BytesFormat = v.BytesFormat
 		name := fmt.Sprintf("%d", i)
 		bs = testMarshalErr(&tt, h, t, name)
-		// 	debugf("%d: %s", hlBLUE, i, bs)
-		// 	continue
 		testDeepEqualErr(stringView(bs), v.Expected, t, name)
 		tt1 := tt0
 		testUnmarshalErr(&tt1, bs, h, t, name)
 		tt1.Time = tt1.Time.Round(time.Second).UTC()
-		// debugf("[%v] tt1.Time: %v", hlBLUE, name, tt1.Time)
 		testDeepEqualErr(tt1, tt, t, name)
 	}
 }

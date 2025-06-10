@@ -82,10 +82,11 @@ var (
 	// jsonTabs and jsonSpaces are used as caches for indents
 	jsonTabs   [32]byte
 	jsonSpaces [128]byte
+
+	jsonHexEncoder hexEncoder
 	// jsonTimeLayout is used to validate time layouts.
 	// Unfortunately, we couldn't compare time.Time effectively, so punted.
 	// jsonTimeLayout time.Time
-	jsonHexEncoder hexEncoder
 )
 
 func init() {
@@ -139,21 +140,12 @@ type jsonHandleOpts struct {
 	timeFmtLayouts []string
 	// byteFmters used on decode, to try to parse []byte from a UTF-8 string encoding (e.g. base64)
 	byteFmters []jsonBytesFmter
-	// This should map to the byteFmter with the largest size among the listed ones.
-	// This way: we always use the one array for all Encode/Decode calls
-	// byteFmtLener byteFmtLener
 }
 
 func jsonCheckTimeLayout(s string) (ok bool) {
-	// t, err := time.Parse(s, s)
-	// defer func() {
-	// 	debugf("chktime: ok: %v, t: %v, err: %v, equal: %v",
-	// 		hlYELLOW, ok, t, err, t.Round(time.Second).UTC().Equal(jsonTimeLayout))
-	// }()
-	// return err == nil && t.Round(time.Second).UTC().Equal(jsonTimeLayout)
-
-	// t...Equal(jsonTimeLayout) always returns false - unsure why
 	_, err := time.Parse(s, s)
+	// t...Equal(jsonTimeLayout) always returns false - unsure why
+	// return err == nil && t.Round(time.Second).UTC().Equal(jsonTimeLayout)
 	return err == nil
 }
 
@@ -231,20 +223,9 @@ func (x *jsonHandleOpts) reset(h *JsonHandle) {
 			x.byteFmters[0] = base64.StdEncoding
 		}
 	}
-	// debugf("jsonHandleOpts.reset: bytesFmt: %d, byteFmters (%d), timeFmt: %d, timeFmtLayouts (%d)",
-	// 	hlRED, x.bytesFmt, len(x.byteFmters), x.timeFmt, len(x.timeFmtLayouts))
 	// ----
 	x.rawext = h.RawBytesExt != nil
 }
-
-// type jsonEncState struct {
-// 	di int8   // indent per: if negative, use tabs
-// 	d  bool   // indenting?
-// 	dl uint16 // indent level
-// }
-
-// func (x jsonEncState) captureState() interface{}   { return x }
-// func (x *jsonEncState) restoreState(v interface{}) { *x = v.(jsonEncState) }
 
 var jsonEncBoolStrs = [2][2]string{
 	{jsonLits[jsonLitF : jsonLitF+5], jsonLits[jsonLitT : jsonLitT+4]},
@@ -255,15 +236,12 @@ func jsonEncodeUint(neg, quotes bool, u uint64, b *[48]byte) []byte {
 	// MARKER: use setByteAt/byteAt to elide the bounds-checks
 	// when we are sure that we don't go beyond the bounds.
 
-	// copied mostly from std library: strconv
+	// MARKER: copied mostly from std library: strconv/itoa.go
 	// this should only be called on 64bit OS.
 
-	// const ss = jsonEncodeUintSmallsString
 	var ss = jsonEncodeUintSmallsStringBytes[:]
 
 	// typically, 19 or 20 bytes sufficient for decimal encoding a uint64
-	// var a [24]byte
-	// var a = (*[24]byte)(b[0:24])
 	var a = b[:24]
 	var i = uint(len(a))
 
@@ -272,17 +250,32 @@ func jsonEncodeUint(neg, quotes bool, u uint64, b *[48]byte) []byte {
 		setByteAt(a, i, '"')
 		// a[i] = '"'
 	}
-	// u guaranteed to fit into a uint (as we are not 32bit OS)
-	var is uint
-	var us = uint(u)
+	var is, us uint // use uint, as those fit into a register on the platform
+	if cpu32Bit {
+		for u >= 1e9 {
+			q := u / 1e9
+			us = uint(u - q*1e9) // u % 1e9 fits into a uint
+			for j := 4; j > 0; j-- {
+				is = us % 100 * 2
+				us /= 100
+				i -= 2
+				setByteAt(a, i+1, byteAt(ss, is+1))
+				setByteAt(a, i, byteAt(ss, is))
+			}
+			i--
+			setByteAt(a, i, byteAt(ss, us*2+1))
+			u = q
+		}
+		// u is now < 1e9, so is guaranteed to fit into a uint
+	}
+	us = uint(u)
 	for us >= 100 {
 		is = us % 100 * 2
 		us /= 100
 		i -= 2
 		setByteAt(a, i+1, byteAt(ss, is+1))
 		setByteAt(a, i, byteAt(ss, is))
-		// a[i+1] = ss[is+1]
-		// a[i] = ss[is]
+		// a[i+1], a[i] = ss[is+1], ss[is]
 	}
 
 	// us < 100
@@ -307,22 +300,6 @@ func jsonEncodeUint(neg, quotes bool, u uint64, b *[48]byte) []byte {
 	}
 	return a[i:]
 }
-
-type jsonDecState struct {
-	// scratch buffer used for base64 decoding (DecodeBytes in reuseBuf mode),
-	// or reading doubleQuoted string (DecodeStringAsBytes, DecodeNaked)
-	buf []byte
-
-	rawext bool // rawext configured on the handle
-
-	tok  uint8   // used to store the token read right after skipWhiteSpace
-	_    bool    // found null
-	_    byte    // padding
-	bstr [4]byte // scratch used for string \UXXX parsing
-}
-
-// func (x jsonDecState) captureState() interface{}   { return x }
-// func (x *jsonDecState) restoreState(v interface{}) { *x = v.(jsonDecState) }
 
 // MARKER: checkLitErr methods to prevent the got/expect parameters from escaping
 
