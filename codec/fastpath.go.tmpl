@@ -76,28 +76,15 @@ type fastpathRtRtid struct {
 }
 type fastpathARtRtid [{{ .FastpathLen }}]fastpathRtRtid
 
-var fastpathAvRtid fastpathARtid
-var fastpathAvRtRtid fastpathARtRtid
+var (
+	fastpathAvRtidArr fastpathARtid
+	fastpathAvRtRtidArr fastpathARtRtid
+	fastpathAvRtid = fastpathAvRtidArr[:]
+	fastpathAvRtRtid = fastpathAvRtRtidArr[:]
+)
 
 func fastpathAvIndex(rtid uintptr) (i uint, ok bool) {
-	{{/*
-	// MARKER 2025 - delegate to searchRtids
-	// use binary search to grab the index (adapted from sort/search.go)
-	// Note: we use goto (instead of for loop) so this can be inlined.
- 	// h, i, j := 0, 0, {{ .FastpathLen }} */ -}}
-	var h uint
-	var j uint = {{ .FastpathLen }}
-LOOP:
-	if i < j {
-		h = (i + j) >> 1 // avoid overflow when computing h // h = i + (j-i)/2
-		if fastpathAvRtid[h] < rtid {
-			i = h + 1
-		} else {
-			j = h
-		}
-		goto LOOP
-	}
-    return i, i < {{ .FastpathLen }} && fastpathAvRtid[i] == rtid
+	return searchRtids(fastpathAvRtid, rtid)
 }
 
 func init() {
@@ -109,7 +96,7 @@ func init() {
 		{{- /* only the base slice/map rtid is put in fastpathAvIndex, since we only handle slices/map/array */}}
         fastpathAvRtid[i] = xrtid
 		fastpathAvRtRtid[i] = fastpathRtRtid{ rtid: xrtid, rt: xrt }
-		{{- /* fastpath type switches howerer handle slices/map/array, and pointers to them */}}
+		{{- /* fastpath type switches however handle slices/map/array, and pointers to them */}}
 		encBuiltinRtids = append(encBuiltinRtids, xrtid, xptrtid)
 		decBuiltinRtids = append(decBuiltinRtids, xrtid, xptrtid)
 		i++
@@ -123,8 +110,8 @@ func init() {
 	fn(map[{{ .MapKey }}]{{ .Elem }}(nil))
 	{{end}}{{end}}{{end}}
 
-	sort.Slice(fastpathAvRtid[:], func(i, j int) bool { return fastpathAvRtid[i] < fastpathAvRtid[j] })
-	sort.Slice(fastpathAvRtRtid[:], func(i, j int) bool { return fastpathAvRtRtid[i].rtid < fastpathAvRtRtid[j].rtid })
+	sort.Slice(fastpathAvRtid, func(i, j int) bool { return fastpathAvRtid[i] < fastpathAvRtid[j] })
+	sort.Slice(fastpathAvRtRtid, func(i, j int) bool { return fastpathAvRtRtid[i].rtid < fastpathAvRtRtid[j].rtid })
 	slices.Sort(encBuiltinRtids)
 	slices.Sort(decBuiltinRtids)
 }
@@ -145,4 +132,3 @@ func fastpathDecodeSetZeroTypeSwitch(iv interface{}) bool {
 	}
 	return true
 }
-
