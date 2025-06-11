@@ -1054,7 +1054,6 @@ func (x *genRunner) encZero(t reflect.Type) {
 }
 
 func genOmitEmptyLinePreChecks(varname string, t reflect.Type, si *structFieldInfo, omitline *genBuf, oneLevel bool) (t2 reflect.StructField) {
-	// xdebug2f("calling genOmitEmptyLinePreChecks on: %v", t)
 	t2typ := t
 	varname3 := varname
 	// go through the loop, record the t2 field explicitly,

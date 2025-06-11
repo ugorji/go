@@ -222,12 +222,12 @@ const (
 	// Consequently, they will always fail if debugging = true.
 	//
 	// It is generally set to false
-	debugging = false // MARKER 2025
+	debugging = false
 
 	// if debugLogging is false, debugf calls will be a No-op.
 	//
 	// It is generally set to false
-	debugLogging = true // MARKER 2025
+	debugLogging = true
 
 	// containerLenUnknown is length returned from Read(Map|Array)Len
 	// when a format doesn't know apiori.

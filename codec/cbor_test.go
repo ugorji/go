@@ -414,13 +414,11 @@ func TestCborSkipTags(t *testing.T) {
 
 	var gold []byte
 	NewEncoderBytes(&gold, h).MustEncode(v)
-	// xdebug2f("encoded:    gold: %v", gold)
 
 	// w.b is the encoded bytes
 	var v2 Tcbortags
 	doAddTag = false
 	fnEncode()
-	// xdebug2f("manual:  no-tags: %v", w.b)
 
 	testDeepEqualErr(gold, w.b, t, "cbor-skip-tags--bytes---")
 	NewDecoderBytes(w.b, h).MustDecode(&v2)
@@ -429,7 +427,6 @@ func TestCborSkipTags(t *testing.T) {
 	var v3 Tcbortags
 	doAddTag = true
 	fnEncode()
-	// xdebug2f("manual: has-tags: %v", w.b)
 	NewDecoderBytes(w.b, h).MustDecode(&v3)
 	testDeepEqualErr(v, v3, t, "cbor-skip-tags--has-tags")
 	// include this test below (against v2) to ensure that new writes to w.b does not affect v2

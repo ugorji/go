@@ -3691,7 +3691,6 @@ func __doTestFloats(t *testing.T, h Handle) {
 			f := float32(f64)
 			var w float32 = unusedVal
 			b := testMarshalErr(f, h, t, "test-floats-enc")
-			// xdebug2f("test float: of %v, encoded as: %s", f, b)
 			testUnmarshalErr(&w, b, h, t, "test-floats-dec")
 			if (jok && (math.IsNaN(f64) || math.IsInf(f64, 0)) && w != 0) ||
 				(!jok && w != f && !math.IsNaN(float64(f))) {
