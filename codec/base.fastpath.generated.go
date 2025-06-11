@@ -47,23 +47,15 @@ type fastpathRtRtid struct {
 }
 type fastpathARtRtid [56]fastpathRtRtid
 
-var fastpathAvRtid fastpathARtid
-var fastpathAvRtRtid fastpathARtRtid
+var (
+	fastpathAvRtidArr   fastpathARtid
+	fastpathAvRtRtidArr fastpathARtRtid
+	fastpathAvRtid      = fastpathAvRtidArr[:]
+	fastpathAvRtRtid    = fastpathAvRtRtidArr[:]
+)
 
 func fastpathAvIndex(rtid uintptr) (i uint, ok bool) {
-	var h uint
-	var j uint = 56
-LOOP:
-	if i < j {
-		h = (i + j) >> 1 // avoid overflow when computing h // h = i + (j-i)/2
-		if fastpathAvRtid[h] < rtid {
-			i = h + 1
-		} else {
-			j = h
-		}
-		goto LOOP
-	}
-	return i, i < 56 && fastpathAvRtid[i] == rtid
+	return searchRtids(fastpathAvRtid, rtid)
 }
 
 func init() {
@@ -137,8 +129,8 @@ func init() {
 	fn(map[int32]float64(nil))
 	fn(map[int32]bool(nil))
 
-	sort.Slice(fastpathAvRtid[:], func(i, j int) bool { return fastpathAvRtid[i] < fastpathAvRtid[j] })
-	sort.Slice(fastpathAvRtRtid[:], func(i, j int) bool { return fastpathAvRtRtid[i].rtid < fastpathAvRtRtid[j].rtid })
+	sort.Slice(fastpathAvRtid, func(i, j int) bool { return fastpathAvRtid[i] < fastpathAvRtid[j] })
+	sort.Slice(fastpathAvRtRtid, func(i, j int) bool { return fastpathAvRtRtid[i].rtid < fastpathAvRtRtid[j].rtid })
 	slices.Sort(encBuiltinRtids)
 	slices.Sort(decBuiltinRtids)
 }
