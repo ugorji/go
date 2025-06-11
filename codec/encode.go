@@ -1816,7 +1816,6 @@ func (dh helperEncDriver[T]) encFnLoad(rt reflect.Type, rtid uintptr, tinfos *Ty
 // 	}
 //
 // RV:
-// 	// debugf("encodeIRF: type: %v", hlRED, rv.Type())
 // 	k = rv.Kind()
 // 	switch k {
 // 	case reflect.Ptr:

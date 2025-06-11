@@ -80,17 +80,14 @@ func (m *genMono) do(hname string, fnames, tnames []string, fnameInfx string, bu
 	// keep m.typParams across whole call, as all others use it
 	const fnameSfx = ".mono.generated.go"
 	fname := hname + fnameInfx + fnameSfx
-	// debugf("genMono: [%s] --> [%s]", hlGREEN, hname, fname)
 
 	var imports = genMonoImports{set: make(map[string]struct{})}
 
 	r1, fset := m.merge(fnames, tnames, &imports)
 	m.trFile(r1, hname, true)
-	// debugf("\tgenMono 1: imports: %v (%d)", hlYELLOW, imports.set, len(imports.specs))
 
 	r2, fset := m.merge(fnames, tnames, &imports)
 	m.trFile(r2, hname, false)
-	// debugf("\tgenMono 2: imports: %v (%d)", hlYELLOW, imports.set, len(imports.specs))
 
 	r0 := genMonoOutInit(imports.specs, fname)
 	r0.Decls = append(r0.Decls, r1.Decls...)
@@ -188,12 +185,9 @@ func (x *genMono) merge(fNames, tNames []string, imports *genMonoImports) (dst *
 			}
 			return false
 		case *ast.GenDecl:
-			// debugf("\tGenDecl found of type: %v", hlBLUE, n.Tok)
 			if n.Tok == token.IMPORT {
-				// debugf("\timport GenDecl found (%d specs)", hlBLUE, len(n.Specs))
 				for _, v := range n.Specs {
 					nn := v.(*ast.ImportSpec)
-					// debugf("\timport found: %s", hlBLUE, nn.Path.Value)
 					if slices.Contains(genMonoImportsToSkip, nn.Path.Value) {
 						continue
 					}
@@ -530,7 +524,6 @@ func genMonoTypeParamsOk(v *ast.FieldList) (ok bool) {
 	if !ok {
 		return false
 	}
-	// debugf("pn.Type: %T, %v", hlRED, pn.Type, pn.Type)
 	switch vv.Name {
 	case "encDriver", "decDriver", "encWriter", "decReader":
 		return true

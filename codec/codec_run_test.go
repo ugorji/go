@@ -4103,7 +4103,6 @@ func testEqualH(v1, v2 interface{}, h Handle) (err error) {
 					target.Set(reflect.MakeSlice(src.Type(), 0, 0))
 				}
 				return
-				// debugf("slice: %T: %v", hlBLUE, rv.Interface(), rv.Interface())
 			}
 			slen := src.Len()
 			target.Set(reflect.MakeSlice(src.Type(), slen, src.Cap()))
@@ -4116,7 +4115,6 @@ func testEqualH(v1, v2 interface{}, h Handle) (err error) {
 					target.Set(reflect.MakeMapWithSize(src.Type(), 0))
 				}
 				return
-				// debugf("map: %T: %v", hlBLUE, rv.Interface(), rv.Interface())
 			}
 			target.Set(reflect.MakeMapWithSize(src.Type(), src.Len()))
 			iter := src.MapRange()
@@ -4140,26 +4138,9 @@ func testEqualH(v1, v2 interface{}, h Handle) (err error) {
 			tt := src.Type()
 			for i, n := 0, src.NumField(); i < n; i++ {
 				if !structExportedFieldsOnly || tt.Field(i).IsExported() {
-					// rv2 := rv.Field(i)
-					// if kk := rv2.Kind(); (kk == reflect.Slice || kk == reflect.Map) && rv2.IsNil() {
-					// 	// debugf("struct field: [%v/%s] (%v) nil: %v", hlYELLOW, tt, sf.Name, rv2.Type(), rv2.IsNil())
-					// }
 					rcopy(src.Field(i), target.Field(i))
 				}
 			}
-		// case reflect.String:
-		// 	// MARKER 2025 - need to all use same functions to compare
-		// 	// s := src.String()
-		// 	// if isJson && bh.StringToRaw {
-		// 	// 	s = base64.StdEncoding.EncodeToString(bytesView(s))
-		// 	// 	// dbuf := make([]byte, base64.StdEncoding.DecodedLen(len(s)))
-		// 	// 	// n, err := base64.StdEncoding.Decode(dbuf, bytesView(s))
-		// 	// 	// if err == nil {
-		// 	// 	// 	s = stringView(dbuf[:n])
-		// 	// 	// }
-		// 	// }
-		// 	// target.SetString(s)
-		// 	target.Set(src)
 		default: // Basic types: int, string, bool, etc.
 			target.Set(src)
 			// if src.Type().AssignableTo(target.Type()) {
@@ -4169,7 +4150,6 @@ func testEqualH(v1, v2 interface{}, h Handle) (err error) {
 	}
 
 	deepcopy := func(in interface{}) (rv reflect.Value) {
-		// debugf("start transform: %T(%p) (isnil: %v)", hlGREEN, in, in, in == nil)
 		clear(visited)
 		src := reflect.ValueOf(in)
 		if src.Kind() == reflect.Ptr {
@@ -4184,7 +4164,6 @@ func testEqualH(v1, v2 interface{}, h Handle) (err error) {
 			rv = reflect.New(src.Type()).Elem()
 			rcopy(src, rv)
 		}
-		// debugf("transforming %T(%p) --> %T(%p) (isnil: %v)", hlGREEN, in, in, out, out, out == nil)
 		return
 	}
 

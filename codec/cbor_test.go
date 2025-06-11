@@ -217,7 +217,6 @@ func TestCborGoldens(t *testing.T) {
 			t.Logf("[%v] error hex decoding %s [%v]: %v", i, g.Hex, g.Hex, err)
 			t.FailNow()
 		}
-		// debugf("cbor-goldens: bs: (%d) % x", hlRED, len(bs), bs)
 		var v interface{}
 		NewDecoderBytes(bs, h).MustDecode(&v)
 		switch v.(type) {
