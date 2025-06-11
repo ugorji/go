@@ -32,6 +32,3 @@ type fastpathRtRtid struct {
 type fastpathARtRtid [0]fastpathRtRtid
 
 var fastpathAvRtRtid fastpathARtRtid
-
-//var fastpathAV fastpathA
-// var fastpathTV fastpathT

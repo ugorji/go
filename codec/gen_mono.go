@@ -584,29 +584,3 @@ func genMonoAll() {
 		m.hdl(v)
 	}
 }
-
-// func genMonoOutInit(importSpecs []ast.Spec) (r0 *ast.File) {
-// 	r0 = &ast.File{Name: &ast.Ident{Name: "codec"}}
-// 	r0.Decls = append(r0.Decls, &ast.GenDecl{Tok: token.IMPORT, Specs: importSpecs})
-// 	if _vd := genMonoRefImportsVia_Decl(); _vd != nil {
-// 		r0.Decls = append(r0.Decls, _vd)
-// 	}
-// 	return
-// }
-//
-// func genMonoRefImportsVia_Decl() (_vd *ast.GenDecl) {
-// 	if len(genMonoRefImportsVia_) == 0 {
-// 		return
-// 	}
-// 	_vd = &ast.GenDecl{Tok: token.VAR}
-// 	for _, v := range genMonoRefImportsVia_ {
-// 		_vs := new(ast.ValueSpec)
-// 		_vs.Names = append(_vs.Names, &ast.Ident{Name: "_"})
-// 		_vs.Values = append(_vs.Values, &ast.SelectorExpr{
-// 			X:   &ast.Ident{Name: v[0]},
-// 			Sel: &ast.Ident{Name: v[1]},
-// 		})
-// 		_vd.Specs = append(_vd.Specs, _vs)
-// 	}
-// 	return
-// }

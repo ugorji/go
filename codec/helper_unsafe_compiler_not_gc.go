@@ -79,8 +79,3 @@ func mapGet(m, k, v reflect.Value, p mapReqParams) (_ reflect.Value) {
 
 	return v
 }
-
-// func unsafeNew(t reflect.Type, typ unsafe.Pointer) unsafe.Pointer {
-// 	rv := reflect.New(t)
-// 	return ((*unsafeReflectValue)(unsafe.Pointer(&rv))).ptr
-// }

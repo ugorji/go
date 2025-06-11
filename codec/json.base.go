@@ -502,26 +502,3 @@ func jsonFloatStrconvFmtPrec32(f float32) (fmt byte, prec int8) {
 }
 
 var errJsonNoBd = errors.New("descBd unsupported in json")
-
-// func (h *JsonHandle) newEncDriver() encDriver {
-// 	var e = &jsonEncDriver{h: h}
-// 	// var x []byte
-// 	// e.buf = &x
-// 	e.e.e = e
-// 	e.e.js = true
-// 	e.e.init(h)
-// 	e.reset()
-// 	return e
-// }
-
-// func (h *JsonHandle) newDecDriver() decDriver {
-// 	var d = &jsonDecDriver{h: h}
-// 	var x []byte
-// 	d.buf = &x
-// 	d.d.d = d
-// 	d.d.js = true
-// 	d.d.jsms = h.MapKeyAsString
-// 	d.d.init(h)
-// 	d.reset()
-// 	return d
-// }

@@ -95,26 +95,3 @@ func (h *SimpleHandle) desc(bd byte) string { return simpledesc(bd) }
 func (h *SimpleHandle) SetBytesExt(rt reflect.Type, tag uint64, ext BytesExt) (err error) {
 	return h.SetExt(rt, tag, makeExt(ext))
 }
-
-// func init() {
-// 	var t *SimpleHandle
-// 	h := handleNewFn{
-// 		typ: rt2id(reflect.TypeOf(t)),
-// 		encBytes: func(v *[]byte, h Handle) encoderI {
-// 			return newEncDriverBytes[simpleEncDriverM[bytesEncAppenderM]](v, h)
-// 		},
-// 		encIO:    newEncDriverIO[simpleEncDriverM[bufioEncAppenderM], simpleEncDriverM[bytesEncAppenderM]],
-// 		decBytes: newDecDriverBytes[simpleDecDriverM[bytesDecReaderM]],
-// 		decIO:    newDecDriverIO[simpleDecDriverM[ioDecReaderM], simpleDecDriverM[bytesDecReaderM]],
-// 	}
-// 	handleNewFns = append(handleNewFns, h)
-// }
-
-// func (h *SimpleHandle) init() {
-// 	// h.rt.init()
-// }
-
-// func (h *SimpleHandle) clone() interface{} {
-// 	h2 := *h
-// 	return &h2
-// }

@@ -699,58 +699,8 @@ type atomicRtidFnSlice struct {
 
 func (x *atomicRtidFnSlice) load() interface{} {
 	return x.v.Load()
-	// if i := x.v.Load(); i != nil {
-	// 	e = i.([]codecRtidFn)
-	// }
-	// return
 }
 
 func (x *atomicRtidFnSlice) store(p interface{}) {
 	x.v.Store(p)
 }
-
-// const transientSizeMax = 0
-// const transientValueHasStringSlice = true
-
-// func str4byte(b byte) string {
-// 	// return str256[b:][:1] // does 2 bounds checks
-// 	return str256[b : b+1]
-// }
-
-// func isCanTransient(t reflect.Type, _ bool) (v bool) {
-// 	return numBoolStrSliceBitset.isset(byte(t.Kind()))
-// 	// arrays and structs are not supported
-// }
-
-// func byteSliceOf(b []byte, start, end uint) []byte {
-// 	return b[start:end]
-// }
-
-// func byteSliceWithLen(b []byte, length uint) []byte {
-// 	return b[:length]
-// }
-
-// func rv4i(i interface{}) reflect.Value { return reflect.ValueOf(i) }
-// func rv4iK(i interface{}, kind byte, isref bool) reflect.Value { return reflect.ValueOf(i) }
-
-// func rvIsNonNilPtr(rv reflect.Value) bool {
-// 	return rv.Kind() == reflect.Ptr && !rv.IsNil()
-// }
-
-// func copybytes(to, from []byte) int {
-// 	return copy(to, from)
-// }
-
-// func copybytestr(to []byte, from string) int {
-// 	return copy(to, from)
-// }
-
-// func rvLenArray(rv reflect.Value) int {	return rv.Len() }
-
-// func mapDelete(m, k reflect.Value) {
-// 	m.SetMapIndex(k, reflect.Value{})
-// }
-
-// func (n *structFieldInfoNode) rvFieldAddr(v reflect.Value) reflect.Value {
-// 	return v.Field(int(n.index)).Addr()
-// }

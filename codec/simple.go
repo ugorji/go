@@ -747,16 +747,3 @@ func (d *simpleDecDriver[T]) descBd() string {
 func (d *simpleDecDriver[T]) DecodeFloat32() (f float32) {
 	return float32(chkOvf.Float32V(d.DecodeFloat64()))
 }
-
-// ----
-
-// func (d *simpleDecDriver[T]) nextValueBytesR() {
-// 	d.readNextBd()
-// 	v0 = append(v0, d.bd)
-// 	d.r.startRecording(v0)
-// 	d.nextValueBytesBdReadR()
-// 	v = d.r.stopRecording()
-// 	return
-// }
-
-// func (e *simpleEncDriver[T]) writeStringAsisDblQuoted(v string) { e.w.writeqstr(v) }

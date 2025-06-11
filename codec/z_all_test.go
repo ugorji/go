@@ -596,13 +596,3 @@ func TestCodecSuite(t *testing.T) {
 	testReinit()
 	testGroupResetHandles()
 }
-
-// func TestCodecSuite(t *testing.T) {
-// 	testReinit() // so flag.Parse() is called first, and never called again
-// 	testv.D, testv.E = DecodeOptions{}, EncodeOptions{}
-// 	testGroupResetBase()
-// 	testReinit()
-// 	t.Run("optionsFalse", func(t *testing.T) {
-// 		t.Run("TestJsonMammothMapsAndSlices", TestJsonMammothMapsAndSlices)
-// 	})
-// }
