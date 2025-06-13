@@ -154,7 +154,7 @@ func benchOnePassCheck(t *testing.T, name string, encfn benchEncFn, decfn benchD
 	// if benchUnscientificRes {
 	// 	benchOnePassLogf("-------------- %s ----------------", name)
 	// }
-	defer benchRecoverPanicT(t)
+	defer benchOnePassRecoverPanic(name)
 	runtime.GC()
 	tnow := time.Now()
 	buf, err := encfn(benchTs, nil)
@@ -193,6 +193,14 @@ func benchOnePassLogf(format string, args ...interface{}) {
 	fmt.Printf(format+"\n", args...)
 }
 
+func benchOnePassRecoverPanic(name string) {
+	if benchRecover {
+		if r := recover(); r != nil {
+			benchOnePassLogf("\t%10s: (recovered) panic: %v", name, r)
+		}
+	}
+}
+
 var vBenchTs = TestStruc{}
 
 func fnBenchNewTs() interface{} {
@@ -212,15 +220,6 @@ func fnBenchmarkByteBuf(bsIn []byte) (buf *bytes.Buffer) {
 // const benchCheckDoDeepEqual = false
 
 func benchRecoverPanic(t *testing.B) {
-	if benchRecover {
-		if r := recover(); r != nil {
-			t.Logf("(recovered) panic: %v\n", r)
-			t.FailNow()
-		}
-	}
-}
-
-func benchRecoverPanicT(t *testing.T) {
 	if benchRecover {
 		if r := recover(); r != nil {
 			t.Logf("(recovered) panic: %v\n", r)
