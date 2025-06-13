@@ -8,7 +8,7 @@ package codec
 // see notes in z_all_test.go
 
 import (
-	"strconv"
+	"fmt"
 	"testing"
 	"time"
 )
@@ -56,6 +56,10 @@ func benchmarkSuite(t *testing.B, fns ...func(t *testing.B)) {
 	tbvars.setBufsize(1024)
 	testReinit()
 	t.Run("use-io-1024-....", f)
+
+	tbvars.setBufsize(0)
+	testReinit()
+	t.Run("use-io-0-.......", f)
 }
 
 func benchmarkVeryQuickSuite(t *testing.B, name string, fns ...func(t *testing.B)) {
@@ -63,10 +67,9 @@ func benchmarkVeryQuickSuite(t *testing.B, name string, fns ...func(t *testing.B
 	benchmarkDivider()
 
 	tbvars.setBufsize(-1)
-	// testv.Depth = depth
 	testReinit()
 
-	t.Run(name+"-bd"+strconv.Itoa(testv.Depth)+"........", benchmarkOneFn(fns))
+	t.Run(fmt.Sprintf("%s-bd%d........", name, testv.Depth), benchmarkOneFn(fns))
 }
 
 func benchmarkQuickSuite(t *testing.B, name string, fns ...func(t *testing.B)) {
@@ -75,14 +78,12 @@ func benchmarkQuickSuite(t *testing.B, name string, fns ...func(t *testing.B)) {
 
 	// encoded size of TestStruc is between 20K and 30K for bd=1 // consider buffer=1024 * 16 * testv.Depth
 	tbvars.setBufsize(1024) // (value of byteBufSize): use smaller buffer, and more flushes - it's ok.
-	// testv.Depth = depth
 	testReinit()
-	t.Run(name+"-bd"+strconv.Itoa(testv.Depth)+"-buf"+strconv.Itoa((int)(testv.bufsize)), benchmarkOneFn(fns))
+	t.Run(fmt.Sprintf("%s-bd%d-buf%d", name, testv.Depth, 1024), benchmarkOneFn(fns))
 
 	tbvars.setBufsize(0)
-	// testv.Depth = depth
 	testReinit()
-	t.Run(name+"-bd"+strconv.Itoa(testv.Depth)+"-io.....", benchmarkOneFn(fns))
+	t.Run(fmt.Sprintf("%s-bd%d-io.....", name, testv.Depth), benchmarkOneFn(fns))
 }
 
 /*
