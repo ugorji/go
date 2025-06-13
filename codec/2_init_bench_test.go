@@ -37,6 +37,7 @@ package codec
 
 import (
 	"bytes"
+	"fmt"
 	"reflect"
 	"runtime"
 	"runtime/metrics"
@@ -123,30 +124,73 @@ func benchmarkDivider() {
 // 	testOnce.Do(testInitAll)
 // }
 
-func TestBenchOnePass(t *testing.T) {
+func TestBenchOnePassCheck(t *testing.T) {
 	// testOnce.Do(testInitAll)
-	// t.Logf("..............................................")
-	t.Logf("BENCHMARK INIT: %v", time.Now())
-	// t.Logf("To run full benchmark comparing encodings, use: \"go test -bench=.\"")
-	t.Logf("Benchmark: ")
-	t.Logf("\tStruct recursive Depth:             %d", testv.Depth)
+	// benchOnePassLogf("..............................................")
+	benchOnePassLogf("BENCHMARK INIT: %v", time.Now())
+	// benchOnePassLogf("To run full benchmark comparing encodings, use: \"go test -bench=.\"")
+	benchOnePassLogf("Benchmark: ")
+	benchOnePassLogf("\tStruct recursive Depth:             %d", testv.Depth)
 	if approxSize > 0 {
-		t.Logf("\tApproxDeepSize Of benchmark Struct: %d bytes", approxSize)
+		benchOnePassLogf("\tApproxDeepSize Of benchmark Struct: %d bytes", approxSize)
 	}
 	if benchUnscientificRes {
-		t.Logf("Benchmark One-Pass Run (with Unscientific Encode/Decode times): ")
+		benchOnePassLogf("Benchmark One-Pass Run (with Unscientific Encode/Decode times): ")
 	} else {
-		t.Logf("Benchmark One-Pass Run:")
+		benchOnePassLogf("Benchmark One-Pass Run:")
 	}
 	for _, bc := range benchCheckers {
-		doBenchCheck(t, bc.name, bc.encodefn, bc.decodefn)
+		benchOnePassCheck(t, bc.name, bc.encodefn, bc.decodefn)
 	}
 	if testv.Verbose {
-		t.Logf("..............................................")
-		t.Logf("<<<<====>>>> depth: %v, ts: %#v\n", testv.Depth, benchTs)
+		benchOnePassLogf("..............................................")
+		benchOnePassLogf("<<<<====>>>> depth: %v, ts: %#v\n", testv.Depth, benchTs)
 	}
 	runtime.GC()
 	time.Sleep(100 * time.Millisecond)
+}
+
+func benchOnePassCheck(t *testing.T, name string, encfn benchEncFn, decfn benchDecFn) {
+	// if benchUnscientificRes {
+	// 	benchOnePassLogf("-------------- %s ----------------", name)
+	// }
+	defer benchRecoverPanicT(t)
+	runtime.GC()
+	tnow := time.Now()
+	buf, err := encfn(benchTs, nil)
+	if err != nil {
+		benchOnePassLogf("\t%10s: **** Error encoding benchTs: %v", name, err)
+		return
+	}
+	encDur := time.Since(tnow)
+	encLen := len(buf)
+	runtime.GC()
+	if !benchUnscientificRes {
+		benchOnePassLogf("\t%10s: len: %d bytes\n", name, encLen)
+		return
+	}
+	tnow = time.Now()
+	var ts2 TestStruc
+	if err = decfn(buf, &ts2); err != nil {
+		benchOnePassLogf("\t%10s: **** Error decoding into new TestStruc: %v", name, err)
+		return
+	}
+	decDur := time.Since(tnow)
+	// if benchCheckDoDeepEqual {
+	if benchVerify {
+		if reflect.DeepEqual(benchTs, &ts2) {
+			benchOnePassLogf("\t%10s: len: %d bytes,\t encode: %v,\t decode: %v,\tencoded == decoded", name, encLen, encDur, decDur)
+		} else {
+			err = errDeepEqualNotMatch
+			benchOnePassLogf("\t%10s: len: %d bytes,\t encode: %v,\t decode: %v,\tencoded != decoded: %v", name, encLen, encDur, decDur, err)
+		}
+	} else {
+		benchOnePassLogf("\t%10s: len: %d bytes,\t encode: %v,\t decode: %v", name, encLen, encDur, decDur)
+	}
+}
+
+func benchOnePassLogf(format string, args ...interface{}) {
+	fmt.Printf(format+"\n", args...)
 }
 
 var vBenchTs = TestStruc{}
@@ -182,45 +226,6 @@ func benchRecoverPanicT(t *testing.T) {
 			t.Logf("(recovered) panic: %v\n", r)
 			t.FailNow()
 		}
-	}
-}
-
-func doBenchCheck(t *testing.T, name string, encfn benchEncFn, decfn benchDecFn) {
-	// if benchUnscientificRes {
-	// 	t.Logf("-------------- %s ----------------", name)
-	// }
-	defer benchRecoverPanicT(t)
-	runtime.GC()
-	tnow := time.Now()
-	buf, err := encfn(benchTs, nil)
-	if err != nil {
-		t.Logf("\t%10s: **** Error encoding benchTs: %v", name, err)
-		return
-	}
-	encDur := time.Since(tnow)
-	encLen := len(buf)
-	runtime.GC()
-	if !benchUnscientificRes {
-		t.Logf("\t%10s: len: %d bytes\n", name, encLen)
-		return
-	}
-	tnow = time.Now()
-	var ts2 TestStruc
-	if err = decfn(buf, &ts2); err != nil {
-		t.Logf("\t%10s: **** Error decoding into new TestStruc: %v", name, err)
-		return
-	}
-	decDur := time.Since(tnow)
-	// if benchCheckDoDeepEqual {
-	if benchVerify {
-		if reflect.DeepEqual(benchTs, &ts2) {
-			t.Logf("\t%10s: len: %d bytes,\t encode: %v,\t decode: %v,\tencoded == decoded", name, encLen, encDur, decDur)
-		} else {
-			err = errDeepEqualNotMatch
-			t.Logf("\t%10s: len: %d bytes,\t encode: %v,\t decode: %v,\tencoded != decoded: %v", name, encLen, encDur, decDur, err)
-		}
-	} else {
-		t.Logf("\t%10s: len: %d bytes,\t encode: %v,\t decode: %v", name, encLen, encDur, decDur)
 	}
 }
 
