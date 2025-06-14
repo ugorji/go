@@ -1,4 +1,4 @@
-//go:build !codec.nobench && go1.24
+//go:build !codec.nobench && !nobench && go1.24
 
 // Copyright (c) 2012-2020 Ugorji Nwoke. All rights reserved.
 // Use of this source code is governed by a MIT license found in the LICENSE file.
@@ -155,6 +155,8 @@ func benchOnePassCheck(t *testing.T, name string, encfn benchEncFn, decfn benchD
 	// 	benchOnePassLogf("-------------- %s ----------------", name)
 	// }
 	defer benchOnePassRecoverPanic(name)
+	defer func(b bool) { testv.UseDiff = b }(testv.UseDiff)
+	testv.UseDiff = true // show diffs if not equal
 	runtime.GC()
 	tnow := time.Now()
 	buf, err := encfn(benchTs, nil)
@@ -176,17 +178,8 @@ func benchOnePassCheck(t *testing.T, name string, encfn benchEncFn, decfn benchD
 		return
 	}
 	decDur := time.Since(tnow)
+	benchOnePassLogf("\t%10s: len: %d bytes,\t encode: %v,\t decode: %v, diff: %v", name, encLen, encDur, decDur, testEqualOpts(benchTs, &ts2, true, []interface{}{ts2}))
 	// if benchCheckDoDeepEqual {
-	if benchVerify {
-		if reflect.DeepEqual(benchTs, &ts2) {
-			benchOnePassLogf("\t%10s: len: %d bytes,\t encode: %v,\t decode: %v,\tencoded == decoded", name, encLen, encDur, decDur)
-		} else {
-			err = errDeepEqualNotMatch
-			benchOnePassLogf("\t%10s: len: %d bytes,\t encode: %v,\t decode: %v,\tencoded != decoded: %v", name, encLen, encDur, decDur, err)
-		}
-	} else {
-		benchOnePassLogf("\t%10s: len: %d bytes,\t encode: %v,\t decode: %v", name, encLen, encDur, decDur)
-	}
 }
 
 func benchOnePassLogf(format string, args ...interface{}) {

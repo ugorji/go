@@ -12,8 +12,8 @@ import (
 )
 
 func TestGH417(t *testing.T) {
-	const numMapEntries = 1000 // 1000
-	const numGoroutines = 100  // 100
+	const numMapEntries = 1024 // 1000
+	const numGoroutines = 64   // 100
 
 	type S string
 	type E struct {

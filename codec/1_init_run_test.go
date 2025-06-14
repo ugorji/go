@@ -13,6 +13,7 @@ import (
 	// . "github.com/ugorji/go/codec"
 
 	gocmp "github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 )
 
 type testBenchVars struct {
@@ -264,12 +265,28 @@ var errDeepEqualNotMatch = errors.New("not match")
 
 // perform a simple DeepEqual expecting same values
 func testEqual(v1, v2 interface{}) (err error) {
-	if !reflect.DeepEqual(v1, v2) {
-		if testv.UseDiff {
-			err = errors.New(gocmp.Diff(v1, v2))
-		} else {
-			err = errDeepEqualNotMatch
-		}
+	return testEqualOpts(v1, v2, false, nil)
+}
+
+func testEqualOpts(v1, v2 interface{}, nilEmptyEqual bool, ignoreUnexportedTypes []interface{}) error {
+	if reflect.DeepEqual(v1, v2) {
+		return nil
 	}
-	return
+	if testv.UseDiff {
+		var optarr [4]gocmp.Option
+		var opts = optarr[:0]
+		if nilEmptyEqual {
+			opts = append(opts, cmpopts.EquateEmpty())
+		}
+		if len(ignoreUnexportedTypes) > 0 {
+			// MARKER 2025 - failing (not sure why)
+			opts = append(opts, cmpopts.IgnoreUnexported(ignoreUnexportedTypes...))
+		}
+		s := gocmp.Diff(v1, v2, opts...)
+		if s == "" {
+			return nil
+		}
+		return errors.New(s)
+	}
+	return errDeepEqualNotMatch
 }

@@ -46,8 +46,8 @@ type stringUint64T struct {
 }
 
 type AnonInTestStrucSlim struct {
-	S string
-	P *string
+	Sa string
+	Pa *string
 }
 
 type AnonInTestStruc struct {
@@ -99,11 +99,6 @@ type testSimpleFields struct {
 
 	Iptrslice []*int64
 
-	WrapSliceInt64  wrapSliceUint64
-	WrapSliceString wrapSliceString
-
-	WrapMapStringUint64 wrapMapStringUint64
-
 	Msint map[string]int
 }
 
@@ -143,11 +138,6 @@ type TestStrucCommon struct {
 
 	Iptrslice []*int64
 
-	WrapSliceInt64  wrapSliceUint64
-	WrapSliceString wrapSliceString
-
-	WrapMapStringUint64 wrapMapStringUint64
-
 	Msint map[string]int
 
 	Msbytes map[string][]byte
@@ -155,13 +145,12 @@ type TestStrucCommon struct {
 	Simplef testSimpleFields
 
 	SstrUi64T []stringUint64T
-	MstrUi64T map[string]*stringUint64T
+	MstrUi64T map[string]stringUint64T
 
 	AnonInTestStruc
 
 	NotAnon AnonInTestStruc
 
-	*AnonInTestStrucSlim
 	NotAnonSlim *AnonInTestStrucSlim
 
 	// R          Raw // Testing Raw must be explicitly turned on, so use standalone test
@@ -177,10 +166,22 @@ type TestStruc struct {
 
 	TestStrucCommon
 
-	Mtsptr     map[string]*TestStruc
+	Mtsptr       map[string]*TestStruc
+	MptrstrUi64T map[string]*stringUint64T
+
 	Mts        map[string]TestStruc
 	Its        []*TestStruc
 	Nteststruc *TestStruc
+
+	WrapSliceInt64  wrapSliceUint64
+	WrapSliceString wrapSliceString
+
+	WrapMapStringUint64 wrapMapStringUint64
+}
+
+type TestStrucPlus struct {
+	TestStruc
+	*AnonInTestStrucSlim
 }
 
 func populateTestStrucCommon(ts *TestStrucCommon, n int, bench, useInterface, useStringKeyOnly bool) {
@@ -330,10 +331,6 @@ func populateTestStrucCommon(ts *TestStrucCommon, n int, bench, useInterface, us
 			strRpt(n, "two"):       []byte(strRpt(n, "two")),
 			strRpt(n, "\"three\""): []byte(strRpt(n, "\"three\"")),
 		},
-		WrapSliceInt64:  []uint64{4, 16, 64, 256},
-		WrapSliceString: []string{strRpt(n, "4"), strRpt(n, "16"), strRpt(n, "64"), strRpt(n, "256")},
-
-		WrapMapStringUint64: map[string]uint64{"4": 4, "16": 16},
 
 		// R: Raw([]byte("goodbye")),
 		// Rext: RawExt{ 120, []byte("hello"), }, // MARKER: don't set this - it's hard to test
@@ -366,15 +363,10 @@ func populateTestStrucCommon(ts *TestStrucCommon, n int, bench, useInterface, us
 				strRpt(n, "two"):       2,
 				strRpt(n, "\"three\""): 3,
 			},
-
-			WrapSliceInt64:  []uint64{4, 16, 64, 256},
-			WrapSliceString: []string{strRpt(n, "4"), strRpt(n, "16"), strRpt(n, "64"), strRpt(n, "256")},
-
-			WrapMapStringUint64: map[string]uint64{"4": 4, "16": 16},
 		},
 
 		SstrUi64T:       make([]stringUint64T, numStrUi64T), // {{"1", 1}, {"2", 2}, {"3", 3}, {"4", 4}},
-		MstrUi64T:       make(map[string]*stringUint64T, numStrUi64T),
+		MstrUi64T:       make(map[string]stringUint64T, numStrUi64T),
 		AnonInTestStruc: a,
 		NotAnon:         a,
 	}
@@ -382,7 +374,7 @@ func populateTestStrucCommon(ts *TestStrucCommon, n int, bench, useInterface, us
 	for i := uint64(0); i < numStrUi64T; i++ {
 		ss := strings.Repeat(strconv.FormatUint(i, 10), int(i)) // 4)
 		ts.SstrUi64T[i] = stringUint64T{S: ss, U: i}
-		ts.MstrUi64T[ss] = &ts.SstrUi64T[i]
+		ts.MstrUi64T[ss] = ts.SstrUi64T[i]
 	}
 
 	if bench {
@@ -407,21 +399,48 @@ func populateTestStrucCommon(ts *TestStrucCommon, n int, bench, useInterface, us
 	}
 }
 
-func newTestStruc(depth, n int, bench, useInterface, useStringKeyOnly bool) (ts *TestStruc) {
-	ts = &TestStruc{}
+func populateTestStrucExtra(ts *TestStruc, depth, n int, bench, useInterface, useStringKeyOnly bool) {
+	// assume depth >= 0
+	if ts.Mts == nil {
+		ts.Mts = make(map[string]TestStruc)
+	}
+	if ts.Mtsptr == nil {
+		ts.Mtsptr = make(map[string]*TestStruc)
+	}
+	ss := strRpt(n, "0")
+	tsn := newTestStruc(depth, n, bench, useInterface, useStringKeyOnly)
+	ts.Mtsptr[ss] = tsn
+	ts.Mts[ss] = *tsn
+	ts.Its = append(ts.Its, tsn)
+
+	ts.WrapSliceInt64 = []uint64{4, 16, 64, 256}
+	ts.WrapSliceString = []string{strRpt(n, "4"), strRpt(n, "16"), strRpt(n, "64"), strRpt(n, "256")}
+	ts.WrapMapStringUint64 = map[string]uint64{"4": 4, "16": 16}
+	ts.MptrstrUi64T = make(map[string]*stringUint64T, numStrUi64T)
+	for i := uint64(0); i < numStrUi64T; i++ {
+		ss := &ts.SstrUi64T[i]
+		ts.MptrstrUi64T[ss.S] = ss
+	}
+}
+
+func populateTestStruc(ts *TestStruc, depth, n int, bench, useInterface, useStringKeyOnly bool) {
 	populateTestStrucCommon(&ts.TestStrucCommon, n, bench, useInterface, useStringKeyOnly)
 	if depth > 0 {
 		depth--
-		if ts.Mtsptr == nil {
-			ts.Mtsptr = make(map[string]*TestStruc)
-		}
-		if ts.Mts == nil {
-			ts.Mts = make(map[string]TestStruc)
-		}
-		ts.Mtsptr[strRpt(n, "0")] = newTestStruc(depth, n, bench, useInterface, useStringKeyOnly)
-		ts.Mts[strRpt(n, "0")] = *(ts.Mtsptr[strRpt(n, "0")])
-		ts.Its = append(ts.Its, ts.Mtsptr[strRpt(n, "0")])
+		populateTestStrucExtra(ts, depth, n, bench, useInterface, useStringKeyOnly)
 	}
+}
+
+func newTestStruc(depth, n int, bench, useInterface, useStringKeyOnly bool) (ts *TestStruc) {
+	ts = &TestStruc{}
+	populateTestStruc(ts, depth, n, bench, useInterface, useStringKeyOnly)
+	return
+}
+
+func newTestStrucPlus(depth, n int, bench, useInterface, useStringKeyOnly bool) (ts *TestStrucPlus) {
+	ts = &TestStrucPlus{}
+	populateTestStruc(&ts.TestStruc, depth, n, bench, useInterface, useStringKeyOnly)
+	ts.S = "hello"
 	return
 }
 

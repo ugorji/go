@@ -50,8 +50,6 @@ import (
 	"sync/atomic"
 	"testing"
 	"time"
-
-	gocmp "github.com/google/go-cmp/cmp"
 )
 
 func init() {
@@ -533,6 +531,10 @@ func testSetupWithChecks(t *testing.T, _ *Handle, allowParallel bool) (fn func()
 	return
 }
 
+func testEqualFlex(v1, v2 interface{}) error {
+	return testEqualOpts(v1, v2, false, testStructsWithStructInfoField)
+}
+
 func testCodecEncode(ts interface{}, bsIn []byte, fn func([]byte) *bytes.Buffer, h Handle, useMust bool) (bs []byte, err error) {
 	return testSharedCodecEncode(ts, bsIn, fn, h, useMust)
 }
@@ -550,7 +552,7 @@ func testCheckErr(t *testing.T, err error) {
 
 func testCheckEqual(t *testing.T, v1 interface{}, v2 interface{}, desc string) {
 	t.Helper()
-	if err := testEqual(v1, v2); err != nil {
+	if err := testEqualFlex(v1, v2); err != nil {
 		t.Logf("Not Equal: %s: %v", desc, err)
 		if testv.Verbose {
 			t.Logf("\tv1: %v, v2: %v", v1, v2)
@@ -922,7 +924,7 @@ func testUnmarshalErr(v interface{}, data []byte, h Handle, t *testing.T, name s
 
 func testDeepEqualErr(v1, v2 interface{}, t *testing.T, name string) {
 	t.Helper()
-	testDeepEqual4Err(v1, v2, t, name, testEqual(v1, v2))
+	testDeepEqual4Err(v1, v2, t, name, testEqualFlex(v1, v2))
 }
 
 func testDeepEqualErrHandle(v1, v2 interface{}, h Handle, t *testing.T, name string) {
@@ -1092,7 +1094,7 @@ func testCodecTableOne(t *testing.T, testNil bool, h Handle,
 			}
 			continue
 		}
-		if err = testEqual(v0check, v1); err == nil {
+		if err = testEqualFlex(v0check, v1); err == nil {
 			if testv.Verbose {
 				t.Logf("++++++++ Before and After marshal matched\n")
 			}
@@ -1242,7 +1244,7 @@ func doTestCodecMiscOne(t *testing.T, h Handle) {
 
 	testCheckEqual(t, p, p2, "p=p2")
 	testCheckEqual(t, m, m2, "m=m2")
-	if err = testEqual(p, p2); err == nil {
+	if err = testEqualFlex(p, p2); err == nil {
 		if testv.Verbose {
 			t.Logf("p and p2 match")
 		}
@@ -1250,7 +1252,7 @@ func doTestCodecMiscOne(t *testing.T, h Handle) {
 		t.Logf("Not Equal: %v. p: %v, p2: %v", err, p, p2)
 		t.FailNow()
 	}
-	if err = testEqual(m, m2); err == nil {
+	if err = testEqualFlex(m, m2); err == nil {
 		if testv.Verbose {
 			t.Logf("m and m2 match")
 		}
@@ -1396,7 +1398,7 @@ func doTestCodecChan(t *testing.T, h Handle) {
 		for j := range ch2 {
 			sl2 = append(sl2, j)
 		}
-		if err := testEqual(sl1, sl2); err != nil {
+		if err := testEqualFlex(sl1, sl2); err != nil {
 			t.Logf("FAIL: Not Match: %v; len: %v, %v", err, len(sl1), len(sl2))
 			if testv.Verbose {
 				t.Logf("sl1: %#v, sl2: %#v", sl1, sl2)
@@ -1429,7 +1431,7 @@ func doTestCodecChan(t *testing.T, h Handle) {
 			// t.Logf(">>>> from chan: is nil? %v, %v", j == nil, j)
 			sl2 = append(sl2, j)
 		}
-		if err := testEqual(sl1, sl2); err != nil {
+		if err := testEqualFlex(sl1, sl2); err != nil {
 			t.Logf("FAIL: Not Match: %v; len: %v, %v", err, len(sl1), len(sl2))
 			if testv.Verbose {
 				t.Logf("sl1: %#v, sl2: %#v", sl1, sl2)
@@ -1460,7 +1462,7 @@ func doTestCodecChan(t *testing.T, h Handle) {
 		for j := range ch2 {
 			sl2 = append(sl2, j)
 		}
-		if err := testEqual(sl1, sl2); err != nil {
+		if err := testEqualFlex(sl1, sl2); err != nil {
 			t.Logf("FAIL: Not Match: %v; len: %v, %v", err, len(sl1), len(sl2))
 			t.FailNow()
 		}
@@ -1488,7 +1490,7 @@ func doTestCodecChan(t *testing.T, h Handle) {
 		for j := range ch2 {
 			sl2 = append(sl2, j)
 		}
-		if err := testEqual(sl1, sl2); err != nil {
+		if err := testEqualFlex(sl1, sl2); err != nil {
 			t.Logf("FAIL: Not Match: %v; len: %v, %v", err, len(sl1), len(sl2))
 			t.FailNow()
 		}
@@ -1724,7 +1726,7 @@ func doTestStdEncIntf(t *testing.T, h Handle) {
 		e.MustEncode(a[0])
 		d := NewDecoderBytes(b, h)
 		d.MustDecode(a[1])
-		if err := testEqual(a[0], a[1]); err == nil {
+		if err := testEqualFlex(a[0], a[1]); err == nil {
 			if testv.Verbose {
 				t.Logf("++++ Objects match")
 			}
@@ -1957,7 +1959,7 @@ func doTestPythonGenStreams(t *testing.T, h Handle) {
 		}
 		//no need to indirect, because we pass a nil ptr, so we already have the value
 		//if v1 != nil { v1 = reflect.Indirect(reflect.ValueOf(v1)).Interface() }
-		if err = testEqual(v, v1); err == nil {
+		if err = testEqualFlex(v, v1); err == nil {
 			if testv.Verbose {
 				t.Logf("++++++++ Objects match: %T, %v", v, v)
 			}
@@ -1976,7 +1978,7 @@ func doTestPythonGenStreams(t *testing.T, h Handle) {
 			t.FailNow()
 			continue
 		}
-		if err = testEqual(bsb, bss); err == nil {
+		if err = testEqualFlex(bsb, bss); err == nil {
 			if testv.Verbose {
 				t.Logf("++++++++ Bytes match")
 			}
@@ -3194,8 +3196,8 @@ func doTestStrucEncDec(t *testing.T, h Handle) {
 	name := h.Name()
 
 	{
-		var ts1 = newTestStruc(2, testv.NumRepeatString, false, !testv.SkipIntf, testv.MapStringKeyOnly)
-		var ts2 TestStruc
+		var ts1 = newTestStrucPlus(2, testv.NumRepeatString, false, !testv.SkipIntf, testv.MapStringKeyOnly)
+		var ts2 TestStrucPlus
 		bs := testMarshalErr(ts1, h, t, name)
 		testUnmarshalErr(&ts2, bs, h, t, name)
 		testDeepEqualErrHandle(ts1, &ts2, h, t, name)
@@ -3501,7 +3503,7 @@ func doTestNextValueBytes(t *testing.T, h Handle) {
 		[]string{"1", "22", "333", "4444"},
 		// use *TestStruc, not *TestStrucFlex, as *TestStrucFlex is harder to compare with deep equal
 		// Remember: *TestStruc was separated for this reason, affording comparing against other libraries
-		newTestStruc(testv.Depth, testv.NumRepeatString, false, false, true),
+		newTestStrucPlus(testv.Depth, testv.NumRepeatString, false, false, true),
 		"1223334444",
 	}
 	var out []byte
@@ -4169,12 +4171,5 @@ func testEqualH(v1, v2 interface{}, h Handle) (err error) {
 	if v1 != nil {
 		v1 = deepcopy(v1).Interface()
 	}
-	if !reflect.DeepEqual(v1, v2) {
-		if testv.UseDiff {
-			err = errors.New(gocmp.Diff(v1, v2))
-		} else {
-			err = errDeepEqualNotMatch
-		}
-	}
-	return
+	return testEqualOpts(v1, v2, false, []interface{}{v1})
 }

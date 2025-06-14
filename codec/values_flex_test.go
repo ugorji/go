@@ -18,6 +18,21 @@ func init() {
 	testWRepeated512 = wrapBytes(testARepeated512[:])
 }
 
+// these have _struct struct{} fields in them
+var testStructsWithStructInfoField = []interface{}{
+	codecgenC{},
+	testStrucKeyTypeT0{},
+	testStrucKeyTypeT1{},
+	testStrucKeyTypeT2{},
+	testStrucKeyTypeT3{},
+	testStrucKeyTypeT4{},
+	Sstructbig{},
+	SstructbigToArray{},
+	TestStrucFlex{},
+	// testSelfExtHelper{},
+	// TestStrucPlus{},
+}
+
 const teststrucflexChanCap = 64
 
 // This file contains values used by tests alone.
