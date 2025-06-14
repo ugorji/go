@@ -1904,27 +1904,39 @@ func (ti *typeInfo) siForEncName(name []byte) (si *structFieldInfo) {
 
 func (ti *typeInfo) resolve(x []structFieldInfo, ss map[string]uint16) (n int) {
 	n = len(x)
-
 	for i := range x {
 		ui := uint16(i)
-		xn := x[i].encName
+		sf := &x[ui]
+		xn := sf.encName
 		j, ok := ss[xn]
-		if ok {
-			i2clear := ui // index to be cleared
-			// if x[i].path.depth() < x[j].path.depth() { // this one is shallower
-			if len(x[i].parents) < len(x[j].parents) { // this one is shallower
-				ss[xn] = ui
-				i2clear = j
-			}
-			if x[i2clear].encName != "" {
-				x[i2clear].encName = ""
-				n--
-			}
-		} else {
+		if !ok {
 			ss[xn] = ui
+			continue
 		}
+		if ui == j {
+			continue
+		}
+		// if x[i].path.depth() < x[j].path.depth() { // this one is shallower
+		sf2 := &x[j]
+		if len(sf.parents) < len(sf2.parents) { // this one is shallower
+			ss[xn] = ui
+			sf = sf2
+		}
+		if sf.encName == "" {
+			continue
+		}
+		// const marker2025Debugf = true
+		// if marker2025Debugf {
+		// 	if sf == sf2 && len(sf.parents) > 0 { // updated
+		// 		sin := &sf.parents[len(sf.parents)-1]
+		// 		fName := sin.typ.Field(int(sf.node.index)).Name
+		// 		debugf("resolve: clearing for field # %d->%d: (%v) %s->%s %v",
+		// 			hlYELLOW, j, ui, sin.typ, fName, sf.encName, sf.baseTyp)
+		// 	}
+		// }
+		sf.encName = ""
+		n--
 	}
-
 	return
 }
 
@@ -2318,14 +2330,14 @@ LOOP:
 		}
 
 		var numderef uint8 = 0
-		for xft := f.Type; xft.Kind() == reflect.Ptr; xft = xft.Elem() {
+		ft := f.Type
+		for ; ft.Kind() == reflect.Ptr; ft = ft.Elem() {
 			numderef++
 		}
 
 		var encName string
 		var parsed, omitEmpty bool
 
-		ft := baseRT(f.Type)
 		ftid := rt2id(ft)
 		// if anonymous and no struct tag (or it's blank),
 		// and a struct (or pointer to struct), inline it.
