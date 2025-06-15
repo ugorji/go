@@ -178,7 +178,7 @@ func benchOnePassCheck(t *testing.T, name string, encfn benchEncFn, decfn benchD
 		return
 	}
 	decDur := time.Since(tnow)
-	benchOnePassLogf("\t%10s: len: %d bytes,\t encode: %v,\t decode: %v, diff: %v", name, encLen, encDur, decDur, testEqualOpts(benchTs, &ts2, true, []interface{}{ts2}))
+	benchOnePassLogf("\t%10s: len: %d bytes,\t encode: %v,\t decode: %v, diff: %v", name, encLen, encDur, decDur, testEqualOpts(benchTs, &ts2, true, nil))
 	// if benchCheckDoDeepEqual {
 }
 

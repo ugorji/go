@@ -4171,5 +4171,5 @@ func testEqualH(v1, v2 interface{}, h Handle) (err error) {
 	if v1 != nil {
 		v1 = deepcopy(v1).Interface()
 	}
-	return testEqualOpts(v1, v2, false, []interface{}{v1})
+	return testEqualOpts(v1, v2, false, testStructsWithStructInfoField)
 }

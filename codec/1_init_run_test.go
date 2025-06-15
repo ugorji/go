@@ -279,7 +279,6 @@ func testEqualOpts(v1, v2 interface{}, nilEmptyEqual bool, ignoreUnexportedTypes
 			opts = append(opts, cmpopts.EquateEmpty())
 		}
 		if len(ignoreUnexportedTypes) > 0 {
-			// MARKER 2025 - failing (not sure why)
 			opts = append(opts, cmpopts.IgnoreUnexported(ignoreUnexportedTypes...))
 		}
 		s := gocmp.Diff(v1, v2, opts...)
