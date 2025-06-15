@@ -31,6 +31,7 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version: ${{ matrix.go }}
+          cache: false
       - shell: bash
         run: cd codec; go get github.com/google/go-cmp/cmp
       - name: Run tests
