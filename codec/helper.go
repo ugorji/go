@@ -226,7 +226,7 @@ const (
 
 	// if debugLogging is false, debugf calls will be a No-op.
 	//
-	// It is generally set to false
+	// It is generally set to true
 	debugLogging = true
 
 	// containerLenUnknown is length returned from Read(Map|Array)Len
@@ -1925,15 +1925,6 @@ func (ti *typeInfo) resolve(x []structFieldInfo, ss map[string]uint16) (n int) {
 		if sf.encName == "" {
 			continue
 		}
-		// const marker2025Debugf = true
-		// if marker2025Debugf {
-		// 	if sf == sf2 && len(sf.parents) > 0 { // updated
-		// 		sin := &sf.parents[len(sf.parents)-1]
-		// 		fName := sin.typ.Field(int(sf.node.index)).Name
-		// 		debugf("resolve: clearing for field # %d->%d: (%v) %s->%s %v",
-		// 			hlYELLOW, j, ui, sin.typ, fName, sf.encName, sf.baseTyp)
-		// 	}
-		// }
 		sf.encName = ""
 		n--
 	}
