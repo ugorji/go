@@ -32,8 +32,6 @@ jobs:
         with:
           go-version: ${{ matrix.go }}
           cache: false
-      - shell: bash
-        run: cd codec; go get github.com/google/go-cmp/cmp
       - name: Run tests
         if: matrix.go != env.LATEST_GO_STABLE_VERSION
         shell: bash
