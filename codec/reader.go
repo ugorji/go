@@ -202,6 +202,12 @@ func (z *ioDecReader) checkErr() {
 	halt.onerror(z.readErr())
 }
 
+func (z *ioDecReader) unexpectedEOF() {
+	z.checkErr()
+	// if no error, still halt with unexpected EOF
+	halt.error(io.ErrUnexpectedEOF)
+}
+
 func (z *ioDecReader) readOne() (b byte, err error) {
 	n, err := z.r.Read(z.b[:])
 	if n == 1 {
@@ -543,12 +549,12 @@ func (z *ioDecReader) skipWhitespace() (tok byte) {
 	BUFIO:
 		if pos == z.wc {
 			if z.done {
-				halt.onerror(io.ErrUnexpectedEOF)
+				z.unexpectedEOF()
 			}
 			numshift, numread := z.fillbuf(0)
 			pos -= numshift
 			if numread == 0 {
-				halt.onerror(io.ErrUnexpectedEOF)
+				z.unexpectedEOF()
 			}
 		}
 		tok = z.buf[pos]
@@ -588,13 +594,13 @@ func (z *ioDecReader) readUntil(stop1, stop2 byte) (bs []byte, tok byte) {
 	BUFIO:
 		if pos == z.wc {
 			if z.done {
-				halt.onerror(io.ErrUnexpectedEOF)
+				z.unexpectedEOF()
 			}
 			numshift, numread := z.fillbuf(0)
 			start -= numshift
 			pos -= numshift
 			if numread == 0 {
-				halt.onerror(io.ErrUnexpectedEOF)
+				z.unexpectedEOF()
 			}
 		}
 		tok = z.buf[pos]
