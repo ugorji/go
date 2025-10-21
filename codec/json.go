@@ -626,10 +626,12 @@ func (d *jsonDecDriver[T]) nextValueBytes() []byte {
 	d.advance() // ignore leading whitespace
 	d.r.startRecording()
 
+	trimLast := false
 	// cursor = d.d.rb.c - 1 // cursor starts just before non-whitespace token
 	switch d.tok {
 	default:
 		_, d.tok = d.r.jsonReadNum()
+		trimLast = true
 	case 'n':
 		d.checkLit3([3]byte{'u', 'l', 'l'}, d.r.readn3())
 	case 'f':
@@ -658,7 +660,12 @@ func (d *jsonDecDriver[T]) nextValueBytes() []byte {
 		}
 		d.tok = 0
 	}
-	return d.r.stopRecording()
+
+	v := d.r.stopRecording()
+	if trimLast && len(v) > 0 {
+		return v[:len(v)-1]
+	}
+	return v
 }
 
 func (d *jsonDecDriver[T]) TryNil() bool {

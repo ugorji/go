@@ -1,4 +1,4 @@
-//go:build !notmono && !codec.notmono 
+//go:build !notmono && !codec.notmono
 
 // Copyright (c) 2012-2020 Ugorji Nwoke. All rights reserved.
 // Use of this source code is governed by a MIT license found in the LICENSE file.
@@ -3613,9 +3613,11 @@ func (d *jsonDecDriverBytes) nextValueBytes() []byte {
 	d.advance()
 	d.r.startRecording()
 
+	trimLast := false
 	switch d.tok {
 	default:
 		_, d.tok = d.r.jsonReadNum()
+		trimLast = true
 	case 'n':
 		d.checkLit3([3]byte{'u', 'l', 'l'}, d.r.readn3())
 	case 'f':
@@ -3644,7 +3646,12 @@ func (d *jsonDecDriverBytes) nextValueBytes() []byte {
 		}
 		d.tok = 0
 	}
-	return d.r.stopRecording()
+
+	v := d.r.stopRecording()
+	if trimLast && len(v) > 0 {
+		return v[:len(v)-1]
+	}
+	return v
 }
 
 func (d *jsonDecDriverBytes) TryNil() bool {
@@ -7772,9 +7779,11 @@ func (d *jsonDecDriverIO) nextValueBytes() []byte {
 	d.advance()
 	d.r.startRecording()
 
+	trimLast := false
 	switch d.tok {
 	default:
 		_, d.tok = d.r.jsonReadNum()
+		trimLast = true
 	case 'n':
 		d.checkLit3([3]byte{'u', 'l', 'l'}, d.r.readn3())
 	case 'f':
@@ -7803,7 +7812,12 @@ func (d *jsonDecDriverIO) nextValueBytes() []byte {
 		}
 		d.tok = 0
 	}
-	return d.r.stopRecording()
+
+	v := d.r.stopRecording()
+	if trimLast && len(v) > 0 {
+		return v[:len(v)-1]
+	}
+	return v
 }
 
 func (d *jsonDecDriverIO) TryNil() bool {
