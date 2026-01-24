@@ -4183,3 +4183,39 @@ func testEqualH(v1, v2 interface{}, h Handle) (err error) {
 // 		}
 // 	}
 // }
+
+func doTestLargeStruct(t *testing.T, h Handle) {
+
+	const size = 65536
+
+	type LargeStruct struct {
+		A [size]string
+		B [size]int
+		C [size]string
+	}
+
+	a := new(LargeStruct)
+	b := new(LargeStruct)
+
+	for i := range a.A {
+		a.A[i] = fmt.Sprintf("a-%d", i)
+		a.B[i] = i
+		a.C[i] = fmt.Sprintf("c-%d", i)
+	}
+
+	var buf []byte
+	err := NewEncoderBytes(&buf, h).Encode(a)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = NewDecoderBytes(buf, h).Decode(b)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !reflect.DeepEqual(a, b) {
+		t.Error("a != b")
+	}
+
+}

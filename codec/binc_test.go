@@ -145,3 +145,7 @@ func TestBincDesc(t *testing.T) {
 func TestBincStructFieldInfoToArray(t *testing.T) {
 	doTestStructFieldInfoToArray(t, testBincH)
 }
+
+func TestBincLargeStruct(t *testing.T) {
+	doTestLargeStruct(t, testBincH)
+}

@@ -142,3 +142,7 @@ func TestSimpleMultipleEncDec(t *testing.T) {
 func TestSimpleAllErrWriter(t *testing.T) {
 	doTestAllErrWriter(t, testSimpleH)
 }
+
+func TestSimpleLargeStruct(t *testing.T) {
+	doTestLargeStruct(t, testSimpleH)
+}

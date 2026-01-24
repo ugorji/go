@@ -637,3 +637,7 @@ func TestCborAllEncCircularRef(t *testing.T) {
 func TestCborAllAnonCycle(t *testing.T) {
 	doTestAnonCycle(t, testCborH)
 }
+
+func TestCborLargeStruct(t *testing.T) {
+	doTestLargeStruct(t, testCborH)
+}

@@ -256,3 +256,7 @@ func TestMsgpackStructFieldInfoToArray(t *testing.T) {
 func TestMsgpackDecodeMapAndExtSizeMismatch(t *testing.T) {
 	doTestMsgpackDecodeMapAndExtSizeMismatch(t, testMsgpackH)
 }
+
+func TestMsgpackLargeStruct(t *testing.T) {
+	doTestLargeStruct(t, testMsgpackH)
+}
