@@ -3971,7 +3971,7 @@ func testUpdateExts(nhs ...testNameBasicHandle) {
 		sx(testSelfExtTyp, 78, SelfExt)
 		sx(testSelfExt2Typ, 79, SelfExt)
 		sx(wrapBytesTyp, 32, &tBytesExt)
-		
+
 		// binc, cbor and json are not good fits for this generalized extension.
 		// this is because
 		//  - json: will base64 encode a byte into a string, but we don't know the bytesFmt used
@@ -3981,7 +3981,7 @@ func testUpdateExts(nhs ...testNameBasicHandle) {
 		default:
 			sx(testUintToBytesTyp, 33, &tUintToBytesExt)
 		}
-		
+
 		// Now, add extensions for the type wrapInt64 and wrapBytes,
 		// so we can execute the Encode/Decode Ext paths.
 		if nh.n == "simple" {
@@ -4184,38 +4184,36 @@ func testEqualH(v1, v2 interface{}, h Handle) (err error) {
 // 	}
 // }
 
-func doTestLargeStruct(t *testing.T, h Handle) {
+const testLargeStructSize = 65536
 
-	const size = 65536
+type testLargeStruct struct {
+	A [testLargeStructSize]string
+	B [testLargeStructSize]int
+	C [testLargeStructSize]string
+}
 
-	type LargeStruct struct {
-		A [size]string
-		B [size]int
-		C [size]string
-	}
+var testLargeStructA, testLargeStructB testLargeStruct
 
-	a := new(LargeStruct)
-	b := new(LargeStruct)
-
+func init() {
+	a := &testLargeStructA
 	for i := range a.A {
 		a.A[i] = fmt.Sprintf("a-%d", i)
 		a.B[i] = i
 		a.C[i] = fmt.Sprintf("c-%d", i)
 	}
+}
 
-	var buf []byte
-	err := NewEncoderBytes(&buf, h).Encode(a)
-	if err != nil {
-		t.Fatal(err)
+func doTestLargeStruct(t *testing.T, h Handle) {
+	defer testSetup2(t, &h)()
+	if testv.UseParallel {
+		t.Skip(testSkipParallelTestsMsg)
 	}
 
-	err = NewDecoderBytes(buf, h).Decode(b)
-	if err != nil {
-		t.Fatal(err)
-	}
+	a := &testLargeStructA
+	b := &testLargeStructB
+	*b = testLargeStruct{}
 
-	if !reflect.DeepEqual(a, b) {
-		t.Error("a != b")
-	}
-
+	buf := testMarshalErr(a, h, t, "large-struct-A")
+	testUnmarshalErr(b, buf, h, t, "large-struct-B")
+	testDeepEqualErr(a, b, t, "large-struct-A-B-compare")
 }
