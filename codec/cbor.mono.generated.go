@@ -1,4 +1,4 @@
-//go:build !notmono && !codec.notmono 
+//go:build !notmono && !codec.notmono
 
 // Copyright (c) 2012-2020 Ugorji Nwoke. All rights reserved.
 // Use of this source code is governed by a MIT license found in the LICENSE file.
@@ -3701,7 +3701,7 @@ func (d *cborDecDriverBytes) decTagBigIntAsFloat(neg bool) (f float64) {
 }
 
 func (d *cborDecDriverBytes) decTagBigFloatAsFloat(decimal bool) (f float64) {
-	if nn := d.r.readn1(); nn != 82 {
+	if nn := d.r.readn1(); nn != 0x82 {
 		halt.errorf("(%d) decoding decimal/big.Float: expected 2 numbers", nn)
 	}
 	exp := d.DecodeInt64()
@@ -7683,7 +7683,7 @@ func (d *cborDecDriverIO) decTagBigIntAsFloat(neg bool) (f float64) {
 }
 
 func (d *cborDecDriverIO) decTagBigFloatAsFloat(decimal bool) (f float64) {
-	if nn := d.r.readn1(); nn != 82 {
+	if nn := d.r.readn1(); nn != 0x82 {
 		halt.errorf("(%d) decoding decimal/big.Float: expected 2 numbers", nn)
 	}
 	exp := d.DecodeInt64()

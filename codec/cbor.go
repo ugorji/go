@@ -659,7 +659,7 @@ func (d *cborDecDriver[T]) decTagBigIntAsFloat(neg bool) (f float64) {
 }
 
 func (d *cborDecDriver[T]) decTagBigFloatAsFloat(decimal bool) (f float64) {
-	if nn := d.r.readn1(); nn != 82 {
+	if nn := d.r.readn1(); nn != 0x82 {
 		halt.errorf("(%d) decoding decimal/big.Float: expected 2 numbers", nn)
 	}
 	exp := d.DecodeInt64()

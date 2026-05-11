@@ -609,6 +609,34 @@ func TestCborNumbers(t *testing.T) {
 	doTestNumbers(t, testCborH)
 }
 
+func TestCborDecimalFraction(t *testing.T) {
+	if !testRecoverPanicToErr {
+		t.Skip(testSkipIfNotRecoverPanicToErrMsg)
+	}
+	var h Handle = testCborH
+	defer testSetup(t, &h)()
+
+	// tag 4 (decimal fraction): 273.15 = 27315 * 10^(-2)
+	// c4=tag(4), 82=array(2), 21=negint(-2), 19 6ab3=uint(27315)
+	decFrac := []byte{0xc4, 0x82, 0x21, 0x19, 0x6a, 0xb3}
+	var v1 interface{}
+	NewDecoderBytes(decFrac, h).MustDecode(&v1)
+	f1, ok := v1.(float64)
+	if !ok || f1 != 273.15 {
+		t.Fatalf("tag 4 decimal fraction: got %v (%T), want 273.15", v1, v1)
+	}
+
+	// tag 5 (bigfloat): 1.5 = 3 * 2^(-1)
+	// c5=tag(5), 82=array(2), 20=negint(-1), 03=uint(3)
+	bigFloat := []byte{0xc5, 0x82, 0x20, 0x03}
+	var v2 interface{}
+	NewDecoderBytes(bigFloat, h).MustDecode(&v2)
+	f2, ok := v2.(float64)
+	if !ok || f2 != 1.5 {
+		t.Fatalf("tag 5 bigfloat: got %v (%T), want 1.5", v2, v2)
+	}
+}
+
 func TestCborDesc(t *testing.T) {
 	m := make(map[byte]string)
 	for k, v := range cbordescMajorNames {
