@@ -802,3 +802,7 @@ func TestJsonAllErrWriter(t *testing.T) {
 func TestJsonTimeAndBytesOptions(t *testing.T) {
 	doTestJsonTimeAndBytesOptions(t, testJsonH)
 }
+
+func TestJsonLargeStruct(t *testing.T) {
+	doTestLargeStruct(t, testJsonH)
+}

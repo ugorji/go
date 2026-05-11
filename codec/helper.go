@@ -1462,11 +1462,11 @@ func (o intf2impls) intf2impl(rtid uintptr) (rv reflect.Value) {
 }
 
 type structFieldInfoNode struct {
-	offset   uint16
+	offset   uintptr
 	index    uint16
 	kind     uint8
 	numderef uint8
-	_        uint16 // padding
+	_        uint32 // padding
 
 	typ reflect.Type
 }
@@ -2374,7 +2374,7 @@ LOOP:
 						parent: path,
 						structFieldInfoNode: structFieldInfoNode{
 							typ:      f.Type,
-							offset:   uint16(f.Offset),
+							offset:   f.Offset,
 							index:    j,
 							kind:     uint8(fkind),
 							numderef: numderef,
@@ -2423,7 +2423,7 @@ LOOP:
 
 		si.node = structFieldInfoNode{
 			typ:      f.Type,
-			offset:   uint16(f.Offset),
+			offset:   f.Offset,
 			index:    j,
 			kind:     uint8(fkind),
 			numderef: numderef,
