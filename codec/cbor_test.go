@@ -623,7 +623,8 @@ func TestCborDecimalFraction(t *testing.T) {
 	NewDecoderBytes(decFrac, h).MustDecode(&v1)
 	f1, ok := v1.(float64)
 	if !ok || f1 != 273.15 {
-		t.Fatalf("tag 4 decimal fraction: got %v (%T), want 273.15", v1, v1)
+		t.Logf("tag 4 decimal fraction: got %v (%T), want 273.15", v1, v1)
+		t.FailNow()
 	}
 
 	// tag 5 (bigfloat): 1.5 = 3 * 2^(-1)
@@ -633,7 +634,8 @@ func TestCborDecimalFraction(t *testing.T) {
 	NewDecoderBytes(bigFloat, h).MustDecode(&v2)
 	f2, ok := v2.(float64)
 	if !ok || f2 != 1.5 {
-		t.Fatalf("tag 5 bigfloat: got %v (%T), want 1.5", v2, v2)
+		t.Logf("tag 5 bigfloat: got %v (%T), want 1.5", v2, v2)
+		t.FailNow()
 	}
 }
 
