@@ -66,7 +66,7 @@ a `go.sum` has not been distributed with these 2 modules above.
 To fix that, starting with codec `v1.2.8`, we will remove the requirements cycle.
 `github.com/ugorji/go/` will require `github.com/ugorji/go/codec`
 but not vice versa. It has been over 3 years since we released `v1.1.7` (in July 2019)
-with the requirements cycle to accomodate folks with an older version of
+with the requirements cycle to accommodate folks with an older version of
 the `github.com/ugorji/go` module. We believe most folks now depend
 either directly on the newer `github.com/ugorji/go/codec` module, or
 on a newer `github.com/ugorji/go` module.
