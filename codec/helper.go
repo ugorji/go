@@ -1994,7 +1994,13 @@ func isCanTransient(t reflect.Type, inclStrSlice bool) (v bool) {
 	if inclStrSlice {
 		bset = &numBoolStrSliceBitset
 	}
-	if bset.isset(byte(k)) {
+	if k == reflect.Slice {
+		// A slice is transient-safe only when its element is itself a
+		// non-reference scalar (number/bool). Otherwise the element (e.g. a
+		// struct with a map/pointer field) may be zeroed through a transient
+		// pointer into reused slice-backing memory, corrupting it. See #367.
+		v = inclStrSlice && isCanTransient(t.Elem(), false)
+	} else if bset.isset(byte(k)) {
 		v = true
 	} else if k == reflect.Array {
 		v = isCanTransient(t.Elem(), false)
