@@ -806,3 +806,7 @@ func TestJsonTimeAndBytesOptions(t *testing.T) {
 func TestJsonLargeStruct(t *testing.T) {
 	doTestLargeStruct(t, testJsonH)
 }
+
+func TestJsonSliceDecodeVariants(t *testing.T) {
+	doTestSliceDecodeVariants(t, testJsonH)
+}

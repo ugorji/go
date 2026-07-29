@@ -149,3 +149,7 @@ func TestBincStructFieldInfoToArray(t *testing.T) {
 func TestBincLargeStruct(t *testing.T) {
 	doTestLargeStruct(t, testBincH)
 }
+
+func TestBincSliceDecodeVariants(t *testing.T) {
+	doTestSliceDecodeVariants(t, testBincH)
+}

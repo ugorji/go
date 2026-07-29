@@ -260,3 +260,7 @@ func TestMsgpackDecodeMapAndExtSizeMismatch(t *testing.T) {
 func TestMsgpackLargeStruct(t *testing.T) {
 	doTestLargeStruct(t, testMsgpackH)
 }
+
+func TestMsgpackSliceDecodeVariants(t *testing.T) {
+	doTestSliceDecodeVariants(t, testMsgpackH)
+}

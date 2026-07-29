@@ -671,3 +671,7 @@ func TestCborAllAnonCycle(t *testing.T) {
 func TestCborLargeStruct(t *testing.T) {
 	doTestLargeStruct(t, testCborH)
 }
+
+func TestCborSliceDecodeVariants(t *testing.T) {
+	doTestSliceDecodeVariants(t, testCborH)
+}

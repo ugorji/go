@@ -146,3 +146,7 @@ func TestSimpleAllErrWriter(t *testing.T) {
 func TestSimpleLargeStruct(t *testing.T) {
 	doTestLargeStruct(t, testSimpleH)
 }
+
+func TestSimpleSliceDecodeVariants(t *testing.T) {
+	doTestSliceDecodeVariants(t, testSimpleH)
+}

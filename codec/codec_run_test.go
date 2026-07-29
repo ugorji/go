@@ -4217,3 +4217,74 @@ func doTestLargeStruct(t *testing.T, h Handle) {
 	testUnmarshalErr(b, buf, h, t, "large-struct-B")
 	testDeepEqualErr(a, b, t, "large-struct-A-B-compare")
 }
+
+func doTestSliceDecodeVariants(t *testing.T, h Handle) {
+	defer testSetup2(t, &h)()
+	// This tests that a slice while transient is treated specially
+	// if a map key or a chan value ie if we are "storing" the slice value elsewhere
+	// and losing "ownership" of it
+	//
+	// Test the following combinations:
+	// - map with slice keys and values, that are not scalar
+	// - map[int][]P
+	// - map[P][]P
+	// - []P
+	// - chan P
+
+	type P struct {
+		X string
+		N int64
+	}
+	type Item struct {
+		S  string
+		M  map[int64][]P
+		Mp map[P][]P
+		Mi map[int64][]int64
+		Sp []P
+		// Cp chan P
+	}
+
+	var itemarr = [...]Item{
+		{
+			S:  "s",
+			M:  map[int64][]P{7: {{"X", 1}}},
+			Mp: map[P][]P{{"Mp", 2}: {{"X", 1}}},
+			Mi: map[int64][]int64{3: {4, 5}},
+			Sp: []P{{"X", 1}},
+			// Cp: make(chan P, 4),
+		},
+	}
+	var b []byte
+	in := map[string][]Item{"a1": itemarr[:]}
+	var out map[string][]Item
+
+	b = testMarshalErr(in, h, t, "itemarr")
+	testUnmarshalErr(&out, b, h, t, "itemarr-unmarshal")
+	testDeepEqualErr(in, out, t, "itemarr-compare")
+
+	parr := [...]P{{"X1", 1}, {"X2", 2}, {"X3", 3}, {"X4", 4}}
+	cin := make(chan P, 8)
+	for _, v := range &parr {
+		cin <- v
+	}
+
+	// b = b[:0]
+	b = testMarshalErr(cin, h, t, "chan-itemarr")
+	cout := make(chan P, 8)
+	testUnmarshalErr(&cout, b, h, t, "chan-itemarr-unmarshal")
+
+	var parr2 [len(parr)]P
+LOOP:
+	for i := 0; i < len(parr); i++ {
+		select {
+		case parr2[i] = <-cout:
+		default:
+			break LOOP
+		}
+	}
+
+	close(cin)
+	close(cout)
+
+	testDeepEqualErr(parr, parr2, t, "itemarr-compare")
+}
