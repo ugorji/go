@@ -3353,7 +3353,7 @@ func (e *msgpackEncDriverBytes) writeContainerLen(ct msgpackContainerType, l int
 	} else if l < 65536 {
 		e.w.writen1(ct.b16)
 		e.w.writen2(bigen.PutUint16(uint16(l)))
-	} else if l <= mpMaxLen {
+	} else if uint(l) <= mpMaxLen {
 		e.w.writen1(ct.b32)
 		e.w.writen4(bigen.PutUint32(uint32(l)))
 	} else {
@@ -7369,7 +7369,7 @@ func (e *msgpackEncDriverIO) writeContainerLen(ct msgpackContainerType, l int) {
 	} else if l < 65536 {
 		e.w.writen1(ct.b16)
 		e.w.writen2(bigen.PutUint16(uint16(l)))
-	} else if l <= mpMaxLen {
+	} else if uint(l) <= mpMaxLen {
 		e.w.writen1(ct.b32)
 		e.w.writen4(bigen.PutUint32(uint32(l)))
 	} else {

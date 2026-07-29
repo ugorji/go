@@ -111,14 +111,15 @@ func doTestMsgpackDecodeMapAndExtSizeMismatch(t *testing.T, h Handle) {
 
 func doTestMsgpackIntOverflow(t *testing.T, h Handle) {
 	defer testSetup(t, &h)()
-	if cpu32Bit {
-		t.Skip("test skipped on 32-bit machine")
-	}
 	if testing.Short() {
 		t.Skip("skipping test in short mode")
 	}
+	if cpu32Bit {
+		t.Skip("test skipped on 32-bit machine")
+	}
 	overflowString := "\xa7input_b\xd9\x12HACKER OVERWRITTEN"
-	var sb = make([]byte, (1<<32)+len(overflowString)+64)
+	var llen uint64 = (1 << 32) + 64 // prevent compile failure
+	var sb = make([]byte, int(llen))
 	copy(sb, overflowString)
 	overflowString = stringView(sb)
 	// sb.Grow((1 << 32) + len(overflowString) + 64)
