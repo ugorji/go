@@ -12,6 +12,7 @@ import (
 	"net/rpc"
 	"os/exec"
 	"strconv"
+	"strings"
 	"testing"
 	"time"
 )
@@ -106,6 +107,50 @@ func doTestMsgpackDecodeMapAndExtSizeMismatch(t *testing.T, h Handle) {
 	// b = []byte{0x00}
 	// var s testSelferRecur
 	// fn(t, b, &s)
+}
+
+func doTestMsgpackIntOverflow(t *testing.T, h Handle) {
+	defer testSetup(t, &h)()
+	if cpu32Bit {
+		t.Skip("test skipped on 32-bit machine")
+	}
+	if testing.Short() {
+		t.Skip("skipping test in short mode")
+	}
+	overflowString := "\xa7input_b\xd9\x12HACKER OVERWRITTEN"
+	var sb = make([]byte, (1<<32)+len(overflowString)+64)
+	copy(sb, overflowString)
+	overflowString = stringView(sb)
+	// sb.Grow((1 << 32) + len(overflowString) + 64)
+	// sb.WriteString(overflowString)
+	// overflowString = sb.String()
+
+	type sampleT struct {
+		A string
+		B string
+	}
+
+	var v0, v1 sampleT
+	var b []byte
+	var err error
+
+	v0 = sampleT{"normal", "normal value"}
+	b = testMarshalErr(v0, h, t, "encode-normal")
+	testUnmarshalErr(&v1, b, h, t, "decode")
+	testDeepEqualErr(v0, v1, t, "compare")
+
+	v0 = sampleT{"hacker", overflowString}
+	b, err = testMarshal(v0, h)
+	if err == nil || !strings.Contains(err.Error(), mpMaxLenOverflowErrorMsgPrefix) {
+		t.Fatalf("expected error that len exceeds maximum")
+	}
+	// v1 = sampleT{}
+	// testUnmarshalErr(&v1, b, h, t, "decode")
+	// testDeepEqualErr(v0, v1, t, "compare")
+}
+
+func TestMsgpackIntOverflow(t *testing.T) {
+	doTestMsgpackIntOverflow(t, testMsgpackH)
 }
 
 func TestMsgpackCodecsTable(t *testing.T) {
