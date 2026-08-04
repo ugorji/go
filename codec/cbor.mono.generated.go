@@ -922,6 +922,10 @@ func (e *encoderCborBytes) MustEncode(v interface{}) {
 	return
 }
 
+func (e *encoderCborBytes) NumBytesWritten() int {
+	return e.e.NumBytesWritten()
+}
+
 func (e *encoderCborBytes) mustEncode(v interface{}) {
 	halt.onerror(e.err)
 	if e.hh == nil {
@@ -3948,6 +3952,7 @@ func (d *cborEncDriverBytes) init(hh Handle, shared *encoderBase, enc encoderI) 
 	return
 }
 
+func (e *cborEncDriverBytes) NumBytesWritten() int    { return e.w.numWrite() }
 func (e *cborEncDriverBytes) writeBytesAsis(b []byte) { e.w.writeb(b) }
 
 func (e *cborEncDriverBytes) writerEnd() { e.w.end() }
@@ -3983,7 +3988,7 @@ func (d *cborDecDriverBytes) resetInBytes(in []byte) {
 }
 
 func (d *cborDecDriverBytes) resetInIO(r io.Reader) {
-	d.r.resetIO(r, d.h.ReaderBufferSize, d.h.MaxInitLen, &d.d.blist)
+	d.r.resetIO(r, d.h.ReaderBufferSize, d.h.maxBytes2Read(), &d.d.blist)
 }
 
 func (d *cborDecDriverBytes) descBd() string {
@@ -4903,6 +4908,10 @@ func (e *encoderCborIO) MustEncode(v interface{}) {
 	defer panicValToErr(e, callRecoverSentinel, &e.err, nil, true)
 	e.mustEncode(v)
 	return
+}
+
+func (e *encoderCborIO) NumBytesWritten() int {
+	return e.e.NumBytesWritten()
 }
 
 func (e *encoderCborIO) mustEncode(v interface{}) {
@@ -7931,6 +7940,7 @@ func (d *cborEncDriverIO) init(hh Handle, shared *encoderBase, enc encoderI) (fp
 	return
 }
 
+func (e *cborEncDriverIO) NumBytesWritten() int    { return e.w.numWrite() }
 func (e *cborEncDriverIO) writeBytesAsis(b []byte) { e.w.writeb(b) }
 
 func (e *cborEncDriverIO) writerEnd() { e.w.end() }
@@ -7966,7 +7976,7 @@ func (d *cborDecDriverIO) resetInBytes(in []byte) {
 }
 
 func (d *cborDecDriverIO) resetInIO(r io.Reader) {
-	d.r.resetIO(r, d.h.ReaderBufferSize, d.h.MaxInitLen, &d.d.blist)
+	d.r.resetIO(r, d.h.ReaderBufferSize, d.h.maxBytes2Read(), &d.d.blist)
 }
 
 func (d *cborDecDriverIO) descBd() string {

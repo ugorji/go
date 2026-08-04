@@ -948,6 +948,10 @@ func (e *encoderJsonBytes) MustEncode(v interface{}) {
 	return
 }
 
+func (e *encoderJsonBytes) NumBytesWritten() int {
+	return e.e.NumBytesWritten()
+}
+
 func (e *encoderJsonBytes) mustEncode(v interface{}) {
 	halt.onerror(e.err)
 	if e.hh == nil {
@@ -4130,6 +4134,7 @@ func (d *jsonEncDriverBytes) init(hh Handle, shared *encoderBase, enc encoderI) 
 	return
 }
 
+func (e *jsonEncDriverBytes) NumBytesWritten() int    { return e.w.numWrite() }
 func (e *jsonEncDriverBytes) writeBytesAsis(b []byte) { e.w.writeb(b) }
 
 func (e *jsonEncDriverBytes) writerEnd() { e.w.end() }
@@ -4165,7 +4170,7 @@ func (d *jsonDecDriverBytes) resetInBytes(in []byte) {
 }
 
 func (d *jsonDecDriverBytes) resetInIO(r io.Reader) {
-	d.r.resetIO(r, d.h.ReaderBufferSize, d.h.MaxInitLen, &d.d.blist)
+	d.r.resetIO(r, d.h.ReaderBufferSize, d.h.maxBytes2Read(), &d.d.blist)
 }
 
 func (d *jsonDecDriverBytes) descBd() (s string) {
@@ -5110,6 +5115,10 @@ func (e *encoderJsonIO) MustEncode(v interface{}) {
 	defer panicValToErr(e, callRecoverSentinel, &e.err, nil, true)
 	e.mustEncode(v)
 	return
+}
+
+func (e *encoderJsonIO) NumBytesWritten() int {
+	return e.e.NumBytesWritten()
 }
 
 func (e *encoderJsonIO) mustEncode(v interface{}) {
@@ -8294,6 +8303,7 @@ func (d *jsonEncDriverIO) init(hh Handle, shared *encoderBase, enc encoderI) (fp
 	return
 }
 
+func (e *jsonEncDriverIO) NumBytesWritten() int    { return e.w.numWrite() }
 func (e *jsonEncDriverIO) writeBytesAsis(b []byte) { e.w.writeb(b) }
 
 func (e *jsonEncDriverIO) writerEnd() { e.w.end() }
@@ -8329,7 +8339,7 @@ func (d *jsonDecDriverIO) resetInBytes(in []byte) {
 }
 
 func (d *jsonDecDriverIO) resetInIO(r io.Reader) {
-	d.r.resetIO(r, d.h.ReaderBufferSize, d.h.MaxInitLen, &d.d.blist)
+	d.r.resetIO(r, d.h.ReaderBufferSize, d.h.maxBytes2Read(), &d.d.blist)
 }
 
 func (d *jsonDecDriverIO) descBd() (s string) {

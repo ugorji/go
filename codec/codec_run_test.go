@@ -2010,6 +2010,10 @@ func doTestSwallowAndZero(t *testing.T, h Handle) {
 
 	e1 := NewEncoderBytes(&b1, h)
 	e1.MustEncode(v1)
+	if e1.NumBytesWritten() <= 0 {
+		t.Logf("swallow: num bytes written (%d) expected to be > 0", e1.NumBytesWritten())
+		t.FailNow()
+	}
 	d1 := NewDecoderBytes(b1, h)
 	d1.swallow()
 	if d1.NumBytesRead() != len(b1) {

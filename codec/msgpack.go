@@ -968,6 +968,7 @@ func (d *msgpackEncDriver[T]) init(hh Handle, shared *encoderBase, enc encoderI)
 	return
 }
 
+func (e *msgpackEncDriver[T]) NumBytesWritten() int    { return e.w.numWrite() }
 func (e *msgpackEncDriver[T]) writeBytesAsis(b []byte) { e.w.writeb(b) }
 
 // func (e *msgpackEncDriver[T]) writeStringAsisDblQuoted(v string) { e.w.writeqstr(v) }
@@ -1007,7 +1008,7 @@ func (d *msgpackDecDriver[T]) resetInBytes(in []byte) {
 }
 
 func (d *msgpackDecDriver[T]) resetInIO(r io.Reader) {
-	d.r.resetIO(r, d.h.ReaderBufferSize, d.h.MaxInitLen, &d.d.blist)
+	d.r.resetIO(r, d.h.ReaderBufferSize, d.h.maxBytes2Read(), &d.d.blist)
 }
 
 // ---- (custom stanza)
