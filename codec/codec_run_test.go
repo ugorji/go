@@ -561,6 +561,12 @@ func testCheckEqual(t *testing.T, v1 interface{}, v2 interface{}, desc string) {
 	}
 }
 
+func testSkipIfParallel(t *testing.T) {
+	if testv.UseParallel {
+		t.Skip(testSkipParallelTestsMsg)
+	}
+}
+
 func basicTestExtEncFn(x BytesExt, rv reflect.Value) (bs []byte, err error) {
 	defer panicValToErr(basicErrDecorator, callRecoverSentinel, &err, nil, false)
 	bs = x.WriteExt(rv.Interface())
@@ -2235,6 +2241,7 @@ func doTestEmbeddedFieldPrecedence(t *testing.T, h Handle) {
 }
 
 func doTestLargeContainerLen(t *testing.T, h Handle) {
+	testSkipIfParallel(t)
 	okbinc := h.Name() == "binc"
 	defer testSetupWithChecks(t, &h, okbinc)()
 
@@ -3570,10 +3577,7 @@ func doTestNumbers(t *testing.T, h Handle) {
 func __doTestIntegers(t *testing.T, h Handle) {
 	// handle SignedInteger=true|false
 	// decode into an interface{}
-
-	if testv.UseParallel {
-		t.Skip(testSkipParallelTestsMsg)
-	}
+	testSkipIfParallel(t)
 
 	bh := testBasicHandle(h)
 
@@ -4209,9 +4213,7 @@ func init() {
 
 func doTestLargeStruct(t *testing.T, h Handle) {
 	defer testSetup2(t, &h)()
-	if testv.UseParallel {
-		t.Skip(testSkipParallelTestsMsg)
-	}
+	testSkipIfParallel(t)
 
 	a := &testLargeStructA
 	b := &testLargeStructB

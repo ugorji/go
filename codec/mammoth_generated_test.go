@@ -4209,6 +4209,7 @@ func __doTestMammothMaps(t *testing.T, h Handle) {
 }
 
 func doTestMammothMapsAndSlices(t *testing.T, h Handle) {
+	testSkipIfParallel(t)
 	defer testSetup(t, &h)()
 	if mh, ok := h.(*MsgpackHandle); ok {
 		defer func(b bool) { mh.RawToString = b }(mh.RawToString)
@@ -4219,6 +4220,7 @@ func doTestMammothMapsAndSlices(t *testing.T, h Handle) {
 }
 
 func doTestMammoth(t *testing.T, h Handle) {
+	testSkipIfParallel(t)
 	defer testSetup(t, &h)()
 	if mh, ok := h.(*MsgpackHandle); ok {
 		defer func(b bool) { mh.RawToString = b }(mh.RawToString)
