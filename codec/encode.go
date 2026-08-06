@@ -1062,7 +1062,6 @@ func (e *encoder[T]) Encode(v interface{}) (err error) {
 func (e *encoder[T]) MustEncode(v interface{}) {
 	defer panicValToErr(e, callRecoverSentinel, &e.err, nil, true)
 	e.mustEncode(v)
-	return
 }
 
 func (e *encoder[T]) NumBytesWritten() int {
@@ -1152,6 +1151,8 @@ func (e *encoder[T]) encodeBuiltin(iv interface{}) (ok bool) {
 		e.e.EncodeTime(v)
 	case []byte:
 		e.e.EncodeBytes(v) // e.e.EncodeStringBytesRaw(v)
+	case reflect.Value:
+		e.encodeR(v)
 	default:
 		// we can't check non-predefined types, as they might be a Selfer or extension.
 		ok = !skipFastpathTypeSwitchInDirectCall && e.dh.fastpathEncodeTypeSwitch(iv, e)

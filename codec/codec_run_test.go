@@ -4294,3 +4294,19 @@ LOOP:
 
 	testDeepEqualErr(parr, parr2, t, "itemarr-compare")
 }
+
+func doTestViaReflectValue(t *testing.T, h Handle) {
+	// running on one format is sufficient, as this test is not format specific at all
+
+	defer testSetup2(t, &h)()
+	type Payload struct{ Name string }
+	v := Payload{Name: "hello"}
+	buf := testMarshalErr(v, h, t, "encode-via-interface")
+	s1 := string(buf)
+	buf = testMarshalErr(reflect.ValueOf(v), h, t, "encode-via-reflect.value")
+	testDeepEqualErr(s1, string(buf), t, "encode-interface-vs-reflect.value-compare")
+	var v2, v3 Payload
+	testUnmarshalErr(&v2, buf, h, t, "decode-via-interface")
+	testUnmarshalErr(reflect.ValueOf(&v3), buf, h, t, "decode-via-reflect.value")
+	testDeepEqualErr(v2, v3, t, "decode-interface-vs-reflect.value-compare")
+}

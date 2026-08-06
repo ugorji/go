@@ -150,3 +150,7 @@ func TestSimpleLargeStruct(t *testing.T) {
 func TestSimpleSliceDecodeVariants(t *testing.T) {
 	doTestSliceDecodeVariants(t, testSimpleH)
 }
+
+func TestSimpleViaReflectValue(t *testing.T) {
+	doTestViaReflectValue(t, testSimpleH)
+}

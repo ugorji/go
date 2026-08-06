@@ -810,3 +810,7 @@ func TestJsonLargeStruct(t *testing.T) {
 func TestJsonSliceDecodeVariants(t *testing.T) {
 	doTestSliceDecodeVariants(t, testJsonH)
 }
+
+func TestJsonViaReflectValue(t *testing.T) {
+	doTestViaReflectValue(t, testJsonH)
+}
