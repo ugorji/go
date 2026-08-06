@@ -917,7 +917,6 @@ func (e *encoderSimpleBytes) Encode(v interface{}) (err error) {
 func (e *encoderSimpleBytes) MustEncode(v interface{}) {
 	defer panicValToErr(e, callRecoverSentinel, &e.err, nil, true)
 	e.mustEncode(v)
-	return
 }
 
 func (e *encoderSimpleBytes) NumBytesWritten() int {
@@ -1005,6 +1004,8 @@ func (e *encoderSimpleBytes) encodeBuiltin(iv interface{}) (ok bool) {
 		e.e.EncodeTime(v)
 	case []byte:
 		e.e.EncodeBytes(v)
+	case reflect.Value:
+		e.encodeR(v)
 	default:
 
 		ok = !skipFastpathTypeSwitchInDirectCall && e.dh.fastpathEncodeTypeSwitch(iv, e)
@@ -4688,7 +4689,6 @@ func (e *encoderSimpleIO) Encode(v interface{}) (err error) {
 func (e *encoderSimpleIO) MustEncode(v interface{}) {
 	defer panicValToErr(e, callRecoverSentinel, &e.err, nil, true)
 	e.mustEncode(v)
-	return
 }
 
 func (e *encoderSimpleIO) NumBytesWritten() int {
@@ -4776,6 +4776,8 @@ func (e *encoderSimpleIO) encodeBuiltin(iv interface{}) (ok bool) {
 		e.e.EncodeTime(v)
 	case []byte:
 		e.e.EncodeBytes(v)
+	case reflect.Value:
+		e.encodeR(v)
 	default:
 
 		ok = !skipFastpathTypeSwitchInDirectCall && e.dh.fastpathEncodeTypeSwitch(iv, e)

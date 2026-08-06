@@ -945,7 +945,6 @@ func (e *encoderJsonBytes) Encode(v interface{}) (err error) {
 func (e *encoderJsonBytes) MustEncode(v interface{}) {
 	defer panicValToErr(e, callRecoverSentinel, &e.err, nil, true)
 	e.mustEncode(v)
-	return
 }
 
 func (e *encoderJsonBytes) NumBytesWritten() int {
@@ -1033,6 +1032,8 @@ func (e *encoderJsonBytes) encodeBuiltin(iv interface{}) (ok bool) {
 		e.e.EncodeTime(v)
 	case []byte:
 		e.e.EncodeBytes(v)
+	case reflect.Value:
+		e.encodeR(v)
 	default:
 
 		ok = !skipFastpathTypeSwitchInDirectCall && e.dh.fastpathEncodeTypeSwitch(iv, e)
@@ -5114,7 +5115,6 @@ func (e *encoderJsonIO) Encode(v interface{}) (err error) {
 func (e *encoderJsonIO) MustEncode(v interface{}) {
 	defer panicValToErr(e, callRecoverSentinel, &e.err, nil, true)
 	e.mustEncode(v)
-	return
 }
 
 func (e *encoderJsonIO) NumBytesWritten() int {
@@ -5202,6 +5202,8 @@ func (e *encoderJsonIO) encodeBuiltin(iv interface{}) (ok bool) {
 		e.e.EncodeTime(v)
 	case []byte:
 		e.e.EncodeBytes(v)
+	case reflect.Value:
+		e.encodeR(v)
 	default:
 
 		ok = !skipFastpathTypeSwitchInDirectCall && e.dh.fastpathEncodeTypeSwitch(iv, e)
