@@ -1940,11 +1940,13 @@ func (d *decoderJsonBytes) kSlice(f *decFnInfo, rv reflect.Value) {
 	rvlen := rvLenSlice(rv)
 	rvcap := rvCapSlice(rv)
 	maxInitLen := d.maxInitLen()
+	maxBytesLen := uint(d.h.maxBytes2Read())
+
 	hasLen := containerLenS >= 0
 	if hasLen {
 		if containerLenS > rvcap {
 			oldRvlenGtZero := rvlen > 0
-			rvlen1 := int(decInferLen(containerLenS, maxInitLen, uint(ti.elemsize)))
+			rvlen1 := int(decInferLen(containerLenS, maxInitLen, maxBytesLen, uint(ti.elemsize)))
 			if rvlen1 == rvlen {
 			} else if rvlen1 <= rvcap {
 				if rvCanset {
@@ -1987,7 +1989,7 @@ func (d *decoderJsonBytes) kSlice(f *decFnInfo, rv reflect.Value) {
 		if j == 0 {
 			if rvIsNil(rv) {
 				if rvCanset {
-					rvlen = int(decInferLen(containerLenS, maxInitLen, uint(ti.elemsize)))
+					rvlen = int(decInferLen(containerLenS, maxInitLen, maxBytesLen, uint(ti.elemsize)))
 					rv, rvCanset = rvMakeSlice(rv, f.ti, rvlen, rvlen)
 					rvcap = rvlen
 					rvChanged = !rvCanset
@@ -2243,12 +2245,13 @@ func (d *decoderJsonBytes) kChan(f *decFnInfo, rv reflect.Value) {
 	var rvlen int
 	hasLen := containerLenS >= 0
 	maxInitLen := d.maxInitLen()
+	maxBytesLen := uint(d.h.maxBytes2Read())
 
 	for j := 0; d.containerNext(j, containerLenS, hasLen); j++ {
 		if j == 0 {
 			if rvIsNil(rv) {
 				if hasLen {
-					rvlen = int(decInferLen(containerLenS, maxInitLen, uint(ti.elemsize)))
+					rvlen = int(decInferLen(containerLenS, maxInitLen, maxBytesLen, uint(ti.elemsize)))
 				} else {
 					rvlen = decDefChanCap
 				}
@@ -2301,7 +2304,7 @@ func (d *decoderJsonBytes) kMap(f *decFnInfo, rv reflect.Value) {
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	ti := f.ti
 	if rvIsNil(rv) {
-		rvlen := int(decInferLen(containerLen, d.maxInitLen(), uint(ti.keysize+ti.elemsize)))
+		rvlen := int(decInferLen(containerLen, d.maxInitLen(), uint(d.h.maxBytes2Read()), uint(ti.keysize+ti.elemsize)))
 		rvSetDirect(rv, makeMapReflect(ti.rt, rvlen))
 	}
 
@@ -6110,11 +6113,13 @@ func (d *decoderJsonIO) kSlice(f *decFnInfo, rv reflect.Value) {
 	rvlen := rvLenSlice(rv)
 	rvcap := rvCapSlice(rv)
 	maxInitLen := d.maxInitLen()
+	maxBytesLen := uint(d.h.maxBytes2Read())
+
 	hasLen := containerLenS >= 0
 	if hasLen {
 		if containerLenS > rvcap {
 			oldRvlenGtZero := rvlen > 0
-			rvlen1 := int(decInferLen(containerLenS, maxInitLen, uint(ti.elemsize)))
+			rvlen1 := int(decInferLen(containerLenS, maxInitLen, maxBytesLen, uint(ti.elemsize)))
 			if rvlen1 == rvlen {
 			} else if rvlen1 <= rvcap {
 				if rvCanset {
@@ -6157,7 +6162,7 @@ func (d *decoderJsonIO) kSlice(f *decFnInfo, rv reflect.Value) {
 		if j == 0 {
 			if rvIsNil(rv) {
 				if rvCanset {
-					rvlen = int(decInferLen(containerLenS, maxInitLen, uint(ti.elemsize)))
+					rvlen = int(decInferLen(containerLenS, maxInitLen, maxBytesLen, uint(ti.elemsize)))
 					rv, rvCanset = rvMakeSlice(rv, f.ti, rvlen, rvlen)
 					rvcap = rvlen
 					rvChanged = !rvCanset
@@ -6413,12 +6418,13 @@ func (d *decoderJsonIO) kChan(f *decFnInfo, rv reflect.Value) {
 	var rvlen int
 	hasLen := containerLenS >= 0
 	maxInitLen := d.maxInitLen()
+	maxBytesLen := uint(d.h.maxBytes2Read())
 
 	for j := 0; d.containerNext(j, containerLenS, hasLen); j++ {
 		if j == 0 {
 			if rvIsNil(rv) {
 				if hasLen {
-					rvlen = int(decInferLen(containerLenS, maxInitLen, uint(ti.elemsize)))
+					rvlen = int(decInferLen(containerLenS, maxInitLen, maxBytesLen, uint(ti.elemsize)))
 				} else {
 					rvlen = decDefChanCap
 				}
@@ -6471,7 +6477,7 @@ func (d *decoderJsonIO) kMap(f *decFnInfo, rv reflect.Value) {
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	ti := f.ti
 	if rvIsNil(rv) {
-		rvlen := int(decInferLen(containerLen, d.maxInitLen(), uint(ti.keysize+ti.elemsize)))
+		rvlen := int(decInferLen(containerLen, d.maxInitLen(), uint(d.h.maxBytes2Read()), uint(ti.keysize+ti.elemsize)))
 		rvSetDirect(rv, makeMapReflect(ti.rt, rvlen))
 	}
 

@@ -240,7 +240,7 @@ func (helperDecDriver[T]) fastpathDecodeTypeSwitch(iv interface{}, d *decoder[T]
 			*v = nil
 		} else {
 			if *v == nil {
-				*v = make(map[{{ .MapKey }}]{{ .Elem }}, decInferLen(containerLen, d.maxInitLen(), {{ .Size }}))
+				*v = make(map[{{ .MapKey }}]{{ .Elem }}, decInferLen(containerLen, d.maxInitLen(), uint(d.h.maxBytes2Read()), {{ .Size }}))
 			}
 			if containerLen != 0 {
 				ft.{{ .MethodNamePfx "Dec" false }}L(*v, containerLen, d)
@@ -309,11 +309,12 @@ func (fastpathDT[T]) {{ .MethodNamePfx "Dec" false }}Y(v []{{ .Elem }}, d *decod
 	hasLen := containerLenS >= 0
 	var j int
  	fnv := func(dst []{{ .Elem }}) { v, changed = dst, true }
+	maxInitLen, maxBytesLen := d.maxInitLen(), uint(d.h.maxBytes2Read())
 	for ; d.containerNext(j, containerLenS, hasLen); j++ {
 		if j == 0 {
 			if containerLenS == len(v) {
 			} else if containerLenS < 0 || containerLenS > cap(v) {
-				if xlen := int(decInferLen(containerLenS, d.maxInitLen(), {{ .Size }})); xlen <= cap(v) {
+				if xlen := int(decInferLen(containerLenS, maxInitLen, maxBytesLen, {{ .Size }})); xlen <= cap(v) {
 					fnv(v[:uint(xlen)])
 				} else {
 					v2 = make([]{{ .Elem }}, uint(xlen))
@@ -401,7 +402,7 @@ func (d *decoder[T]) {{ .MethodNamePfx "fastpathDec" false }}R(f *decFnInfo, rv 
 	if rv.Kind() == reflect.Ptr { {{- /* this block is called for types that wrap a fastpath type e.g. wrapMapStringUint64 */}}
 		vp, _ := rv2i(rv).(*map[{{ .MapKey }}]{{ .Elem }})
 		if *vp == nil {
-			*vp = make(map[{{ .MapKey }}]{{ .Elem }}, decInferLen(containerLen, d.maxInitLen(), {{ .Size }}))
+			*vp = make(map[{{ .MapKey }}]{{ .Elem }}, decInferLen(containerLen, d.maxInitLen(), uint(d.h.maxBytes2Read()), {{ .Size }}))
 		}
 		if containerLen != 0 {
 			ft.{{ .MethodNamePfx "Dec" false }}L(*vp, containerLen, d)
@@ -514,7 +515,7 @@ func (f fastpathDT[T]) {{ .MethodNamePfx "Dec" false }}X(vp *map[{{ .MapKey }}]{
 		return
 	}
 	if *vp == nil {
-		*vp = make(map[{{ .MapKey }}]{{ .Elem }}, decInferLen(containerLen, d.maxInitLen(), {{ .Size }}))
+		*vp = make(map[{{ .MapKey }}]{{ .Elem }}, decInferLen(containerLen, d.maxInitLen(), uint(d.h.maxBytes2Read()), {{ .Size }}))
 	}
 	if containerLen != 0 {
 		f.{{ .MethodNamePfx "Dec" false }}L(*vp, containerLen, d)
