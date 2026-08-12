@@ -92,6 +92,7 @@ const (
 	decDefMaxDepth         = 1024        // maximum depth
 	decDefChanCap          = 64          // should be large, as cap cannot be expanded
 	decScratchByteArrayLen = (4 + 3) * 8 // around cacheLineSize ie ~64, depending on Decoder size
+	decDefMaxBytes2Read    = 4096
 
 	// MARKER: massage decScratchByteArrayLen to ensure xxxDecDriver structs fit within cacheLine*N
 
@@ -307,8 +308,6 @@ type DecodeOptions struct {
 	// MaxBytesLen is used in a few places
 	//   - the maximum number of bytes read at a time
 	//   - maximum size of []byte directly or indirectly created
-	//
-	// If unset, infer from MaxInitLen, typically as max(4096, maxInitLen)
 	MaxBytesLen int
 
 	// ReaderBufferSize is the size of the buffer used when reading.
@@ -427,7 +426,7 @@ type DecodeOptions struct {
 }
 
 func (d *DecodeOptions) maxBytes2Read() int {
-	return max(d.MaxBytesLen, d.MaxInitLen, 4096)
+	return max(d.MaxBytesLen, d.MaxInitLen, d.ReaderBufferSize, decDefMaxBytes2Read)
 }
 
 // ----------------------------------------
@@ -862,14 +861,15 @@ func isDecodeable(rv reflect.Value) (canDecode bool, reason decNotDecodeableReas
 //   - maxlen: max length to be returned.
 //     if <= 0, it is unset, and we infer it based on the unit size
 //   - unit: number of bytes for each element of the collection
-func decInferLen(clen int, maxlen, unit uint) (n uint) {
+func decInferLen(clen int, maxlen, maxlen1elem, unit uint) (n uint) {
 	// anecdotal testing showed increase in allocation with map length of 16.
 	// We saw same typical alloc from 0-8, then a 20% increase at 16.
 	// Thus, we set it to 8.
 
 	const (
-		minLenIfUnset = 8
-		maxMem        = 1024 * 1024 // 1 MB Memory
+		maxBytesIfUnset = 256
+		minLenIfUnset   = 8
+		maxMem          = 1024 * 1024 // 1 MB Memory
 	)
 
 	// handle when maxlen is not set i.e. <= 0
@@ -884,13 +884,14 @@ func decInferLen(clen int, maxlen, unit uint) (n uint) {
 		return 0
 	}
 	if clen < 0 {
-		// if unspecified, return 64 for bytes, ... 8 for uint64, ... and everything else
-		return max(64/unit, minLenIfUnset)
+		// if unspecified, return 256 for bytes, 32 for uint64, 16 for string, ... and 8 everything else
+		return max(maxBytesIfUnset/unit, minLenIfUnset)
 	}
 	if unit == 0 {
-		return uint(clen)
-	}
-	if maxlen == 0 {
+		maxlen = math.MaxInt
+	} else if unit == 1 {
+		maxlen = maxlen1elem
+	} else if maxlen == 0 {
 		maxlen = maxMem / unit
 	}
 	return min(uint(clen), maxlen)
