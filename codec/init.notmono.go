@@ -9,62 +9,104 @@ import (
 	"io"
 )
 
-// This contains all the iniatializations of generics.
-// Putting it into one file, ensures that we can go generics or not.
+// // This contains all the iniatializations of generics.
+// // Putting it into one file, ensures that we can go generics or not.
 
-type maker interface{ Make() }
+// OLD CODE - REMOVE
+// type maker[T any] interface{ Make() T }
+//
+// func callMake[T maker[T]](v *T) {
+// 	// v is a **A where A is a concrete value
+// 	var zero T
+// 	*v = zero.Make()
+// }
+//
+// // for i in bytesEncAppender bufioEncWriter bytesDecReader ioDecReader; do printf "func (_ *${i}) Make() *${i} { return new(${i}) }\n"; done
+// // for i in binc cbor json msgpack simple; do for j in Enc Dec; do printf "func (_ *${i}${j}Driver[T]) Make() *${i}${j}Driver[T] { return new(${i}${j}Driver[T]) }\n"; done; done
+//
+// func (_ *bytesEncAppender) Make() *bytesEncAppender { return new(bytesEncAppender) }
+// func (_ *bufioEncWriter) Make() *bufioEncWriter     { return new(bufioEncWriter) }
+// func (_ *bytesDecReader) Make() *bytesDecReader     { return new(bytesDecReader) }
+// func (_ *ioDecReader) Make() *ioDecReader           { return new(ioDecReader) }
+//
+// func (_ *bincEncDriver[T]) Make() *bincEncDriver[T]       { return new(bincEncDriver[T]) }
+// func (_ *bincDecDriver[T]) Make() *bincDecDriver[T]       { return new(bincDecDriver[T]) }
+// func (_ *cborEncDriver[T]) Make() *cborEncDriver[T]       { return new(cborEncDriver[T]) }
+// func (_ *cborDecDriver[T]) Make() *cborDecDriver[T]       { return new(cborDecDriver[T]) }
+// func (_ *jsonEncDriver[T]) Make() *jsonEncDriver[T]       { return new(jsonEncDriver[T]) }
+// func (_ *jsonDecDriver[T]) Make() *jsonDecDriver[T]       { return new(jsonDecDriver[T]) }
+// func (_ *msgpackEncDriver[T]) Make() *msgpackEncDriver[T] { return new(msgpackEncDriver[T]) }
+// func (_ *msgpackDecDriver[T]) Make() *msgpackDecDriver[T] { return new(msgpackDecDriver[T]) }
+// func (_ *simpleEncDriver[T]) Make() *simpleEncDriver[T]   { return new(simpleEncDriver[T]) }
+// func (_ *simpleDecDriver[T]) Make() *simpleDecDriver[T]   { return new(simpleDecDriver[T]) }
 
-func callMake(v interface{}) {
-	v.(maker).Make()
+func callMake(v any) {
+	// we couldn't find an easy way to initializa these without resorting to reflection.
+	// however, a type switch does it elegantly, since we have a finite set of types to support.
+	switch x := v.(type) {
+	case **bytesEncAppender:
+		*x = new(bytesEncAppender)
+	case **bufioEncWriter:
+		*x = new(bufioEncWriter)
+	case **bytesDecReader:
+		*x = new(bytesDecReader)
+	case **ioDecReader:
+		*x = new(ioDecReader)
+	case **simpleEncDriver[*bufioEncWriter]:
+		*x = new(simpleEncDriver[*bufioEncWriter])
+	case **simpleEncDriver[*bytesEncAppender]:
+		*x = new(simpleEncDriver[*bytesEncAppender])
+	case **jsonEncDriver[*bufioEncWriter]:
+		*x = new(jsonEncDriver[*bufioEncWriter])
+	case **jsonEncDriver[*bytesEncAppender]:
+		*x = new(jsonEncDriver[*bytesEncAppender])
+	case **cborEncDriver[*bufioEncWriter]:
+		*x = new(cborEncDriver[*bufioEncWriter])
+	case **cborEncDriver[*bytesEncAppender]:
+		*x = new(cborEncDriver[*bytesEncAppender])
+	case **msgpackEncDriver[*bufioEncWriter]:
+		*x = new(msgpackEncDriver[*bufioEncWriter])
+	case **msgpackEncDriver[*bytesEncAppender]:
+		*x = new(msgpackEncDriver[*bytesEncAppender])
+	case **bincEncDriver[*bufioEncWriter]:
+		*x = new(bincEncDriver[*bufioEncWriter])
+	case **bincEncDriver[*bytesEncAppender]:
+		*x = new(bincEncDriver[*bytesEncAppender])
+	case **simpleDecDriver[*bytesDecReader]:
+		*x = new(simpleDecDriver[*bytesDecReader])
+	case **simpleDecDriver[*ioDecReader]:
+		*x = new(simpleDecDriver[*ioDecReader])
+	case **jsonDecDriver[*bytesDecReader]:
+		*x = new(jsonDecDriver[*bytesDecReader])
+	case **jsonDecDriver[*ioDecReader]:
+		*x = new(jsonDecDriver[*ioDecReader])
+	case **cborDecDriver[*bytesDecReader]:
+		*x = new(cborDecDriver[*bytesDecReader])
+	case **cborDecDriver[*ioDecReader]:
+		*x = new(cborDecDriver[*ioDecReader])
+	case **msgpackDecDriver[*bytesDecReader]:
+		*x = new(msgpackDecDriver[*bytesDecReader])
+	case **msgpackDecDriver[*ioDecReader]:
+		*x = new(msgpackDecDriver[*ioDecReader])
+	case **bincDecDriver[*bytesDecReader]:
+		*x = new(bincDecDriver[*bytesDecReader])
+	case **bincDecDriver[*ioDecReader]:
+		*x = new(bincDecDriver[*ioDecReader])
+	}
 }
 
 // ---- (writer.go)
 
 type encWriter interface {
-	bufioEncWriterM | bytesEncAppenderM
+	*bufioEncWriter | *bytesEncAppender
 	encWriterI
-}
-
-type bytesEncAppenderM struct {
-	*bytesEncAppender
-}
-
-func (z *bytesEncAppenderM) Make() {
-	z.bytesEncAppender = new(bytesEncAppender)
-	z.out = &bytesEncAppenderDefOut
-}
-
-type bufioEncWriterM struct {
-	*bufioEncWriter
-}
-
-func (z *bufioEncWriterM) Make() {
-	z.bufioEncWriter = new(bufioEncWriter)
-	z.w = io.Discard
 }
 
 // ---- reader.go
 
 type decReader interface {
-	bytesDecReaderM | ioDecReaderM
-
+	*bytesDecReader | *ioDecReader
 	decReaderI
-}
-
-type bytesDecReaderM struct {
-	*bytesDecReader
-}
-
-func (z *bytesDecReaderM) Make() {
-	z.bytesDecReader = new(bytesDecReader)
-}
-
-type ioDecReaderM struct {
-	*ioDecReader
-}
-
-func (z *ioDecReaderM) Make() {
-	z.ioDecReader = new(ioDecReader)
 }
 
 // type helperEncWriter[T encWriter] struct{}
@@ -74,16 +116,16 @@ func (z *ioDecReaderM) Make() {
 // ---- (encode.go)
 
 type encDriver interface {
-	simpleEncDriverM[bufioEncWriterM] |
-		simpleEncDriverM[bytesEncAppenderM] |
-		jsonEncDriverM[bufioEncWriterM] |
-		jsonEncDriverM[bytesEncAppenderM] |
-		cborEncDriverM[bufioEncWriterM] |
-		cborEncDriverM[bytesEncAppenderM] |
-		msgpackEncDriverM[bufioEncWriterM] |
-		msgpackEncDriverM[bytesEncAppenderM] |
-		bincEncDriverM[bufioEncWriterM] |
-		bincEncDriverM[bytesEncAppenderM]
+	*simpleEncDriver[*bufioEncWriter] |
+		*simpleEncDriver[*bytesEncAppender] |
+		*jsonEncDriver[*bufioEncWriter] |
+		*jsonEncDriver[*bytesEncAppender] |
+		*cborEncDriver[*bufioEncWriter] |
+		*cborEncDriver[*bytesEncAppender] |
+		*msgpackEncDriver[*bufioEncWriter] |
+		*msgpackEncDriver[*bytesEncAppender] |
+		*bincEncDriver[*bufioEncWriter] |
+		*bincEncDriver[*bytesEncAppender]
 
 	encDriverI
 }
@@ -91,16 +133,16 @@ type encDriver interface {
 // ---- (decode.go)
 
 type decDriver interface {
-	simpleDecDriverM[bytesDecReaderM] |
-		simpleDecDriverM[ioDecReaderM] |
-		jsonDecDriverM[bytesDecReaderM] |
-		jsonDecDriverM[ioDecReaderM] |
-		cborDecDriverM[bytesDecReaderM] |
-		cborDecDriverM[ioDecReaderM] |
-		msgpackDecDriverM[bytesDecReaderM] |
-		msgpackDecDriverM[ioDecReaderM] |
-		bincDecDriverM[bytesDecReaderM] |
-		bincDecDriverM[ioDecReaderM]
+	*simpleDecDriver[*bytesDecReader] |
+		*simpleDecDriver[*ioDecReader] |
+		*jsonDecDriver[*bytesDecReader] |
+		*jsonDecDriver[*ioDecReader] |
+		*cborDecDriver[*bytesDecReader] |
+		*cborDecDriver[*ioDecReader] |
+		*msgpackDecDriver[*bytesDecReader] |
+		*msgpackDecDriver[*ioDecReader] |
+		*bincDecDriver[*bytesDecReader] |
+		*bincDecDriver[*ioDecReader]
 
 	decDriverI
 }
@@ -109,205 +151,125 @@ type decDriver interface {
 
 // ---- (binc.go)
 
-type bincEncDriverM[T encWriter] struct {
-	*bincEncDriver[T]
-}
-
-func (d *bincEncDriverM[T]) Make() {
-	d.bincEncDriver = new(bincEncDriver[T])
-}
-
-type bincDecDriverM[T decReader] struct {
-	*bincDecDriver[T]
-}
-
-func (d *bincDecDriverM[T]) Make() {
-	d.bincDecDriver = new(bincDecDriver[T])
-}
-
 var (
-	bincFpEncIO    = helperEncDriver[bincEncDriverM[bufioEncWriterM]]{}.fastpathEList()
-	bincFpEncBytes = helperEncDriver[bincEncDriverM[bytesEncAppenderM]]{}.fastpathEList()
-	bincFpDecIO    = helperDecDriver[bincDecDriverM[ioDecReaderM]]{}.fastpathDList()
-	bincFpDecBytes = helperDecDriver[bincDecDriverM[bytesDecReaderM]]{}.fastpathDList()
+	bincFpEncIO    = helperEncDriver[*bincEncDriver[*bufioEncWriter]]{}.fastpathEList()
+	bincFpEncBytes = helperEncDriver[*bincEncDriver[*bytesEncAppender]]{}.fastpathEList()
+	bincFpDecIO    = helperDecDriver[*bincDecDriver[*ioDecReader]]{}.fastpathDList()
+	bincFpDecBytes = helperDecDriver[*bincDecDriver[*bytesDecReader]]{}.fastpathDList()
 )
 
 // ---- (cbor.go)
 
-type cborEncDriverM[T encWriter] struct {
-	*cborEncDriver[T]
-}
-
-func (d *cborEncDriverM[T]) Make() {
-	d.cborEncDriver = new(cborEncDriver[T])
-}
-
-type cborDecDriverM[T decReader] struct {
-	*cborDecDriver[T]
-}
-
-func (d *cborDecDriverM[T]) Make() {
-	d.cborDecDriver = new(cborDecDriver[T])
-}
-
 var (
-	cborFpEncIO    = helperEncDriver[cborEncDriverM[bufioEncWriterM]]{}.fastpathEList()
-	cborFpEncBytes = helperEncDriver[cborEncDriverM[bytesEncAppenderM]]{}.fastpathEList()
-	cborFpDecIO    = helperDecDriver[cborDecDriverM[ioDecReaderM]]{}.fastpathDList()
-	cborFpDecBytes = helperDecDriver[cborDecDriverM[bytesDecReaderM]]{}.fastpathDList()
+	cborFpEncIO    = helperEncDriver[*cborEncDriver[*bufioEncWriter]]{}.fastpathEList()
+	cborFpEncBytes = helperEncDriver[*cborEncDriver[*bytesEncAppender]]{}.fastpathEList()
+	cborFpDecIO    = helperDecDriver[*cborDecDriver[*ioDecReader]]{}.fastpathDList()
+	cborFpDecBytes = helperDecDriver[*cborDecDriver[*bytesDecReader]]{}.fastpathDList()
 )
 
 // ---- (json.go)
 
-type jsonEncDriverM[T encWriter] struct {
-	*jsonEncDriver[T]
-}
-
-func (d *jsonEncDriverM[T]) Make() {
-	d.jsonEncDriver = new(jsonEncDriver[T])
-}
-
-type jsonDecDriverM[T decReader] struct {
-	*jsonDecDriver[T]
-}
-
-func (d *jsonDecDriverM[T]) Make() {
-	d.jsonDecDriver = new(jsonDecDriver[T])
-}
-
 var (
-	jsonFpEncIO    = helperEncDriver[jsonEncDriverM[bufioEncWriterM]]{}.fastpathEList()
-	jsonFpEncBytes = helperEncDriver[jsonEncDriverM[bytesEncAppenderM]]{}.fastpathEList()
-	jsonFpDecIO    = helperDecDriver[jsonDecDriverM[ioDecReaderM]]{}.fastpathDList()
-	jsonFpDecBytes = helperDecDriver[jsonDecDriverM[bytesDecReaderM]]{}.fastpathDList()
+	jsonFpEncIO    = helperEncDriver[*jsonEncDriver[*bufioEncWriter]]{}.fastpathEList()
+	jsonFpEncBytes = helperEncDriver[*jsonEncDriver[*bytesEncAppender]]{}.fastpathEList()
+	jsonFpDecIO    = helperDecDriver[*jsonDecDriver[*ioDecReader]]{}.fastpathDList()
+	jsonFpDecBytes = helperDecDriver[*jsonDecDriver[*bytesDecReader]]{}.fastpathDList()
 )
 
 // ---- (msgpack.go)
 
-type msgpackEncDriverM[T encWriter] struct {
-	*msgpackEncDriver[T]
-}
-
-func (d *msgpackEncDriverM[T]) Make() {
-	d.msgpackEncDriver = new(msgpackEncDriver[T])
-}
-
-type msgpackDecDriverM[T decReader] struct {
-	*msgpackDecDriver[T]
-}
-
-func (d *msgpackDecDriverM[T]) Make() {
-	d.msgpackDecDriver = new(msgpackDecDriver[T])
-}
-
 var (
-	msgpackFpEncIO    = helperEncDriver[msgpackEncDriverM[bufioEncWriterM]]{}.fastpathEList()
-	msgpackFpEncBytes = helperEncDriver[msgpackEncDriverM[bytesEncAppenderM]]{}.fastpathEList()
-	msgpackFpDecIO    = helperDecDriver[msgpackDecDriverM[ioDecReaderM]]{}.fastpathDList()
-	msgpackFpDecBytes = helperDecDriver[msgpackDecDriverM[bytesDecReaderM]]{}.fastpathDList()
+	msgpackFpEncIO    = helperEncDriver[*msgpackEncDriver[*bufioEncWriter]]{}.fastpathEList()
+	msgpackFpEncBytes = helperEncDriver[*msgpackEncDriver[*bytesEncAppender]]{}.fastpathEList()
+	msgpackFpDecIO    = helperDecDriver[*msgpackDecDriver[*ioDecReader]]{}.fastpathDList()
+	msgpackFpDecBytes = helperDecDriver[*msgpackDecDriver[*bytesDecReader]]{}.fastpathDList()
 )
 
 // ---- (simple.go)
 
-type simpleEncDriverM[T encWriter] struct {
-	*simpleEncDriver[T]
-}
-
-func (d *simpleEncDriverM[T]) Make() {
-	d.simpleEncDriver = new(simpleEncDriver[T])
-}
-
-type simpleDecDriverM[T decReader] struct {
-	*simpleDecDriver[T]
-}
-
-func (d *simpleDecDriverM[T]) Make() {
-	d.simpleDecDriver = new(simpleDecDriver[T])
-}
-
 var (
-	simpleFpEncIO    = helperEncDriver[simpleEncDriverM[bufioEncWriterM]]{}.fastpathEList()
-	simpleFpEncBytes = helperEncDriver[simpleEncDriverM[bytesEncAppenderM]]{}.fastpathEList()
-	simpleFpDecIO    = helperDecDriver[simpleDecDriverM[ioDecReaderM]]{}.fastpathDList()
-	simpleFpDecBytes = helperDecDriver[simpleDecDriverM[bytesDecReaderM]]{}.fastpathDList()
+	simpleFpEncIO    = helperEncDriver[*simpleEncDriver[*bufioEncWriter]]{}.fastpathEList()
+	simpleFpEncBytes = helperEncDriver[*simpleEncDriver[*bytesEncAppender]]{}.fastpathEList()
+	simpleFpDecIO    = helperDecDriver[*simpleDecDriver[*ioDecReader]]{}.fastpathDList()
+	simpleFpDecBytes = helperDecDriver[*simpleDecDriver[*bytesDecReader]]{}.fastpathDList()
 )
 
 func (h *SimpleHandle) newEncoderBytes(out *[]byte) encoderI {
-	return helperEncDriver[simpleEncDriverM[bytesEncAppenderM]]{}.newEncoderBytes(out, h)
+	return helperEncDriver[*simpleEncDriver[*bytesEncAppender]]{}.newEncoderBytes(out, h)
 }
 
 func (h *SimpleHandle) newEncoder(w io.Writer) encoderI {
-	return helperEncDriver[simpleEncDriverM[bufioEncWriterM]]{}.newEncoderIO(w, h)
+	return helperEncDriver[*simpleEncDriver[*bufioEncWriter]]{}.newEncoderIO(w, h)
 }
 
 func (h *SimpleHandle) newDecoderBytes(in []byte) decoderI {
-	return helperDecDriver[simpleDecDriverM[bytesDecReaderM]]{}.newDecoderBytes(in, h)
+	return helperDecDriver[*simpleDecDriver[*bytesDecReader]]{}.newDecoderBytes(in, h)
 }
 
 func (h *SimpleHandle) newDecoder(r io.Reader) decoderI {
-	return helperDecDriver[simpleDecDriverM[ioDecReaderM]]{}.newDecoderIO(r, h)
+	return helperDecDriver[*simpleDecDriver[*ioDecReader]]{}.newDecoderIO(r, h)
 }
 
 func (h *JsonHandle) newEncoderBytes(out *[]byte) encoderI {
-	return helperEncDriver[jsonEncDriverM[bytesEncAppenderM]]{}.newEncoderBytes(out, h)
+	return helperEncDriver[*jsonEncDriver[*bytesEncAppender]]{}.newEncoderBytes(out, h)
 }
 
 func (h *JsonHandle) newEncoder(w io.Writer) encoderI {
-	return helperEncDriver[jsonEncDriverM[bufioEncWriterM]]{}.newEncoderIO(w, h)
+	return helperEncDriver[*jsonEncDriver[*bufioEncWriter]]{}.newEncoderIO(w, h)
 }
 
 func (h *JsonHandle) newDecoderBytes(in []byte) decoderI {
-	return helperDecDriver[jsonDecDriverM[bytesDecReaderM]]{}.newDecoderBytes(in, h)
+	return helperDecDriver[*jsonDecDriver[*bytesDecReader]]{}.newDecoderBytes(in, h)
 }
 
 func (h *JsonHandle) newDecoder(r io.Reader) decoderI {
-	return helperDecDriver[jsonDecDriverM[ioDecReaderM]]{}.newDecoderIO(r, h)
+	return helperDecDriver[*jsonDecDriver[*ioDecReader]]{}.newDecoderIO(r, h)
 }
 
 func (h *MsgpackHandle) newEncoderBytes(out *[]byte) encoderI {
-	return helperEncDriver[msgpackEncDriverM[bytesEncAppenderM]]{}.newEncoderBytes(out, h)
+	return helperEncDriver[*msgpackEncDriver[*bytesEncAppender]]{}.newEncoderBytes(out, h)
 }
 
 func (h *MsgpackHandle) newEncoder(w io.Writer) encoderI {
-	return helperEncDriver[msgpackEncDriverM[bufioEncWriterM]]{}.newEncoderIO(w, h)
+	return helperEncDriver[*msgpackEncDriver[*bufioEncWriter]]{}.newEncoderIO(w, h)
 }
 
 func (h *MsgpackHandle) newDecoderBytes(in []byte) decoderI {
-	return helperDecDriver[msgpackDecDriverM[bytesDecReaderM]]{}.newDecoderBytes(in, h)
+	return helperDecDriver[*msgpackDecDriver[*bytesDecReader]]{}.newDecoderBytes(in, h)
 }
 
 func (h *MsgpackHandle) newDecoder(r io.Reader) decoderI {
-	return helperDecDriver[msgpackDecDriverM[ioDecReaderM]]{}.newDecoderIO(r, h)
+	return helperDecDriver[*msgpackDecDriver[*ioDecReader]]{}.newDecoderIO(r, h)
 }
 
 func (h *CborHandle) newEncoderBytes(out *[]byte) encoderI {
-	return helperEncDriver[cborEncDriverM[bytesEncAppenderM]]{}.newEncoderBytes(out, h)
+	return helperEncDriver[*cborEncDriver[*bytesEncAppender]]{}.newEncoderBytes(out, h)
 }
 
 func (h *CborHandle) newEncoder(w io.Writer) encoderI {
-	return helperEncDriver[cborEncDriverM[bufioEncWriterM]]{}.newEncoderIO(w, h)
+	return helperEncDriver[*cborEncDriver[*bufioEncWriter]]{}.newEncoderIO(w, h)
 }
 
 func (h *CborHandle) newDecoderBytes(in []byte) decoderI {
-	return helperDecDriver[cborDecDriverM[bytesDecReaderM]]{}.newDecoderBytes(in, h)
+	return helperDecDriver[*cborDecDriver[*bytesDecReader]]{}.newDecoderBytes(in, h)
 }
 
 func (h *CborHandle) newDecoder(r io.Reader) decoderI {
-	return helperDecDriver[cborDecDriverM[ioDecReaderM]]{}.newDecoderIO(r, h)
+	return helperDecDriver[*cborDecDriver[*ioDecReader]]{}.newDecoderIO(r, h)
 }
 
 func (h *BincHandle) newEncoderBytes(out *[]byte) encoderI {
-	return helperEncDriver[bincEncDriverM[bytesEncAppenderM]]{}.newEncoderBytes(out, h)
+	return helperEncDriver[*bincEncDriver[*bytesEncAppender]]{}.newEncoderBytes(out, h)
 }
 
 func (h *BincHandle) newEncoder(w io.Writer) encoderI {
-	return helperEncDriver[bincEncDriverM[bufioEncWriterM]]{}.newEncoderIO(w, h)
+	return helperEncDriver[*bincEncDriver[*bufioEncWriter]]{}.newEncoderIO(w, h)
 }
 
 func (h *BincHandle) newDecoderBytes(in []byte) decoderI {
-	return helperDecDriver[bincDecDriverM[bytesDecReaderM]]{}.newDecoderBytes(in, h)
+	return helperDecDriver[*bincDecDriver[*bytesDecReader]]{}.newDecoderBytes(in, h)
 }
 
 func (h *BincHandle) newDecoder(r io.Reader) decoderI {
-	return helperDecDriver[bincDecDriverM[ioDecReaderM]]{}.newDecoderIO(r, h)
+	return helperDecDriver[*bincDecDriver[*ioDecReader]]{}.newDecoderIO(r, h)
 }
