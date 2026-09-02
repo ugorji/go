@@ -12,34 +12,6 @@ import (
 // // This contains all the iniatializations of generics.
 // // Putting it into one file, ensures that we can go generics or not.
 
-// OLD CODE - REMOVE
-// type maker[T any] interface{ Make() T }
-//
-// func callMake[T maker[T]](v *T) {
-// 	// v is a **A where A is a concrete value
-// 	var zero T
-// 	*v = zero.Make()
-// }
-//
-// // for i in bytesEncAppender bufioEncWriter bytesDecReader ioDecReader; do printf "func (_ *${i}) Make() *${i} { return new(${i}) }\n"; done
-// // for i in binc cbor json msgpack simple; do for j in Enc Dec; do printf "func (_ *${i}${j}Driver[T]) Make() *${i}${j}Driver[T] { return new(${i}${j}Driver[T]) }\n"; done; done
-//
-// func (_ *bytesEncAppender) Make() *bytesEncAppender { return new(bytesEncAppender) }
-// func (_ *bufioEncWriter) Make() *bufioEncWriter     { return new(bufioEncWriter) }
-// func (_ *bytesDecReader) Make() *bytesDecReader     { return new(bytesDecReader) }
-// func (_ *ioDecReader) Make() *ioDecReader           { return new(ioDecReader) }
-//
-// func (_ *bincEncDriver[T]) Make() *bincEncDriver[T]       { return new(bincEncDriver[T]) }
-// func (_ *bincDecDriver[T]) Make() *bincDecDriver[T]       { return new(bincDecDriver[T]) }
-// func (_ *cborEncDriver[T]) Make() *cborEncDriver[T]       { return new(cborEncDriver[T]) }
-// func (_ *cborDecDriver[T]) Make() *cborDecDriver[T]       { return new(cborDecDriver[T]) }
-// func (_ *jsonEncDriver[T]) Make() *jsonEncDriver[T]       { return new(jsonEncDriver[T]) }
-// func (_ *jsonDecDriver[T]) Make() *jsonDecDriver[T]       { return new(jsonDecDriver[T]) }
-// func (_ *msgpackEncDriver[T]) Make() *msgpackEncDriver[T] { return new(msgpackEncDriver[T]) }
-// func (_ *msgpackDecDriver[T]) Make() *msgpackDecDriver[T] { return new(msgpackDecDriver[T]) }
-// func (_ *simpleEncDriver[T]) Make() *simpleEncDriver[T]   { return new(simpleEncDriver[T]) }
-// func (_ *simpleDecDriver[T]) Make() *simpleDecDriver[T]   { return new(simpleDecDriver[T]) }
-
 func callMake(v any) {
 	// we couldn't find an easy way to initializa these without resorting to reflection.
 	// however, a type switch does it elegantly, since we have a finite set of types to support.
