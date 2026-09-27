@@ -891,7 +891,12 @@ func (d *msgpackDecDriver[T]) decodeTime(clen int) (t time.Time) {
 		sec := bigen.Uint64(d.r.readn8())
 		t = time.Unix(int64(sec), int64(nsec)).UTC()
 	default:
-		halt.errorf("invalid length of bytes for decoding time - expecting 4 or 8 or 12, got %d", clen)
+		// Legacy TimeNotBuiltin path encoded time.Time via encoding.BinaryMarshaler
+		// as a variable-length raw string/bin (15 bytes today), not msgpack timestamp 4/8/12.
+		bs := d.r.readx(uint(clen))
+		var tt time.Time
+		halt.onerror(tt.UnmarshalBinary(bs))
+		t = tt
 	}
 	return
 }
