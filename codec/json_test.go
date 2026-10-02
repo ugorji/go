@@ -814,3 +814,24 @@ func TestJsonSliceDecodeVariants(t *testing.T) {
 func TestJsonViaReflectValue(t *testing.T) {
 	doTestViaReflectValue(t, testJsonH)
 }
+
+func TestJsonUint64ExponentOverflow(t *testing.T) {
+	h := new(JsonHandle)
+	var u uint64
+	if err := NewDecoderBytes([]byte("2e19"), h).Decode(&u); err == nil {
+		t.Fatalf("2e19 decoded as %d", u)
+	}
+	if err := NewDecoderBytes([]byte("5e19"), h).Decode(&u); err == nil {
+		t.Fatalf("5e19 decoded as %d", u)
+	}
+	if err := NewDecoderBytes([]byte("1e19"), h).Decode(&u); err != nil || u != 10_000_000_000_000_000_000 {
+		t.Fatalf("1e19: %d %v", u, err)
+	}
+	var i int64
+	if err := NewDecoderBytes([]byte("2e19"), h).Decode(&i); err == nil {
+		t.Fatalf("2e19 decoded as int64 %d", i)
+	}
+	if err := NewDecoderBytes([]byte("-1e18"), h).Decode(&i); err != nil || i != -1_000_000_000_000_000_000 {
+		t.Fatalf("-1e18: %d %v", i, err)
+	}
+}

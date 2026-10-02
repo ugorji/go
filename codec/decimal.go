@@ -288,7 +288,14 @@ func parseUint64_reader(r readFloatResult) (f uint64, fail bool) {
 			f /= uint64pow10[uint8(-r.exp)]
 		}
 	} else { // exp > 0
-		f *= uint64pow10[uint8(r.exp)]
+		// 5 * 10^19 does not fit in uint64. An unchecked multiply wraps,
+		// so 2e19 decoded as 1553255926290448384.
+		pow := uint64pow10[uint8(r.exp)]
+		if f > math.MaxUint64/pow {
+			fail = true
+			return
+		}
+		f *= pow
 	}
 	return
 }
