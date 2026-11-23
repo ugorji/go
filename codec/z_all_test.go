@@ -227,6 +227,7 @@ func testCborGroup(t *testing.T) {
 	t.Run("TestCborEmbeddedFieldPrecedence", TestCborEmbeddedFieldPrecedence)
 	t.Run("TestCborLargeContainerLen", TestCborLargeContainerLen)
 	t.Run("TestCborTime", TestCborTime)
+	t.Run("TestCborTimeIntegerSeconds", TestCborTimeIntegerSeconds)
 	t.Run("TestCborUintToInt", TestCborUintToInt)
 	t.Run("TestCborDifferentMapOrSliceType", TestCborDifferentMapOrSliceType)
 	t.Run("TestCborScalars", TestCborScalars)

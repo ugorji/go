@@ -12,6 +12,7 @@ import (
 	"regexp"
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestCborIndefiniteLength(t *testing.T) {
@@ -636,6 +637,34 @@ func TestCborDecimalFraction(t *testing.T) {
 	if !ok || f2 != 1.5 {
 		t.Logf("tag 5 bigfloat: got %v (%T), want 1.5", v2, v2)
 		t.FailNow()
+	}
+}
+
+func TestCborTimeIntegerSeconds(t *testing.T) {
+	// use a new handle, as testCborH registers an extension for time.Time
+	var h Handle = &CborHandle{}
+	defer testSetup(t, &h)()
+	// tag 1 (epoch-based time) with integer content must not be rounded through a float64
+	for _, v := range []struct {
+		b   []byte
+		sec int64
+	}{
+		{[]byte{0xc1, 0x1a, 0x51, 0x4b, 0x67, 0xb0}, 1363896240},            // 1(1363896240)
+		{[]byte{0xc1, 0x1b, 0x00, 0x20, 0, 0, 0, 0, 0, 0x01}, 1<<53 + 1},    // 1(9007199254740993)
+		{[]byte{0xc1, 0x3b, 0x00, 0x20, 0, 0, 0, 0, 0, 0x00}, -(1<<53 + 1)}, // 1(-9007199254740993)
+	} {
+		var v1 interface{}
+		NewDecoderBytes(v.b, h).MustDecode(&v1)
+		if tm, ok := v1.(time.Time); !ok || tm.Unix() != v.sec {
+			t.Logf("% x: decode into interface{}: got %v (%T), want Unix %d", v.b, v1, v1, v.sec)
+			t.FailNow()
+		}
+		var v2 time.Time
+		NewDecoderBytes(v.b, h).MustDecode(&v2)
+		if v2.Unix() != v.sec {
+			t.Logf("% x: decode into time.Time: got Unix %d, want %d", v.b, v2.Unix(), v.sec)
+			t.FailNow()
+		}
 	}
 }
 

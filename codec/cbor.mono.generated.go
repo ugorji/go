@@ -3654,8 +3654,16 @@ func (d *cborDecDriverBytes) decodeTime(xtag uint64) (t time.Time) {
 		t, err = time.Parse(time.RFC3339, stringView(bytesOKs(d.DecodeStringAsBytes())))
 		halt.onerror(err)
 	case 1:
-		f1, f2 := math.Modf(d.DecodeFloat64())
-		t = time.Unix(int64(f1), int64(f2*1e9))
+		if !d.bdRead {
+			d.readNextBd()
+		}
+		if major := d.bd >> 5; major == cborMajorUint || major == cborMajorNegInt {
+
+			t = time.Unix(d.DecodeInt64(), 0)
+		} else {
+			f1, f2 := math.Modf(d.DecodeFloat64())
+			t = time.Unix(int64(f1), int64(f2*1e9))
+		}
 	default:
 		halt.errorf("invalid tag for time.Time - expecting 0 or 1, got 0x%x", xtag)
 	}
@@ -7646,8 +7654,16 @@ func (d *cborDecDriverIO) decodeTime(xtag uint64) (t time.Time) {
 		t, err = time.Parse(time.RFC3339, stringView(bytesOKs(d.DecodeStringAsBytes())))
 		halt.onerror(err)
 	case 1:
-		f1, f2 := math.Modf(d.DecodeFloat64())
-		t = time.Unix(int64(f1), int64(f2*1e9))
+		if !d.bdRead {
+			d.readNextBd()
+		}
+		if major := d.bd >> 5; major == cborMajorUint || major == cborMajorNegInt {
+
+			t = time.Unix(d.DecodeInt64(), 0)
+		} else {
+			f1, f2 := math.Modf(d.DecodeFloat64())
+			t = time.Unix(int64(f1), int64(f2*1e9))
+		}
 	default:
 		halt.errorf("invalid tag for time.Time - expecting 0 or 1, got 0x%x", xtag)
 	}
