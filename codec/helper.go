@@ -2996,7 +2996,7 @@ func (panicHdl) errorf(format string, params ...interface{}) {
 }
 
 func panicHdlBytes(prefix string) []byte {
-	return append(make([]byte, len(prefix)+8), prefix...)
+	return append(make([]byte, 0, len(prefix)+8), prefix...)
 }
 
 // ----------------------------------------------------

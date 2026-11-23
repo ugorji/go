@@ -768,8 +768,10 @@ LOOP:
 			goto LOOP
 		}
 		token = z.b[i]
+		z.c = i + 1
+	} else {
+		z.c = i
 	}
-	z.c = i + 1
 	bs = z.b[start:i] // byteSliceOf(z.b, start, i)
 	return
 }

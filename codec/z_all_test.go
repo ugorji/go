@@ -148,6 +148,8 @@ func testJsonGroup(t *testing.T) {
 	t.Run("TestJsonDecodeNonStringScalarInStringContext", TestJsonDecodeNonStringScalarInStringContext)
 	t.Run("TestJsonLargeInteger", TestJsonLargeInteger)
 	t.Run("TestJsonInvalidUnicode", TestJsonInvalidUnicode)
+	t.Run("TestJsonErrorMessage", TestJsonErrorMessage)
+	t.Run("TestJsonNumBytesRead", TestJsonNumBytesRead)
 	t.Run("TestJsonNumberParsing", TestJsonNumberParsing)
 	t.Run("TestJsonMultipleEncDec", TestJsonMultipleEncDec)
 	t.Run("TestJsonAllErrWriter", TestJsonAllErrWriter)

@@ -294,6 +294,45 @@ func doTestJsonLargeInteger(t *testing.T, h Handle) {
 	}
 }
 
+func doTestJsonErrorMessage(t *testing.T, h Handle) {
+	if !testRecoverPanicToErr {
+		t.Skip(testSkipIfNotRecoverPanicToErrMsg)
+	}
+	defer testSetup(t, &h)()
+	// errors built from a prefix and a value (e.g. halt.errorByte)
+	// must contain just the prefix and the value, without leading NUL bytes.
+	var v interface{}
+	err := NewDecoderBytes([]byte(`"\x"`), h).Decode(&v)
+	if err == nil {
+		t.Logf("expected an error for an invalid escape")
+		t.FailNow()
+	}
+	if s := err.Error(); strings.IndexByte(s, 0) >= 0 || !strings.HasSuffix(s, ": unsupported escaped value: x") {
+		t.Logf("unexpected error message: %q", s)
+		t.FailNow()
+	}
+}
+
+func doTestJsonNumBytesRead(t *testing.T, h Handle) {
+	defer testSetup(t, &h)()
+	// NumBytesRead must be the input length, also when the input ends with a number
+	for _, s := range []string{"1", "12", "1.5", "-1e3", "[1]", `{"a":1}`} {
+		var v interface{}
+		d := NewDecoderBytes([]byte(s), h)
+		d.MustDecode(&v)
+		if n := d.NumBytesRead(); n != len(s) {
+			t.Logf("%q: NumBytesRead from []byte: %d, want %d", s, n, len(s))
+			t.FailNow()
+		}
+		d = NewDecoder(strings.NewReader(s), h)
+		d.MustDecode(&v)
+		if n := d.NumBytesRead(); n != len(s) {
+			t.Logf("%q: NumBytesRead from io.Reader: %d, want %d", s, n, len(s))
+			t.FailNow()
+		}
+	}
+}
+
 func doTestJsonInvalidUnicode(t *testing.T, h Handle) {
 	if !testRecoverPanicToErr {
 		t.Skip(testSkipIfNotRecoverPanicToErrMsg)
@@ -813,4 +852,12 @@ func TestJsonSliceDecodeVariants(t *testing.T) {
 
 func TestJsonViaReflectValue(t *testing.T) {
 	doTestViaReflectValue(t, testJsonH)
+}
+
+func TestJsonErrorMessage(t *testing.T) {
+	doTestJsonErrorMessage(t, testJsonH)
+}
+
+func TestJsonNumBytesRead(t *testing.T) {
+	doTestJsonNumBytesRead(t, testJsonH)
 }
