@@ -8,6 +8,7 @@ package codec
 import (
 	"encoding"
 	"io"
+	"math/big"
 	"reflect"
 	"strconv"
 	"sync"
@@ -285,6 +286,12 @@ func (d *decoder[T]) kInterfaceNaked(f *decFnInfo) (rvn reflect.Value) {
 		rvn = n.rl()
 	case valueTypeTime:
 		rvn = n.rt()
+	case valueTypeBigInt:
+		bi := new(big.Int).SetBytes(n.l)
+		if n.b {
+			bi = new(big.Int).Sub(big.NewInt(-1), bi)
+		}
+		rvn = rv4iptr(&bi).Elem()
 	default:
 		halt.errorStr2("kInterfaceNaked: unexpected valueType: ", n.v.String())
 	}

@@ -727,11 +727,13 @@ func (d *cborDecDriver[T]) DecodeNaked() {
 				n.v = valueTypeTime
 				n.t = d.decodeTime(n.u)
 			case 2:
-				n.f = d.decTagBigIntAsFloat(false)
-				n.v = valueTypeFloat
+				n.l, _ = d.DecodeBytes()
+				n.b = false
+				n.v = valueTypeBigInt
 			case 3:
-				n.f = d.decTagBigIntAsFloat(true)
-				n.v = valueTypeFloat
+				n.l, _ = d.DecodeBytes()
+				n.b = true
+				n.v = valueTypeBigInt
 			case 4:
 				n.f = d.decTagBigFloatAsFloat(true)
 				n.v = valueTypeFloat
