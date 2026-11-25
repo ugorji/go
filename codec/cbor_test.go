@@ -7,6 +7,7 @@ import (
 	"bytes"
 	"encoding/hex"
 	"math"
+	"math/big"
 	"os"
 	"reflect"
 	"regexp"
@@ -674,4 +675,29 @@ func TestCborLargeStruct(t *testing.T) {
 
 func TestCborSliceDecodeVariants(t *testing.T) {
 	doTestSliceDecodeVariants(t, testCborH)
+}
+
+func TestCborBignumDecodesExactly(t *testing.T) {
+	for _, tt := range []struct {
+		in  []byte
+		out string
+		neg bool
+	}{
+		{[]byte{0xc2, 0x49, 0x01, 0, 0, 0, 0, 0, 0, 0, 0x01}, "18446744073709551617", false},
+		{[]byte{0xc2, 0x49, 0x01, 0, 0, 0, 0, 0, 0, 0, 0x00}, "18446744073709551616", false},
+		{[]byte{0xc3, 0x49, 0x01, 0, 0, 0, 0, 0, 0, 0, 0x00}, "-18446744073709551617", true},
+	} {
+		var v any
+		err := NewDecoderBytes(tt.in, &CborHandle{}).Decode(&v)
+		if err != nil {
+			t.Fatalf("decode failed: %v", err)
+		}
+		bi, ok := v.(*big.Int)
+		if !ok {
+			t.Fatalf("got %T, want *big.Int", v)
+		}
+		if bi.String() != tt.out {
+			t.Fatalf("got %s, want %s", bi.String(), tt.out)
+		}
+	}
 }
