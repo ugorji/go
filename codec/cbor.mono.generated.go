@@ -3813,7 +3813,18 @@ func (d *cborDecDriverBytes) DecodeNaked() {
 			n.v = valueTypeFloat
 			n.f = d.DecodeFloat64()
 		default:
-			halt.errorf("decodeNaked: Unrecognized d.bd: 0x%x", d.bd)
+			if d.bd < cborBdFalse {
+				n.v = valueTypeUint
+				n.u = uint64(d.bd & 0x1f)
+			} else if d.bd == 0xf8 {
+				n.u = uint64(d.r.readn1())
+				if n.u < 32 {
+					halt.errorf("decodeNaked: invalid simple value encoding: 0x%x", n.u)
+				}
+				n.v = valueTypeUint
+			} else {
+				halt.errorf("decodeNaked: Unrecognized d.bd: 0x%x", d.bd)
+			}
 		}
 	default:
 		halt.errorf("decodeNaked: Unrecognized d.bd: 0x%x", d.bd)
@@ -3929,7 +3940,13 @@ func (d *cborDecDriverBytes) nextValueBytesBdReadR() {
 		case cborBdFloat64:
 			d.r.skip(8)
 		default:
-			halt.errorf("nextValueBytes: Unrecognized d.bd: 0x%x", d.bd)
+			if d.bd < cborBdFalse {
+				// pass
+			} else if d.bd == 0xf8 {
+				d.r.skip(1)
+			} else {
+				halt.errorf("nextValueBytes: Unrecognized d.bd: 0x%x", d.bd)
+			}
 		}
 	default:
 		halt.errorf("nextValueBytes: Unrecognized d.bd: 0x%x", d.bd)

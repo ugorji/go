@@ -276,6 +276,26 @@ func testCborError(t *testing.T, diagnostic string, i int, v0, v1 interface{}, e
 	}
 }
 
+func TestCborDecodeUnassignedSimpleValues(t *testing.T) {
+	for _, tc := range []struct {
+		input []byte
+		want  uint64
+	}{
+		{[]byte{0xe0}, 0},
+		{[]byte{0xf3}, 19},
+		{[]byte{0xf8, 0x20}, 32},
+		{[]byte{0xf8, 0xff}, 255},
+	} {
+		var got interface{}
+		if err := NewDecoderBytes(tc.input, testCborH).Decode(&got); err != nil {
+			t.Fatalf("decode simple(%d): %v", tc.want, err)
+		}
+		if got != tc.want {
+			t.Fatalf("decode simple(%d): got %#v (%T)", tc.want, got, got)
+		}
+	}
+}
+
 func TestCborHalfFloat(t *testing.T) {
 	var h Handle = testCborH
 	defer testSetup(t, &h)()
